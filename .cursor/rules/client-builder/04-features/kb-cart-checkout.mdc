@@ -1,0 +1,908 @@
+---
+description: Panier Zustand + checkout Stripe - session checkout, webhook signature, idempotence, orders
+globs: "**/store/cart*,**/lib/stripe*,**/app/api/checkout/**,**/app/api/webhooks/stripe/**,**/components/cart/**,**/app/(shop)/**"
+alwaysApply: false
+---
+
+# Panier + Checkout Stripe — Règles Karibloom
+
+Pattern e-commerce pour sites clients Next.js 15 type DALCIELO (pizzeria, commande en ligne, click & collect, livraison). Panier côté client en Zustand pour l'UX, **source de vérité prix = serveur**, checkout via Stripe Checkout Session, validation par webhook avec signature + idempotence.
+
+## Complète / Ne remplace pas
+
+- `kb-supabase.mdc` — modèle de données, RLS, Supabase Admin pour webhooks
+- `kb-api-routes.mdc` — Route Handlers, Zod, rate limit, CSRF
+- `kb-notifications.mdc` — email de confirmation, n8n, relance panier abandonné
+
+## 1. Principes fondamentaux
+
+- **Le client n'est jamais de confiance sur les prix.** Le panier Zustand sert uniquement à l'UX (affichage, édition, stepper qty). Tout montant envoyé par le client est recalculé côté serveur avant toute création d'Order ou de Stripe Session.
+- **Order créé AVANT redirect Stripe**, en statut `pending`. Jamais "créer l'order dans le webhook uniquement" : si le webhook rate, pas d'order = pas de trace client.
+- **Webhook = single source of truth** pour passer `pending → paid`. Signature Stripe OBLIGATOIRE, pas d'exception.
+- **Idempotence sur `event.id`** : Stripe rejoue les webhooks en cas de 5xx. Doublons = doubles emails, doubles lignes.
+- **`runtime = "nodejs"`** sur toutes les routes Stripe (checkout + webhook). Jamais edge — la lib `stripe` utilise Node crypto et `constructEvent` lit le body brut.
+- **Prix en entiers (centimes)** côté Stripe. `unit_amount: 1290` pour 12,90 €. Arrondir avec `Math.round(euros * 100)`.
+- **Pas de `total` dans le body client vers `/api/orders`** : on l'ignore systématiquement, on recalcule.
+
+## 2. Store panier (Zustand)
+
+Middleware `persist` localStorage + clé versionnée pour invalidation lors de breaking changes.
+
+```ts
+// src/hooks/useCart.ts
+import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+
+export interface CartItem {
+  id: number;          // menu_id côté catalogue serveur
+  name: string;
+  price: number;       // en euros, UX uniquement — NE PAS envoyer à Stripe
+  quantity: number;
+  category?: string;
+  customizations?: string[]; // supplements, sauce, options
+  image?: string;
+}
+
+interface CartStore {
+  items: CartItem[];
+  addItem: (item: Omit<CartItem, "quantity">) => void;
+  removeItem: (id: number, customizations?: string[]) => void;
+  updateQuantity: (id: number, quantity: number, customizations?: string[]) => void;
+  clearCart: () => void;
+  getTotal: () => number;
+  getItemCount: () => number;
+}
+
+// Clé de customisation pour différencier deux items avec options distinctes
+const custKey = (c?: string[]) =>
+  c && c.length ? c.slice().sort().join("|") : "";
+
+export const useCart = create<CartStore>()(
+  persist(
+    (set, get) => ({
+      items: [],
+
+      addItem: (newItem) => {
+        const items = get().items;
+        const k = custKey(newItem.customizations);
+        const existing = items.find(
+          (i) => i.id === newItem.id && custKey(i.customizations) === k
+        );
+        if (existing) {
+          set({
+            items: items.map((i) =>
+              i.id === newItem.id && custKey(i.customizations) === k
+                ? { ...i, quantity: i.quantity + 1 }
+                : i
+            ),
+          });
+        } else {
+          set({ items: [...items, { ...newItem, quantity: 1 }] });
+        }
+      },
+
+      removeItem: (id, customizations) => {
+        const k = custKey(customizations);
+        set({
+          items: get().items.filter(
+            (i) => !(i.id === id && custKey(i.customizations) === k)
+          ),
+        });
+      },
+
+      updateQuantity: (id, quantity, customizations) => {
+        if (quantity <= 0) {
+          get().removeItem(id, customizations);
+          return;
+        }
+        const k = custKey(customizations);
+        set({
+          items: get().items.map((i) =>
+            i.id === id && custKey(i.customizations) === k
+              ? { ...i, quantity }
+              : i
+          ),
+        });
+      },
+
+      clearCart: () => set({ items: [] }),
+      getTotal: () =>
+        get().items.reduce((t, i) => t + i.price * i.quantity, 0),
+      getItemCount: () =>
+        get().items.reduce((n, i) => n + i.quantity, 0),
+    }),
+    {
+      name: "kb-cart-v1",           // clé versionnée : bump pour invalider
+      storage: createJSONStorage(() => localStorage),
+      version: 1,
+      migrate: (persisted, version) => {
+        if (version < 1) return { items: [] }; // reset défensif
+        return persisted as CartStore;
+      },
+    }
+  )
+);
+```
+
+Clé `kb-cart-v1` : quand on modifie la structure (`id: number → string`, ajout de `variantId`, etc.), incrémenter à `-v2` pour forcer tous les clients à repartir sur un panier vide.
+
+## 3. Modèle de données Supabase
+
+```sql
+-- Produits et variantes
+create table products (
+  id uuid primary key default gen_random_uuid(),
+  slug text unique not null,
+  name text not null,
+  description text,
+  base_price integer not null,           -- en centimes
+  category text not null,
+  image_url text,
+  is_active boolean default true,
+  created_at timestamptz default now()
+);
+
+create table variants (
+  id uuid primary key default gen_random_uuid(),
+  product_id uuid not null references products(id) on delete cascade,
+  name text not null,                    -- "Grande", "Medium"
+  price_delta integer default 0,         -- centimes, peut être négatif
+  stock integer,                         -- null = illimité
+  is_active boolean default true
+);
+
+-- Commandes
+create type order_status as enum (
+  'pending',        -- créée, pas encore payée
+  'paid',           -- webhook Stripe confirmé
+  'preparing',
+  'ready',
+  'delivered',
+  'cancelled',
+  'refunded'
+);
+
+create table orders (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id),      -- nullable : commande invité
+  status order_status not null default 'pending',
+  total_cents integer not null,                -- recalculé serveur, jamais client
+  currency text not null default 'eur',
+  stripe_session_id text unique,
+  stripe_payment_intent text,
+  customer_email text,
+  customer_phone text,
+  service_type text,                           -- click_collect, delivery
+  delivery_address text,
+  notes text,
+  created_at timestamptz default now(),
+  paid_at timestamptz,
+  cancelled_at timestamptz
+);
+
+create index on orders (user_id, created_at desc);
+create index on orders (stripe_session_id);
+
+create table order_items (
+  id uuid primary key default gen_random_uuid(),
+  order_id uuid not null references orders(id) on delete cascade,
+  product_id uuid not null references products(id),
+  variant_id uuid references variants(id),
+  name_snapshot text not null,                 -- nom figé au moment de la commande
+  unit_price_cents integer not null,           -- prix figé
+  quantity integer not null check (quantity > 0),
+  customizations jsonb default '[]'::jsonb
+);
+
+-- Historique de statut (event sourcing light)
+create table order_status_history (
+  id uuid primary key default gen_random_uuid(),
+  order_id uuid not null references orders(id) on delete cascade,
+  from_status order_status,
+  to_status order_status not null,
+  changed_by text,                             -- 'webhook', 'admin:uuid', 'system'
+  reason text,
+  created_at timestamptz default now()
+);
+
+-- Idempotence webhook Stripe
+create table stripe_events_processed (
+  event_id text primary key,                   -- evt_xxx
+  event_type text not null,
+  processed_at timestamptz default now()
+);
+```
+
+RLS : voir `kb-supabase.mdc`. Le membre lit SES orders (`user_id = auth.uid()`), l'admin lit tout.
+
+## 4. Validation panier côté serveur
+
+Avant toute création d'Order ou de Stripe Session, **recalculer les prix depuis Supabase**.
+
+```ts
+// src/lib/validations/cart.ts
+import { z } from "zod";
+
+export const cartItemSchema = z.object({
+  productId: z.string().uuid(),
+  variantId: z.string().uuid().optional(),
+  quantity: z.number().int().min(1).max(50),
+  customizations: z.array(z.string()).max(20).optional(),
+});
+
+export const cartSchema = z.object({
+  items: z.array(cartItemSchema).min(1).max(50),
+  customerEmail: z.string().email(),
+  customerPhone: z.string().min(6).max(30),
+  serviceType: z.enum(["click_collect", "delivery"]),
+  deliveryAddress: z.string().max(500).optional(),
+  notes: z.string().max(1000).optional(),
+});
+```
+
+```ts
+// src/lib/cart/recomputeTotal.ts
+import { supabaseAdmin } from "@/lib/supabase";
+import type { z } from "zod";
+import type { cartItemSchema } from "@/lib/validations/cart";
+
+type Item = z.infer<typeof cartItemSchema>;
+
+export async function recomputeCart(items: Item[]) {
+  const sb = supabaseAdmin();
+  const productIds = [...new Set(items.map((i) => i.productId))];
+
+  const { data: products, error } = await sb
+    .from("products")
+    .select("id, name, base_price, is_active, variants(id, price_delta, stock, is_active)")
+    .in("id", productIds);
+  if (error) throw new Error("Catalogue indisponible");
+
+  const byId = new Map(products.map((p) => [p.id, p]));
+
+  let totalCents = 0;
+  const lines = items.map((item) => {
+    const p = byId.get(item.productId);
+    if (!p || !p.is_active) throw new Error(`Produit indisponible: ${item.productId}`);
+
+    let priceCents = p.base_price;
+    let variant = null;
+    if (item.variantId) {
+      variant = p.variants.find((v: any) => v.id === item.variantId);
+      if (!variant || !variant.is_active) throw new Error("Variante indisponible");
+      if (variant.stock !== null && variant.stock < item.quantity) {
+        throw new Error(`Stock insuffisant: ${p.name}`);
+      }
+      priceCents += variant.price_delta;
+    }
+
+    const lineTotal = priceCents * item.quantity;
+    totalCents += lineTotal;
+
+    return {
+      productId: p.id,
+      variantId: variant?.id,
+      nameSnapshot: p.name,
+      unitPriceCents: priceCents,
+      quantity: item.quantity,
+      customizations: item.customizations ?? [],
+    };
+  });
+
+  return { lines, totalCents };
+}
+```
+
+## 5. Création session Stripe Checkout
+
+Route POST qui : valide Zod → recalcule total serveur → crée Order `pending` → crée Checkout Session → renvoie `url`.
+
+```ts
+// src/app/api/checkout/route.ts
+import { NextResponse, type NextRequest } from "next/server";
+import Stripe from "stripe";
+import { z } from "zod";
+import { supabaseAdmin } from "@/lib/supabase";
+import { cartSchema } from "@/lib/validations/cart";
+import { recomputeCart } from "@/lib/cart/recomputeTotal";
+import { verifyOrigin } from "@/lib/csrf";
+import { checkRateLimit, getIp } from "@/lib/rate-limit";
+import { getAuthenticatedUser } from "@/lib/auth";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2023-10-16",
+});
+
+export async function POST(req: NextRequest) {
+  if (!verifyOrigin(req)) {
+    return NextResponse.json({ error: "Origin refusé" }, { status: 403 });
+  }
+  if (!checkRateLimit(getIp(req), 10, 60_000)) {
+    return NextResponse.json({ error: "Trop de requêtes" }, { status: 429 });
+  }
+
+  let parsed;
+  try {
+    parsed = cartSchema.parse(await req.json());
+  } catch (e) {
+    if (e instanceof z.ZodError) {
+      return NextResponse.json({ error: "Données invalides", issues: e.issues }, { status: 400 });
+    }
+    return NextResponse.json({ error: "Body invalide" }, { status: 400 });
+  }
+
+  let recomputed;
+  try {
+    recomputed = await recomputeCart(parsed.items);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Erreur catalogue";
+    return NextResponse.json({ error: msg, code: "CATALOG_MISMATCH" }, { status: 400 });
+  }
+
+  const user = await getAuthenticatedUser(req).catch(() => null);
+  const sb = supabaseAdmin();
+
+  // 1. Créer l'Order en pending AVANT Stripe
+  const { data: order, error: orderErr } = await sb
+    .from("orders")
+    .insert({
+      user_id: user?.id ?? null,
+      status: "pending",
+      total_cents: recomputed.totalCents,
+      customer_email: parsed.customerEmail,
+      customer_phone: parsed.customerPhone,
+      service_type: parsed.serviceType,
+      delivery_address: parsed.deliveryAddress ?? null,
+      notes: parsed.notes ?? null,
+    })
+    .select("id")
+    .single();
+  if (orderErr || !order) {
+    console.error("[checkout] insert order:", orderErr);
+    return NextResponse.json({ error: "Commande non enregistrée" }, { status: 500 });
+  }
+
+  await sb.from("order_items").insert(
+    recomputed.lines.map((l) => ({
+      order_id: order.id,
+      product_id: l.productId,
+      variant_id: l.variantId ?? null,
+      name_snapshot: l.nameSnapshot,
+      unit_price_cents: l.unitPriceCents,
+      quantity: l.quantity,
+      customizations: l.customizations,
+    }))
+  );
+
+  // 2. Créer la Stripe Checkout Session
+  const origin = process.env.NEXT_PUBLIC_BASE_URL!;
+  const session = await stripe.checkout.sessions.create({
+    mode: "payment",
+    payment_method_types: ["card"],
+    customer_email: parsed.customerEmail,
+    line_items: recomputed.lines.map((l) => ({
+      quantity: l.quantity,
+      price_data: {
+        currency: "eur",
+        unit_amount: l.unitPriceCents,
+        product_data: { name: l.nameSnapshot },
+      },
+    })),
+    metadata: {
+      order_id: order.id,
+      user_id: user?.id ?? "",
+    },
+    success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/checkout/cancel?order_id=${order.id}`,
+    expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // 30 min
+  });
+
+  // 3. Lier la session à l'order (pour retrouver via webhook fallback)
+  await sb.from("orders").update({ stripe_session_id: session.id }).eq("id", order.id);
+
+  return NextResponse.json({ url: session.url, orderId: order.id });
+}
+```
+
+Metadata `{ order_id, user_id }` : c'est le lien Stripe ↔ Supabase. Ne PAS mettre des données sensibles (PII) dans metadata — c'est visible côté dashboard Stripe.
+
+## 6. Webhook Stripe
+
+Signature OBLIGATOIRE, idempotence OBLIGATOIRE, runtime nodejs OBLIGATOIRE.
+
+```ts
+// src/app/api/webhooks/stripe/route.ts
+import { NextResponse } from "next/server";
+import Stripe from "stripe";
+import { supabaseAdmin } from "@/lib/supabase";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2023-10-16",
+});
+
+export async function POST(req: Request) {
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    return NextResponse.json({ error: "Webhook non configuré" }, { status: 500 });
+  }
+
+  const sig = req.headers.get("stripe-signature");
+  if (!sig) {
+    return NextResponse.json({ error: "Signature manquante" }, { status: 400 });
+  }
+
+  const body = await req.text(); // body BRUT obligatoire, pas req.json()
+
+  let event: Stripe.Event;
+  try {
+    event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Signature invalide";
+    console.error("[stripe-webhook] signature:", msg);
+    return NextResponse.json({ error: "Signature invalide" }, { status: 400 });
+  }
+
+  const sb = supabaseAdmin();
+
+  // Idempotence : si déjà traité, on renvoie 200 sans rien faire
+  const { data: existing } = await sb
+    .from("stripe_events_processed")
+    .select("event_id")
+    .eq("event_id", event.id)
+    .maybeSingle();
+  if (existing) {
+    return NextResponse.json({ received: true, duplicate: true });
+  }
+
+  try {
+    switch (event.type) {
+      case "checkout.session.completed":
+        await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session, sb);
+        break;
+      case "payment_intent.succeeded":
+        // redondant avec checkout.session.completed en mode payment — log seulement
+        break;
+      case "checkout.session.expired":
+        await handleSessionExpired(event.data.object as Stripe.Checkout.Session, sb);
+        break;
+      case "charge.refunded":
+        await handleRefund(event.data.object as Stripe.Charge, sb);
+        break;
+      default:
+        // on ignore proprement les types non gérés
+        break;
+    }
+
+    await sb.from("stripe_events_processed").insert({
+      event_id: event.id,
+      event_type: event.type,
+    });
+
+    return NextResponse.json({ received: true });
+  } catch (e) {
+    // NE PAS marquer comme processed si erreur → Stripe retentera
+    console.error("[stripe-webhook] handler error:", e);
+    return NextResponse.json({ error: "Handler failed" }, { status: 500 });
+  }
+}
+
+async function handleCheckoutCompleted(
+  session: Stripe.Checkout.Session,
+  sb: ReturnType<typeof supabaseAdmin>
+) {
+  const orderId = session.metadata?.order_id;
+  if (!orderId) throw new Error("metadata.order_id manquant");
+
+  const { data: order } = await sb
+    .from("orders")
+    .select("id, status")
+    .eq("id", orderId)
+    .single();
+  if (!order) throw new Error(`Order ${orderId} introuvable`);
+  if (order.status === "paid") return; // déjà traité
+
+  await sb
+    .from("orders")
+    .update({
+      status: "paid",
+      paid_at: new Date().toISOString(),
+      stripe_payment_intent: typeof session.payment_intent === "string" ? session.payment_intent : null,
+      customer_email: session.customer_email ?? session.customer_details?.email ?? undefined,
+    })
+    .eq("id", orderId);
+
+  await sb.from("order_status_history").insert({
+    order_id: orderId,
+    from_status: order.status,
+    to_status: "paid",
+    changed_by: "webhook",
+  });
+
+  // Notifications (voir kb-notifications.mdc) — async, n'échouent pas le webhook
+  void notifyOrderPaid(orderId);
+}
+
+async function handleSessionExpired(
+  session: Stripe.Checkout.Session,
+  sb: ReturnType<typeof supabaseAdmin>
+) {
+  const orderId = session.metadata?.order_id;
+  if (!orderId) return;
+  await sb
+    .from("orders")
+    .update({ status: "cancelled", cancelled_at: new Date().toISOString() })
+    .eq("id", orderId)
+    .eq("status", "pending"); // ne pas écraser un paid rattrapé hors-bande
+}
+
+async function handleRefund(charge: Stripe.Charge, sb: ReturnType<typeof supabaseAdmin>) {
+  const paymentIntent = typeof charge.payment_intent === "string" ? charge.payment_intent : null;
+  if (!paymentIntent) return;
+  await sb
+    .from("orders")
+    .update({ status: "refunded" })
+    .eq("stripe_payment_intent", paymentIntent);
+}
+
+async function notifyOrderPaid(orderId: string) {
+  const url = process.env.N8N_ORDER_PAID_WEBHOOK_URL;
+  if (!url) return;
+  try {
+    await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderId }),
+      signal: AbortSignal.timeout(10_000),
+    });
+  } catch (e) {
+    console.error("[notifyOrderPaid]", e);
+  }
+}
+```
+
+## 7. Cycle de vie de l'Order
+
+```
+Client panier → POST /api/checkout
+  ├─ validation Zod + recompute serveur
+  ├─ INSERT order (status=pending)        ← trace même si Stripe down
+  ├─ INSERT order_items                    ← snapshot prix
+  ├─ stripe.checkout.sessions.create(metadata.order_id)
+  └─ UPDATE order SET stripe_session_id
+
+Client → Stripe Checkout → paiement
+
+Stripe → POST /api/webhooks/stripe (checkout.session.completed)
+  ├─ verify signature
+  ├─ check stripe_events_processed         ← idempotence
+  ├─ UPDATE order status=paid, paid_at
+  ├─ INSERT order_status_history
+  ├─ INSERT stripe_events_processed
+  └─ notify (email, n8n, admin)
+
+Client → /checkout/success?session_id=cs_xxx
+  └─ retrieve session + affichage récap
+```
+
+Si webhook KO : l'order reste en `pending`. Un cron horaire peut réconcilier via `stripe.checkout.sessions.retrieve` sur les orders `pending` de > 15 min.
+
+## 8. Panier UI
+
+Composants typiques :
+
+```
+src/components/cart/
+  CartDrawer.tsx         # drawer latéral, controlled via zustand isOpen
+  CartItemRow.tsx        # ligne article + stepper + bouton supprimer
+  CartSummary.tsx        # sous-total, frais livraison, TVA, total
+  QuantityStepper.tsx    # - / qty / +
+  EmptyCart.tsx          # état vide
+  CheckoutButton.tsx     # "Passer commande" → POST /api/checkout → redirect
+```
+
+`CheckoutButton` minimal :
+
+```tsx
+"use client";
+import { useCart } from "@/hooks/useCart";
+import { useState } from "react";
+
+export function CheckoutButton({ customer }: { customer: { email: string; phone: string } }) {
+  const items = useCart((s) => s.items);
+  const clear = useCart((s) => s.clearCart);
+  const [loading, setLoading] = useState(false);
+
+  async function onCheckout() {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: items.map((i) => ({
+            productId: String(i.id),
+            quantity: i.quantity,
+            customizations: i.customizations,
+          })),
+          customerEmail: customer.email,
+          customerPhone: customer.phone,
+          serviceType: "click_collect",
+        }),
+      });
+      if (!res.ok) {
+        const { error } = await res.json();
+        alert(error ?? "Erreur de paiement");
+        return;
+      }
+      const { url } = await res.json();
+      clear(); // vider le panier local avant redirect
+      window.location.href = url;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <button onClick={onCheckout} disabled={loading || items.length === 0} className="btn-primary">
+      {loading ? "Redirection…" : "Passer commande"}
+    </button>
+  );
+}
+```
+
+## 9. Variants et options produit
+
+Pour une pizzeria : tailles (S/M/L) + suppléments (champignons, olives, sauce extra). Chaque option payante = `variants.price_delta` OU ligne `order_items` séparée (ex: sauce extra = produit supplément).
+
+Règle : **l'UI envoie seulement `productId + variantId + customizationIds[]`**. Le serveur résout les prix depuis `variants` et `supplements` en base. Jamais `price` côté client vers l'API.
+
+```ts
+// Exemple de schéma d'item côté requête
+const cartItemSchema = z.object({
+  productId: z.string().uuid(),
+  variantId: z.string().uuid().optional(),       // taille
+  supplementIds: z.array(z.string().uuid()).max(15).optional(),
+  quantity: z.number().int().min(1).max(20),
+});
+```
+
+## 10. Promo codes et discounts
+
+Deux stratégies, à choisir selon le besoin :
+
+**A. Stripe Coupons natifs** (simple, recommandé)
+
+```ts
+// Dans checkout.sessions.create
+discounts: [{ coupon: "DALCIELO10" }],
+// OU permettre au user de saisir
+allow_promotion_codes: true,
+```
+
+Les codes sont gérés dans le dashboard Stripe. Pas besoin de table en DB. Stripe recalcule le total, le webhook reçoit `amount_total` final.
+
+**B. Table `promo_codes` custom** (pour règles métier complexes)
+
+```sql
+create table promo_codes (
+  code text primary key,
+  discount_type text not null check (discount_type in ('percent', 'fixed')),
+  discount_value integer not null,     -- pourcentage (10) ou centimes (500)
+  min_order_cents integer default 0,
+  valid_from timestamptz,
+  valid_until timestamptz,
+  max_uses integer,
+  uses_count integer default 0,
+  is_active boolean default true
+);
+```
+
+Validation serveur : vérifier actif, non expiré, quota, min_order, puis appliquer sur `totalCents` AVANT création de la session Stripe.
+
+## 11. TVA et frais de livraison
+
+- **Calcul serveur uniquement.** La TVA 10% (restauration à emporter en France) vs 20% (livraison certains cas) dépend de règles fiscales que le client ne doit pas manipuler.
+- Stocker `total_cents` = **TTC** dans `orders`. Dériver la TVA au besoin à l'affichage.
+- Frais de livraison : calculés côté serveur en fonction de l'adresse (zone, distance). Ajoutés en ligne Stripe distincte :
+
+```ts
+if (serviceType === "delivery") {
+  const { fee } = await computeDeliveryFee(deliveryAddress);
+  lineItems.push({
+    quantity: 1,
+    price_data: {
+      currency: "eur",
+      unit_amount: fee,
+      product_data: { name: "Frais de livraison" },
+    },
+  });
+  totalCents += fee;
+}
+```
+
+Afficher HT / TVA / TTC sur la facture. Pour restauration : TVA 10% sur place ou à emporter, 20% sur boissons alcoolisées. Consulter un comptable, ne pas improviser.
+
+## 12. Page de confirmation
+
+Server Component qui interroge Stripe côté serveur pour le récap. L'URL `/checkout/success?session_id=cs_xxx` n'est qu'une courtoisie UX — la vraie source reste la DB.
+
+```tsx
+// src/app/(shop)/checkout/success/page.tsx
+import Stripe from "stripe";
+import { redirect } from "next/navigation";
+import { supabaseAdmin } from "@/lib/supabase";
+
+export const dynamic = "force-dynamic";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2023-10-16",
+});
+
+export default async function SuccessPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ session_id?: string }>;
+}) {
+  const { session_id } = await searchParams;
+  if (!session_id) redirect("/");
+
+  const session = await stripe.checkout.sessions.retrieve(session_id);
+  const orderId = session.metadata?.order_id;
+  if (!orderId) redirect("/");
+
+  const { data: order } = await supabaseAdmin()
+    .from("orders")
+    .select("id, status, total_cents, order_items(name_snapshot, quantity, unit_price_cents)")
+    .eq("id", orderId)
+    .single();
+
+  if (!order) redirect("/");
+
+  return (
+    <main className="mx-auto max-w-2xl py-12">
+      <h1 className="text-3xl font-bold">Merci pour votre commande !</h1>
+      <p className="mt-2 text-neutral-600">
+        Référence : <code>{order.id.slice(0, 8)}</code>
+      </p>
+      {order.status === "pending" ? (
+        <p className="mt-4 text-amber-700">
+          Le paiement est en cours de validation. Vous recevrez un email dès la confirmation.
+        </p>
+      ) : (
+        <p className="mt-4 text-emerald-700">Paiement confirmé.</p>
+      )}
+      {/* récap items + total */}
+    </main>
+  );
+}
+```
+
+Important : **ne pas déclencher d'effet de bord sur la page success** (envoi d'email, etc.). Tout est dans le webhook. La page success est idempotente en lecture.
+
+## 13. Relance panier abandonné
+
+```sql
+create table abandoned_carts (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id),
+  email text,
+  items_snapshot jsonb not null,
+  total_cents integer not null,
+  created_at timestamptz default now(),
+  reminded_at timestamptz,
+  recovered_at timestamptz
+);
+```
+
+Snapshot écrit :
+1. Au moment de `POST /api/checkout` si l'user a fourni un email mais ne finalise pas (order reste `pending` > 30 min).
+2. Via hook `beforeunload` sur la page cart si email connu.
+
+Cron horaire (route `/api/cron/abandoned-carts` + vercel.json ou n8n) :
+- Sélectionne `abandoned_carts` où `reminded_at IS NULL` et `created_at < now() - interval '1 hour'`.
+- Envoie email via `kb-notifications` (Resend/Mailgun).
+- Marque `reminded_at`.
+
+## 14. Anti-patterns
+
+### ❌ Calculer le total côté client et l'envoyer au serveur
+
+```ts
+// ❌ MAUVAIS
+const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
+fetch("/api/checkout", { body: JSON.stringify({ items, total }) });
+// Le client peut modifier price avant envoi — fraude tarifaire triviale.
+```
+
+### ✅ Envoyer seulement les IDs, recalculer serveur
+
+```ts
+fetch("/api/checkout", {
+  body: JSON.stringify({
+    items: items.map((i) => ({ productId: i.id, quantity: i.quantity })),
+  }),
+});
+// Serveur lit price depuis products en DB, ignore toute valeur client.
+```
+
+### ❌ Webhook Stripe sans signature
+
+```ts
+// ❌ MAUVAIS — n'importe qui peut POST et valider une commande bidon
+const body = await req.json();
+if (body.type === "checkout.session.completed") { /* update */ }
+```
+
+### ✅ Toujours constructEvent
+
+```ts
+const event = stripe.webhooks.constructEvent(
+  await req.text(),
+  req.headers.get("stripe-signature")!,
+  process.env.STRIPE_WEBHOOK_SECRET!
+);
+```
+
+### ❌ Runtime edge sur le webhook
+
+```ts
+// ❌ MAUVAIS — constructEvent échoue, body déjà parsé, crypto limité
+export const runtime = "edge";
+```
+
+### ✅ Runtime nodejs
+
+```ts
+export const runtime = "nodejs";
+```
+
+### ❌ Créer l'order dans le webhook seulement
+
+Si le webhook échoue trois fois, Stripe abandonne. Plus aucune trace de la commande, client payé mais fantôme côté DB.
+
+### ✅ Order créé AVANT redirect Stripe, webhook ne fait que changer le statut
+
+### ❌ Ignorer l'idempotence
+
+Stripe rejoue les webhooks sur 500. Sans `stripe_events_processed`, on envoie deux emails, on crédite deux fois un compte fidélité, etc.
+
+### ✅ INSERT dans `stripe_events_processed` après traitement, vérif au début
+
+### ❌ Stocker des prix dans localStorage sans re-valider
+
+Le panier Zustand persiste. Si les prix changent en DB entre deux sessions, le client voit l'ancien prix. Toujours `recomputeCart` côté serveur au checkout ; l'UI peut re-fetch le catalogue au mount du drawer pour afficher les prix à jour.
+
+### ❌ Mettre des PII dans `metadata`
+
+Stripe metadata est limité à 500 chars par clé, 50 clés, et visible à toute l'équipe dashboard. Pas d'email, pas d'adresse, pas de numéro carte. Juste des IDs opaques.
+
+## 15. Checklist avant livraison
+
+- [ ] `runtime = "nodejs"` sur `/api/checkout/route.ts` ET `/api/webhooks/stripe/route.ts`
+- [ ] `stripe.webhooks.constructEvent` avec `STRIPE_WEBHOOK_SECRET` — vérifié
+- [ ] Table `stripe_events_processed` créée, check idempotence AVANT traitement
+- [ ] Order créé en `pending` AVANT `stripe.checkout.sessions.create`
+- [ ] `metadata.order_id` présent sur toutes les sessions créées
+- [ ] Prix recalculés serveur via `recomputeCart` — jamais lus du body client
+- [ ] Validation Zod sur tous les endpoints checkout + webhook handler
+- [ ] Rate limiting sur `/api/checkout` (ex: 10 req/min/IP)
+- [ ] CSRF / Origin check sur `/api/checkout` (mutation déclenchée par client)
+- [ ] Stripe CLI testé en local : `stripe listen --forward-to localhost:3000/api/webhooks/stripe`
+- [ ] Test manuel complet : ajout panier → checkout → success → DB order=`paid` → email reçu
+- [ ] Test rejeu webhook : `stripe trigger checkout.session.completed` deux fois → pas de doublon
+- [ ] Test cancel : `cancel_url` bien configurée, order reste `pending` ou passe `cancelled` après expiration
+- [ ] Variables d'env séparées dev/prod (`STRIPE_SECRET_KEY` sk_test_* en dev, sk_live_* en prod)
+- [ ] Webhook endpoint prod ajouté dans dashboard Stripe avec bon secret
+- [ ] `NEXT_PUBLIC_BASE_URL` configuré par env — success_url / cancel_url corrects
+- [ ] Page `/checkout/success` n'a AUCUN effet de bord (pas d'email, pas d'update DB)
+- [ ] Panier Zustand : clé `kb-cart-v1` versionnée, `migrate` défensif en place
+- [ ] Logs : `console.error` sur toute erreur webhook (signature, DB, handler) pour alerting
+- [ ] Refund : `charge.refunded` handler présent si besoin comptable
+- [ ] RLS Supabase vérifié : client lit SES orders uniquement, admin lit tout (voir `kb-supabase.mdc`)
+- [ ] Pas de PII dans `metadata` Stripe — uniquement `order_id`, `user_id`

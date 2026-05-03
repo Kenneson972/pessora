@@ -1,0 +1,151 @@
+---
+description: INDEX des KB Rules Karibloom - Carte de navigation par priorité et usage
+alwaysApply: true
+---
+
+# INDEX KB Rules — Karibloom Client Builder
+
+> Stack unique : **Next.js 15 App Router + Supabase + Stripe + TypeScript + Tailwind + Vercel**.
+> Toutes les règles sont organisées par **priorité d'usage**. Plus le numéro de dossier est bas, plus la règle est critique.
+
+---
+
+## 01-core/ — Toujours actives (alwaysApply: true)
+
+> Chargées sur TOUS les projets, sans exception.
+
+| Fichier | Rôle |
+|---|---|
+| `karibloom-client-builder.mdc` | Skill principal — vision agence, architecture globale, table des features, workflow |
+| `kb-core-workflow.mdc` | Règles universelles : planifier, exécuter, vérifier, documenter |
+| `kb-core-ui-ux.mdc` | Exigences permanentes : qualité visuelle, accessibilité, responsive |
+| `kb-workflow-orchestration.mdc` | Comportement agent : phases, vérification, leçons apprises |
+| `kb-action-documentation.mdc` | Journal global (ACTIONS_LOG) + journal de session |
+
+---
+
+## 02-stack/ — Stack & gouvernance UI
+
+> Actives au démarrage pour fixer la stack et les règles d'usage UI.
+
+| Fichier | Rôle |
+|---|---|
+| `kb-stack-selection.mdc` | Stack imposée : Next.js 15 App Router, aucune exception non documentée (**alwaysApply**) |
+| `kb-project-stack-ui-matrix.mdc` | Matrice décision rapide projet → stack → UI (**alwaysApply**) |
+| `kb-ui-routing.mdc` | Gouvernance des bibliothèques UI, mix contrôlé Chakra/HeroUI/Radix/Tailwind (**alwaysApply**) |
+| `stack-nextjs-app-router.mdc` | Profil complet Next.js — RSC, layouts, data fetching serveur, boundaries client |
+
+> La règle `stack-react-spa.mdc` a été supprimée : la SPA n'est plus une option.
+
+---
+
+## 03-architecture/ — Structure, composants & design system
+
+> Fondations techniques de chaque projet.
+
+| Fichier | Rôle |
+|---|---|
+| `kb-architecture.mdc` | Structure dossiers Next.js 15 — `app/`, route groups, `components/`, `lib/`, `hooks/`, `types/`, `supabase/` |
+| `kb-components.mdc` | Server vs Client, composition, Hero, Section, Card, Form — patterns TSX |
+| `kb-styling.mdc` | CSS Variables, Tailwind, glassmorphism, shimmer |
+| `kb-data-model.mdc` | Supabase (dynamique) + `content/*.ts` (marketing statique) — remplace `servicesData.js` |
+| `kb-mobile-responsive.mdc` | Guide responsive — breakpoints, viewport, touch |
+
+---
+
+## 04-features/ — Fonctionnalités essentielles
+
+> Activées selon les besoins du projet.
+
+### Backend & données
+
+| Fichier | Rôle |
+|---|---|
+| `kb-supabase.mdc` | 3 clients (browser/server/admin), env vars, RLS, migrations, Storage, Realtime, types |
+| `kb-auth.mdc` | Auth dual (password admin/proprio + magic link tenant), RBAC, middleware, layouts protégés |
+| `kb-api-routes.mdc` | Route Handlers vs Server Actions, Zod, rate limit, CSRF, webhooks signés |
+
+> La règle `kb-backend.mdc` (PHP + Express + MySQL) a été supprimée — remplacée par ce trio.
+
+### Applicatif
+
+| Fichier | Rôle |
+|---|---|
+| `kb-dashboard.mdc` | Admin + espace client — sidebar, assistant-views, CRUD Server Actions, NotificationBell |
+| `kb-booking.mdc` | Moteur de réservation — dispo, price engine serveur, sync iCal, confirmation Stripe |
+| `kb-cart-checkout.mdc` | Panier Zustand + checkout Stripe — session, webhook signé idempotent, orders |
+| `kb-notifications.mdc` | Notifications Realtime (Supabase) + emails transactionnels (Resend) |
+| `kb-wishlist-compare.mdc` | Favoris + comparateur — localStorage guest, sync Supabase logged-in, merge au login |
+
+### Transverse
+
+| Fichier | Rôle |
+|---|---|
+| `kb-forms.mdc` | react-hook-form + Zod + Server Actions, honeypot, UTM, RGPD |
+| `kb-seo.mdc` | `metadata`/`generateMetadata`, OG dynamique (`next/og`), JSON-LD, sitemap/robots |
+| `kb-image-optimizer.mdc` | `next/image`, Supabase Storage, AVIF/WebP, sizes, priority LCP, blur placeholder |
+| `kb-performance.mdc` | RSC, streaming, dynamic imports, `next/font`, cache, revalidate, CWV |
+| `kb-security.mdc` | Env vars, RLS, CSRF, CSP headers, rate limit, webhook signatures |
+| `kb-error-states.mdc` | `loading.tsx`, `error.tsx`, `not-found.tsx`, skeletons, empty states, boundaries |
+| `kb-cookie-consent.mdc` | vanilla-cookieconsent v3, GTM, PostHog, Google Consent Mode v2 |
+
+---
+
+## 05-ui-ux/ — Qualité visuelle & interactions
+
+> Niveau UI/UX premium.
+
+| Fichier | Rôle |
+|---|---|
+| `kb-animations.mdc` | Scroll fade, shimmer, word reveal, Framer Motion, WebGL |
+| `kb-micro-interactions.mdc` | Skeleton loaders, hover 3D, ripple, counters animés, curseur |
+| `kb-ui-ux-pro-max.mdc` | Design intelligence — palettes, typo, accessibilité |
+| `kb-dark-mode.mdc` | CSS Variables dark, toggle, persistance, WCAG |
+
+---
+
+## 06-advanced/ — Optimisations & pièges
+
+> Pour résoudre des problèmes spécifiques.
+
+| Fichier | Rôle |
+|---|---|
+| `kb-async-bundle.mdc` | Promise.all, imports directs, dynamic imports, third-party différé |
+| `kb-rerender.mdc` | functional setState, derived state, lazy init, deps narrowing |
+| `kb-server-fetching.mdc` | RSC parallel, Suspense, hydration sans flicker, content-visibility |
+| `kb-nextjs-pitfalls.mdc` | force-dynamic, flash SSR/client, guillemets SWC, parallax mobile |
+
+---
+
+## 07-optional/ — Fonctionnalités optionnelles
+
+> Activées uniquement si le client en a besoin.
+
+| Fichier | Rôle |
+|---|---|
+| `kb-deployment.mdc` | Déploiement Vercel — env vars, domaine custom, preview deployments, Supabase prod, cron |
+| `kb-pwa.mdc` | manifest.json, Workbox, offline fallback, install prompt A2HS |
+| `kb-i18n.mdc` | react-i18next, hreflang SEO, devises locales, FR/EN/créole |
+
+---
+
+## Règles de priorité de lecture
+
+```
+01-core  →  02-stack  →  03-architecture  →  04-features  →  05-ui-ux  →  06-advanced  →  07-optional
+ ALWAYS       START         BUILD               SHIP            POLISH        FIX               EXTEND
+```
+
+> **En cas de conflit entre deux règles**, la règle du dossier au numéro le plus bas prime.
+
+---
+
+## Nouveautés V2 (avril 2026)
+
+Refonte profonde vers Next.js 15 App Router. Règles ajoutées ou réécrites :
+
+- **Créées** : `kb-supabase`, `kb-auth`, `kb-api-routes`, `kb-dashboard`, `kb-booking`, `kb-cart-checkout`, `kb-notifications`, `kb-wishlist-compare`
+- **Réécrites** : `kb-architecture`, `kb-components`, `kb-data-model`, `kb-forms`, `kb-error-states`, `kb-seo`, `kb-image-optimizer`, `kb-performance`, `kb-security`, `kb-deployment`, `kb-stack-selection`, `karibloom-client-builder`
+- **Supprimées** : `stack-react-spa` (SPA obsolète), `kb-backend` (PHP/Express obsolète), doublons racine
+
+Voir `AUDIT_REPORT.md` pour le détail de la refonte.

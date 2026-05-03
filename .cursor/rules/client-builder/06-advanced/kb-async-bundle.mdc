@@ -1,0 +1,177 @@
+---
+description: Async et Bundle Karibloom - Promise.all, imports directs, dynamic imports, third-party différé
+globs: "**/*.tsx, **/*.ts, **/*.jsx, **/*.js, **/next.config.js, **/craco.config.js"
+alwaysApply: false
+---
+
+# Async & Bundle Karibloom
+
+Règles critiques pour éliminer les waterfalls réseau et réduire le bundle initial.
+Impact : 2–10× sur les fetches, 200–800 ms sur les cold starts.
+
+---
+
+## 1. Promise.all() — Paralléliser les opérations indépendantes
+
+Ne jamais `await` séquentiellement des opérations qui n'ont pas de dépendance entre elles.
+
+**Incorrect (3 round-trips, 600 ms) :**
+
+```ts
+const products  = await getProducts()   // 200 ms
+const settings  = await getSettings()  // 200 ms — attend products inutilement
+const reviews   = await getReviews()   // 200 ms — attend settings inutilement
+```
+
+**Correct (1 round-trip, 200 ms) :**
+
+```ts
+const [products, settings, reviews] = await Promise.all([
+  getProducts(),
+  getSettings(),
+  getReviews(),
+])
+```
+
+**Variante avec gestion d'erreurs indépendantes :**
+
+```ts
+const [products, settings] = await Promise.allSettled([
+  getProducts(),
+  getSettings(),
+])
+// Chaque résultat a { status: 'fulfilled'|'rejected', value|reason }
+```
+
+S'applique à : API routes, server components, hooks avec plusieurs fetches, loaders React Router.
+
+---
+
+## 2. Barrel Imports — Imports directs pour les librairies lourdes
+
+Les imports depuis l'index d'une librairie (barrel file) chargent tous ses modules.
+`lucide-react` barrel = 1 583 modules, +2.8 s en dev. `@mui/material` = 2 225 modules.
+
+**Incorrect (charge toute la librairie) :**
+
+```tsx
+import { Check, X, Menu, Star } from 'lucide-react'
+// → 1 583 modules, 200–800 ms sur chaque cold start
+```
+
+**Correct — Option A : import direct :**
+
+```tsx
+import Check from 'lucide-react/dist/esm/icons/check'
+import X     from 'lucide-react/dist/esm/icons/x'
+import Menu  from 'lucide-react/dist/esm/icons/menu'
+// → 3 modules (~2 KB vs ~1 MB)
+```
+
+**Correct — Option B : Next.js 13.5+ (recommandé, garde l'ergonomie) :**
+
+```js
+// next.config.js
+module.exports = {
+  experimental: {
+    optimizePackageImports: [
+      'lucide-react',
+      '@radix-ui/react-icons',
+      '@tabler/icons-react',
+      'react-icons',
+      'date-fns',
+    ],
+  },
+}
+
+// Ensuite les imports barrel restent valides et sont auto-optimisés :
+import { Check, X, Menu } from 'lucide-react' // ✅ optimisé automatiquement
+```
+
+**Librairies concernées dans la stack Karibloom :**
+`lucide-react`, `@radix-ui/react-*`, `@tabler/icons-react`, `react-icons`, `lodash`, `date-fns`
+
+---
+
+## 3. Dynamic Imports — Composants et analytics en différé
+
+### Composants lourds (CRA — React.lazy)
+
+```tsx
+// Pages : toutes lazy-loadées (déjà dans kb-performance)
+const Home = lazy(() => import('./pages/Home'))
+
+// Composants lourds non critiques au premier rendu
+const Chatbot     = lazy(() => import('./components/common/Chatbot'))
+const MonacoEditor = lazy(() => import('./components/editors/MonacoEditor'))
+const MapView     = lazy(() => import('./components/MapView'))
+```
+
+### Composants lourds (Next.js — next/dynamic)
+
+```tsx
+import dynamic from 'next/dynamic'
+
+// Composant sans SSR (localStorage, browser APIs, WebGL)
+const Chatbot = dynamic(
+  () => import('@/components/common/Chatbot'),
+  { ssr: false }
+)
+
+// Composant lourd avec SSR
+const RichEditor = dynamic(
+  () => import('@/components/RichEditor').then(m => m.RichEditor),
+  { loading: () => <div className="animate-pulse h-40 bg-gray-100 rounded-xl" /> }
+)
+```
+
+### Analytics et scripts tiers — différer après hydratation (Next.js)
+
+```tsx
+// layout.tsx
+import dynamic from 'next/dynamic'
+
+const Analytics    = dynamic(() => import('@vercel/analytics/react').then(m => ({ default: m.Analytics })), { ssr: false })
+const CookieBanner = dynamic(() => import('@/components/CookieBanner'), { ssr: false })
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html>
+      <body>
+        {children}
+        <Analytics />       {/* chargé après hydratation */}
+        <CookieBanner />    {/* idem */}
+      </body>
+    </html>
+  )
+}
+```
+
+### Analytics et scripts tiers — différer après idle (CRA)
+
+```tsx
+// Déjà couvert par requestIdleCallback dans kb-performance
+// Pattern identique pour tout script non critique
+useEffect(() => {
+  const load = () => import('@/lib/analytics').then(m => m.initAnalytics())
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(load, { timeout: 3000 })
+  } else {
+    window.addEventListener('load', load, { once: true })
+  }
+}, [])
+```
+
+---
+
+## Checklist avant PR
+
+- [ ] Pas d'import barrel depuis `lucide-react`, `@radix-ui`, `@tabler/icons-react`
+- [ ] `optimizePackageImports` dans `next.config.js` si Next.js
+- [ ] Tous les fetches indépendants dans `Promise.all()`
+- [ ] Analytics, cookie consent, chatbot chargés en différé
+- [ ] Composants >50 KB non critiques en `lazy()` ou `dynamic()`
+
+---
+
+Référence : skills-react-best-practices (Vercel) — `async-parallel.md`, `bundle-barrel-imports.md`, `bundle-dynamic-imports.md`, `bundle-defer-third-party.md`

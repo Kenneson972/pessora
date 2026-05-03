@@ -1,0 +1,275 @@
+---
+description: Dark Mode Karibloom - Système complet CSS variables, toggle React, persistance localStorage, WCAG contrastes
+globs: "**/styles/**/*.css, **/App.jsx, **/components/**/*.jsx"
+alwaysApply: false
+---
+
+# Dark Mode Karibloom
+
+Le dark mode est un système, pas juste un changement de couleurs. Il repose sur 3 couches : tokens CSS, détection de préférence système, et contrôle utilisateur persisté.
+
+---
+
+## 1. Architecture des tokens CSS
+
+Toutes les couleurs doivent passer par des variables CSS. Ne jamais écrire une couleur en dur dans un composant.
+
+```css
+/* variables.css — structure requise */
+
+/* ══════════════════════════════════════
+   THÈME LIGHT (défaut)
+══════════════════════════════════════ */
+:root,
+[data-theme="light"] {
+  /* Surfaces */
+  --bg-page:         #ffffff;
+  --bg-section-alt:  #f8f9fa;
+  --bg-card:         rgba(255, 255, 255, 0.85);
+  --bg-overlay:      rgba(0, 0, 0, 0.05);
+
+  /* Textes */
+  --text-primary:    #0f172a;
+  --text-secondary:  #475569;
+  --text-muted:      #94a3b8;
+  --text-inverted:   #ffffff;
+
+  /* Bordures */
+  --border-color:    rgba(0, 0, 0, 0.08);
+  --border-hover:    rgba(0, 0, 0, 0.18);
+
+  /* Skeleton */
+  --skeleton-base:      #e8e8e8;
+  --skeleton-highlight: #f5f5f5;
+
+  /* Glass */
+  --glass-bg:        rgba(255, 255, 255, 0.7);
+  --glass-border:    rgba(255, 255, 255, 0.4);
+  --glass-blur:      12px;
+
+  /* Ombres */
+  --shadow-card:     0 4px 24px rgba(0, 0, 0, 0.08);
+  --shadow-hover:    0 8px 32px rgba(0, 0, 0, 0.14);
+
+  /* Couleurs état */
+  --color-success:   #22c55e;
+  --color-error:     #ef4444;
+  --color-warning:   #f59e0b;
+  --color-info:      #3b82f6;
+}
+
+/* ══════════════════════════════════════
+   THÈME DARK
+══════════════════════════════════════ */
+[data-theme="dark"] {
+  --bg-page:         #0a0a0f;
+  --bg-section-alt:  #111118;
+  --bg-card:         rgba(20, 20, 30, 0.9);
+  --bg-overlay:      rgba(255, 255, 255, 0.04);
+
+  --text-primary:    #f1f5f9;
+  --text-secondary:  #94a3b8;
+  --text-muted:      #475569;
+  --text-inverted:   #0f172a;
+
+  --border-color:    rgba(255, 255, 255, 0.08);
+  --border-hover:    rgba(255, 255, 255, 0.18);
+
+  --skeleton-base:      #1e1e28;
+  --skeleton-highlight: #2a2a38;
+
+  --glass-bg:        rgba(15, 15, 25, 0.75);
+  --glass-border:    rgba(255, 255, 255, 0.08);
+  --glass-blur:      14px;
+
+  --shadow-card:     0 4px 24px rgba(0, 0, 0, 0.4);
+  --shadow-hover:    0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+/* Transition douce entre thèmes */
+*, *::before, *::after {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.15s ease;
+}
+/* Exception : désactiver la transition sur les animations intentionnelles */
+.no-theme-transition { transition: none !important; }
+```
+
+---
+
+## 2. Hook useDarkMode
+
+```jsx
+// hooks/useDarkMode.js
+import { useState, useEffect } from 'react';
+
+const STORAGE_KEY = 'kb_theme';
+
+export const useDarkMode = () => {
+  const getInitialTheme = () => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) return stored;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  };
+
+  const [theme, setTheme] = useState(getInitialTheme);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem(STORAGE_KEY, theme);
+  }, [theme]);
+
+  // Synchroniser avec les changements système si l'utilisateur n'a pas overridé
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e) => {
+      if (!localStorage.getItem(STORAGE_KEY)) {
+        setTheme(e.matches ? 'dark' : 'light');
+      }
+    };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  const toggle = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
+
+  return { theme, toggle, isDark: theme === 'dark' };
+};
+```
+
+**IMPORTANT — éviter le flash FOUC (Flash Of Unstyled Content) :**
+Ajouter ce script inline dans `public/index.html`, AVANT le `<body>` :
+
+```html
+<script>
+  (function() {
+    var stored = localStorage.getItem('kb_theme');
+    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var theme = stored || (prefersDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
+```
+
+---
+
+## 3. Toggle Composant
+
+```jsx
+// components/ui/ThemeToggle.jsx
+import { useDarkMode } from '../../hooks/useDarkMode';
+
+const ThemeToggle = ({ className = '' }) => {
+  const { isDark, toggle } = useDarkMode();
+
+  return (
+    <button
+      onClick={toggle}
+      className={`theme-toggle ${className}`}
+      aria-label={isDark ? 'Passer en mode clair' : 'Passer en mode sombre'}
+      title={isDark ? 'Mode clair' : 'Mode sombre'}
+    >
+      <span className="theme-toggle-track">
+        <span className="theme-toggle-thumb">
+          {isDark ? '🌙' : '☀️'}
+        </span>
+      </span>
+    </button>
+  );
+};
+
+export default ThemeToggle;
+```
+
+```css
+.theme-toggle {
+  background: none; border: none; cursor: pointer; padding: 4px;
+  display: flex; align-items: center;
+}
+.theme-toggle-track {
+  width: 46px; height: 26px; border-radius: 999px;
+  background: var(--bg-overlay);
+  border: 1.5px solid var(--border-color);
+  position: relative; transition: background 0.25s ease;
+  display: flex; align-items: center;
+}
+.theme-toggle-thumb {
+  position: absolute;
+  left: 2px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--bg-card); box-shadow: var(--shadow-card);
+  transition: transform 0.25s ease;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+}
+[data-theme="dark"] .theme-toggle-thumb { transform: translateX(20px); }
+```
+
+---
+
+## 4. Utilisation dans l'App
+
+```jsx
+// App.jsx — initialiser le thème au démarrage
+import { useDarkMode } from './hooks/useDarkMode';
+import ThemeToggle from './components/ui/ThemeToggle';
+
+function App() {
+  useDarkMode(); // initialise data-theme sur <html> au mount
+
+  return (
+    <div className="app">
+      <Header>
+        <ThemeToggle />
+      </Header>
+      {/* ... */}
+    </div>
+  );
+}
+```
+
+---
+
+## 5. Checklist contrastes WCAG — Dark Mode
+
+Pour chaque couleur de texte sur fond dark, vérifier le ratio sur https://webaim.org/resources/contrastchecker/
+
+| Contexte | Minimum requis | Recommandé |
+|---|---|---|
+| Corps de texte | 4.5:1 (AA) | 7:1 (AAA) |
+| Grands titres (>18px bold) | 3:1 (AA Large) | 4.5:1 |
+| UI components (boutons, inputs) | 3:1 | 4.5:1 |
+| Texte sur bouton primaire | 4.5:1 | 7:1 |
+
+**Ratios recommandés pour le dark Karibloom :**
+- `--text-primary` `#f1f5f9` sur `--bg-page` `#0a0a0f` → ratio ~19:1 ✓
+- `--text-secondary` `#94a3b8` sur `--bg-page` → ratio ~7.5:1 ✓
+- `--text-muted` `#475569` sur `--bg-page` → ratio ~3.5:1 (acceptable grandes UI)
+
+---
+
+## 6. Images et médias en dark mode
+
+```css
+/* Réduire la luminosité des images en dark mode */
+[data-theme="dark"] img:not([data-no-dim]) {
+  filter: brightness(0.88) contrast(1.05);
+  transition: filter 0.25s ease;
+}
+[data-theme="dark"] img:hover:not([data-no-dim]) {
+  filter: brightness(1) contrast(1);
+}
+
+/* Logos SVG — inverser si fond clair */
+[data-theme="dark"] .logo-light { display: none; }
+[data-theme="dark"] .logo-dark  { display: block; }
+.logo-dark { display: none; }
+```
+
+---
+
+## Règles d'utilisation
+
+- Ne jamais utiliser `#000000` ou `#ffffff` en dur dans les composants. Toujours `var(--text-primary)` et `var(--bg-page)`
+- Les `box-shadow` en dark mode doivent utiliser `rgba(0,0,0,0.4+)` pour rester visibles
+- Les glass effects doivent avoir leur propre variable dark (`--glass-bg` dark = fond sombre semi-opaque)
+- Le script anti-FOUC est **obligatoire** — sans lui, l'utilisateur verra un flash blanc au chargement si son thème stocké est dark

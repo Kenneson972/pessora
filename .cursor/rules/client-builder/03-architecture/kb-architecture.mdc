@@ -1,0 +1,340 @@
+---
+description: Architecture Next.js 15 App Router - structure app/, route groups, components/, lib/, hooks/, types/, supabase/
+globs: "**/app/**/*.ts,**/app/**/*.tsx,**/components/**/*.ts,**/components/**/*.tsx,**/lib/**,**/hooks/**,**/types/**"
+alwaysApply: false
+---
+
+# Architecture Karibloom — Next.js 15 App Router
+
+> Complète — ne remplace pas — `kb-supabase.mdc`, `kb-auth.mdc`, `kb-forms.mdc`, `kb-stripe.mdc`.
+> Stack : Next.js 15.2.4 (App Router) · React 19 · TypeScript strict · Supabase 2.45 · Stripe 14.25 · Chakra UI 3 + HeroUI + Radix Themes + Tailwind 3.4.
+
+## 1. Structure de dossiers (racine projet)
+
+```
+.
+├── app/                         # App Router (routes, layouts, server components)
+│   ├── layout.tsx               # Root layout (server) — <html>, <body>, fonts, Providers
+│   ├── providers.tsx            # "use client" — Chakra, Theme, QueryClient, Toast
+│   ├── page.tsx                 # Home marketing
+│   ├── error.tsx                # Error boundary racine
+│   ├── not-found.tsx            # 404 globale
+│   ├── loading.tsx              # Skeleton racine
+│   ├── globals.css              # @tailwind + tokens CSS
+│   │
+│   ├── (marketing)/             # Route group public (pas d'URL prefix)
+│   │   ├── layout.tsx           # Header marketing + Footer
+│   │   ├── services/
+│   │   │   ├── page.tsx
+│   │   │   └── [slug]/page.tsx
+│   │   ├── a-propos/page.tsx
+│   │   └── contact/page.tsx
+│   │
+│   ├── (shop)/                  # Catalogue + fiche produit (DIAMANTNOIR)
+│   │   ├── layout.tsx
+│   │   ├── boutique/page.tsx
+│   │   └── produit/[slug]/page.tsx
+│   │
+│   ├── (account)/               # Espace client (auth required)
+│   │   ├── layout.tsx           # Vérifie session, sinon redirect('/login')
+│   │   ├── compte/page.tsx
+│   │   ├── commandes/page.tsx
+│   │   └── reservations/page.tsx
+│   │
+│   ├── (dashboard)/             # Back-office admin (role check)
+│   │   ├── layout.tsx           # Sidebar admin + check role
+│   │   ├── admin/
+│   │   │   ├── page.tsx         # KPI Recharts
+│   │   │   ├── commandes/page.tsx
+│   │   │   └── calendrier/page.tsx   # FullCalendar
+│   │   └── loading.tsx
+│   │
+│   ├── (auth)/                  # Login / signup / reset password
+│   │   ├── login/page.tsx
+│   │   └── reset/page.tsx
+│   │
+│   └── api/                     # Route handlers (webhooks, uploads, cron)
+│       ├── stripe/webhook/route.ts
+│       ├── stripe/checkout/route.ts
+│       └── revalidate/route.ts
+│
+├── components/
+│   ├── ui/                      # Wrappers vendors (Button, Card, Dialog, Input…)
+│   ├── layout/                  # Header, Footer, Sidebar, MobileNav
+│   ├── marketing/               # Hero, Features, Pricing, FAQ, Testimonials
+│   ├── shop/                    # ProductCard, CartDrawer, PriceTag
+│   ├── account/                 # OrderCard, BookingCard, ProfileForm
+│   ├── dashboard/               # KpiCard, RevenueChart, CalendarView
+│   └── common/                  # SEOHead, EmptyState, ErrorState, LoadingState
+│
+├── lib/
+│   ├── supabase.ts              # createBrowserClient (client component)
+│   ├── supabase-server.ts       # createServerClient (RSC, route handlers, actions)
+│   ├── supabase-admin.ts        # service_role — usage strict serveur (webhooks)
+│   ├── stripe.ts                # Stripe SDK server-only
+│   ├── price-engine.ts          # Calcul prix, TVA, remises
+│   ├── date.ts                  # Helpers date-fns
+│   ├── utils.ts                 # cn(), formatters, guards
+│   ├── zod-schemas/             # Schémas Zod partagés (formulaires + API)
+│   │   ├── order.ts
+│   │   └── booking.ts
+│   └── actions/                 # Server Actions regroupées par domaine
+│       ├── orders.ts
+│       └── bookings.ts
+│
+├── hooks/                       # Majoritairement client ("use client")
+│   ├── use-cart.ts
+│   ├── use-supabase-realtime.ts
+│   └── use-media-query.ts
+│
+├── types/
+│   ├── database.types.ts        # GÉNÉRÉ — ne pas éditer à la main
+│   ├── stripe.ts
+│   └── domain.ts                # Types métier agrégés
+│
+├── supabase/
+│   ├── config.toml
+│   ├── migrations/              # YYYYMMDDHHMMSS_<desc>.sql
+│   ├── seed.sql
+│   └── functions/               # Edge Functions Deno
+│       └── send-order-email/index.ts
+│
+├── content/                     # Données statiques marketing (voir kb-data-model)
+│   ├── services.ts
+│   ├── faq.ts
+│   └── testimonials.ts
+│
+├── public/                      # Assets statiques (images, fonts, /og, /icons)
+│
+├── middleware.ts                # Racine — refresh session Supabase + guards
+├── next.config.ts
+├── tailwind.config.ts
+├── tsconfig.json
+└── .env.local                   # JAMAIS commit
+```
+
+## 2. Route groups — quand les utiliser
+
+Les route groups `(nom)` n'apparaissent **pas** dans l'URL. Ils servent à :
+
+- Isoler un **layout** (Header marketing vs Sidebar dashboard)
+- Appliquer un **guard** commun (`(account)/layout.tsx` vérifie la session)
+- Scinder des **bundles client** (le dashboard n'embarque pas les providers marketing)
+
+```tsx
+// app/(account)/layout.tsx
+import { redirect } from 'next/navigation';
+import { createServerSupabase } from '@/lib/supabase-server';
+import { AccountSidebar } from '@/components/account/AccountSidebar';
+
+export default async function AccountLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createServerSupabase();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
+
+  return (
+    <div className="grid lg:grid-cols-[240px_1fr]">
+      <AccountSidebar />
+      <main className="p-6">{children}</main>
+    </div>
+  );
+}
+```
+
+## 3. Root layout vs Providers
+
+`app/layout.tsx` reste **server**. On isole tout le client dans `providers.tsx`.
+
+```tsx
+// app/layout.tsx  (server)
+import './globals.css';
+import { Providers } from './providers';
+
+export const metadata = { title: 'Karibloom' };
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="fr" suppressHydrationWarning>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
+}
+```
+
+```tsx
+// app/providers.tsx  (client)
+'use client';
+import { ChakraProvider } from '@chakra-ui/react';
+import { Theme } from '@radix-ui/themes';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useState } from 'react';
+import { system } from '@/lib/chakra-system';
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  const [qc] = useState(() => new QueryClient({ defaultOptions: { queries: { staleTime: 30_000 } } }));
+  return (
+    <QueryClientProvider client={qc}>
+      <ChakraProvider value={system}>
+        <Theme appearance="light" accentColor="amber" radius="large">
+          {children}
+        </Theme>
+      </ChakraProvider>
+    </QueryClientProvider>
+  );
+}
+```
+
+## 4. `components/` — règle de rangement
+
+| Dossier | Contenu | Exemple |
+|---|---|---|
+| `ui/` | Wrappers neutres des libs vendors (jamais importer Chakra/HeroUI/Radix directement dans une page) | `Button.tsx`, `Card.tsx`, `Dialog.tsx` |
+| `layout/` | Chrome de l'app | `Header.tsx`, `Footer.tsx`, `Sidebar.tsx` |
+| `marketing/` | Sections commerciales | `Hero.tsx`, `PricingGrid.tsx` |
+| `shop/`, `account/`, `dashboard/` | Composants métier par domaine | `ProductCard.tsx`, `OrderRow.tsx` |
+| `common/` | Transverse | `EmptyState.tsx`, `SEOHead.tsx` |
+
+Règle : **une page n'importe jamais un composant vendor directement**. Elle passe par `components/ui/`. Ça permet de changer Chakra → HeroUI sans toucher aux pages.
+
+## 5. `lib/` — trois clients Supabase
+
+| Fichier | Côté | Clé | Usage |
+|---|---|---|---|
+| `lib/supabase.ts` | Browser (Client Components) | `anon` | Hooks, realtime, interactions temps réel |
+| `lib/supabase-server.ts` | Server (RSC, Route Handlers, Server Actions) | `anon` + cookies | Lecture authentifiée, mutations user |
+| `lib/supabase-admin.ts` | Server-only | `service_role` | Webhooks Stripe, tâches cron, migrations runtime |
+
+`supabase-admin.ts` ne doit **jamais** être importé depuis un fichier qui finit dans un bundle client. Voir `kb-supabase.mdc` pour les implémentations.
+
+## 6. `hooks/` — client par défaut
+
+Les hooks React sont client. Si un hook n'a pas `"use client"`, c'est qu'il est uniquement appelé par d'autres client components (le fichier doit rester propre côté bundler).
+
+```ts
+// hooks/use-cart.ts
+'use client';
+import { useSyncExternalStore } from 'react';
+import { cartStore } from '@/lib/stores/cart';
+export function useCart() { /* ... */ }
+```
+
+## 7. `types/` — génération depuis Supabase
+
+```bash
+# Une fois par schéma modifié
+npx supabase gen types typescript --project-id <PROJECT_REF> --schema public > types/database.types.ts
+```
+
+Puis on dérive des types métier dans `types/domain.ts` :
+
+```ts
+// types/domain.ts
+import type { Database } from './database.types';
+
+export type Order    = Database['public']['Tables']['orders']['Row'];
+export type NewOrder = Database['public']['Tables']['orders']['Insert'];
+export type OrderStatus = Database['public']['Enums']['order_status'];
+```
+
+Les composants importent **`@/types/domain`**, jamais `database.types` directement — ça découple l'UI du nom exact des tables.
+
+## 8. `supabase/` — migrations et edge functions
+
+- `migrations/` : une migration = un fichier SQL horodaté, **ne jamais éditer une migration déjà poussée**. On ajoute une nouvelle migration corrective.
+- `seed.sql` : données de dev locales uniquement.
+- `functions/` : Edge Functions Deno pour webhooks longue durée, emails transactionnels, tâches hors requête.
+
+Voir `kb-supabase.mdc` pour les détails RLS.
+
+## 9. `middleware.ts` — à la racine
+
+Unique point de passage pour :
+
+- Rafraîchir la session Supabase (SSR)
+- Rediriger les routes protégées non authentifiées (doublon du layout mais plus rapide)
+- Rewrites i18n si besoin
+
+```ts
+// middleware.ts
+import { NextResponse, type NextRequest } from 'next/server';
+import { updateSession } from '@/lib/supabase-middleware';
+
+export async function middleware(req: NextRequest) {
+  return updateSession(req);
+}
+
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|webp)$).*)'],
+};
+```
+
+## 10. Conventions de nommage
+
+| Élément | Convention | Exemple |
+|---|---|---|
+| Fichiers | `kebab-case.ts(x)` | `order-card.tsx`, `use-cart.ts` |
+| Composants React | `PascalCase` | `OrderCard`, `PricingGrid` |
+| Fonctions / vars | `camelCase` | `getOrder`, `cartTotal` |
+| Types / interfaces | `PascalCase` | `type Order`, `interface Booking` |
+| Constantes globales | `SCREAMING_SNAKE` | `MAX_CART_ITEMS` |
+| Server Actions | verbe en camelCase | `createOrder`, `cancelBooking` |
+| Routes (URL) | `kebab-case` | `/mon-compte/mes-commandes` |
+
+## 11. Organisation par feature vs par type
+
+Par défaut **par type** (`components/`, `lib/`, `hooks/` séparés). Dès qu'un domaine dépasse ~10 fichiers, on regroupe par feature **à l'intérieur** du dossier typé :
+
+```
+components/shop/              # au lieu de components/ProductCard.tsx à la racine
+  ProductCard.tsx
+  ProductGrid.tsx
+  PriceTag.tsx
+  filters/
+    FilterSidebar.tsx
+```
+
+On **ne crée pas** de dossier `features/shop/{components,hooks,lib}` — ça casse les règles d'import et duplique la hiérarchie.
+
+## 12. Aliases d'import (`tsconfig.json`)
+
+```json
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./*"],
+      "@/components/*": ["./components/*"],
+      "@/lib/*": ["./lib/*"],
+      "@/hooks/*": ["./hooks/*"],
+      "@/types/*": ["./types/*"],
+      "@/content/*": ["./content/*"]
+    }
+  }
+}
+```
+
+Toujours importer via `@/...`. Les chemins relatifs `../../../` sont **interdits** au-delà d'un `../`.
+
+## 13. Anti-patterns
+
+- Logique métier ou fetch Supabase dans `app/*/page.tsx` — extraire dans `lib/data/<domain>.ts` ou Server Action.
+- Import direct `@chakra-ui/react`, `@heroui/react` dans une page — toujours passer par `components/ui/`.
+- `"use client"` sur un layout qui n'en a pas besoin (tout le sous-arbre devient client).
+- `supabase-admin.ts` importé depuis un composant.
+- Fichier qui dépasse 500 lignes — scinder par sous-composant ou extraire un hook.
+- Dossier `features/` parallèle à `components/` — doublon qui casse la règle d'import.
+- Migrations éditées après push — toujours ajouter une nouvelle migration.
+- `any` ou `@ts-ignore` — passer par `unknown` + narrowing, ou corriger le type généré.
+
+## 14. Checklist nouveau module
+
+- [ ] Route posée dans le bon route group (`(marketing)`, `(account)`, `(dashboard)`…)
+- [ ] Page reste server component si possible
+- [ ] Données via `lib/data/<domain>.ts` (server) ou Server Action
+- [ ] Types importés depuis `@/types/domain`
+- [ ] Composants UI passent par `@/components/ui/*`
+- [ ] Hooks client dans `hooks/` avec `"use client"`
+- [ ] Schéma Zod dans `lib/zod-schemas/` si formulaire ou API
+- [ ] Migration Supabase + régénération `database.types.ts`
+- [ ] RLS vérifiée (voir `kb-supabase.mdc`)

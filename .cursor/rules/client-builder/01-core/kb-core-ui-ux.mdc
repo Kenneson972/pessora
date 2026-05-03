@@ -1,0 +1,295 @@
+---
+description: Core UI UX V2 - Exigences permanentes de qualité visuelle, accessibilité, responsive, interaction et cohérence pour tous les projets clients
+alwaysApply: true
+---
+
+# Core UI/UX V2
+
+Ce fichier définit le **niveau d'exigence UI/UX permanent** du Client Builder V2.  
+Il s'applique à tous les projets, quel que soit le secteur, la stack ou la bibliothèque UI.
+
+L'objectif n'est pas seulement de produire une interface « jolie », mais une interface :
+
+- cohérente
+- accessible
+- performante en perception
+- responsive
+- crédible en contexte client
+- agréable à utiliser
+
+**Articulation :** les règles **spécialisées** du dépôt (catalogues de styles, patterns mobile agence, etc.) **complètent** ce document. Ce fichier fixe le **plancher de qualité** ; les autres peuvent approfondir par domaine (SEO visuel, motion library, etc.).
+
+---
+
+## 1. Priorité absolue : accessibilité
+
+Toute interface doit rester utilisable de manière claire et fiable.
+
+### Exigences minimales
+
+- Contraste minimum **4.5:1** pour le texte principal
+- Contraste minimum **3:1** pour les grands éléments ou textes secondaires
+- Focus visible sur tous les éléments interactifs
+- Navigation clavier possible sur les actions principales
+- Libellés explicites pour les champs de formulaire
+- `aria-label` obligatoire pour les boutons icon-only
+- Texte alternatif sur les images informatives
+- L'ordre de focus doit suivre l'ordre visuel
+
+### Interdictions
+
+- Pas de `outline: none` sans alternative visible
+- Pas d'information importante accessible uniquement au hover
+- Pas de placeholder utilisé comme unique label
+- Pas de bouton sans état disabled / loading lisible si nécessaire
+
+---
+
+## 2. Interaction tactile et mobile-first
+
+L'interface doit être pensée d'abord pour un usage mobile réel.
+
+### Règles
+
+- Taille tactile minimale : **44×44px**
+- Espacement minimal entre cibles : **8px**
+- Aucun scroll horizontal involontaire sur mobile
+- Les layouts doivent rester lisibles sans zoom
+- Les interactions critiques ne doivent jamais dépendre du hover
+
+### Breakpoints recommandés (référence)
+
+- `sm` : 640px
+- `md` : 768px
+- `lg` : 1024px
+- `xl` : 1280px
+
+Adapter si le projet impose une grille différente, mais garder l'esprit mobile-first.
+
+### Principe
+
+Le desktop ne doit pas corriger un design mobile raté. On conçoit mobile-first, puis on enrichit.
+
+---
+
+## 3. Hiérarchie visuelle claire
+
+Une bonne interface doit être compréhensible en quelques secondes.
+
+### Règles
+
+- Un seul message principal par écran ou section
+- Hiérarchie nette entre titre, sous-titre, contenu, action
+- Espacements cohérents et rythmiques
+- CTA principal immédiatement identifiable
+- Éviter les blocs visuellement plats où tout a la même importance
+
+### À viser
+
+- Structure lisible
+- Zones bien séparées
+- Densité maîtrisée
+- Lecture naturelle
+
+---
+
+## 4. Cohérence visuelle
+
+Un projet doit donner l'impression d'un **système**, pas d'un assemblage de composants.
+
+### Règles
+
+- Une direction visuelle dominante par projet
+- Famille d'icônes cohérente
+- Rayons, ombres, bordures, densité et animations harmonisés
+- États hover / focus / active / disabled cohérents
+- Les composants similaires doivent se comporter et se ressembler de manière prévisible
+
+### Interdictions
+
+- Mélanger plusieurs styles visuels sans logique
+- Introduire un nouveau pattern alors qu'un pattern existant convient déjà
+- Avoir plusieurs versions d'un même bouton ou d'une même carte sans raison métier
+
+---
+
+## 5. Couleurs et tokens sémantiques
+
+Les styles doivent reposer sur des **intentions**, pas sur des valeurs arbitraires dispersées.
+
+### Préférer des tokens sémantiques
+
+Exemples :
+
+- `--color-bg`, `--color-surface`
+- `--color-text`, `--color-text-muted`
+- `--color-primary`, `--color-border`
+- `--color-success`, `--color-warning`, `--color-danger`
+
+(Équivalents en thème Tailwind, CSS vars, ou design tokens selon le projet.)
+
+### Règles
+
+- Éviter les couleurs hardcodées répétées partout
+- Prévoir le contraste en light et dark si le projet le nécessite
+- Utiliser les couleurs pour guider, pas pour décorer excessivement
+
+---
+
+## 6. Typographie
+
+La typographie doit soutenir la lisibilité et le positionnement du projet.
+
+### Règles minimales
+
+- Taille de corps : **16px minimum sur mobile**
+- Line-height texte courant : **1.5 à 1.75**
+- Taille et graisse cohérentes entre titres
+- Limiter le nombre de familles de polices
+- Vérifier la lisibilité réelle sur mobile
+
+### Principe
+
+La typographie n'est pas une décoration ; c'est un outil de structure, de rythme et de crédibilité.
+
+---
+
+## 7. Performance perçue
+
+Une UI lente ou instable paraît bas de gamme, même si elle est jolie.
+
+### Exigences
+
+- Toujours réserver l'espace des médias importants
+- Éviter les layout shifts
+- Prévoir des états loading lisibles
+- Préférer skeletons, placeholders et feedback immédiat sur les actions
+- Ne jamais laisser l'utilisateur dans l'incertitude après un clic
+
+### Règle
+
+Toute interaction utilisateur importante doit produire un feedback visible dans une fenêtre d'environ **80 à 150ms**.
+
+---
+
+## 8. Formulaires
+
+Les formulaires doivent être simples, rassurants et tolérants.
+
+### Règles
+
+- Labels visibles
+- Message d'erreur au bon endroit
+- États success / error explicites
+- Bouton submit avec état loading si nécessaire
+- Groupement logique des champs
+- Aide contextuelle si l'information n'est pas évidente
+
+### Interdictions
+
+- Trop de champs d'un coup sans découpage logique
+- Erreurs globales incompréhensibles
+- Champ obligatoire non signalé
+- Placeholder-only
+
+---
+
+## 9. États indispensables
+
+Toute interface sérieuse doit gérer ses états.
+
+### États à prévoir si pertinents
+
+- loading
+- empty
+- success
+- error
+- disabled
+- partial / pending
+- offline / indisponible si applicable
+
+### Principe
+
+Un écran sans état vide ni état d'erreur n'est pas fini lorsque des données ou un réseau sont en jeu.
+
+---
+
+## 10. Animations et micro-interactions
+
+Les animations doivent renforcer la perception de qualité, pas gêner l'usage.
+
+### Règles
+
+- Micro-interactions : **150 à 300ms**
+- Transitions plus larges : **400 à 600ms**
+- Préférer `transform` et `opacity`
+- Respecter `prefers-reduced-motion`
+- Les animations ne doivent jamais ralentir la lecture ni masquer la hiérarchie
+
+### Interdictions
+
+- Animations décoratives permanentes sans intérêt
+- Effets lourds sur width / height
+- Animations partout par réflexe
+
+---
+
+## 11. Densité et contexte
+
+Toutes les interfaces ne doivent pas avoir la même densité.
+
+### Règle
+
+Ajuster la densité selon le type de surface :
+
+- site vitrine premium → plus d'air, plus de rythme, moins de bruit
+- dashboard dense → compacité maîtrisée, lisibilité maximale
+- tunnel de conversion → concentration sur l'action
+- espace client → clarté, réassurance, priorité fonctionnelle
+
+---
+
+## 12. Exigence de crédibilité client
+
+Une interface livrée doit paraître cohérente avec le niveau de gamme du client.
+
+### Questions à se poser
+
+- Est-ce suffisamment premium / rassurant / moderne pour la cible ?
+- La surface semble-t-elle pensée ou simplement assemblée ?
+- La qualité perçue est-elle cohérente avec le positionnement du client ?
+
+---
+
+## 13. Anti-patterns à éviter absolument
+
+- Emoji utilisés comme icônes structurelles
+- Boutons icon-only sans label accessible
+- Contraste insuffisant
+- Hover-only pour une action ou une information critique
+- Cibles tactiles trop petites
+- Absence d'état loading
+- Cartes ou sections sans hiérarchie visuelle
+- Trop d'animations simultanées
+- Mélange visuel incohérent
+- Dark mode bâclé par simple inversion
+- UI « template » non adaptée au branding du client
+
+---
+
+## 14. Checklist finale avant validation UI
+
+Avant de considérer une UI comme terminée, vérifier :
+
+- accessibilité de base correcte
+- responsive cohérent
+- zéro scroll horizontal mobile involontaire
+- CTA principal clair
+- densité adaptée à la surface
+- états loading / error / empty gérés si nécessaire
+- contraste suffisant
+- structure visuelle lisible
+- interactions compréhensibles
+- cohérence visuelle globale respectée
+
+Si un de ces points échoue, l'interface n'est pas considérée comme finie.

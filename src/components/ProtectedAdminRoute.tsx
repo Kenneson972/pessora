@@ -1,0 +1,34 @@
+import { Navigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+
+interface ProtectedAdminRouteProps {
+  children: React.ReactNode;
+}
+
+const ProtectedAdminRoute = ({ children }: ProtectedAdminRouteProps) => {
+  const { isAuthenticated, isAdmin, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <Loader2 className="h-10 w-10 animate-spin text-noir/35" aria-hidden />
+          <p className="text-[13px] text-black/45">Chargement…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/connexion" replace />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+export default ProtectedAdminRoute;

@@ -1,0 +1,134 @@
+<h2>Design Cycle 1 — Section 3 : Les 3 Edge Functions</h2>
+<p class="subtitle">Architecture détaillée des fonctions Supabase à créer</p>
+
+<div class="section">
+  <h3>3A — <code>create-subscription-session</code></h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:1rem">
+      <div class="label" style="color:#6366f1;margin-bottom:.5rem">Entrée (body JSON)</div>
+      <div style="font-family:monospace;font-size:11px;line-height:1.8;color:#374151">
+        email?: string <span style="color:#9ca3af">// pré-rempli si connu</span><br>
+        price_id?: string <span style="color:#9ca3af">// default: env STRIPE_ORA_PLUS_PRICE_ID</span>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:1rem">
+      <div class="label" style="color:#6366f1;margin-bottom:.5rem">Auth</div>
+      <div style="font-size:12px;color:#374151;line-height:1.6">
+        ✗ Pas d'auth requise<br>
+        <span style="color:#6b7280;font-size:11px">Stripe collecte l'email directement en checkout</span>
+      </div>
+    </div>
+
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:1rem;grid-column:1/-1">
+      <div class="label" style="color:#6366f1;margin-bottom:.5rem">Ce qu'elle fait</div>
+      <div style="font-size:12px;color:#374151;line-height:1.8">
+        1. Valide price_id (ou utilise STRIPE_ORA_PLUS_PRICE_ID)<br>
+        2. Crée <code>stripe.checkout.sessions.create({ mode: 'subscription', ... })</code><br>
+        3. <code>success_url</code> → <code>/abonnement/succes?session_id={CHECKOUT_SESSION_ID}</code><br>
+        4. <code>cancel_url</code> → <code>/commande/annulee</code><br>
+        5. Retourne <code>{ url }</code>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="section">
+  <h3>3B — <code>stripe-webhook</code></h3>
+
+  <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:.75rem;font-size:12px;color:#856404;margin-bottom:.75rem">
+    <strong>Sécurité :</strong> Vérifie <code>Stripe-Signature</code> avec <code>STRIPE_WEBHOOK_SECRET</code> — rejette si invalide (401).
+    Pas d'Authorization header Supabase.
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.75rem">
+
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:1rem">
+      <div style="font-family:monospace;font-size:11px;color:#6366f1;margin-bottom:.5rem">checkout.session.completed</div>
+      <div style="font-size:11px;color:#374151;line-height:1.7">
+        • Récupère email depuis session<br>
+        • Cherche profil par email<br>
+        • Si existant : relie <code>stripe_customer_id</code><br>
+        • Si nouveau : <code>auth.admin.inviteUserByEmail()</code><br>
+        • Crée subscription <code>plan: ora_plus, status: active</code><br>
+        • Stocke <code>stripe_customer_id</code> + <code>stripe_subscription_id</code> + <code>current_period_end</code>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:1rem">
+      <div style="font-family:monospace;font-size:11px;color:#10b981;margin-bottom:.5rem">invoice.paid</div>
+      <div style="font-size:11px;color:#374151;line-height:1.7">
+        • Trouve subscription par <code>stripe_subscription_id</code><br>
+        • <code>status</code> → <code>active</code><br>
+        • <code>current_period_end</code> mis à jour<br>
+        <span style="color:#6b7280">(renouvellement mensuel confirmé)</span>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:1rem">
+      <div style="font-family:monospace;font-size:11px;color:#ef4444;margin-bottom:.5rem">invoice.payment_failed</div>
+      <div style="font-size:11px;color:#374151;line-height:1.7">
+        • Trouve subscription par <code>stripe_subscription_id</code><br>
+        • <code>status</code> → <code>expired</code><br>
+        <span style="color:#6b7280">(Stripe gère les 3 relances email automatiquement)</span>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:1rem">
+      <div style="font-family:monospace;font-size:11px;color:#f59e0b;margin-bottom:.5rem">customer.subscription.deleted</div>
+      <div style="font-size:11px;color:#374151;line-height:1.7">
+        • Trouve subscription par <code>stripe_subscription_id</code><br>
+        • <code>status</code> → <code>cancelled</code><br>
+        • Avantages perdus <strong>immédiatement</strong>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="margin-top:.75rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:.75rem;font-size:11px;color:#6b7280">
+    <strong>Idempotence :</strong> chaque handler vérifie si la subscription existe déjà avec ce <code>stripe_subscription_id</code> avant d'insérer — upsert plutôt qu'insert.
+  </div>
+</div>
+
+<div class="section">
+  <h3>3C — <code>verify-subscription-session</code></h3>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:1rem">
+      <div class="label" style="color:#0891b2;margin-bottom:.5rem">Entrée (query param)</div>
+      <div style="font-family:monospace;font-size:11px;line-height:1.8;color:#374151">
+        session_id: string <span style="color:#9ca3af">// depuis l'URL succès</span>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:1rem">
+      <div class="label" style="color:#0891b2;margin-bottom:.5rem">Sortie</div>
+      <div style="font-family:monospace;font-size:11px;line-height:1.8;color:#374151">
+        { status: 'processed' | 'pending' }<br>
+        <span style="color:#9ca3af">// 'processed' = webhook déjà passé</span>
+      </div>
+    </div>
+
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:1rem;grid-column:1/-1">
+      <div class="label" style="color:#0891b2;margin-bottom:.5rem">Logique</div>
+      <div style="font-size:12px;color:#374151;line-height:1.8">
+        1. Récupère la session Stripe via <code>session_id</code><br>
+        2. Vérifie si subscription existe déjà en DB avec ce <code>stripe_subscription_id</code><br>
+        3. Si oui → retourne <code>{ status: 'processed' }</code> (webhook a déjà tout fait)<br>
+        4. Si non → exécute la même logique que <code>checkout.session.completed</code><br>
+        &nbsp;&nbsp;&nbsp;(fallback race condition webhook/success page)<br>
+        5. Retourne <code>{ status: 'processed' }</code>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="margin-top:.75rem;background:#fefce8;border:1px solid #fde68a;border-radius:6px;padding:.75rem;font-size:12px;color:#92400e">
+    <strong>Pourquoi ce fallback ?</strong> En production, le webhook arrive généralement avant que l'utilisateur atterrisse sur la page succès. Mais en dev / latence réseau, il peut arriver après — ce fallback garantit que l'Ora+ est activé même si le webhook est lent.
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:1.5rem">Section 3 OK ? On peut passer à la rédaction du spec document, puis au plan d'implémentation.</p>

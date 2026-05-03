@@ -1,0 +1,312 @@
+---
+description: Server fetching Next.js Karibloom - RSC parallel, Suspense, hydration sans flicker, content-visibility
+globs: "**/app/**/*.tsx, **/app/**/*.ts, **/pages/**/*.tsx, **/layout.tsx, **/page.tsx"
+alwaysApply: false
+---
+
+# Server Fetching & Rendering Karibloom (Next.js)
+
+Règles pour les projets Next.js (App Router). Éliminer les waterfalls serveur, afficher plus vite, éviter les flashs d'hydratation.
+
+---
+
+## 1. Parallel Data Fetching — Composition RSC, pas fetch séquentiel
+
+Dans un React Server Component, les `await` séquentiels créent un waterfall serveur.
+Chaque fetch attend le précédent même sans dépendance. Restructurer par composition.
+
+**Incorrect (waterfall, 600 ms) :**
+
+```tsx
+// page.tsx — chaque await bloque le suivant
+export default async function MenuPage() {
+  const products = await getProducts()    // 200 ms
+  const settings = await getSettings()   // 200 ms — attend products
+  const reviews  = await getReviews()    // 200 ms — attend settings
+  // Total : ~600 ms
+  return <main>...</main>
+}
+```
+
+**Correct — Option A : Promise.all dans la page :**
+
+```tsx
+export default async function MenuPage() {
+  const [products, settings, reviews] = await Promise.all([
+    getProducts(),
+    getSettings(),
+    getReviews(),
+  ])
+  // Total : ~200 ms (le plus lent des trois)
+  return <main>...</main>
+}
+```
+
+**Correct — Option B : Composition RSC (fetch parallèle par architecture) :**
+
+```tsx
+// Chaque composant fetch ses propres données en parallèle
+async function ProductGrid() {
+  const products = await getProducts()
+  return <div className="grid">{products.map(p => <ProductCard key={p.id} product={p} />)}</div>
+}
+
+async function SiteSettings() {
+  const settings = await getSettings()
+  return <SettingsProvider settings={settings} />
+}
+
+// La page ne fait aucun fetch — elle compose
+export default function MenuPage() {
+  return (
+    <main>
+      <SiteSettings />    {/* fetch en parallèle */}
+      <ProductGrid />     {/* fetch en parallèle */}
+    </main>
+  )
+}
+```
+
+---
+
+## 2. Suspense Boundaries — Afficher le shell immédiatement, streamer les données
+
+Ne pas bloquer toute la page sur des données dont seule une section a besoin.
+
+**Incorrect (toute la page attend les données) :**
+
+```tsx
+export default async function Page() {
+  const data = await fetchSlowData()  // Bloque header, footer, nav
+
+  return (
+    <div>
+      <Header />
+      <DataSection data={data} />
+      <Footer />
+    </div>
+  )
+}
+```
+
+**Correct (shell immédiat, données streamées) :**
+
+```tsx
+// DataSection fetch ses propres données
+async function DataSection() {
+  const data = await fetchSlowData()  // Bloque seulement ce composant
+  return <div>{data.content}</div>
+}
+
+// La page rend immédiatement — seul DataSection attend
+export default function Page() {
+  return (
+    <div>
+      <Header />                              {/* immédiat */}
+      <Suspense fallback={<ContentSkeleton />}>
+        <DataSection />                       {/* streamé */}
+      </Suspense>
+      <Footer />                              {/* immédiat */}
+    </div>
+  )
+}
+```
+
+**Partager une Promise entre composants (éviter les doubles fetches) :**
+
+```tsx
+export default function Page() {
+  // Lance le fetch sans await — partagé entre les deux composants
+  const dataPromise = fetchData()
+
+  return (
+    <Suspense fallback={<Skeleton />}>
+      <DataDisplay dataPromise={dataPromise} />
+      <DataSummary dataPromise={dataPromise} />
+    </Suspense>
+  )
+}
+
+// Chaque composant reçoit la même Promise — 1 seul fetch réseau
+async function DataDisplay({ dataPromise }: { dataPromise: Promise<Data> }) {
+  const data = await dataPromise
+  return <div>{data.content}</div>
+}
+```
+
+**Quand NE PAS utiliser Suspense :**
+- Données critiques pour le layout (positionnement, CLS)
+- Contenu SEO above the fold
+- Requêtes très rapides (<50 ms) — overhead Suspense non justifié
+
+---
+
+## 3. Hydration sans flicker — Script synchrone avant React
+
+Quand une valeur dépend de `localStorage`/cookies, l'initialiser dans un script synchrone
+avant l'hydratation React. Évite le flash : valeur par défaut → valeur réelle.
+
+**Incorrect — Erreur SSR (localStorage non disponible serveur) :**
+
+```tsx
+function CartProvider({ children }: { children: React.ReactNode }) {
+  // ❌ localStorage pas disponible côté serveur → crash
+  const [cart, setCart] = useState(
+    JSON.parse(localStorage.getItem('cart') || '[]')
+  )
+  return <CartContext.Provider value={{ cart }}>{children}</CartContext.Provider>
+}
+```
+
+**Incorrect — Flash visible (useEffect trop tardif) :**
+
+```tsx
+function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setTheme] = useState('light')   // valeur par défaut
+
+  useEffect(() => {
+    // ❌ Trop tard : React a déjà rendu 'light', maintenant flash → 'dark'
+    const stored = localStorage.getItem('theme')
+    if (stored) setTheme(stored)
+  }, [])
+
+  return <div className={theme}>{children}</div>
+}
+```
+
+**Correct — Script synchrone injecté avant hydratation :**
+
+```tsx
+// layout.tsx
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="fr" suppressHydrationWarning>
+      <body>
+        {/* Script synchrone : s'exécute avant que React hydrate */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('theme') || 'light';
+                  document.documentElement.setAttribute('data-theme', theme);
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+        {children}
+      </body>
+    </html>
+  )
+}
+
+// ThemeProvider — lit l'attribut déjà appliqué, 0 flash
+function ThemeProvider({ children }: { children: React.ReactNode }) {
+  // suppressHydrationWarning sur l'élément qui peut différer serveur/client
+  return (
+    <div suppressHydrationWarning>
+      {children}
+    </div>
+  )
+}
+```
+
+**Pattern pour le panier (DALCIELO et projets e-commerce) :**
+
+```tsx
+// layout.tsx — initialise le panier avant React sans flash
+<script
+  dangerouslySetInnerHTML={{
+    __html: `
+      (function() {
+        try {
+          var cart = JSON.parse(localStorage.getItem('cart:v1') || '[]');
+          window.__INITIAL_CART__ = cart;
+        } catch (e) {
+          window.__INITIAL_CART__ = [];
+        }
+      })();
+    `,
+  }}
+/>
+
+// useCart.ts — lit la valeur déjà en mémoire, 0 flash
+const [items, setItems] = useState<CartItem[]>(() => {
+  if (typeof window === 'undefined') return []
+  return (window as any).__INITIAL_CART__ ?? []
+})
+```
+
+---
+
+## 4. content-visibility — Listes longues off-screen
+
+Appliquer `content-visibility: auto` sur les items d'une liste longue.
+Le navigateur skip le layout/paint des éléments hors viewport. 10× plus rapide pour 1000+ items.
+
+**CSS (à ajouter dans globals.css ou le composant) :**
+
+```css
+/* Listes longues : menu, avis, commandes, galerie */
+.list-item-lazy {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 80px; /* estimation hauteur de l'item */
+}
+```
+
+**Usage dans les composants :**
+
+```tsx
+// Menu items
+function MenuGrid({ items }: { items: MenuItem[] }) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {items.map(item => (
+        <div key={item.id} className="list-item-lazy">
+          <PizzaCard pizza={item} />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// Liste d'avis
+function ReviewsList({ reviews }: { reviews: Review[] }) {
+  return (
+    <div className="space-y-4">
+      {reviews.map(review => (
+        <div key={review.id} className="list-item-lazy" style={{ containIntrinsicSize: '0 120px' }}>
+          <ReviewCard review={review} />
+        </div>
+      ))}
+    </div>
+  )
+}
+```
+
+**Quand appliquer :**
+- Listes de 20+ éléments scrollables
+- Galeries d'images hors viewport
+- Tableaux de commandes admin
+- Menus avec beaucoup de produits
+
+**Ne pas appliquer sur :**
+- Above the fold (les éléments visibles immédiatement)
+- Éléments position:fixed/absolute
+- Carousels (le navigateur pourrait masquer des slides)
+
+---
+
+## Checklist pages Next.js
+
+- [ ] Fetches indépendants dans `Promise.all()` ou par composition RSC
+- [ ] Sections non critiques wrappées dans `<Suspense fallback={<Skeleton />}>`
+- [ ] Thème / panier / auth : script synchrone dans layout.tsx, pas useEffect
+- [ ] `suppressHydrationWarning` sur les éléments qui peuvent différer client/serveur
+- [ ] Listes 20+ items : classe `list-item-lazy` avec `content-visibility: auto`
+- [ ] Analytics / cookie consent : `dynamic(() => import(...), { ssr: false })`
+
+---
+
+Référence : skills-react-best-practices (Vercel) — `server-parallel-fetching.md`, `async-suspense-boundaries.md`, `rendering-hydration-no-flicker.md`, `rendering-content-visibility.md`

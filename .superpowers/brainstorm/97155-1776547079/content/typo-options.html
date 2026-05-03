@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PESSORA — Typographie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Raleway:ital,wght@0,200;0,300;1,200&family=Inter:wght@300;400&family=Playfair+Display:ital,wght@0,400;1,400&family=Josefin+Sans:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #111; color: #fff; padding: 0; }
+
+.page-header {
+  text-align: center;
+  padding: 32px 24px 24px;
+  font-family: -apple-system, sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  background: #222;
+}
+
+/* ===== OPTION A: Cormorant + DM Sans ===== */
+.option-a { background: #fff; cursor: pointer; border: 3px solid transparent; transition: border-color 0.2s; }
+.option-a:hover { border-color: #111; }
+.option-a.sel { border-color: #000; }
+
+.a-nav {
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1.5px solid #000;
+  background: #fff;
+}
+.a-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 17px;
+  letter-spacing: 0.25em;
+  color: #000;
+  text-transform: uppercase;
+}
+.a-links {
+  display: flex;
+  gap: 20px;
+}
+.a-link {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.45);
+}
+.a-hero {
+  background: #0a0a0a;
+  padding: 52px 24px 44px;
+}
+.a-eyebrow {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 8px;
+  font-weight: 300;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 18px;
+}
+.a-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 58px;
+  line-height: 1.0;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+.a-title em { font-style: italic; color: rgba(255,255,255,0.75); }
+.a-rule { width: 28px; height: 1px; background: rgba(255,255,255,0.4); margin: 22px 0; }
+.a-body {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 0.08em;
+  line-height: 1.7;
+}
+.a-cta {
+  display: inline-block;
+  margin-top: 26px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 8px;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: #fff;
+  border-bottom: 1px solid rgba(255,255,255,0.4);
+  padding-bottom: 2px;
+}
+.a-label {
+  background: #fff;
+  padding: 14px 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: #000;
+  text-align: center;
+  border-top: 2px solid #000;
+}
+.a-label strong { display: block; font-size: 11px; letter-spacing: 0.05em; margin-bottom: 2px; }
+.a-label span { color: rgba(0,0,0,0.4); font-size: 8px; }
+
+/* ===== OPTION B: Raleway ultra-light ===== */
+.option-b { background: #fff; cursor: pointer; border: 3px solid transparent; transition: border-color 0.2s; }
+.option-b:hover { border-color: #111; }
+.option-b.sel { border-color: #000; }
+
+.b-nav {
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #000;
+  background: #fff;
+}
+.b-logo {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 200;
+  font-size: 15px;
+  letter-spacing: 0.35em;
+  color: #000;
+  text-transform: uppercase;
+}
+.b-links { display: flex; gap: 20px; }
+.b-link {
+  font-family: 'Raleway', sans-serif;
+  font-size: 8px;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.4);
+}
+.b-hero {
+  background: #0a0a0a;
+  padding: 52px 24px 44px;
+}
+.b-eyebrow {
+  font-family: 'Raleway', sans-serif;
+  font-size: 7px;
+  font-weight: 300;
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.25);
+  margin-bottom: 18px;
+}
+.b-title {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 200;
+  font-size: 52px;
+  line-height: 1.05;
+  letter-spacing: 0.05em;
+  color: #fff;
+}
+.b-title em { font-style: italic; font-weight: 200; color: rgba(255,255,255,0.6); }
+.b-rule { width: 28px; height: 1px; background: rgba(255,255,255,0.3); margin: 22px 0; }
+.b-body {
+  font-family: 'Raleway', sans-serif;
+  font-size: 10px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.12em;
+  line-height: 1.8;
+}
+.b-cta {
+  display: inline-block;
+  margin-top: 26px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 8px;
+  font-weight: 300;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #fff;
+  border-bottom: 1px solid rgba(255,255,255,0.3);
+  padding-bottom: 2px;
+}
+.b-label {
+  background: #fff;
+  padding: 14px 20px;
+  font-family: 'Raleway', sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: #000;
+  text-align: center;
+  border-top: 2px solid #000;
+}
+.b-label strong { display: block; font-size: 11px; margin-bottom: 2px; }
+.b-label span { color: rgba(0,0,0,0.4); font-size: 8px; }
+
+/* ===== OPTION C: Josefin Sans ultra-geo ===== */
+.option-c { background: #fff; cursor: pointer; border: 3px solid transparent; transition: border-color 0.2s; }
+.option-c:hover { border-color: #111; }
+.option-c.sel { border-color: #000; }
+
+.c-nav {
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #000;
+  background: #fff;
+}
+.c-logo {
+  font-family: 'Josefin Sans', sans-serif;
+  font-weight: 200;
+  font-size: 14px;
+  letter-spacing: 0.4em;
+  color: #000;
+  text-transform: uppercase;
+}
+.c-links { display: flex; gap: 20px; }
+.c-link {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 8px;
+  font-weight: 300;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.4);
+}
+.c-hero {
+  background: #0a0a0a;
+  padding: 52px 24px 44px;
+}
+.c-eyebrow {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 7px;
+  font-weight: 300;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.25);
+  margin-bottom: 18px;
+}
+.c-title {
+  font-family: 'Josefin Sans', sans-serif;
+  font-weight: 200;
+  font-size: 46px;
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+  color: #fff;
+  text-transform: uppercase;
+}
+.c-title em { font-style: normal; font-weight: 200; color: rgba(255,255,255,0.5); }
+.c-rule { width: 28px; height: 1px; background: rgba(255,255,255,0.3); margin: 22px 0; }
+.c-body {
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 0.18em;
+  line-height: 2.0;
+  text-transform: uppercase;
+}
+.c-cta {
+  display: inline-block;
+  margin-top: 26px;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 8px;
+  font-weight: 300;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #fff;
+  border-bottom: 1px solid rgba(255,255,255,0.3);
+  padding-bottom: 2px;
+}
+.c-label {
+  background: #fff;
+  padding: 14px 20px;
+  font-family: 'Josefin Sans', sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  color: #000;
+  text-align: center;
+  border-top: 2px solid #000;
+}
+.c-label strong { display: block; font-size: 11px; margin-bottom: 2px; text-transform: uppercase; }
+.c-label span { color: rgba(0,0,0,0.4); font-size: 8px; }
+
+.note {
+  text-align: center;
+  padding: 20px;
+  font-family: -apple-system, sans-serif;
+  font-size: 10px;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 0.1em;
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">Direction C — Police minimaliste · Choisis ta typographie</div>
+
+<div class="grid">
+
+  <!-- A: Cormorant + DM Sans -->
+  <div class="option-a" onclick="this.classList.toggle('sel')">
+    <div class="a-nav">
+      <div class="a-logo">Pessóra</div>
+      <div class="a-links">
+        <span class="a-link">Carte</span>
+        <span class="a-link">Événements</span>
+        <span class="a-link">Mon Espace</span>
+      </div>
+    </div>
+    <div class="a-hero">
+      <div class="a-eyebrow">Bar Protéiné · Fort-de-France</div>
+      <div class="a-title">Nourris<br><em>l'essentiel</em></div>
+      <div class="a-rule"></div>
+      <div class="a-body">Shakes protéinés · Gauffres · Bilan Bien-être</div>
+      <div class="a-cta">Découvrir la gamme</div>
+    </div>
+    <div class="a-label">
+      <strong>A — Cormorant Garamond + DM Sans</strong>
+      <span>Serif élégant léger + sans humaniste · Le plus luxe éditorial</span>
+    </div>
+  </div>
+
+  <!-- B: Raleway ultra-light -->
+  <div class="option-b" onclick="this.classList.toggle('sel')">
+    <div class="b-nav">
+      <div class="b-logo">Pessóra</div>
+      <div class="b-links">
+        <span class="b-link">Carte</span>
+        <span class="b-link">Événements</span>
+        <span class="b-link">Mon Espace</span>
+      </div>
+    </div>
+    <div class="b-hero">
+      <div class="b-eyebrow">Bar Protéiné · Fort-de-France</div>
+      <div class="b-title">Nourris<br><em>l'essentiel</em></div>
+      <div class="b-rule"></div>
+      <div class="b-body">Shakes protéinés · Gauffres · Bilan Bien-être</div>
+      <div class="b-cta">Découvrir la gamme</div>
+    </div>
+    <div class="b-label">
+      <strong>B — Raleway Ultra-Light 200</strong>
+      <span>Full sans-serif minimaliste géométrique · Très aéré</span>
+    </div>
+  </div>
+
+  <!-- C: Josefin Sans -->
+  <div class="option-c" onclick="this.classList.toggle('sel')">
+    <div class="c-nav">
+      <div class="c-logo">Pessóra</div>
+      <div class="c-links">
+        <span class="c-link">Carte</span>
+        <span class="c-link">Événements</span>
+        <span class="c-link">Mon Espace</span>
+      </div>
+    </div>
+    <div class="c-hero">
+      <div class="c-eyebrow">Bar Protéiné · Fort-de-France</div>
+      <div class="c-title">Nourris<br><em>l'essentiel</em></div>
+      <div class="c-rule"></div>
+      <div class="c-body">Shakes · Gauffres · Bilan Bien-être</div>
+      <div class="c-cta">Découvrir la gamme</div>
+    </div>
+    <div class="c-label">
+      <strong>C — Josefin Sans 200</strong>
+      <span>Géométrique strict · Très graphique · Mode/Architecture</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="note">Clique pour sélectionner (highlight border noir) · ou réponds dans le terminal</div>
+
+</body>
+</html>

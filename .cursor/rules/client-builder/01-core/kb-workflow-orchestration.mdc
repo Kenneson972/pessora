@@ -1,0 +1,76 @@
+---
+description: Workflow orchestration et comportement agent - Planification, vérification, leçons
+globs:
+alwaysApply: true
+---
+
+# Workflow Orchestration (Client Builder Karibloom)
+
+Règles de **comportement** pour exécuter les tâches de création/modification de sites clients : planification, vérification, élégance, apprentissage. À appliquer en complément des règles métier (architecture, SEO, forms, etc.).
+
+---
+
+## 1. Plan & replan
+
+- Pour toute tâche **non triviale** (3+ étapes, décisions d’architecture, refacto) : entrer en **mode plan** avant de coder.
+- Écrire une spec ou un plan clair (étapes vérifiables) pour réduire l’ambiguïté.
+- Si ça dérape (bugs en cascade, incohérences) : **STOP et replan** au lieu d’enchaîner les correctifs.
+- Utiliser le mode plan aussi pour les **étapes de vérification** (pas seulement pour la phase de build).
+
+---
+
+## 2. Tâches : todo & leçons
+
+- **Plan d’abord** : écrire le plan dans `tasks/todo.md` (ou `docs/todo.md`) avec des items cochables.
+- **Vérifier le plan** avant de commencer l’implémentation.
+- **Suivre la progression** : cocher au fur et à mesure, résumer brièvement à chaque étape.
+- **Documenter le résultat** : ajouter une section « Revue » / résumé dans le todo en fin de session.
+- **Capturer les leçons** : après toute correction utilisateur, mettre à jour `tasks/lessons.md` (ou `docs/lessons.md`) pour ne pas répéter les mêmes erreurs.
+- Réviser les leçons pertinentes au début d’une nouvelle session sur le projet.
+
+---
+
+## 3. Vérification avant de considérer terminé
+
+- **Ne jamais marquer une tâche complète sans preuve que ça fonctionne.**
+- Selon le projet client : build OK, formulaire (envoi + CSRF), tunnel Stripe en test, meta/SEO sur les pages concernées, Lighthouse si pertinent.
+- Comparer le comportement avec la branche principale quand c’est pertinent.
+- Se demander : « Un staff engineer validerait-il ce changement ? »
+- Lancer les tests, vérifier les logs, démontrer le bon comportement.
+- **Preview locale après build (tous projets frontend)** : après un `build` de vérification (`npm run build`, `vite build`, etc.), **relancer systématiquement** le serveur de dev du repo (`npm run dev`, `yarn dev`, `pnpm dev` — port et script selon le `package.json`) dans le même flux, en libérant le port déjà occupé si besoin ; ne pas clôturer la session sans cette étape lorsque l’utilisateur prévisualise sur localhost.
+
+---
+
+## 4. Exiger l’élégance (sans sur-ingénierie)
+
+- Pour les changements non triviaux : faire une pause et se demander « Y a-t-il une solution plus élégante ? »
+- Si un correctif est « rustine » : avec les infos actuelles, **implémenter la solution propre**.
+- Pour les correctifs simples et évidents : pas d’over-engineering.
+- Challenger son propre travail avant de le présenter.
+- **Contexte Client Builder** : élégance = data-driven (pas de données en dur), impact minimal, respect des règles (sécurité, validation, pas de clés exposées).
+
+---
+
+## 5. Correction de bugs en autonomie
+
+- Face à un bug : **corriger sans demander de guidage** ; s’appuyer sur logs, erreurs, tests qui échouent.
+- Objectif : **zéro changement de contexte pour l’utilisateur** (pas de « fais ça à ma place »).
+- Corriger les tests CI qui échouent sans qu’on ait à le demander explicitement.
+- Les correctifs doivent rester conformes au Client Builder (sécurité, validation, structure).
+
+---
+
+## 6. Principes de base
+
+- **Simplicité d’abord** : chaque changement le plus simple possible ; impact minimal sur le code.
+- **Pas de paresse** : trouver la cause racine ; pas de correctifs temporaires ; niveau senior.
+- **Impact minimal** : ne toucher que ce qui est nécessaire ; éviter d’introduire de nouveaux bugs.
+
+---
+
+## Fichiers recommandés (par projet)
+
+- `tasks/todo.md` — Plan de la session / tâches en cours (ou `docs/todo.md`).
+- `tasks/lessons.md` — Leçons tirées des corrections (ou `docs/lessons.md`).
+
+Ces fichiers peuvent vivre dans `docs/` si le projet n’utilise pas de dossier `tasks/` à la racine.

@@ -1,0 +1,587 @@
+---
+description: Gestion erreurs et états - loading.tsx, error.tsx, not-found.tsx, empty states, skeleton loaders, error boundaries React 19
+globs: "**/app/**/loading.tsx,**/app/**/error.tsx,**/app/**/not-found.tsx,**/components/ui/Empty*,**/components/ui/Skeleton*"
+alwaysApply: false
+---
+
+# Error States & Loading States - Next.js 15
+
+Un site pro gère élégamment toutes les situations : erreur, chargement, données vides, 404. Next 15 App Router fournit 3 fichiers magiques (`loading.tsx`, `error.tsx`, `not-found.tsx`) qui remplacent les Error Boundaries classiques pour les frontières de route.
+
+**Complète (ne remplace pas)** : `kb-components.mdc` (design des skeletons), `kb-api-routes.mdc` (erreurs serveur), `kb-forms.mdc` (erreurs formulaire).
+
+---
+
+## 1. Les 3 fichiers magiques de Next 15
+
+| Fichier | Déclenché par | Composant | Boundary |
+|---|---|---|---|
+| `loading.tsx` | Streaming / Suspense auto | Server ou Client | Automatique autour de `page.tsx` |
+| `error.tsx` | Erreur runtime dans la route | **`"use client"` obligatoire** | Error Boundary auto |
+| `not-found.tsx` | `notFound()` ou 404 route | Server ou Client | Catch `notFound()` du segment |
+| `global-error.tsx` | Erreur dans le `RootLayout` | `"use client"` + `<html><body>` | Remplace tout le document |
+
+### Où les placer
+
+À **chaque niveau de route significatif**. Pas seulement la racine.
+
+```
+app/
+  layout.tsx
+  loading.tsx          <- fallback global (transitions de pages)
+  error.tsx            <- catch-all erreurs top-level
+  not-found.tsx        <- 404 du site
+  global-error.tsx     <- catastrophe dans RootLayout
+  (marketing)/
+    page.tsx
+    loading.tsx        <- skeleton spécifique marketing
+  services/
+    page.tsx
+    loading.tsx        <- skeleton liste de services
+    [slug]/
+      page.tsx
+      loading.tsx      <- skeleton détail service
+      error.tsx        <- erreur fetch détail
+      not-found.tsx    <- service inexistant
+  admin/
+    layout.tsx
+    loading.tsx
+    error.tsx          <- erreur admin séparée (UI différente)
+```
+
+Règle : partout où un segment de route fait du `fetch` / `await supabase...`, il DOIT avoir `loading.tsx` et `error.tsx`.
+
+---
+
+## 2. loading.tsx : skeleton, pas spinner
+
+**Mauvais** : un spinner générique centré. L'utilisateur ne voit pas la structure arriver.
+
+**Bon** : un skeleton qui a les **dimensions exactes** du layout final. Zéro layout shift quand le contenu remplace le skeleton.
+
+```tsx
+// app/menu/loading.tsx - inspiré du projet DALCIELO
+import { PizzaCardSkeleton } from "@/components/menu/PizzaCardSkeleton";
+
+export default function MenuLoading() {
+  return (
+    <div className="pt-32 pb-24 px-4 sm:px-6 min-h-screen-dvh">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-16">
+          <div className="animate-pulse inline-block bg-gray-200 rounded-full h-8 w-32 mb-4" />
+          <div className="animate-pulse bg-gray-200 rounded-2xl h-14 w-80 mx-auto mb-6" />
+          <div className="animate-pulse bg-gray-200 rounded-xl h-5 w-96 mx-auto" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <PizzaCardSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+Checklist loading.tsx :
+- [ ] Largeur / hauteur identiques au rendu final
+- [ ] Nombre de cards cohérent (6 si la page charge ~6 items)
+- [ ] `animate-pulse` (ou shimmer) sur les placeholders
+- [ ] Padding / margin du layout réel
+- [ ] `aria-busy="true"` et `aria-label="Chargement en cours"` sur le conteneur
+
+---
+
+## 3. error.tsx : "use client" obligatoire
+
+Next 15 injecte `error` (objet Error) et `reset` (callback pour retenter le rendu).
+
+```tsx
+// app/services/[slug]/error.tsx
+"use client";
+
+import { useEffect } from "react";
+
+export default function ServiceError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  useEffect(() => {
+    // Log côté client (Sentry / PostHog / console en dev)
+    console.error("[Service detail error]", error);
+    // Sentry.captureException(error, { tags: { route: "services/[slug]" } });
+  }, [error]);
+
+  return (
+    <div className="mx-auto max-w-xl px-4 py-24 text-center">
+      <h2 className="text-2xl font-semibold">Impossible de charger ce service</h2>
+      <p className="mt-3 text-gray-600">
+        Une erreur est survenue. Vous pouvez réessayer ou revenir plus tard.
+      </p>
+      {process.env.NODE_ENV === "development" && (
+        <pre className="mt-4 overflow-auto rounded bg-gray-100 p-3 text-left text-xs">
+          {error.message}
+          {error.digest && `\ndigest: ${error.digest}`}
+        </pre>
+      )}
+      <div className="mt-6 flex justify-center gap-3">
+        <button
+          type="button"
+          onClick={reset}
+          className="rounded-md bg-primary px-4 py-2 text-white"
+        >
+          Réessayer
+        </button>
+        <a href="/services" className="rounded-md border px-4 py-2">
+          Retour aux services
+        </a>
+      </div>
+    </div>
+  );
+}
+```
+
+Règles :
+- **`"use client"` obligatoire** — sinon build error.
+- `error.digest` en prod = ID unique côté serveur (cherchable dans les logs Vercel).
+- En prod, ne pas afficher `error.message` à l'utilisateur -> leak d'implémentation.
+- Le bouton "Réessayer" appelle `reset()` — Next re-render le segment. N'essaye pas de `window.location.reload()`.
+- UI cohérente avec le reste du site (typographie, couleurs, tokens design).
+
+### global-error.tsx
+
+Pour les erreurs qui cassent le `RootLayout` lui-même. Doit rendre `<html>` et `<body>` (le layout n'est pas disponible).
+
+```tsx
+// app/global-error.tsx
+"use client";
+
+export default function GlobalError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  return (
+    <html lang="fr">
+      <body>
+        <div style={{ padding: "4rem 1rem", textAlign: "center", fontFamily: "system-ui" }}>
+          <h1>Erreur critique</h1>
+          <p>Le site rencontre un problème technique. Merci de réessayer dans quelques instants.</p>
+          <button type="button" onClick={reset} style={{ marginTop: "1rem" }}>
+            Réessayer
+          </button>
+        </div>
+      </body>
+    </html>
+  );
+}
+```
+
+Un seul `global-error.tsx` par app, à la racine.
+
+---
+
+## 4. not-found.tsx + notFound()
+
+### Route 404 générique
+
+```tsx
+// app/not-found.tsx
+import Link from "next/link";
+
+export default function NotFound() {
+  return (
+    <div className="mx-auto max-w-xl px-4 py-24 text-center">
+      <p className="text-6xl font-bold text-primary">404</p>
+      <h1 className="mt-4 text-2xl font-semibold">Page introuvable</h1>
+      <p className="mt-3 text-gray-600">
+        La page que vous cherchez a peut-être été déplacée ou n'a jamais existé.
+      </p>
+      <div className="mt-8 flex flex-wrap justify-center gap-3">
+        <Link href="/" className="rounded-md bg-primary px-5 py-2.5 text-white">
+          Retour à l'accueil
+        </Link>
+        <Link href="/contact" className="rounded-md border px-5 py-2.5">
+          Nous contacter
+        </Link>
+      </div>
+      <nav aria-label="Liens utiles" className="mt-12">
+        <p className="text-sm text-gray-500">Peut-être cherchiez-vous :</p>
+        <div className="mt-2 flex flex-wrap justify-center gap-4 text-sm">
+          <Link href="/services" className="underline">Nos services</Link>
+          <Link href="/blog" className="underline">Le blog</Link>
+          <Link href="/contact" className="underline">Contact</Link>
+        </div>
+      </nav>
+    </div>
+  );
+}
+```
+
+Next met automatiquement `robots: noindex` sur la réponse 404 -> pas besoin de `noindex` manuel.
+
+### 404 dynamique depuis un Server Component
+
+Quand la ressource demandée n'existe pas en base :
+
+```tsx
+// app/services/[slug]/page.tsx
+import { notFound } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+
+export default async function ServicePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const { data: service } = await supabase
+    .from("services")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (!service) notFound(); // -> rend le not-found.tsx le plus proche
+
+  return <ServiceDetail service={service} />;
+}
+```
+
+Règle : `notFound()` dans le Server Component quand la ressource est absente. **Ne pas rendre un `<div>Not found</div>` manuel** — Next gère le statut HTTP 404 et le SEO.
+
+---
+
+## 5. Suspense local (streaming dans une page)
+
+`loading.tsx` couvre tout le segment. Pour un streaming plus fin à l'intérieur d'une page :
+
+```tsx
+// app/dashboard/page.tsx
+import { Suspense } from "react";
+import { StatsCards } from "./StatsCards";
+import { RecentOrders } from "./RecentOrders";
+import { StatsCardsSkeleton, OrdersTableSkeleton } from "@/components/ui/skeletons";
+
+export default function Dashboard() {
+  return (
+    <div className="space-y-8">
+      <h1>Tableau de bord</h1>
+
+      <Suspense fallback={<StatsCardsSkeleton />}>
+        <StatsCards />
+      </Suspense>
+
+      <Suspense fallback={<OrdersTableSkeleton />}>
+        <RecentOrders />
+      </Suspense>
+    </div>
+  );
+}
+```
+
+Chaque `<Suspense>` stream indépendamment : l'utilisateur voit les stats arriver avant le tableau des commandes. Utile pour les dashboards où certains widgets sont lents.
+
+---
+
+## 6. Skeleton components réutilisables
+
+Dans `components/ui/skeletons/`. Un skeleton = une forme dédiée, pas un générique.
+
+```tsx
+// components/ui/skeletons/SkeletonCard.tsx
+export function SkeletonCard() {
+  return (
+    <div className="rounded-xl border p-4">
+      <div className="h-40 w-full animate-pulse rounded-md bg-gray-200" />
+      <div className="mt-4 h-5 w-3/4 animate-pulse rounded bg-gray-200" />
+      <div className="mt-2 h-4 w-full animate-pulse rounded bg-gray-200" />
+      <div className="mt-2 h-4 w-5/6 animate-pulse rounded bg-gray-200" />
+    </div>
+  );
+}
+
+// components/ui/skeletons/SkeletonTable.tsx
+export function SkeletonTable({ rows = 5 }: { rows?: number }) {
+  return (
+    <div className="overflow-hidden rounded-lg border">
+      <div className="border-b bg-gray-50 p-3">
+        <div className="h-4 w-40 animate-pulse rounded bg-gray-200" />
+      </div>
+      {Array.from({ length: rows }).map((_, i) => (
+        <div key={i} className="flex gap-4 border-b p-3 last:border-b-0">
+          <div className="h-4 flex-1 animate-pulse rounded bg-gray-200" />
+          <div className="h-4 w-24 animate-pulse rounded bg-gray-200" />
+          <div className="h-4 w-20 animate-pulse rounded bg-gray-200" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// components/ui/skeletons/SkeletonText.tsx
+export function SkeletonText({ lines = 3 }: { lines?: number }) {
+  return (
+    <div className="space-y-2">
+      {Array.from({ length: lines }).map((_, i) => (
+        <div
+          key={i}
+          className="h-4 animate-pulse rounded bg-gray-200"
+          style={{ width: `${70 + (i % 3) * 10}%` }}
+        />
+      ))}
+    </div>
+  );
+}
+```
+
+Règle : un skeleton par composant réel (pattern **skeleton-generator** Karibloom). `SkeletonCard` reflète la `Card`, `SkeletonPizzaCard` reflète la `PizzaCard`, etc.
+
+---
+
+## 7. Empty states
+
+Écran affiché quand la liste est vide (pas d'erreur, juste pas de données).
+
+```tsx
+// components/ui/EmptyState.tsx
+import Link from "next/link";
+import type { ReactNode } from "react";
+
+type EmptyStateProps = {
+  icon?: ReactNode; // SVG custom ou émoji
+  title: string;
+  description?: string;
+  action?: { label: string; href: string };
+};
+
+export function EmptyState({ icon, title, description, action }: EmptyStateProps) {
+  return (
+    <div className="flex flex-col items-center rounded-xl border border-dashed p-10 text-center">
+      {icon && <div className="mb-4 text-gray-400">{icon}</div>}
+      <h3 className="text-lg font-semibold">{title}</h3>
+      {description && (
+        <p className="mt-2 max-w-md text-sm text-gray-600">{description}</p>
+      )}
+      {action && (
+        <Link
+          href={action.href}
+          className="mt-6 rounded-md bg-primary px-5 py-2.5 text-sm text-white"
+        >
+          {action.label}
+        </Link>
+      )}
+    </div>
+  );
+}
+```
+
+Usages :
+
+```tsx
+// Liste vide
+<EmptyState
+  icon={<PencilIcon className="h-12 w-12" />}
+  title="Aucun article pour l'instant"
+  description="Les premiers articles arrivent bientôt."
+/>
+
+// Recherche sans résultat
+<EmptyState
+  icon={<SearchIcon className="h-12 w-12" />}
+  title="Aucun résultat"
+  description={`Aucun produit ne correspond à "${query}".`}
+  action={{ label: "Voir tous les produits", href: "/produits" }}
+/>
+
+// Panier vide
+<EmptyState
+  icon={<CartIcon className="h-12 w-12" />}
+  title="Votre panier est vide"
+  description="Découvrez nos produits et ajoutez-en à votre panier."
+  action={{ label: "Voir la boutique", href: "/boutique" }}
+/>
+```
+
+Règle : chaque empty state a un **titre**, une **description**, une **action** (CTA pour sortir de l'état vide). Jamais juste "Aucun résultat."
+
+---
+
+## 8. Error boundary client pour widgets isolés
+
+`error.tsx` couvre tout le segment. Pour isoler un widget interactif (carte, graphique, iframe tiers) sans casser la page :
+
+```tsx
+// components/common/WidgetErrorBoundary.tsx
+"use client";
+
+import { Component, type ReactNode } from "react";
+
+type Props = { children: ReactNode; fallback?: ReactNode };
+type State = { hasError: boolean };
+
+export class WidgetErrorBoundary extends Component<Props, State> {
+  state: State = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error) {
+    console.error("[WidgetErrorBoundary]", error);
+    // Sentry.captureException(error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        this.props.fallback ?? (
+          <div className="rounded-md bg-amber-50 p-4 text-sm text-amber-900">
+            Ce module n'a pas pu se charger. Le reste de la page fonctionne normalement.
+          </div>
+        )
+      );
+    }
+    return this.props.children;
+  }
+}
+```
+
+Usage :
+
+```tsx
+<WidgetErrorBoundary fallback={<MapUnavailable />}>
+  <InteractiveMap />
+</WidgetErrorBoundary>
+```
+
+À utiliser pour isoler : cartes Leaflet, graphiques Recharts, iframes tierces, widgets PostHog/chat. **Pas** pour les composants standards — laisse `error.tsx` faire son travail.
+
+---
+
+## 9. Logging d'erreurs
+
+Dans les Server Actions et Route Handlers :
+
+```ts
+export async function updateProfile(input: unknown) {
+  try {
+    // ... business logic
+    return { success: true };
+  } catch (e) {
+    console.error("[updateProfile]", e);
+    // Optionnel : Sentry.captureException(e, { tags: { action: "updateProfile" } });
+    return { success: false, error: "Erreur serveur" };
+  }
+}
+```
+
+Règles logging :
+- **Serveur** : `console.error(...)` visible dans Vercel logs / runtime logs. Tag avec le nom de l'action.
+- **Client** (dans `error.tsx` via `useEffect`) : console.error + push vers Sentry/PostHog.
+- **Jamais** de `console.log` silencieux qui avale l'erreur (`.catch(console.log)`).
+- **Jamais** return `null` / `undefined` sur erreur — toujours un objet résultat typé.
+
+---
+
+## 10. Pattern ErrorState composant générique
+
+Pour les erreurs affichées inline (section qui a raté son fetch, mais sans crash le segment complet) :
+
+```tsx
+// components/ui/ErrorState.tsx
+import type { ReactNode } from "react";
+
+type Props = {
+  title?: string;
+  description?: string;
+  onRetry?: () => void;
+  icon?: ReactNode;
+};
+
+export function ErrorState({
+  title = "Une erreur s'est produite",
+  description = "Impossible de charger ce contenu. Réessayez dans un instant.",
+  onRetry,
+  icon,
+}: Props) {
+  return (
+    <div role="alert" className="flex flex-col items-center rounded-xl border border-red-200 bg-red-50 p-8 text-center">
+      {icon && <div className="mb-3 text-red-500">{icon}</div>}
+      <h3 className="font-semibold text-red-900">{title}</h3>
+      <p className="mt-2 max-w-md text-sm text-red-800">{description}</p>
+      {onRetry && (
+        <button
+          type="button"
+          onClick={onRetry}
+          className="mt-4 rounded-md border border-red-300 bg-white px-4 py-2 text-sm text-red-900 hover:bg-red-100"
+        >
+          Réessayer
+        </button>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+## 11. Toasts d'erreur utilisateur
+
+Une erreur silencieuse dans la console n'aide pas l'utilisateur. Toujours afficher un feedback visible.
+
+```tsx
+const onSubmit = async (values) => {
+  const res = await submitContact(values);
+  if (!res.success) {
+    toast({
+      title: "Erreur",
+      description: res.error,
+      variant: "destructive",
+    });
+    return;
+  }
+  toast({ title: "Envoyé", description: "Merci !" });
+};
+```
+
+Règle : toute mutation qui peut échouer = toast succès + toast erreur. Pas l'un sans l'autre.
+
+---
+
+## 12. Anti-patterns
+
+- `loading.tsx` générique (spinner centré) identique partout. Un skeleton par segment, qui reflète le layout.
+- `try { ... } catch (e) {}` qui avale l'erreur sans log ni feedback. Toujours `console.error` + feedback utilisateur.
+- Pas de fallback sur les routes importantes. Chaque route avec `await` doit avoir `loading.tsx` et `error.tsx`.
+- Error boundary trop haut (autour de `<RootLayout>`) qui casse tout le site pour une erreur locale. Isoler par widget / segment.
+- Retour silencieux en arrière sur une erreur (`router.back()` sans toast). L'utilisateur ne comprend pas.
+- `error.tsx` sans `"use client"`. Build error immédiat.
+- Afficher `error.message` (stack trace) à l'utilisateur en prod. Fuite d'implémentation. Réserver au mode dev.
+- `<div>Not found</div>` manuel au lieu de `notFound()`. Next doit renvoyer le vrai statut HTTP 404.
+- Empty state sans CTA. L'utilisateur arrive dans un cul-de-sac.
+- Skeleton de dimensions différentes du contenu final -> layout shift (CLS dégradé).
+- `reset()` combiné à `window.location.reload()`. Redondant. `reset()` suffit.
+- Rendre le même composant pour `loading` et `skeleton` inline. Le premier est une Route boundary, le second un fallback Suspense — rôles différents.
+
+---
+
+## 13. Checklist avant livraison
+
+- [ ] `app/loading.tsx` global + skeleton réaliste du layout
+- [ ] `app/error.tsx` avec `"use client"`, `error` + `reset`, bouton Réessayer
+- [ ] `app/not-found.tsx` avec CTA retour accueil + liens utiles
+- [ ] `app/global-error.tsx` à la racine (catastrophe RootLayout)
+- [ ] Chaque segment de route significatif (services, blog, dashboard...) a son `loading.tsx` + `error.tsx` spécifique
+- [ ] Chaque page dynamique `[slug]` a un `not-found.tsx` et appelle `notFound()` si ressource absente
+- [ ] Skeleton reflète les **dimensions exactes** du contenu final (zéro CLS)
+- [ ] `aria-busy="true"` + `aria-label` sur les zones en chargement
+- [ ] `EmptyState` utilisé partout où une liste peut être vide, avec CTA
+- [ ] `ErrorState` utilisé pour les erreurs inline (widget sans crash segment)
+- [ ] `WidgetErrorBoundary` autour des widgets interactifs tiers (cartes, charts, iframes)
+- [ ] Logs serveur taggés (`[actionName]`) dans tous les try/catch Server Actions
+- [ ] Toast succès + toast erreur sur chaque mutation (formulaires, delete, update)
+- [ ] Pas de stack trace visible en prod (`NODE_ENV === "production"` check)
+- [ ] 404 dynamique via `notFound()` de `next/navigation`, jamais manuel
+- [ ] Test manuel : couper la connexion -> error.tsx affiché ; URL inconnue -> not-found.tsx ; mutation qui échoue -> toast erreur

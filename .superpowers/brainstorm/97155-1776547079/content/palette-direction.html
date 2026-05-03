@@ -1,0 +1,95 @@
+<h2>Quelle direction de palette pour PESSORA ?</h2>
+<p class="subtitle">Les deux références ont des ambiances différentes — choisis la base qui te parle le plus</p>
+
+<div class="cards">
+
+  <!-- Option A: Noir Éditorial -->
+  <div class="card" data-choice="noir" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#0e0e0e; padding:0; height:280px; position:relative; overflow:hidden;">
+      <!-- Mock header -->
+      <div style="padding:20px 24px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08);">
+        <span style="color:#fff; font-family:Georgia,serif; letter-spacing:0.15em; font-size:13px; text-transform:uppercase;">PESSÓRA</span>
+        <div style="display:flex; gap:20px;">
+          <span style="color:rgba(255,255,255,0.4); font-size:10px; letter-spacing:0.12em; text-transform:uppercase;">Menu</span>
+          <span style="color:rgba(255,255,255,0.4); font-size:10px; letter-spacing:0.12em; text-transform:uppercase;">Espace</span>
+        </div>
+      </div>
+      <!-- Mock hero text -->
+      <div style="padding:32px 24px;">
+        <div style="font-size:9px; letter-spacing:0.3em; color:#c9a96e; text-transform:uppercase; margin-bottom:12px;">Bar Protéiné · Fort-de-France</div>
+        <div style="font-family:Georgia,serif; font-size:34px; color:#fff; line-height:1.1; letter-spacing:-0.02em;">Nourris<br><em style="font-style:italic; color:#c9a96e;">l'essentiel</em></div>
+        <div style="margin-top:20px; width:40px; height:1px; background:#c9a96e;"></div>
+        <div style="margin-top:16px; font-size:9px; color:rgba(255,255,255,0.35); letter-spacing:0.2em; text-transform:uppercase;">Découvrir la gamme →</div>
+      </div>
+      <!-- Accent band -->
+      <div style="position:absolute; bottom:0; left:0; right:0; height:3px; background:linear-gradient(90deg,#c9a96e,#8a6a40);"></div>
+    </div>
+    <div class="card-body">
+      <h3>A — Noir Éditorial</h3>
+      <p>Fond quasi-noir (#0e0e0e), texte blanc, accent or champagne (#c9a96e). Inspiré Nespresso — luxe sombre, sophistiqué, premium.</p>
+      <p style="font-size:12px; margin-top:8px; opacity:0.6;">→ Fort impact. Idéal si la marque veut positionner le premium noir.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Crème Luxe -->
+  <div class="card" data-choice="creme" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f4f1ec; padding:0; height:280px; position:relative; overflow:hidden;">
+      <!-- Mock header -->
+      <div style="padding:20px 24px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(0,0,0,0.07);">
+        <span style="color:#111; font-family:Georgia,serif; letter-spacing:0.15em; font-size:13px; text-transform:uppercase;">PESSÓRA</span>
+        <div style="display:flex; gap:20px;">
+          <span style="color:rgba(0,0,0,0.35); font-size:10px; letter-spacing:0.12em; text-transform:uppercase;">Menu</span>
+          <span style="color:rgba(0,0,0,0.35); font-size:10px; letter-spacing:0.12em; text-transform:uppercase;">Espace</span>
+        </div>
+      </div>
+      <!-- Mock hero text -->
+      <div style="padding:32px 24px;">
+        <div style="font-size:9px; letter-spacing:0.3em; color:#8a6a40; text-transform:uppercase; margin-bottom:12px;">Bar Protéiné · Fort-de-France</div>
+        <div style="font-family:Georgia,serif; font-size:34px; color:#111; line-height:1.1; letter-spacing:-0.02em;">Nourris<br><em style="font-style:italic; color:#8a6a40;">l'essentiel</em></div>
+        <div style="margin-top:20px; width:40px; height:1px; background:#111;"></div>
+        <div style="margin-top:16px; font-size:9px; color:rgba(0,0,0,0.35); letter-spacing:0.2em; text-transform:uppercase;">Découvrir la gamme →</div>
+      </div>
+      <!-- Bottom strip -->
+      <div style="position:absolute; bottom:0; left:0; right:0; height:3px; background:#111;"></div>
+    </div>
+    <div class="card-body">
+      <h3>B — Crème Luxe</h3>
+      <p>Fond crème chaud (#f4f1ec), texte charcoal (#111), accent bronze/brun (#8a6a40). Inspiré Le Tanneur — éditorial clair, aéré, parisien.</p>
+      <p style="font-size:12px; margin-top:8px; opacity:0.6;">→ Élégance lumineuse. Parfait pour un positionnement lifestyle premium de jour.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Contraste Absolu -->
+  <div class="card" data-choice="contrast" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#fff; padding:0; height:280px; position:relative; overflow:hidden;">
+      <!-- Mock header — white top, black strip -->
+      <div style="background:#fff; padding:20px 24px; display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #111;">
+        <span style="color:#111; font-family:Georgia,serif; letter-spacing:0.15em; font-size:13px; text-transform:uppercase;">PESSÓRA</span>
+        <div style="display:flex; gap:20px;">
+          <span style="color:#111; font-size:10px; letter-spacing:0.12em; text-transform:uppercase;">Menu</span>
+          <span style="color:#111; font-size:10px; letter-spacing:0.12em; text-transform:uppercase;">Espace</span>
+        </div>
+      </div>
+      <!-- Hero: split black / white -->
+      <div style="display:flex; height:230px;">
+        <div style="flex:1; background:#111; padding:24px 20px; display:flex; flex-direction:column; justify-content:center;">
+          <div style="font-size:8px; letter-spacing:0.3em; color:rgba(255,255,255,0.4); text-transform:uppercase; margin-bottom:10px;">Fort-de-France</div>
+          <div style="font-family:Georgia,serif; font-size:28px; color:#fff; line-height:1.1; letter-spacing:-0.02em;">Nourris<br><em style="color:#d4a843;">l'essentiel</em></div>
+        </div>
+        <div style="flex:1; background:#fff; padding:24px 20px; display:flex; flex-direction:column; justify-content:flex-end; border-left:1px solid #eee;">
+          <div style="font-size:8px; letter-spacing:0.2em; color:#111; text-transform:uppercase; margin-bottom:8px;">Bar Protéiné</div>
+          <div style="width:32px; height:2px; background:#d4a843; margin-bottom:12px;"></div>
+          <div style="font-size:8px; color:rgba(0,0,0,0.4); letter-spacing:0.15em; text-transform:uppercase;">Découvrir →</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Contraste Absolu</h3>
+      <p>Blanc pur + noir pur (#111) + or vif (#d4a843). Split-screen editorial, comme les grandes maisons de luxe. Maximal en impact visuel.</p>
+      <p style="font-size:12px; margin-top:8px; opacity:0.6;">→ Le plus audacieux. Très "magazine de luxe". Demande une photographie forte.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:24px; text-align:center;">Clique sur une option ou réponds directement dans le terminal.</p>

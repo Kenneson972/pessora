@@ -1,0 +1,625 @@
+---
+description: SEO Next.js 15 - metadata static et generateMetadata dynamique, Open Graph, Twitter, JSON-LD, sitemap, robots, canonical, hreflang
+globs: "**/app/**/page.tsx,**/app/**/layout.tsx,**/app/sitemap.ts,**/app/robots.ts,**/lib/seo/**"
+alwaysApply: false
+---
+
+# kb-seo — SEO Next.js 15 App Router
+
+Stack Karibloom : Next.js 15 App Router + TypeScript. Le SEO passe **exclusivement** par l'API `metadata` native. Pas de `<SEOHead />`, pas de `react-helmet`, pas de `next/head`.
+
+> Complète `kb-performance` (Core Web Vitals), `kb-components` (Server vs Client), `kb-supabase` (données dynamiques sitemap). Ne remplace pas ces règles.
+
+---
+
+## 1. Principe de base
+
+Next 15 gère le `<head>` via deux exports dans les fichiers `page.tsx` et `layout.tsx` :
+
+- `metadata` : objet statique, résolu au build
+- `generateMetadata()` : fonction async, résolue à la demande (params, searchParams, parent)
+
+**Toujours un Server Component.** Jamais de `"use client"` sur un fichier qui exporte `metadata`.
+
+```tsx
+// app/a-propos/page.tsx
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'À propos',
+  description: 'Agence Karibloom, web & conciergerie en Martinique.',
+}
+
+export default function AboutPage() {
+  return <main>...</main>
+}
+```
+
+---
+
+## 2. `metadataBase` (layout racine, OBLIGATOIRE)
+
+Sans `metadataBase`, toutes les URLs OG/canonical seront relatives et cassées en preview/prod.
+
+```tsx
+// app/layout.tsx
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? 'https://karibloom.com'
+  ),
+  title: {
+    default: 'Karibloom — Agence web & conciergerie Martinique',
+    template: '%s | Karibloom',
+  },
+  description:
+    'Agence digitale en Martinique : sites web, e-commerce, conciergerie de luxe.',
+  openGraph: {
+    type: 'website',
+    locale: 'fr_FR',
+    siteName: 'Karibloom',
+    url: 'https://karibloom.com',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@karibloom',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
+}
+```
+
+Le `template: '%s | Karibloom'` s'applique aux pages enfants qui déclarent `title: 'Contact'` → `Contact | Karibloom`.
+
+---
+
+## 3. `generateMetadata` dynamique
+
+Pour toute page qui dépend de `params` (produit, propriété, article) :
+
+```tsx
+// app/proprietes/[slug]/page.tsx
+import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+import { getPropertyBySlug } from '@/lib/properties'
+
+type Props = { params: Promise<{ slug: string }> }
+
+export async function generateMetadata(
+  { params }: Props
+): Promise<Metadata> {
+  const { slug } = await params
+  const property = await getPropertyBySlug(slug)
+
+  if (!property) return {}
+
+  return {
+    title: property.name,
+    description: property.summary,
+    alternates: {
+      canonical: `/proprietes/${property.slug}`,
+    },
+    openGraph: {
+      title: property.name,
+      description: property.summary,
+      url: `/proprietes/${property.slug}`,
+      type: 'website',
+      images: [
+        {
+          url: property.coverUrl,
+          width: 1200,
+          height: 630,
+          alt: property.name,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: property.name,
+      description: property.summary,
+      images: [property.coverUrl],
+    },
+  }
+}
+
+export default async function PropertyPage({ params }: Props) {
+  const { slug } = await params
+  const property = await getPropertyBySlug(slug)
+  if (!property) notFound()
+  return <article>...</article>
+}
+```
+
+Next 15 dédoublonne automatiquement les `fetch` entre `generateMetadata` et la page — pas besoin de cache manuel si tu utilises `fetch` natif ou une fonction `cache()`.
+
+---
+
+## 4. Alternates : canonical + hreflang
+
+### Canonical simple
+
+```ts
+alternates: {
+  canonical: '/contact',
+}
+```
+
+Résolu automatiquement contre `metadataBase` → `https://karibloom.com/contact`.
+
+### i18n (hreflang)
+
+```ts
+alternates: {
+  canonical: '/fr/proprietes/villa-azur',
+  languages: {
+    'fr-FR': '/fr/proprietes/villa-azur',
+    'en-US': '/en/properties/villa-azur',
+    'x-default': '/fr/proprietes/villa-azur',
+  },
+}
+```
+
+`hreflang` doit être **bidirectionnel** : chaque URL de langue pointe vers toutes les autres, y compris elle-même.
+
+---
+
+## 5. Open Graph & Twitter (pattern complet)
+
+```ts
+openGraph: {
+  title: 'Villa Azur — Trois-Îlets',
+  description: 'Villa 4 chambres vue mer, piscine privée.',
+  url: '/proprietes/villa-azur',
+  siteName: 'Karibloom',
+  locale: 'fr_FR',
+  type: 'website',
+  images: [
+    {
+      url: '/og/villa-azur.jpg', // résolu via metadataBase
+      width: 1200,
+      height: 630,
+      alt: 'Villa Azur vue mer',
+    },
+  ],
+},
+twitter: {
+  card: 'summary_large_image',
+  title: 'Villa Azur — Trois-Îlets',
+  description: 'Villa 4 chambres vue mer, piscine privée.',
+  images: ['/og/villa-azur.jpg'],
+}
+```
+
+Dimensions OG recommandées : **1200x630** (ratio 1.91:1). Twitter `summary_large_image` accepte la même.
+
+---
+
+## 6. Images OG générées dynamiquement
+
+Next 15 permet de générer l'image OG à la volée via `next/og`. Crée un fichier `opengraph-image.tsx` à côté du `page.tsx`.
+
+### OG dynamique par route
+
+```tsx
+// app/proprietes/[slug]/opengraph-image.tsx
+import { ImageResponse } from 'next/og'
+import { getPropertyBySlug } from '@/lib/properties'
+
+export const runtime = 'edge'
+export const alt = 'Propriété Karibloom'
+export const size = { width: 1200, height: 630 }
+export const contentType = 'image/png'
+
+export default async function OGImage(
+  { params }: { params: { slug: string } }
+) {
+  const property = await getPropertyBySlug(params.slug)
+
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          display: 'flex',
+          width: '100%',
+          height: '100%',
+          background: '#0a1f1a',
+          color: 'white',
+          padding: 80,
+          flexDirection: 'column',
+          justifyContent: 'flex-end',
+        }}
+      >
+        <div style={{ fontSize: 72, fontWeight: 700 }}>
+          {property?.name ?? 'Karibloom'}
+        </div>
+        <div style={{ fontSize: 32, opacity: 0.8, marginTop: 16 }}>
+          {property?.city ?? 'Martinique'}
+        </div>
+      </div>
+    ),
+    { ...size }
+  )
+}
+```
+
+Next câble automatiquement cette URL dans `openGraph.images` — pas besoin de la redéclarer dans `metadata`.
+
+Pour Twitter spécifiquement : fichier `twitter-image.tsx` (même signature).
+
+---
+
+## 7. JSON-LD (Structured Data)
+
+**Règle** : JSON-LD inséré via un `<script>` dans le JSX d'un **Server Component**, jamais dans `metadata`.
+
+### Helper `lib/seo/schemas.ts`
+
+```ts
+// lib/seo/schemas.ts
+import type {
+  LocalBusiness,
+  Product,
+  Service,
+  FAQPage,
+  BreadcrumbList,
+  Article,
+  LodgingBusiness,
+  Restaurant,
+  WithContext,
+} from 'schema-dts'
+
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://karibloom.com'
+
+export function buildLocalBusinessSchema(): WithContext<LocalBusiness> {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: 'Karibloom',
+    url: SITE_URL,
+    telephone: '+596-XXX-XXX-XXX',
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Fort-de-France',
+      addressRegion: 'Martinique',
+      addressCountry: 'FR',
+    },
+    openingHoursSpecification: [
+      {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+        opens: '09:00',
+        closes: '18:00',
+      },
+    ],
+  }
+}
+
+export function buildProductSchema(p: {
+  name: string
+  description: string
+  image: string
+  slug: string
+  price: number
+  currency: string
+  availability?: 'InStock' | 'OutOfStock' | 'PreOrder'
+}): WithContext<Product> {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: p.name,
+    description: p.description,
+    image: p.image,
+    url: `${SITE_URL}/produits/${p.slug}`,
+    offers: {
+      '@type': 'Offer',
+      price: p.price.toString(),
+      priceCurrency: p.currency,
+      availability: `https://schema.org/${p.availability ?? 'InStock'}`,
+      url: `${SITE_URL}/produits/${p.slug}`,
+    },
+  }
+}
+
+export function buildBreadcrumbSchema(
+  items: { name: string; url: string }[]
+): WithContext<BreadcrumbList> {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: item.name,
+      item: `${SITE_URL}${item.url}`,
+    })),
+  }
+}
+
+export function buildFAQSchema(
+  qa: { question: string; answer: string }[]
+): WithContext<FAQPage> {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: qa.map((x) => ({
+      '@type': 'Question',
+      name: x.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: x.answer,
+      },
+    })),
+  }
+}
+
+export function buildServiceSchema(s: {
+  name: string
+  description: string
+  slug: string
+  areaServed?: string
+}): WithContext<Service> {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: s.name,
+    description: s.description,
+    url: `${SITE_URL}/services/${s.slug}`,
+    provider: {
+      '@type': 'LocalBusiness',
+      name: 'Karibloom',
+    },
+    areaServed: s.areaServed ?? 'Martinique',
+  }
+}
+
+export function buildLodgingSchema(p: {
+  name: string
+  description: string
+  slug: string
+  image: string
+  city: string
+}): WithContext<LodgingBusiness> {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'LodgingBusiness',
+    name: p.name,
+    description: p.description,
+    image: p.image,
+    url: `${SITE_URL}/proprietes/${p.slug}`,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: p.city,
+      addressCountry: 'FR',
+    },
+  }
+}
+
+export function buildRestaurantSchema(r: {
+  name: string
+  servesCuisine: string[]
+  priceRange: string
+}): WithContext<Restaurant> {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Restaurant',
+    name: r.name,
+    servesCuisine: r.servesCuisine,
+    priceRange: r.priceRange,
+  }
+}
+
+export function buildArticleSchema(a: {
+  headline: string
+  image: string
+  datePublished: string
+  dateModified: string
+  authorName: string
+  slug: string
+}): WithContext<Article> {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: a.headline,
+    image: a.image,
+    datePublished: a.datePublished,
+    dateModified: a.dateModified,
+    author: { '@type': 'Person', name: a.authorName },
+    url: `${SITE_URL}/blog/${a.slug}`,
+  }
+}
+```
+
+### Composant `JsonLd`
+
+```tsx
+// components/seo/JsonLd.tsx
+export function JsonLd({ data }: { data: object }) {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  )
+}
+```
+
+### Usage dans une page
+
+```tsx
+// app/produits/[slug]/page.tsx
+import { JsonLd } from '@/components/seo/JsonLd'
+import {
+  buildProductSchema,
+  buildBreadcrumbSchema,
+} from '@/lib/seo/schemas'
+
+export default async function ProductPage({ params }: Props) {
+  const { slug } = await params
+  const product = await getProductBySlug(slug)
+
+  return (
+    <>
+      <JsonLd
+        data={buildProductSchema({
+          name: product.name,
+          description: product.description,
+          image: product.coverUrl,
+          slug: product.slug,
+          price: product.price,
+          currency: 'EUR',
+        })}
+      />
+      <JsonLd
+        data={buildBreadcrumbSchema([
+          { name: 'Accueil', url: '/' },
+          { name: 'Produits', url: '/produits' },
+          { name: product.name, url: `/produits/${product.slug}` },
+        ])}
+      />
+      <article>...</article>
+    </>
+  )
+}
+```
+
+### Schémas pertinents par projet Karibloom
+
+| Projet | Schémas à activer |
+|---|---|
+| Site agence Karibloom | `LocalBusiness`, `Service`, `FAQPage`, `BreadcrumbList` |
+| DIAMANTNOIR / PESSORA (e-commerce) | `Product`, `BreadcrumbList`, `FAQPage` |
+| Conciergerie (propriétés) | `LodgingBusiness`, `BreadcrumbList` |
+| DALCIELO (restaurant) | `Restaurant`, `LocalBusiness`, `FAQPage` |
+| Blog / articles | `Article`, `BreadcrumbList` |
+
+---
+
+## 8. `app/sitemap.ts` (dynamique)
+
+Jamais de XML à la main. Next 15 génère `/sitemap.xml` depuis ce fichier.
+
+```ts
+// app/sitemap.ts
+import type { MetadataRoute } from 'next'
+import { getAllProducts, getAllProperties } from '@/lib/catalog'
+
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://karibloom.com'
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const [products, properties] = await Promise.all([
+    getAllProducts(),
+    getAllProperties(),
+  ])
+
+  const staticRoutes: MetadataRoute.Sitemap = [
+    { url: `${SITE_URL}/`, changeFrequency: 'weekly', priority: 1 },
+    { url: `${SITE_URL}/services`, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${SITE_URL}/contact`, changeFrequency: 'yearly', priority: 0.5 },
+  ]
+
+  const productRoutes: MetadataRoute.Sitemap = products.map((p) => ({
+    url: `${SITE_URL}/produits/${p.slug}`,
+    lastModified: p.updatedAt,
+    changeFrequency: 'weekly',
+    priority: 0.7,
+  }))
+
+  const propertyRoutes: MetadataRoute.Sitemap = properties.map((p) => ({
+    url: `${SITE_URL}/proprietes/${p.slug}`,
+    lastModified: p.updatedAt,
+    changeFrequency: 'weekly',
+    priority: 0.7,
+  }))
+
+  return [...staticRoutes, ...productRoutes, ...propertyRoutes]
+}
+```
+
+Si > 50 000 URLs : utiliser `generateSitemaps()` pour splitter en plusieurs sitemaps.
+
+---
+
+## 9. `app/robots.ts`
+
+```ts
+// app/robots.ts
+import type { MetadataRoute } from 'next'
+
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? 'https://karibloom.com'
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: [
+      {
+        userAgent: '*',
+        allow: '/',
+        disallow: ['/admin', '/api/', '/espace-membre', '/checkout'],
+      },
+    ],
+    sitemap: `${SITE_URL}/sitemap.xml`,
+    host: SITE_URL,
+  }
+}
+```
+
+Pour bloquer toute la preview : conditionner sur `process.env.VERCEL_ENV !== 'production'` et retourner `disallow: '/'`.
+
+---
+
+## 10. Vérifications SEO (à faire avant prod)
+
+- `metadataBase` défini dans `app/layout.tsx`
+- Titre unique par page (pas de `default` qui écrase partout)
+- `description` sur toutes les pages indexables (150-160 caractères)
+- `canonical` absolu, pas de duplicate content
+- `x-robots-tag` : jamais `noindex` en prod (vérifier header HTTP response)
+- Au moins une image OG 1200x630 par type de page
+- `sitemap.xml` accessible et listé dans `robots.txt`
+- JSON-LD validé via [Rich Results Test](https://search.google.com/test/rich-results)
+- `hreflang` bidirectionnel si i18n (chaque langue pointe vers les autres)
+- Pas de `metadata` dans un Client Component (erreur silencieuse)
+
+---
+
+## 11. Anti-patterns
+
+- Composant `<SEOHead />` avec `react-helmet` ou `next/head` ❌ (legacy CRA, ne marche pas en App Router)
+- Meta tags hard-codées dans `<head>` via un layout ❌
+- JSON-LD dans un Client Component (`"use client"`) ❌ → sérialisation cassée, bundle inutilement gros
+- Oublier `metadataBase` → URLs OG relatives, preview cassée ❌
+- Sitemap XML statique commité dans `/public` ❌ → utiliser `app/sitemap.ts`
+- `robots.txt` statique dans `/public` ❌ → utiliser `app/robots.ts`
+- `generateMetadata` qui refait un fetch déjà fait dans la page sans `cache()` ❌
+- Titre identique sur toutes les pages produit (`'Produit | Karibloom'`) ❌ → toujours dynamiser
+- Image OG qui renvoie 404 (mauvais `metadataBase`) ❌
+
+---
+
+## 12. Checklist de livraison
+
+- [ ] `metadataBase` dans `app/layout.tsx`
+- [ ] `title.template` défini
+- [ ] `metadata` ou `generateMetadata` sur **chaque** page indexable
+- [ ] OG + Twitter configurés (minimum `title`, `description`, `images`)
+- [ ] JSON-LD sur : pages produits, services, FAQ, propriétés, articles
+- [ ] `app/sitemap.ts` dynamique depuis la DB
+- [ ] `app/robots.ts` avec disallow admin/api
+- [ ] `canonical` sur chaque page dynamique
+- [ ] `hreflang` si i18n activée
+- [ ] `opengraph-image.tsx` par type de page clé
+- [ ] Preview Facebook / Twitter / LinkedIn testée
+- [ ] Rich Results Test OK sur schémas critiques
+- [ ] Search Console : sitemap soumis, 0 erreur d'indexation

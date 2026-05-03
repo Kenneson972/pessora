@@ -1,0 +1,64 @@
+---
+description: Responsive mobile Karibloom — référence vers le skill mobile-responsive. Activer lors du développement ou de la correction du responsive (Next.js ou SPA).
+globs: "**/src/**/*.jsx,**/src/**/*.tsx,**/src/**/*.css,**/tailwind.config.*,**/app/**/*.tsx,**/app/**/*.jsx"
+alwaysApply: false
+---
+
+# 📱 Responsive Mobile — Karibloom
+
+> **Règle pack (léger).** Le guide complet, les patterns JSX et la checklist de livraison sont dans le **skill `mobile-responsive`** (`.cursor/skills/mobile-responsive/` dans le projet client ; copie miroir sous `client-builder-rules/skills/mobile-responsive/` dans le dépôt Builder Karibloom).
+
+---
+
+## Déclencher le skill
+
+Invoquer le skill **`mobile-responsive`** quand la tâche concerne : responsive, mobile, hamburger, menu mobile, site cassé sur téléphone, breakpoints, touch, safe area, dvh, svh, Chrome Android, backdrop-filter.
+
+---
+
+## Rappel des règles critiques (résumé)
+
+Ces règles s’appliquent sur les projets Karibloom (Next.js App Router ou React SPA) :
+
+### Fondamentaux
+- `<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />` (ou `export const viewport` Next.js)
+- CSS **mobile-first** : base sans préfixe, surcharges `sm:`, `md:`, `lg:`
+- `overflow-x: hidden` sur `html` et `body` si le layout déborde
+- Corps de texte **minimum 16px** (évite le zoom auto iOS sur inputs)
+- Touch targets **minimum 44×44px** (Apple HIG + WCAG 2.5.5)
+
+### Hauteurs viewport
+- Hero → `min-height: 100svh` de préférence (évite les bugs avec la barre d’adresse)
+- Modales/drawers → `100dvh` si besoin de hauteur dynamique
+- Éviter `100vh` seul pour des sections critiques sur mobile
+
+### Safe areas iPhone X+
+- `viewport-fit=cover` dans le viewport
+- `padding-bottom: calc(1rem + env(safe-area-inset-bottom))` sur footer / nav fixe
+- `padding-top: env(safe-area-inset-top)` sur header fixe si besoin
+
+### Chrome Android (performance GPU)
+- `backdrop-filter` : limiter sur mobile (pas de `* { backdrop-filter: none }` global aveugle — voir skill)
+- `background-attachment: fixed` : éviter sur mobile → `scroll`
+- WebGL / effets lourds : **montage React** conditionnel, pas seulement `display:none`
+
+### Next.js App Router
+- Composants interactifs → `'use client'`
+- `import Link from 'next/link'` — prop `href` (pas `to`)
+
+---
+
+## Contenu détaillé
+
+| Emplacement | Rôle |
+|-------------|------|
+| Skill `SKILL.md` | Procédure, quand lire quoi |
+| `references/full-mobile-guide.md` | Guide complet (viewport, touch, Chrome Android, checklist) |
+| Règle racine optionnelle `kb-mobile-responsive.mdc` (projet client) | Même contenu long avec globs, si toujours chargée sur le repo |
+
+---
+
+## Synchronisation Builder
+
+Reproduire à l’identique dans :  
+`/Users/kennesonbasel-somnier/Downloads/CLIENT BUILDER KARIBLOOM/client-builder-rules/03-architecture/kb-mobile-responsive.mdc`

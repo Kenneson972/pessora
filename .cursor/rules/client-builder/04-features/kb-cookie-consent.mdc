@@ -1,0 +1,45 @@
+---
+description: Cookie consent Karibloom - vanilla-cookieconsent v3, GTM, PostHog, kb_consent, Google Consent Mode v2
+globs: "**/cookieConsent.js, **/useCookieConsent.js, **/index.html, **/Footer.jsx"
+alwaysApply: false
+---
+
+# Cookie Consent Karibloom
+
+## Stack recommandé
+
+vanilla-cookieconsent v3 (npm) — stack validé en production sur karibloom.net :
+
+INSTALLATION
+- npm install vanilla-cookieconsent
+- Créer src/config/cookieConsent.js (config centrale)
+- Créer src/hooks/useCookieConsent.js (hook React)
+- Appeler useCookieConsent() dans App.jsx
+
+SERVICES À GÉRER (adapter selon le projet client)
+- GTM : chargé une seule fois via loadGTM() dans onConsent
+- GA4 : via GTM, Google Consent Mode v2 mis à jour dans onConsent + onChange
+- PostHog : opt_in_capturing() / opt_out_capturing() selon consentement
+- kb_consent : localStorage.setItem('kb_consent', 'granted'|'denied')
+  dans syncKbConsent() → corrige canTrack() sur les LPs
+
+GOOGLE CONSENT MODE V2 — VALEURS PAR DÉFAUT
+- analytics_storage: 'denied'
+- ad_storage: 'denied'
+- ad_user_data: 'denied'
+- ad_personalization: 'denied'
+- Mise à jour dans onConsent + onChange uniquement
+
+CHARGEMENT
+- requestIdleCallback({ timeout: 3000 }) dans le hook
+- GTM injecté dynamiquement après consentement (pas dans index.html)
+- Axeptio : commenter uniquement, ne jamais supprimer
+
+CATÉGORIES MINIMALES
+- necessary : enabled:true, readOnly:true
+- analytics : enabled:false par défaut (RGPD compliant)
+- autoClear cookies GA (_ga*) et PostHog (ph_*) si refus
+
+IDs KARIBLOOM (ne pas réutiliser pour les clients)
+- GTM : GTM-5KDZCW4K
+- GA4 : G-P98JND6VTX

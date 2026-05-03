@@ -1,0 +1,487 @@
+---
+description: Images Next.js 15 - next/image, Supabase Storage, loader custom, formats AVIF/WebP, sizes, priority LCP, placeholder
+globs: "**/components/**/*Image*,**/next.config.*,**/app/**/page.tsx,**/lib/images/**"
+alwaysApply: false
+---
+
+# kb-image-optimizer — Images Next.js 15
+
+Stack Karibloom : Next.js 15 + Supabase Storage. Toutes les images significatives passent par `next/image`. Pas de Sharp CLI manuel, pas de pipeline de build d'images — Next optimise à la volée et sert AVIF/WebP automatiquement.
+
+> Complète `kb-performance` (LCP), `kb-components` (composants UI), `kb-supabase` (Storage + RLS). Ne remplace pas ces règles.
+
+---
+
+## 1. Principe
+
+- **Jamais** `<img>` nu pour une image de contenu (hero, produit, cover, avatar)
+- **Toujours** `next/image` avec `width`+`height` ou `fill`
+- Next sert AVIF/WebP selon le navigateur, génère les srcsets, lazy-load par défaut
+
+Seule exception tolérée pour `<img>` : SVG inline décoratif sans optimisation possible, ou icône critique au-dessus du fold où le composant `Image` ajoute du layout shift.
+
+---
+
+## 2. `next.config.ts`
+
+```ts
+// next.config.ts
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+    ],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
+    imageSizes: [16, 32, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 jours
+  },
+}
+
+export default nextConfig
+```
+
+Toute URL externe non whitelistée dans `remotePatterns` **throw** en dev et en build. C'est volontaire : ça évite qu'un vendor CDN ne bypass l'optimisation.
+
+---
+
+## 3. Dimensions : `width`/`height` vs `fill`
+
+### Dimensions connues
+
+```tsx
+import Image from 'next/image'
+
+<Image
+  src="/hero-martinique.jpg"
+  alt="Vue aérienne de Fort-de-France au coucher du soleil"
+  width={1920}
+  height={1080}
+  sizes="100vw"
+  priority
+/>
+```
+
+### Dimensions inconnues (image remplit un conteneur)
+
+Parent **positionné** (`relative`, `absolute`, `fixed`) + `fill` :
+
+```tsx
+<div className="relative aspect-[4/3] w-full">
+  <Image
+    src={property.coverUrl}
+    alt={property.name}
+    fill
+    sizes="(max-width: 768px) 100vw, 50vw"
+    className="object-cover"
+  />
+</div>
+```
+
+Sans parent positionné → warning runtime + image cassée.
+
+---
+
+## 4. `sizes` (CRITIQUE pour responsive)
+
+Sans `sizes`, Next charge **la plus grande variante** → gaspillage de bande passante.
+
+Règle : `sizes` décrit la largeur finale affichée à chaque breakpoint.
+
+```tsx
+// Plein écran
+sizes="100vw"
+
+// 2 colonnes tablette, 3 colonnes desktop
+sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+
+// Thumbnail fixe
+sizes="120px"
+
+// Grille produits 4 colonnes
+sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+```
+
+Tester via DevTools → Network → vérifier que le `w` dans l'URL `_next/image?url=...&w=X` correspond à la taille réelle.
+
+---
+
+## 5. `priority` (LCP uniquement)
+
+`priority` = preload + `loading="eager"` + `fetchpriority="high"`.
+
+**Une seule image par page** devrait l'avoir : l'image LCP (le plus souvent le hero above-the-fold).
+
+```tsx
+<Image
+  src="/hero.jpg"
+  alt="..."
+  width={1920}
+  height={1080}
+  sizes="100vw"
+  priority
+/>
+```
+
+Toutes les autres : rien (lazy par défaut).
+
+Mettre `priority` partout ruine le LCP car le navigateur préload tout en parallèle et sature la bande passante.
+
+---
+
+## 6. Placeholder `blur`
+
+### Images statiques importées
+
+Next génère le `blurDataURL` automatiquement.
+
+```tsx
+import hero from '@/public/hero.jpg'
+
+<Image src={hero} alt="..." placeholder="blur" sizes="100vw" priority />
+```
+
+### Images dynamiques (Supabase, UGC)
+
+Générer le `blurDataURL` côté serveur **au moment de l'upload** et le stocker en DB.
+
+```ts
+// lib/images/blur.ts
+import { getPlaiceholder } from 'plaiceholder'
+
+export async function generateBlurDataURL(buffer: Buffer): Promise<string> {
+  const { base64 } = await getPlaiceholder(buffer, { size: 10 })
+  return base64
+}
+```
+
+```ts
+// Server Action upload
+'use server'
+import { createClient } from '@/lib/supabase/server'
+import { generateBlurDataURL } from '@/lib/images/blur'
+
+export async function uploadProductImage(formData: FormData) {
+  const file = formData.get('file') as File
+  if (!file) throw new Error('Fichier manquant')
+
+  // Validation taille
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error('Fichier trop gros (max 5MB)')
+  }
+
+  const buffer = Buffer.from(await file.arrayBuffer())
+  const blurDataURL = await generateBlurDataURL(buffer)
+
+  const supabase = await createClient()
+  const path = `products/${crypto.randomUUID()}-${file.name}`
+
+  const { data, error } = await supabase.storage
+    .from('public')
+    .upload(path, buffer, { contentType: file.type })
+
+  if (error) throw error
+
+  const { data: urlData } = supabase.storage.from('public').getPublicUrl(path)
+
+  return { url: urlData.publicUrl, blurDataURL }
+}
+```
+
+Puis en DB : colonnes `image_url TEXT`, `image_blur TEXT`.
+
+```tsx
+<Image
+  src={product.imageUrl}
+  alt={product.name}
+  width={800}
+  height={600}
+  placeholder="blur"
+  blurDataURL={product.imageBlur}
+  sizes="(max-width: 768px) 100vw, 50vw"
+/>
+```
+
+---
+
+## 7. Supabase Storage
+
+### Buckets recommandés
+
+| Bucket | Accès | Usage |
+|---|---|---|
+| `public` | RLS: SELECT public | Images site (produits, propriétés, covers) |
+| `private` | RLS: SELECT owner only | Documents clients, factures, contrats |
+| `avatars` | RLS: UPDATE own row | Avatars utilisateurs |
+
+### Signed URLs pour contenu privé
+
+```ts
+const { data } = await supabase.storage
+  .from('private')
+  .createSignedUrl(path, 60 * 60) // 1h
+```
+
+Les signed URLs ne passent pas bien dans `next/image` (expirent). Pour du privé court : soit proxy via route handler, soit `unoptimized`.
+
+### Proxy route handler (privé optimisé)
+
+```ts
+// app/api/images/[...path]/route.ts
+import { createClient } from '@/lib/supabase/server'
+
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ path: string[] }> }
+) {
+  const { path } = await params
+  const supabase = await createClient()
+
+  const { data, error } = await supabase.storage
+    .from('private')
+    .download(path.join('/'))
+
+  if (error || !data) return new Response('Not found', { status: 404 })
+
+  return new Response(data, {
+    headers: {
+      'Content-Type': data.type,
+      'Cache-Control': 'private, max-age=300',
+    },
+  })
+}
+```
+
+Puis `next/image` appelle `/api/images/...`.
+
+---
+
+## 8. Composant wrapper `OptimizedImage`
+
+Impose les bonnes props par convention.
+
+```tsx
+// components/ui/OptimizedImage.tsx
+import Image, { type ImageProps } from 'next/image'
+
+type Props = Omit<ImageProps, 'placeholder'> & {
+  blurDataURL?: string
+}
+
+export function OptimizedImage({
+  alt,
+  sizes = '100vw',
+  blurDataURL,
+  ...props
+}: Props) {
+  if (alt === undefined) {
+    throw new Error('OptimizedImage: alt est obligatoire')
+  }
+
+  return (
+    <Image
+      {...props}
+      alt={alt}
+      sizes={sizes}
+      placeholder={blurDataURL ? 'blur' : 'empty'}
+      blurDataURL={blurDataURL}
+    />
+  )
+}
+```
+
+---
+
+## 9. Loader custom (cas rare)
+
+Si Supabase Storage expose déjà des transformations, ou si tu veux router vers Cloudflare Images / imgix :
+
+```ts
+// lib/images/loader.ts
+import type { ImageLoader } from 'next/image'
+
+export const supabaseLoader: ImageLoader = ({ src, width, quality }) => {
+  const url = new URL(src)
+  url.searchParams.set('width', width.toString())
+  url.searchParams.set('quality', (quality ?? 75).toString())
+  return url.toString()
+}
+```
+
+```tsx
+<Image loader={supabaseLoader} src={...} ... />
+```
+
+Par défaut : **ne PAS** le faire. L'optimizer Next natif suffit dans 95% des cas.
+
+---
+
+## 10. Images statiques vs dynamiques
+
+### Statiques (assets figés, fichiers dans `/public` ou `/src/assets`)
+
+```tsx
+import heroImg from '@/public/hero.jpg'
+
+<Image src={heroImg} alt="..." sizes="100vw" priority />
+```
+
+Next connaît les dimensions au build, génère le `blurDataURL`, fingerprint l'URL.
+
+### Dynamiques (Supabase, CMS, API)
+
+```tsx
+<Image
+  src={product.imageUrl} // string
+  alt={product.name}
+  width={product.width}
+  height={product.height}
+  sizes="(max-width: 768px) 100vw, 33vw"
+  blurDataURL={product.imageBlur}
+  placeholder="blur"
+/>
+```
+
+Dimensions **obligatoirement** stockées en DB à l'upload pour éviter le layout shift.
+
+---
+
+## 11. Compression avant upload
+
+Côté client (formulaires publics, petites images) :
+
+```tsx
+'use client'
+import imageCompression from 'browser-image-compression'
+
+async function onFileChange(file: File) {
+  const compressed = await imageCompression(file, {
+    maxSizeMB: 1,
+    maxWidthOrHeight: 2000,
+    useWebWorker: true,
+  })
+  // upload compressed
+}
+```
+
+Côté serveur (admin, bulk upload, besoin de contrôle) : Sharp dans une Server Action, route handler ou edge function :
+
+```ts
+import sharp from 'sharp'
+
+const resized = await sharp(buffer)
+  .resize({ width: 2000, withoutEnlargement: true })
+  .jpeg({ quality: 85 })
+  .toBuffer()
+```
+
+Format d'entrée recommandé : **JPG/PNG haute qualité**. Next serve AVIF/WebP automatiquement au runtime.
+
+---
+
+## 12. Validation upload (sécurité)
+
+```ts
+const MAX_SIZE = 5 * 1024 * 1024 // 5MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+
+if (file.size > MAX_SIZE) {
+  throw new Error('Fichier trop gros (max 5MB)')
+}
+if (!ALLOWED_TYPES.includes(file.type)) {
+  throw new Error('Format non supporté')
+}
+```
+
+Ne JAMAIS se fier uniquement au `Content-Type` envoyé par le client — vérifier le magic number côté serveur si besoin fort.
+
+---
+
+## 13. Accessibilité
+
+- `alt` **obligatoire** sur chaque image (TypeScript le force déjà)
+- `alt` descriptif, pas générique :
+  - ❌ `alt="image"`, `alt="photo"`, `alt={product.name}` tout seul parfois pauvre
+  - ✅ `alt="Villa Azur vue sur la baie de Fort-de-France"`
+- Image **décorative** uniquement : `alt=""` (chaîne vide explicite)
+- Pas de texte dans l'image pour du contenu important (accessibilité + SEO)
+
+---
+
+## 14. Loading strategy
+
+| Cas | Prop |
+|---|---|
+| Hero above-the-fold (LCP) | `priority` |
+| Image dans le premier viewport sans être LCP | rien (lazy auto suffit) |
+| Image sous le fold | rien (lazy auto) |
+| Carousel | `priority` sur la première slide seulement |
+| Modale / tab caché | rien (lazy) |
+
+---
+
+## 15. Art direction (`<picture>` natif)
+
+Si besoin de **changer l'image** selon le viewport (pas juste la redimensionner) :
+
+```tsx
+<picture>
+  <source media="(max-width: 640px)" srcSet="/hero-mobile.jpg" />
+  <source media="(min-width: 641px)" srcSet="/hero-desktop.jpg" />
+  <Image
+    src="/hero-desktop.jpg"
+    alt="..."
+    width={1920}
+    height={1080}
+    sizes="100vw"
+    priority
+  />
+</picture>
+```
+
+Cas rare — dans 95% des projets Karibloom, une seule image + `sizes` suffit.
+
+---
+
+## 16. Anti-patterns
+
+- `<img src="..." />` nu dans une page produit / hero ❌
+- Pas de `sizes` sur image responsive → télécharge la plus grande variante ❌
+- `priority` sur toutes les images d'une grille ❌ → ruine le LCP
+- URL Supabase/vendor non whitelistée dans `remotePatterns` ❌ → throw en build
+- `alt` absent, ou `alt="image"`, `alt="photo produit"` ❌
+- Pas de compression avant upload → fichiers 10-20MB en DB ❌
+- `width`/`height` oubliés → layout shift (CLS pénalisé) ❌
+- `fill` sans parent positionné → image cassée ❌
+- `placeholder="blur"` sans `blurDataURL` sur image dynamique ❌ → erreur runtime
+- Signed URL Supabase courte durée passée à `next/image` ❌ → cache cassé
+- `unoptimized` par défaut "parce que ça marche" ❌ → tu perds tout l'intérêt
+- Pipeline Sharp CLI manuel qui pré-génère WebP/AVIF dans `/public` ❌ → legacy, Next le fait à la volée
+
+---
+
+## 17. Checklist de livraison
+
+- [ ] `remotePatterns` Supabase et vendors configurés dans `next.config.ts`
+- [ ] `formats: ['image/avif', 'image/webp']` activés
+- [ ] Chaque `<Image>` a `width`+`height` OU `fill` (avec parent positionné)
+- [ ] `sizes` défini sur chaque image responsive
+- [ ] `priority` uniquement sur l'image LCP de chaque page
+- [ ] `alt` descriptif sur chaque image non décorative
+- [ ] Validation taille + type MIME à l'upload (max 5MB, JPG/PNG/WebP)
+- [ ] Compression côté client (`browser-image-compression`) sur uploads utilisateurs
+- [ ] `blurDataURL` généré et stocké en DB pour le contenu UGC
+- [ ] Dimensions originales (`width`, `height`) stockées en DB
+- [ ] Buckets Supabase avec RLS correctes (public vs private)
+- [ ] Pas de `<img>` nu dans le code production (sauf SVG inline décoratif)
+- [ ] Lighthouse : LCP < 2.5s, CLS < 0.1

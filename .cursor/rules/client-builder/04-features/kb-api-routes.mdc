@@ -1,0 +1,439 @@
+---
+description: API Routes & Server Actions Next.js 15 - route.ts, Server Actions, Zod, rate limit, CSRF origin, erreurs typées
+globs: "**/app/api/**/*.ts, **/app/actions/**/*.ts, **/actions/**/*.ts, **/lib/rate-limit.ts, **/lib/csrf.ts"
+alwaysApply: false
+---
+
+# API Routes & Server Actions — Règles Karibloom
+
+Backend Next.js 15 App Router. Route Handlers pour webhooks et API publiques, Server Actions pour les mutations de formulaires internes. Validation Zod, rate limiting et CSRF obligatoires. Jamais `useEffect + fetch` pour les données initiales.
+
+## 1. Route Handler ou Server Action — qui fait quoi ?
+
+| Besoin | Utiliser |
+|---|---|
+| Mutation déclenchée par formulaire `<form>` | **Server Action** |
+| Webhook (Stripe, n8n, Mailchimp, etc.) | **Route Handler** POST |
+| API publique consommée par JS tiers | **Route Handler** |
+| Upload fichier (multipart/form-data) | **Route Handler** |
+| Lecture JSON pour composant client | **Route Handler** GET (ou fetch direct RSC) |
+| Mutation interne avec validation complexe | **Server Action** |
+| Endpoint appelé depuis un script/cron externe | **Route Handler** |
+
+Règle d'or : **éviter `useEffect + fetch`** pour les données initiales. Passer par RSC (Server Component) ou Server Action.
+
+## 2. Structure des routes
+
+```
+app/
+  api/
+    webhooks/
+      stripe/route.ts          # webhook Stripe (nodejs runtime)
+      n8n/route.ts             # webhook n8n entrant
+    booking/route.ts           # POST crée réservation villa
+    contact/route.ts           # POST formulaire contact
+    dashboard/
+      create-villa/route.ts
+      update-villa/route.ts
+      analytics-villas/route.ts
+  actions/                     # ou lib/actions/
+    booking.ts                 # Server Actions booking
+    profile.ts                 # Server Actions profil membre
+    newsletter.ts
+lib/
+  validations/
+    booking.ts                 # schémas Zod partagés
+    contact.ts
+  rate-limit.ts
+  csrf.ts
+  api-errors.ts
+```
+
+## 3. Pattern Route Handler — modèle complet
+
+```ts
+// app/api/contact/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { supabaseAdmin } from "@/lib/supabase";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { verifyOrigin } from "@/lib/csrf";
+
+// runtime nodejs obligatoire si on utilise supabaseAdmin (service role)
+export const runtime = "nodejs";
+// pas de cache : chaque requête traitée à la volée
+export const dynamic = "force-dynamic";
+
+// schéma Zod — messages en français, borné strictement
+const schema = z.object({
+  name: z.string().min(2, "Nom trop court").max(80),
+  email: z.string().email("Email invalide"),
+  message: z.string().min(10).max(2000),
+  consent: z.literal(true, {
+    errorMap: () => ({ message: "Consentement RGPD requis" }),
+  }),
+});
+
+export async function POST(req: NextRequest) {
+  // 1. CSRF — refuse les origines hors domaine
+  if (!verifyOrigin(req)) {
+    return NextResponse.json({ error: "Origin refusé" }, { status: 403 });
+  }
+
+  // 2. Rate limit — 5 requêtes/min par IP
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
+  if (!checkRateLimit(`contact:${ip}`, 5, 60_000)) {
+    return NextResponse.json({ error: "Trop de requêtes" }, { status: 429 });
+  }
+
+  // 3. Parse JSON — catch défensif si body invalide
+  const body = await req.json().catch(() => null);
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Validation échouée", issues: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+
+  // 4. Mutation Supabase — service role bypasse RLS
+  const { data, error } = await supabaseAdmin()
+    .from("leads")
+    .insert({ ...parsed.data, source: "contact" })
+    .select("id")
+    .single();
+
+  if (error) {
+    // log côté serveur, JAMAIS renvoyer l'erreur brute au client
+    console.error("[contact] insert failed", error);
+    return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+  }
+
+  // 5. Réponse minimale — pas de fuite de schéma
+  return NextResponse.json({ ok: true, id: data.id });
+}
+```
+
+Points clés :
+- `runtime = "nodejs"` dès qu'on touche au service role Supabase, Stripe SDK, ou node-crypto
+- `dynamic = "force-dynamic"` sur toutes les routes avec mutation ou session
+- Ordre strict : **CSRF → rate limit → validation → mutation → réponse**
+- Toujours logger l'erreur serveur, jamais la propager au client
+
+## 4. Pattern Server Action
+
+```ts
+// app/actions/profile.ts
+"use server";
+
+import { z } from "zod";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { getSupabaseServer } from "@/lib/supabase-server";
+
+const schema = z.object({
+  name: z.string().min(2),
+  email: z.string().email(),
+});
+
+export async function updateProfile(_prev: unknown, formData: FormData) {
+  // 1. Validation — FormData → objet via Object.fromEntries
+  const input = schema.safeParse(Object.fromEntries(formData));
+  if (!input.success) {
+    return { error: "Données invalides", issues: input.error.flatten() };
+  }
+
+  // 2. Auth — RE-vérifier côté serveur, jamais faire confiance au client
+  const supabase = getSupabaseServer();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  // 3. Mutation avec RLS (pas de service role ici)
+  const { error } = await supabase
+    .from("profiles")
+    .update(input.data)
+    .eq("id", user.id);
+
+  if (error) {
+    console.error("[updateProfile] failed", error);
+    return { error: "Erreur serveur" };
+  }
+
+  // 4. Invalidation cache — ne pas oublier après mutation
+  revalidatePath("/espace-client/profil");
+  return { success: true };
+}
+```
+
+Règles Server Actions :
+- `"use server"` en tête du fichier obligatoire
+- Toujours re-vérifier la session serveur (pas de `user` passé en param)
+- Toujours valider avec Zod (même si TS côté client)
+- Toujours `revalidatePath` ou `revalidateTag` après mutation
+- Retourner un objet `{ error }` ou `{ success }` — jamais `throw`
+- Signature `(prevState, formData)` pour compat `useFormState`
+
+## 5. Validation Zod — convention
+
+- Schémas dans `lib/validations/{domain}.ts`, importés côté client ET serveur
+- Messages d'erreur en français (site Martinique)
+- `z.coerce.number()` / `z.coerce.date()` pour les FormData (tout est string)
+- `.transform((s) => s.trim().toLowerCase())` pour normaliser emails/codes postaux
+- Schémas composables : `const base = z.object({...}); export const withId = base.extend({ id: z.string().uuid() });`
+
+```ts
+// lib/validations/booking.ts
+import { z } from "zod";
+
+export const bookingSchema = z.object({
+  villaId: z.string().uuid(),
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  guests: z.coerce.number().int().min(1).max(12),
+  email: z.string().email().transform((s) => s.trim().toLowerCase()),
+}).refine((d) => d.endDate > d.startDate, {
+  message: "Date de fin doit être après date de début",
+  path: ["endDate"],
+});
+
+export type BookingInput = z.infer<typeof bookingSchema>;
+```
+
+## 6. Rate limiting — `lib/rate-limit.ts`
+
+Implémentation memory-based (OK pour single instance / dev) :
+
+```ts
+// lib/rate-limit.ts
+const buckets = new Map<string, { count: number; reset: number }>();
+
+export function checkRateLimit(
+  key: string,
+  max: number,
+  windowMs: number
+): boolean {
+  const now = Date.now();
+  const bucket = buckets.get(key);
+
+  if (!bucket || bucket.reset < now) {
+    buckets.set(key, { count: 1, reset: now + windowMs });
+    return true;
+  }
+
+  if (bucket.count >= max) return false;
+
+  bucket.count++;
+  return true;
+}
+
+// Nettoyage périodique pour éviter la fuite mémoire
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, bucket] of buckets) {
+    if (bucket.reset < now) buckets.delete(key);
+  }
+}, 60_000).unref?.();
+```
+
+Limites par défaut :
+
+| Endpoint | Limite | Fenêtre |
+|---|---|---|
+| Contact / leads | 5 | 1 min par IP |
+| Chat / support | 30 | 1 min par session |
+| Auth login | 10 | 15 min par IP |
+| Booking checkout | 10 | 10 min par IP |
+| Webhook (Stripe, n8n) | — | pas de limite (signature vérifiée) |
+| API publique GET | 60 | 1 min par IP |
+
+**Multi-instance (Vercel serverless)** → mémoire partagée impossible. Utiliser Upstash :
+
+```ts
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+export const ratelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(5, "1 m"),
+});
+```
+
+## 7. CSRF — `lib/csrf.ts`
+
+Les Server Actions Next.js vérifient l'Origin automatiquement. Pour les Route Handlers POST/PUT/DELETE :
+
+```ts
+// lib/csrf.ts
+export function verifyOrigin(req: Request): boolean {
+  const origin = req.headers.get("origin");
+  const host = req.headers.get("host");
+
+  // Pas d'origin = requête server-to-server (cron, webhook signé) → OK
+  if (!origin) return true;
+
+  const allowed = [
+    `https://${host}`,
+    `http://${host}`, // dev
+    process.env.NEXT_PUBLIC_SITE_URL,
+  ].filter(Boolean);
+
+  return allowed.includes(origin);
+}
+```
+
+Pour les webhooks externes (Stripe, n8n), **ne pas utiliser `verifyOrigin`** — vérifier la signature HMAC à la place.
+
+## 8. Webhook Stripe — pattern spécifique
+
+```ts
+// app/api/webhooks/stripe/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import Stripe from "stripe";
+import { supabaseAdmin } from "@/lib/supabase";
+
+// IMPÉRATIF : nodejs, pas Edge (crypto natif requis pour signature)
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2024-11-20.acacia",
+});
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+
+export async function POST(req: NextRequest) {
+  // 1. Raw body obligatoire — JAMAIS req.json() sur un webhook Stripe
+  const body = await req.text();
+  const sig = req.headers.get("stripe-signature");
+  if (!sig) return NextResponse.json({ error: "No signature" }, { status: 400 });
+
+  // 2. Vérification signature HMAC
+  let event: Stripe.Event;
+  try {
+    event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
+  } catch (err) {
+    console.error("[stripe] signature invalid", err);
+    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+  }
+
+  // 3. Idempotence — table stripe_events (id text primary key)
+  const sb = supabaseAdmin();
+  const { error: dupErr } = await sb
+    .from("stripe_events")
+    .insert({ id: event.id, type: event.type });
+  if (dupErr?.code === "23505") {
+    // doublon = déjà traité, retourner 200 pour stopper les retries
+    return NextResponse.json({ received: true, duplicate: true });
+  }
+
+  // 4. Traitement métier dans un try/catch — on log, on NE retry PAS Stripe
+  try {
+    switch (event.type) {
+      case "checkout.session.completed":
+        await handleCheckout(event.data.object as Stripe.Checkout.Session);
+        break;
+      case "payment_intent.payment_failed":
+        await handleFailure(event.data.object as Stripe.PaymentIntent);
+        break;
+    }
+  } catch (err) {
+    // log, mais renvoyer 200 — sinon Stripe retry en boucle
+    console.error("[stripe] handler failed", event.type, err);
+  }
+
+  return NextResponse.json({ received: true });
+}
+```
+
+Particularités Stripe :
+- `runtime = "nodejs"` **obligatoire** (Edge n'a pas de crypto Node)
+- Lire `await req.text()` (raw) **avant** toute opération JSON
+- Vérifier signature avec `constructEvent()`
+- Idempotence via table `stripe_events (id text pk)` — contrainte unique = doublon détecté
+- **Toujours renvoyer 200** après log, même en cas d'erreur métier (sinon Stripe retry pendant 3 jours)
+
+## 9. Erreurs typées — `lib/api-errors.ts`
+
+```ts
+// lib/api-errors.ts
+import { NextResponse } from "next/server";
+
+export type ApiErrorCode =
+  | "unauthorized"
+  | "forbidden"
+  | "not_found"
+  | "rate_limited"
+  | "validation_failed"
+  | "conflict"
+  | "internal";
+
+const STATUS: Record<ApiErrorCode, number> = {
+  unauthorized: 401,
+  forbidden: 403,
+  not_found: 404,
+  rate_limited: 429,
+  validation_failed: 400,
+  conflict: 409,
+  internal: 500,
+};
+
+export const apiError = (
+  code: ApiErrorCode,
+  extras: Record<string, unknown> = {}
+) =>
+  NextResponse.json(
+    { error: { code, ...extras } },
+    { status: STATUS[code] }
+  );
+```
+
+Usage :
+```ts
+if (!user) return apiError("unauthorized");
+if (!parsed.success) return apiError("validation_failed", { issues: parsed.error.flatten() });
+```
+
+Côté client, tester `res.error.code` plutôt que du pattern-matching sur les messages.
+
+## 10. Headers utiles
+
+- `Cache-Control: no-store` sur toutes les routes sensibles (auth, paiement, données membre)
+- `Content-Security-Policy` géré dans `next.config.js` via `headers()` (voir règle kb-security)
+- `Access-Control-Allow-Origin` : whitelist explicite en env, jamais `*` sur API d'écriture
+- `Strict-Transport-Security` géré côté Vercel/Cloudflare, pas au niveau route
+
+```ts
+// Exemple sur route sensible
+return NextResponse.json(data, {
+  headers: { "Cache-Control": "no-store, max-age=0" },
+});
+```
+
+## 11. Anti-patterns — ne JAMAIS faire
+
+- `try { ... } catch { return 500 }` sans `console.error` → debug impossible
+- Valider à la main avec `if (!body.email)` au lieu de Zod
+- Utiliser `supabaseAdmin()` (service role) dans un Client Component ou une Server Action qui manipule les données d'un user → bypass RLS
+- Renvoyer `error.message` Supabase brut au client → fuite de schéma, noms de colonnes, contraintes
+- Webhook Stripe en `runtime = "edge"` → crypto Node indisponible, signature invérifiable
+- Pas d'idempotence sur webhooks → double booking, double charge
+- Rate limit oublié sur l'endpoint auth → brute-force possible
+- `useEffect + fetch` pour la data initiale → waterfall, flash, mauvais SEO
+- Throw dans une Server Action → page erreur Next au lieu d'un retour propre
+- Lire `req.json()` avant vérif signature Stripe → signature cassée
+- Stocker le user en cookie puis s'y fier serveur → toujours `supabase.auth.getUser()`
+- `NEXT_PUBLIC_SERVICE_ROLE_KEY` → expose la clé admin au browser
+
+## 12. Checklist avant merge
+
+1. Schémas Zod dans `lib/validations/` partagés client + serveur
+2. Rate limit appliqué (par IP ou session) sur tout POST/PUT/DELETE public
+3. `verifyOrigin` sur les Route Handlers, pas sur les webhooks signés
+4. Toutes les erreurs serveur sont loggées (`console.error` avec contexte)
+5. Status codes corrects (401, 403, 404, 409, 429, 400, 500) via `apiError()`
+6. Aucun leak de schéma Supabase dans les réponses
+7. Idempotence sur tous les webhooks (Stripe, n8n) via table `{provider}_events`
+8. `runtime = "nodejs"` sur webhooks et routes service-role
+9. `revalidatePath` ou `revalidateTag` appelé après chaque mutation Server Action
+10. Test manuel de l'endpoint avec curl ou Postman (happy path + 2 cas d'erreur)

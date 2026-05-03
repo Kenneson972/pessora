@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PESSORA — Mon Espace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #faf9f7; color: #111; font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; }
+svg { display: block; }
+
+/* ── HEADER ── */
+.header-wrap { background: #fff; border-bottom: 1px solid rgba(0,0,0,0.1); box-shadow: 0 1px 8px rgba(0,0,0,0.04); }
+.nav-top { padding: 0 48px; height: 56px; display: flex; align-items: center; gap: 24px; }
+.logo { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 22px; letter-spacing: 0.28em; text-transform: uppercase; color: #000; flex-shrink: 0; }
+.search-bar { flex: 1; max-width: 440px; margin: 0 auto; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(0,0,0,0.18); border-radius: 24px; padding: 0 16px; height: 36px; background: #fff; }
+.search-bar input { border: none; outline: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 12px; color: rgba(0,0,0,0.4); width: 100%; }
+.nav-btn { display: flex; align-items: center; gap: 7px; border: 1px solid #000; border-radius: 24px; padding: 6px 14px; font-size: 11px; font-weight: 400; letter-spacing: 0.08em; color: #000; cursor: pointer; flex-shrink: 0; }
+.nav-btn svg { width: 15px; height: 15px; }
+.nav-btn.active { background: #000; color: #fff; }
+.nav-icon-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; flex-shrink: 0; }
+.nav-icon-btn svg { width: 16px; height: 16px; }
+.nav-badge { position: absolute; top: -4px; right: -4px; width: 16px; height: 16px; border-radius: 50%; background: #3d6b3e; color: #fff; font-size: 8px; display: flex; align-items: center; justify-content: center; }
+
+/* ── LAYOUT ── */
+.layout { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 56px); }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  background: #fff;
+  border-right: 1px solid rgba(0,0,0,0.08);
+  padding: 36px 0;
+  display: flex; flex-direction: column;
+}
+.sidebar-avatar {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: linear-gradient(135deg, #1e3a1e, #3d6b3e);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 28px 6px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px; font-weight: 300; color: #fff;
+  letter-spacing: 0.05em;
+}
+.sidebar-name { padding: 0 28px; font-size: 14px; font-weight: 400; color: #000; margin-bottom: 2px; }
+.sidebar-plan {
+  padding: 0 28px;
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 32px;
+}
+.sidebar-plan-badge {
+  font-size: 8px; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase;
+  background: #3d6b3e; color: #fff; padding: 2px 7px; border-radius: 3px;
+}
+.sidebar-plan-label { font-size: 10px; color: rgba(0,0,0,0.35); }
+
+.sidebar-section { padding: 0 16px; margin-bottom: 4px; }
+.sidebar-section-label { font-size: 9px; font-weight: 400; letter-spacing: 0.28em; text-transform: uppercase; color: rgba(0,0,0,0.28); padding: 0 12px; margin-bottom: 6px; margin-top: 20px; }
+.sidebar-item {
+  display: flex; align-items: center; gap: 11px;
+  padding: 10px 12px; border-radius: 8px;
+  cursor: pointer; transition: background 0.15s;
+  font-size: 12px; color: rgba(0,0,0,0.55);
+}
+.sidebar-item:hover { background: rgba(0,0,0,0.04); color: #000; }
+.sidebar-item.active { background: #f0f0ee; color: #000; font-weight: 400; }
+.sidebar-item svg { width: 16px; height: 16px; opacity: 0.6; flex-shrink: 0; }
+.sidebar-item.active svg { opacity: 1; }
+
+.sidebar-bottom { margin-top: auto; padding: 0 16px; }
+.sidebar-logout {
+  display: flex; align-items: center; gap: 11px;
+  padding: 10px 12px; border-radius: 8px;
+  cursor: pointer; font-size: 12px; color: rgba(0,0,0,0.35);
+}
+.sidebar-logout:hover { color: #000; }
+.sidebar-logout svg { width: 16px; height: 16px; }
+
+/* ── MAIN CONTENT ── */
+.main { padding: 40px 52px; overflow-y: auto; }
+
+/* Page title */
+.page-title { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 38px; color: #000; margin-bottom: 4px; }
+.page-subtitle { font-size: 11px; color: rgba(0,0,0,0.35); letter-spacing: 0.05em; margin-bottom: 36px; }
+
+/* ── KPI CARDS ── */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 36px; }
+.kpi-card { background: #fff; border-radius: 14px; border: 1px solid rgba(0,0,0,0.06); padding: 22px 22px 18px; }
+.kpi-label { font-size: 9px; font-weight: 400; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(0,0,0,0.35); margin-bottom: 10px; }
+.kpi-value { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 42px; color: #000; line-height: 1; margin-bottom: 6px; }
+.kpi-value.green { color: #3d6b3e; }
+.kpi-sub { font-size: 10px; color: rgba(0,0,0,0.3); }
+.kpi-trend { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: #3d6b3e; margin-top: 4px; }
+.kpi-trend svg { width: 12px; height: 12px; }
+
+/* ── SECTIONS 2 cols ── */
+.two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.three-cols { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; margin-bottom: 20px; }
+
+/* ── CARD WIDGET ── */
+.widget { background: #fff; border-radius: 14px; border: 1px solid rgba(0,0,0,0.06); padding: 24px; }
+.widget-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.widget-title { font-size: 12px; font-weight: 400; letter-spacing: 0.08em; color: #000; }
+.widget-link { font-size: 10px; color: rgba(0,0,0,0.4); letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.2); padding-bottom: 1px; cursor: pointer; }
+
+/* Abonnement */
+.sub-card { background: #0a0a0a; border-radius: 14px; padding: 24px; color: #fff; }
+.sub-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+.sub-card-title { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 24px; color: #fff; }
+.sub-card-title em { font-style: italic; color: rgba(255,255,255,0.55); }
+.sub-badge { font-size: 8px; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; background: #3d6b3e; color: #fff; padding: 4px 10px; border-radius: 3px; }
+.sub-perks { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
+.sub-perk { display: flex; align-items: center; gap: 10px; font-size: 11px; color: rgba(255,255,255,0.55); }
+.sub-perk svg { width: 14px; height: 14px; color: #3d6b3e; flex-shrink: 0; }
+.sub-perk.active { color: rgba(255,255,255,0.85); }
+.sub-renew { font-size: 10px; color: rgba(255,255,255,0.22); letter-spacing: 0.05em; }
+
+/* Prochain événement */
+.next-event-widget { display: flex; flex-direction: column; gap: 12px; }
+.event-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px; border-radius: 10px; background: #faf9f7;
+  cursor: pointer; transition: background 0.15s;
+}
+.event-row:hover { background: #f0f0ee; }
+.event-row-date {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: #0a0a0a; color: #fff;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.event-row-day { font-size: 16px; font-weight: 400; line-height: 1; }
+.event-row-month { font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.5; }
+.event-row-info { flex: 1; }
+.event-row-name { font-size: 12px; font-weight: 400; color: #000; margin-bottom: 2px; }
+.event-row-meta { font-size: 10px; color: rgba(0,0,0,0.38); }
+.event-row-badge { font-size: 8px; font-weight: 400; letter-spacing: 0.15em; text-transform: uppercase; background: rgba(61,107,62,0.1); color: #3d6b3e; padding: 3px 8px; border-radius: 3px; flex-shrink: 0; }
+.event-row-badge.pending { background: rgba(0,0,0,0.05); color: rgba(0,0,0,0.4); }
+
+/* Bilan history */
+.bilan-list { display: flex; flex-direction: column; gap: 1px; }
+.bilan-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+.bilan-row:last-child { border-bottom: none; }
+.bilan-row-dot { width: 8px; height: 8px; border-radius: 50%; background: #3d6b3e; flex-shrink: 0; }
+.bilan-row-dot.past { background: rgba(0,0,0,0.15); }
+.bilan-row-info { flex: 1; }
+.bilan-row-date { font-size: 10px; color: rgba(0,0,0,0.35); margin-bottom: 2px; }
+.bilan-row-title { font-size: 12px; font-weight: 400; color: #000; }
+.bilan-row-status { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(0,0,0,0.3); }
+.bilan-row-status.confirmed { color: #3d6b3e; }
+
+/* Stats widget */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stat-item { background: #faf9f7; border-radius: 10px; padding: 16px; }
+.stat-item-label { font-size: 9px; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(0,0,0,0.3); margin-bottom: 8px; }
+.stat-item-value { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 32px; color: #000; line-height: 1; }
+.stat-item-value .unit { font-size: 14px; color: rgba(0,0,0,0.3); }
+
+/* Progress bar */
+.progress-bar { background: rgba(0,0,0,0.06); border-radius: 4px; height: 4px; margin-top: 10px; }
+.progress-fill { height: 100%; border-radius: 4px; background: #3d6b3e; }
+
+/* Commande rapide */
+.quick-order { display: flex; flex-direction: column; gap: 10px; }
+.quick-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: 10px; background: #faf9f7;
+  cursor: pointer;
+}
+.quick-item:hover { background: #f0f0ee; }
+.quick-item-color { width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0; }
+.quick-item-name { flex: 1; font-size: 12px; font-weight: 400; color: #000; }
+.quick-item-price { font-size: 12px; color: rgba(0,0,0,0.4); }
+.quick-item-add { width: 28px; height: 28px; border-radius: 50%; background: #000; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; line-height: 1; cursor: pointer; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header-wrap">
+  <div class="nav-top">
+    <div class="logo">Pessóra</div>
+    <div class="search-bar">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" placeholder="Shakes, gauffres, événements…" />
+    </div>
+    <div class="nav-btn active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/></svg>
+      Mon Espace
+    </div>
+    <div class="nav-icon-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/></svg>
+      <div class="nav-badge">0</div>
+    </div>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-avatar">M</div>
+    <div class="sidebar-name">Marie Dupont</div>
+    <div class="sidebar-plan">
+      <span class="sidebar-plan-badge">Premium</span>
+      <span class="sidebar-plan-label">Actif</span>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Principal</div>
+
+      <div class="sidebar-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Tableau de bord
+      </div>
+      <div class="sidebar-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        Mes événements
+      </div>
+      <div class="sidebar-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        Bilans bien-être
+      </div>
+      <div class="sidebar-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="5" r="2"/><path d="M12 7v5M8.5 17l3.5-5 3.5 5M5 20l3-4M19 20l-3-4"/></svg>
+        Run Club
+      </div>
+
+      <div class="sidebar-section-label">Compte</div>
+
+      <div class="sidebar-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/></svg>
+        Mon profil
+      </div>
+      <div class="sidebar-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        Abonnement
+      </div>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="sidebar-logout">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        Déconnexion
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <div class="page-title">Bonjour, <em style="font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:300;color:rgba(0,0,0,0.5)">Marie</em></div>
+    <div class="page-subtitle">Samedi 19 avril 2026 · Fort-de-France</div>
+
+    <!-- KPI -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">Événements</div>
+        <div class="kpi-value">7</div>
+        <div class="kpi-sub">ce trimestre</div>
+        <div class="kpi-trend">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg>
+          +2 vs dernier
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Run Club</div>
+        <div class="kpi-value green">12</div>
+        <div class="kpi-sub">sessions complétées</div>
+        <div class="kpi-trend">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg>
+          Régulière
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Bilans</div>
+        <div class="kpi-value">3</div>
+        <div class="kpi-sub">bilans réalisés</div>
+        <div class="kpi-sub" style="margin-top:4px;">Prochain : 28 avr.</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Abonnement</div>
+        <div class="kpi-value" style="font-size:28px; padding-top:7px;">Premium</div>
+        <div class="kpi-sub">Renouvellement : 1 mai</div>
+        <div style="margin-top:10px;">
+          <div class="progress-bar"><div class="progress-fill" style="width:75%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 2 : abonnement + événements -->
+    <div class="three-cols">
+
+      <!-- Abonnement -->
+      <div class="sub-card">
+        <div class="sub-card-header">
+          <div class="sub-card-title">Plan<br><em>Premium</em></div>
+          <div class="sub-badge">Actif</div>
+        </div>
+        <div class="sub-perks">
+          <div class="sub-perk active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#3d6b3e" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Shakes à -10%
+          </div>
+          <div class="sub-perk active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#3d6b3e" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Accès Run Club illimité
+          </div>
+          <div class="sub-perk active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#3d6b3e" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            2 bilans/mois offerts
+          </div>
+          <div class="sub-perk">
+            <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            Accès ateliers prioritaire
+          </div>
+        </div>
+        <div class="sub-renew">Renouvellement automatique · 1 mai 2026</div>
+      </div>
+
+      <!-- Prochain événement -->
+      <div class="widget">
+        <div class="widget-header">
+          <div class="widget-title">Mes prochains événements</div>
+          <span class="widget-link">Tout voir</span>
+        </div>
+        <div class="next-event-widget">
+          <div class="event-row">
+            <div class="event-row-date">
+              <div class="event-row-day">23</div>
+              <div class="event-row-month">Avr</div>
+            </div>
+            <div class="event-row-info">
+              <div class="event-row-name">Run Club · Mercredi</div>
+              <div class="event-row-meta">6h00 · Départ Pessóra</div>
+            </div>
+            <div class="event-row-badge">Confirmé</div>
+          </div>
+          <div class="event-row">
+            <div class="event-row-date">
+              <div class="event-row-day">28</div>
+              <div class="event-row-month">Avr</div>
+            </div>
+            <div class="event-row-info">
+              <div class="event-row-name">Bilan Bien-être</div>
+              <div class="event-row-meta">10h30 · Pessóra Bar</div>
+            </div>
+            <div class="event-row-badge">Confirmé</div>
+          </div>
+          <div class="event-row">
+            <div class="event-row-date" style="background:#faf9f7;">
+              <div class="event-row-day" style="color:#000;">3</div>
+              <div class="event-row-month" style="color:rgba(0,0,0,0.35);">Mai</div>
+            </div>
+            <div class="event-row-info">
+              <div class="event-row-name">Pop-up GigaFit</div>
+              <div class="event-row-meta">9h00 – 13h00 · Lamentin</div>
+            </div>
+            <div class="event-row-badge pending">En attente</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ROW 3 : stats run + bilans + commande rapide -->
+    <div class="two-cols">
+
+      <!-- Stats + bilans -->
+      <div style="display:flex; flex-direction:column; gap:16px;">
+
+        <div class="widget">
+          <div class="widget-header">
+            <div class="widget-title">Run Club — ce mois</div>
+            <span class="widget-link">Historique</span>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-item-label">Sessions</div>
+              <div class="stat-item-value">4 <span class="unit">/ 4</span></div>
+              <div class="progress-bar" style="margin-top:8px;"><div class="progress-fill" style="width:100%"></div></div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-item-label">Distance est.</div>
+              <div class="stat-item-value">24 <span class="unit">km</span></div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-item-label">Série actuelle</div>
+              <div class="stat-item-value">4 <span class="unit">sem.</span></div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-item-label">Rang club</div>
+              <div class="stat-item-value" style="color:#3d6b3e;">Top <span class="unit">10%</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="widget">
+          <div class="widget-header">
+            <div class="widget-title">Historique bilans</div>
+            <span class="widget-link">Voir tout</span>
+          </div>
+          <div class="bilan-list">
+            <div class="bilan-row">
+              <div class="bilan-row-dot"></div>
+              <div class="bilan-row-info">
+                <div class="bilan-row-date">28 avril 2026 · 10h30</div>
+                <div class="bilan-row-title">Bilan Bien-être</div>
+              </div>
+              <div class="bilan-row-status confirmed">Confirmé</div>
+            </div>
+            <div class="bilan-row">
+              <div class="bilan-row-dot past"></div>
+              <div class="bilan-row-info">
+                <div class="bilan-row-date">31 mars 2026</div>
+                <div class="bilan-row-title">Bilan Bien-être</div>
+              </div>
+              <div class="bilan-row-status">Réalisé</div>
+            </div>
+            <div class="bilan-row">
+              <div class="bilan-row-dot past"></div>
+              <div class="bilan-row-info">
+                <div class="bilan-row-date">14 mars 2026</div>
+                <div class="bilan-row-title">Bilan Bien-être</div>
+              </div>
+              <div class="bilan-row-status">Réalisé</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Commande rapide -->
+      <div class="widget">
+        <div class="widget-header">
+          <div class="widget-title">Commander à nouveau</div>
+          <span class="widget-link">Voir la carte</span>
+        </div>
+        <div class="quick-order">
+          <div class="quick-item">
+            <div class="quick-item-color" style="background:linear-gradient(160deg,#2c4e2d,#1a3a1b);"></div>
+            <div class="quick-item-name">Vanilla Boost</div>
+            <div class="quick-item-price">6,21€ <span style="font-size:9px;color:rgba(0,0,0,0.25);">-10%</span></div>
+            <div class="quick-item-add">+</div>
+          </div>
+          <div class="quick-item">
+            <div class="quick-item-color" style="background:linear-gradient(160deg,#3d6b3e,#2a4a2b);"></div>
+            <div class="quick-item-name">Chocolat Power</div>
+            <div class="quick-item-price">6,21€ <span style="font-size:9px;color:rgba(0,0,0,0.25);">-10%</span></div>
+            <div class="quick-item-add">+</div>
+          </div>
+          <div class="quick-item">
+            <div class="quick-item-color" style="background:linear-gradient(160deg,#0a0a0a,#1a1a1a); border-radius:6px;"></div>
+            <div class="quick-item-name">Gauffre Nature</div>
+            <div class="quick-item-price">4,05€ <span style="font-size:9px;color:rgba(0,0,0,0.25);">-10%</span></div>
+            <div class="quick-item-add">+</div>
+          </div>
+          <div class="quick-item">
+            <div class="quick-item-color" style="background:linear-gradient(160deg,#1a2e1a,#0f1f10);"></div>
+            <div class="quick-item-name">Fraise Légèreté</div>
+            <div class="quick-item-price">6,21€ <span style="font-size:9px;color:rgba(0,0,0,0.25);">-10%</span></div>
+            <div class="quick-item-add">+</div>
+          </div>
+          <div class="quick-item" style="justify-content:center; background:transparent; border: 1px dashed rgba(0,0,0,0.15);">
+            <span style="font-size:11px;color:rgba(0,0,0,0.35);letter-spacing:0.08em;">+ Explorer la carte complète</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+</body>
+</html>

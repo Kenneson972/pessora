@@ -1,0 +1,293 @@
+---
+description: Internationalisation Karibloom - react-i18next, hreflang SEO, devises locales, dates, FR/EN/créole
+globs: "**/src/**/*.jsx, **/public/locales/**"
+alwaysApply: false
+---
+
+# Internationalisation Karibloom (i18n)
+
+Pertinent pour les clients Martinique qui veulent FR + EN (tourisme, hôtellerie, e-commerce export) et potentiellement créole.
+
+---
+
+## 1. Installation et configuration
+
+```bash
+npm install react-i18next i18next i18next-browser-languagedetector i18next-http-backend
+```
+
+```js
+// src/i18n.js
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import LanguageDetector from 'i18next-browser-languagedetector';
+import Backend from 'i18next-http-backend';
+
+i18n
+  .use(Backend)             // charge les fichiers JSON depuis /public/locales/
+  .use(LanguageDetector)    // détecte la langue du navigateur
+  .use(initReactI18next)
+  .init({
+    fallbackLng: 'fr',
+    supportedLngs: ['fr', 'en'],  // ajouter 'cr' pour créole si nécessaire
+    defaultNS: 'common',
+    ns: ['common', 'home', 'services', 'contact', 'blog'],
+
+    detection: {
+      order: ['localStorage', 'navigator', 'htmlTag'],
+      caches: ['localStorage'],
+      lookupLocalStorage: 'kb_lang',
+    },
+
+    backend: {
+      loadPath: '/locales/{{lng}}/{{ns}}.json',
+    },
+
+    interpolation: {
+      escapeValue: false,  // React gère déjà le XSS
+    },
+  });
+
+export default i18n;
+```
+
+```jsx
+// index.js — importer i18n avant App
+import './i18n';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode><App /></React.StrictMode>
+);
+```
+
+---
+
+## 2. Structure des fichiers de traduction
+
+```
+public/locales/
+├── fr/
+│   ├── common.json     # Header, Footer, boutons génériques
+│   ├── home.json       # Page d'accueil
+│   ├── services.json   # Pages services
+│   └── contact.json    # Formulaire de contact
+└── en/
+    ├── common.json
+    ├── home.json
+    ├── services.json
+    └── contact.json
+```
+
+```json
+// public/locales/fr/common.json
+{
+  "nav": {
+    "home": "Accueil",
+    "services": "Services",
+    "blog": "Blog",
+    "contact": "Contact"
+  },
+  "buttons": {
+    "learnMore": "En savoir plus",
+    "contact": "Nous contacter",
+    "quote": "Demander un devis",
+    "submit": "Envoyer",
+    "sending": "Envoi...",
+    "sent": "Envoyé !",
+    "back": "Retour"
+  },
+  "footer": {
+    "rights": "Tous droits réservés",
+    "legal": "Mentions légales",
+    "privacy": "Confidentialité"
+  }
+}
+```
+
+```json
+// public/locales/en/common.json
+{
+  "nav": {
+    "home": "Home",
+    "services": "Services",
+    "blog": "Blog",
+    "contact": "Contact"
+  },
+  "buttons": {
+    "learnMore": "Learn more",
+    "contact": "Contact us",
+    "quote": "Get a quote",
+    "submit": "Send",
+    "sending": "Sending...",
+    "sent": "Sent!",
+    "back": "Back"
+  },
+  "footer": {
+    "rights": "All rights reserved",
+    "legal": "Legal notice",
+    "privacy": "Privacy policy"
+  }
+}
+```
+
+---
+
+## 3. Usage dans les composants
+
+```jsx
+// Hooks principaux
+import { useTranslation } from 'react-i18next';
+
+const Header = () => {
+  const { t, i18n } = useTranslation('common');
+
+  return (
+    <nav>
+      <a href="/">{t('nav.home')}</a>
+      <a href="/services">{t('nav.services')}</a>
+      <LanguageSwitcher />
+    </nav>
+  );
+};
+
+// Interpolation avec variables
+// JSON: "welcome": "Bienvenue, {{name}} !"
+t('welcome', { name: 'Kenneson' }) // → "Bienvenue, Kenneson !"
+
+// Pluralisation
+// JSON: "item_one": "{{count}} article", "item_other": "{{count}} articles"
+t('item', { count: 5 }) // → "5 articles"
+
+// Trans pour HTML dans les traductions
+import { Trans } from 'react-i18next';
+// JSON: "cgu": "J'accepte les <1>conditions d'utilisation</1>"
+<Trans i18nKey="cgu">
+  J'accepte les <a href="/cgu">conditions d'utilisation</a>
+</Trans>
+```
+
+---
+
+## 4. Language Switcher
+
+```jsx
+// components/common/LanguageSwitcher.jsx
+import { useTranslation } from 'react-i18next';
+
+const LANGUAGES = [
+  { code: 'fr', label: 'FR', flag: '🇫🇷' },
+  { code: 'en', label: 'EN', flag: '🇬🇧' },
+];
+
+const LanguageSwitcher = () => {
+  const { i18n } = useTranslation();
+  const current = i18n.language?.split('-')[0] || 'fr';
+
+  return (
+    <div className="lang-switcher" role="navigation" aria-label="Changer de langue">
+      {LANGUAGES.map(lang => (
+        <button
+          key={lang.code}
+          onClick={() => i18n.changeLanguage(lang.code)}
+          className={`lang-btn ${current === lang.code ? 'active' : ''}`}
+          aria-current={current === lang.code ? 'true' : undefined}
+          aria-label={`Langue : ${lang.label}`}
+        >
+          {lang.flag} {lang.label}
+        </button>
+      ))}
+    </div>
+  );
+};
+```
+
+```css
+.lang-switcher { display: flex; gap: 4px; }
+.lang-btn {
+  background: none; border: 1.5px solid var(--border-color);
+  border-radius: 6px; padding: 4px 10px; font-size: 0.85rem;
+  cursor: pointer; color: var(--text-secondary);
+  transition: all 0.15s ease;
+}
+.lang-btn.active {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+```
+
+---
+
+## 5. SEO multilingue — hreflang
+
+```jsx
+// components/common/SEOHead.jsx — ajouter les balises hreflang
+import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet-async';
+
+const SEOHead = ({ title, description, url, schema, noindex = false }) => {
+  const { i18n } = useTranslation();
+  const lang = i18n.language?.split('-')[0] || 'fr';
+  const BASE_URL = 'https://nomclient.fr'; // à remplacer
+
+  return (
+    <Helmet>
+      <html lang={lang} />
+      <title>{title}</title>
+      <meta name="description" content={description} />
+      {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+      {/* hreflang — indiquer les versions alternatives aux moteurs de recherche */}
+      <link rel="alternate" hrefLang="fr" href={`${BASE_URL}/fr${url}`} />
+      <link rel="alternate" hrefLang="en" href={`${BASE_URL}/en${url}`} />
+      <link rel="alternate" hrefLang="x-default" href={`${BASE_URL}${url}`} />
+
+      {/* Open Graph avec langue */}
+      <meta property="og:locale" content={lang === 'fr' ? 'fr_FR' : 'en_US'} />
+      <meta property="og:locale:alternate" content={lang === 'fr' ? 'en_US' : 'fr_FR'} />
+
+      {schema && <script type="application/ld+json">{JSON.stringify(schema)}</script>}
+    </Helmet>
+  );
+};
+```
+
+---
+
+## 6. Devises et dates localisées
+
+```jsx
+// utils/format.js
+export const formatPrice = (amount, currency = 'EUR', locale = 'fr-FR') =>
+  new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount);
+
+export const formatDate = (date, locale = 'fr-FR', options = {}) =>
+  new Intl.DateTimeFormat(locale, {
+    day: 'numeric', month: 'long', year: 'numeric', ...options
+  }).format(new Date(date));
+
+// Usage dans les composants
+import { useTranslation } from 'react-i18next';
+import { formatPrice, formatDate } from '../../utils/format';
+
+const PriceDisplay = ({ amount }) => {
+  const { i18n } = useTranslation();
+  const locale = i18n.language === 'en' ? 'en-US' : 'fr-FR';
+
+  return <span>{formatPrice(amount, 'EUR', locale)}</span>;
+  // fr-FR → "1 200,00 €"
+  // en-US → "€1,200.00"
+};
+```
+
+---
+
+## Règles importantes
+
+- Le `fallbackLng: 'fr'` garantit qu'une clé manquante en anglais affiche la version française (jamais de clé brute)
+- Lazy loading des namespaces : charger seulement `common` au démarrage, les autres au besoin avec `useTranslation('services')`
+- Ne pas mettre de HTML dans les fichiers JSON sauf avec `<Trans>` — risque XSS sinon
+- Les URLs doivent refléter la langue : `/fr/services`, `/en/services` (ou `/services` avec détection auto)

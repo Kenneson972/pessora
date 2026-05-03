@@ -1,0 +1,86 @@
+<h2>Cycle 2 — État des lieux réel</h2>
+<p class="subtitle">Ce qui est déjà fait vs. ce qui reste à construire</p>
+
+<div class="section">
+  <h3>✅ Déjà fonctionnel (rien à faire)</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.75rem">
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:1rem">
+      <div style="font-size:11px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem">Annulation abonnement</div>
+      <div style="font-size:12px;color:#374151;line-height:1.6">Bouton "Gérer mon abonnement" → Portail Stripe billing<br><span style="color:#6b7280;font-size:11px">Subscription.tsx — déjà déployé</span></div>
+    </div>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:1rem">
+      <div style="font-size:11px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem">Factures PDF</div>
+      <div style="font-size:12px;color:#374151;line-height:1.6">Accessibles dans le portail Stripe billing<br><span style="color:#6b7280;font-size:11px">create-customer-portal-session — déjà déployé</span></div>
+    </div>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:1rem">
+      <div style="font-size:11px;font-weight:700;color:#16a34a;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem">KPIs admin abonnements</div>
+      <div style="font-size:12px;color:#374151;line-height:1.6">Compteur abonnements actifs dans AdminOverview<br><span style="color:#6b7280;font-size:11px">Requête DB réelle → <code>activeSubscriptions</code></span></div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>🐛 Bugs Cycle 1 à corriger</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.75rem">
+    <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:1rem">
+      <div style="font-size:11px;font-weight:700;color:#ea580c;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem">planLabel — Dashboard.tsx:65</div>
+      <div style="font-size:12px;color:#374151;line-height:1.6">
+        Capitalisation naïve → affiche <strong>"Ora_plus"</strong> au lieu de <strong>"Óra+"</strong><br>
+        Utilisé en 3 endroits dans Dashboard.tsx (lignes 175, 233, 300)
+      </div>
+      <div style="margin-top:.5rem;font-family:monospace;font-size:11px;background:#fff;border-radius:4px;padding:.4rem .6rem;color:#ef4444">
+        subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)
+      </div>
+    </div>
+    <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:1rem">
+      <div style="font-size:11px;font-weight:700;color:#ea580c;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem">Plan brut — Subscription.tsx:83</div>
+      <div style="font-size:12px;color:#374151;line-height:1.6">
+        Affiche <strong>"ora_plus"</strong> en minuscule brut dans la page membre<br>
+        <span style="color:#6b7280;font-size:11px">Devrait afficher "Óra+"</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>🔨 Ce qui reste réellement à construire</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:.75rem">
+
+    <div style="background:#fff;border:2px solid #6366f1;border-radius:8px;padding:1rem">
+      <div style="font-size:11px;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem">Admin — MRR réel</div>
+      <div style="font-size:12px;color:#374151;line-height:1.6">
+        Calcul : <code>COUNT(*) abonnés actifs × 24,90€</code> depuis la table <code>subscriptions</code><br>
+        Actuellement : AdminOverview a une section "MRR" mais avec <strong>données hardcodées</strong> (placeholder commenté <code>// Static placeholder series</code>)
+      </div>
+    </div>
+
+    <div style="background:#fff;border:2px solid #6366f1;border-radius:8px;padding:1rem">
+      <div style="font-size:11px;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem">Admin — Paiements échoués</div>
+      <div style="font-size:12px;color:#374151;line-height:1.6">
+        Liste des membres avec <code>status: 'expired'</code><br>
+        N'existe nulle part actuellement
+      </div>
+    </div>
+
+    <div style="background:#fff;border:2px solid #0891b2;border-radius:8px;padding:1rem">
+      <div style="font-size:11px;font-weight:700;color:#0891b2;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem">Membre — Date renouvellement</div>
+      <div style="font-size:12px;color:#374151;line-height:1.6">
+        Afficher <code>currentPeriodEnd</code> dans Subscription.tsx<br>
+        La donnée est disponible dans <code>SubscriptionData</code> (Cycle 1) mais pas affichée
+      </div>
+    </div>
+
+    <div style="background:#fff;border:2px solid #0891b2;border-radius:8px;padding:1rem">
+      <div style="font-size:11px;font-weight:700;color:#0891b2;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem">Admin — Graphe acquisition réel</div>
+      <div style="font-size:12px;color:#374151;line-height:1.6">
+        Remplacer <code>ACQUISITION = [34, 41, 38…]</code> par des vraies données DB<br>
+        <span style="color:#6b7280;font-size:11px">Optionnel — faible priorité</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div style="margin-top:1.5rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:1rem;font-size:12px;color:#374151">
+  <strong>Synthèse :</strong> Cycle 2 réel = 2 bugs à corriger + 3 vraies features (MRR admin, paiements échoués admin, date renouvellement membre). Le graphe acquisition est optionnel.
+</div>

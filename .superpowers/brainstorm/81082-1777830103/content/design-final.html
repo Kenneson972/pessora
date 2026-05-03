@@ -1,0 +1,101 @@
+<h2>Design Cycle 2 — Récap complet</h2>
+<p class="subtitle">Toutes les décisions validées — aperçu avant spec</p>
+
+<div class="section">
+  <h3>1. Bugs Cycle 1 (corrections rapides)</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:1rem">
+      <div class="label" style="color:#ea580c;margin-bottom:.5rem">Dashboard.tsx:65 — planLabel</div>
+      <div style="font-size:12px;color:#374151;line-height:1.7">
+        Remplacer la capitalisation naïve par un mapping explicite :<br>
+        <code style="font-size:11px;background:#f8fafc;padding:2px 6px;border-radius:3px">{ free: 'Gratuit', ora_plus: 'Óra+' }</code><br>
+        3 occurrences dans Dashboard.tsx (lignes 175, 233, 300)
+      </div>
+    </div>
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:1rem">
+      <div class="label" style="color:#ea580c;margin-bottom:.5rem">Subscription.tsx:83 — plan brut</div>
+      <div style="font-size:12px;color:#374151;line-height:1.7">
+        Même mapping — afficher <strong>"Óra+"</strong> au lieu de <code>ora_plus</code><br>
+        Une seule occurrence
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>2. AdminOverview — MRR + Paiements échoués (Option A)</h3>
+
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:1rem;margin-bottom:.75rem">
+    <div class="label" style="color:#6366f1;margin-bottom:.5rem">MRR KPI — nouvelle carte dans la grille KPIs</div>
+    <div style="font-size:12px;color:#374151;line-height:1.7">
+      • Calcul : <code>COUNT(*) WHERE plan='ora_plus' AND status='active'</code> × 24,90€<br>
+      • Source : même requête que <code>activeSubscriptions</code> existante (déjà dans AdminOverview)<br>
+      • Affichage : <code>946,20 €</code> + sous-label <em>"N abonnés actifs"</em>
+    </div>
+  </div>
+
+  <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:1rem;margin-bottom:.75rem">
+    <div class="label" style="color:#ef4444;margin-bottom:.5rem">Section paiements échoués — en bas d'AdminOverview</div>
+    <div style="font-size:12px;color:#374151;line-height:1.7">
+      • Requête : <code>subscriptions WHERE status='expired'</code> + join <code>profiles</code> (email, nom)<br>
+      • Affichage : liste compacte avec nom, email, ancienneté <code>expired</code><br>
+      • Si aucun échoué → section masquée (pas de bruit visuel si tout va bien)<br>
+      • Lien vers <code>/admin/membres/:id</code> par ligne
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">AdminOverview — aperçu grille KPIs après Cycle 2</div>
+    <div class="mockup-body" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px">
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:3px;padding:10px;text-align:center">
+        <div style="font-size:8px;color:#9ca3af;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Membres</div>
+        <div style="font-size:18px;font-weight:300">142</div>
+      </div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:3px;padding:10px;text-align:center">
+        <div style="font-size:8px;color:#9ca3af;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Abonnés Óra+</div>
+        <div style="font-size:18px;font-weight:300">38</div>
+      </div>
+      <div style="background:#eef2ff;border:2px solid #6366f1;border-radius:3px;padding:10px;text-align:center">
+        <div style="font-size:8px;color:#6366f1;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">MRR ★</div>
+        <div style="font-size:18px;font-weight:300;color:#4f46e5">946,20 €</div>
+        <div style="font-size:8px;color:#6366f1">38 abonnés</div>
+      </div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:3px;padding:10px;text-align:center">
+        <div style="font-size:8px;color:#9ca3af;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Prochain événement</div>
+        <div style="font-size:18px;font-weight:300">Sam 7</div>
+      </div>
+    </div>
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:3px;padding:8px;font-size:11px">
+      <div style="font-weight:600;color:#dc2626;margin-bottom:4px">⚠ 3 paiements échoués</div>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div style="display:flex;justify-content:space-between;background:white;border-radius:2px;padding:4px 8px;color:#374151">
+          <span>Marie D. · marie@email.com</span><span style="color:#dc2626;font-size:10px">expired · 3j</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;background:white;border-radius:2px;padding:4px 8px;color:#374151">
+          <span>Jean-Paul M. · jp@email.com</span><span style="color:#dc2626;font-size:10px">expired · 7j</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>3. Espace membre — date renouvellement (Option B)</h3>
+  <div class="mockup" style="max-width:400px;margin:0 auto">
+    <div class="mockup-header">Subscription.tsx — bas de la carte plan</div>
+    <div class="mockup-body">
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:2px;padding:10px 14px;margin-bottom:10px;text-align:center">
+        <span style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em">Jusqu'à -50% sur nos boissons</span>
+      </div>
+      <div style="text-align:center;margin-bottom:10px">
+        <span style="font-size:11px;color:#9ca3af">Renouvellement le <strong style="color:#6b7280">3 juin 2026</strong></span>
+      </div>
+      <button style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:2px;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#6b7280;background:white">Gérer mon abonnement</button>
+      <div style="font-size:9px;color:#9ca3af;text-align:center;margin-top:6px">(si pas d'abonnement Stripe lié → ligne masquée)</div>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:1.5rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:1rem;font-size:12px;color:#374151">
+  <strong>Périmètre Cycle 2 :</strong> 2 bugs + 1 hook admin enrichi (MRR + expired) + 1 affichage membre. Pas de nouvelle edge function, pas de nouveau fichier majeur. Estimé : 4-5 tâches courtes.
+</div>

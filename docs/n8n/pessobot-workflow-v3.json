@@ -1,0 +1,469 @@
+{
+  "name": "PessoBot - Assistant Bar & Membres (v3 — Rate Limit + Tool Calling)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "pessobot",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "http://localhost:5173,http://localhost:3000,http://localhost:3001,https://pessora.mq,https://www.pessora.mq"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -3460,
+        672
+      ],
+      "id": "v3-webhook-001",
+      "name": "Webhook PessoBot",
+      "webhookId": "18e517ee-0a54-44ab-80e3-ca17a6ea61fb"
+    },
+    {
+      "parameters": {
+        "jsCode": "// VERIFY SIGNATURE — rejette les requêtes sans le header X-Pessobot-Signature\n// ⚠️ n8n Cloud Starter/Pro : secret hardcodé (pas de $env disponible).\nconst expected = '607dd413213a97fe2a54f9ebdab7341596d603640bb093ae';\nconst webhook = $('Webhook PessoBot').first().json;\nconst received = (webhook.headers && (webhook.headers['x-pessobot-signature'] || webhook.headers['X-Pessobot-Signature'])) || '';\nif (expected && received !== expected) {\n  throw new Error('Unauthorized: invalid or missing X-Pessobot-Signature header');\n}\nreturn [{ json: webhook }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3240,
+        672
+      ],
+      "id": "v3-verify-001",
+      "name": "Verify Signature"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM public.fn_pessobot_rate_check(\n  NULLIF(COALESCE('{{ ($json.headers && ($json.headers[\"x-forwarded-for\"] || $json.headers[\"cf-connecting-ip\"])) || \"unknown\" }}', ''), '')::text,\n  NULLIF(COALESCE('{{ ($json.body && $json.body.sessionid) || \"unknown\" }}', ''), '')::text\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        -3020,
+        672
+      ],
+      "id": "v3-ratecheck-001",
+      "name": "Rate Check",
+      "credentials": {
+        "postgres": {
+          "id": "YIzw2d5idZRTu3ES",
+          "name": "KARIBLOOM PESSORA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-allowed",
+              "leftValue": "={{ $json.allowed }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2800,
+        672
+      ],
+      "id": "v3-if-allowed-001",
+      "name": "IF Rate Allowed"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build 429 message : reformule la raison technique en message utilisateur chaleureux.\nconst r = $input.first().json;\nconst retry = Number(r.retry_after_seconds) || 10;\nconst reason = r.reason || 'Pause technique';\nlet userMsg;\nif (reason.startsWith('Rafale')) {\n  userMsg = `Houla, ${retry} s de pause — je te réponds juste après 🙏`;\n} else if (reason.startsWith('Trop')) {\n  userMsg = `On fait beaucoup d'échanges depuis ton IP (limite 30 / 10 min). Reviens dans ~${Math.ceil(retry / 60)} min, je garderai le fil de notre conversation.`;\n} else {\n  userMsg = `Petit temps de pause côté serveur, ré-essaie dans ${retry} s.`;\n}\nreturn [{ json: { response: userMsg, rate_limited: true, retry_after_seconds: retry } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2560,
+        830
+      ],
+      "id": "v3-build429-001",
+      "name": "Build 429 Message"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -2340,
+        830
+      ],
+      "id": "v3-respond-429-001",
+      "name": "Respond (429 soft)"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  (SELECT row_to_json(p.*)\n     FROM public.fn_pessobot_profile_snapshot(NULLIF($1,'')::uuid) p\n     LIMIT 1) AS profile,\n  (SELECT row_to_json(b.*)\n     FROM public.bar_settings b\n     WHERE b.id = 1\n     LIMIT 1) AS bar;",
+        "options": {
+          "queryReplacement": "={{ ($('Webhook PessoBot').first().json.body && $('Webhook PessoBot').first().json.body.userId) || '' }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        -2560,
+        560
+      ],
+      "id": "v3-profile-001",
+      "name": "Get Profile + Bar",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "YIzw2d5idZRTu3ES",
+          "name": "KARIBLOOM PESSORA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT coalesce(\n  (SELECT jsonb_agg(\n    jsonb_build_object(\n      'name', m.name,\n      'category', m.category,\n      'price', m.price,\n      'calories', m.calories,\n      'protein', m.protein,\n      'pitch', NULLIF(left(coalesce(m.pitch, ''), 320), ''),\n      'ingredients', NULLIF(left(coalesce(m.ingredients, ''), 260), ''),\n      'benefits', NULLIF(left(coalesce(m.benefits, ''), 260), '')\n    ) ORDER BY m.category, m.name\n  )\n  FROM public.v_pessobot_menu m),\n  '[]'::jsonb\n) AS menu_compact;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        -2340,
+        560
+      ],
+      "id": "v3-menu-snapshot-001",
+      "name": "Menu snapshot",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "YIzw2d5idZRTu3ES",
+          "name": "KARIBLOOM PESSORA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ────────────────────────────────────────────────────────────────────────────\n// BUILD SYSTEM PROMPT (v3.2 — snapshot menu serveur + tools)\n// Le nœud « Menu snapshot » agrège v_pessobot_menu en JSON ; injection chaque requête.\n// ────────────────────────────────────────────────────────────────────────────\n\n// 1. Webhook\nconst webhook = $('Webhook PessoBot').first().json;\nconst userMsg = (webhook.body && webhook.body.message) || '';\nconst sessionId = (webhook.body && webhook.body.sessionid) || 'session-inconnue';\nconst userId = (webhook.body && webhook.body.userId) || null;\n\n// 2. Profile snapshot + bar (requête combinée — optim v3.1)\nlet snap = {};\nlet bar = { address: {}, hours: [], contact: {}, subscription_info: {} };\ntry {\n  const rows = $('Get Profile + Bar').all();\n  if (rows[0] && rows[0].json) {\n    snap = rows[0].json.profile || {};\n    if (rows[0].json.bar) bar = rows[0].json.bar;\n  }\n} catch (e) {}\n\n// 2bis. Catalogue officiel (nœud Postgres « Menu snapshot»)\nlet menuCompact = '[]';\nlet menuCount = 0;\ntry {\n  const mrow = $('Menu snapshot').first();\n  const raw = mrow && mrow.json && mrow.json.menu_compact;\n  if (raw != null) {\n    if (Array.isArray(raw)) {\n      menuCount = raw.length;\n      menuCompact = JSON.stringify(raw);\n    } else if (typeof raw === 'string') {\n      const parsed = JSON.parse(raw);\n      menuCount = Array.isArray(parsed) ? parsed.length : 0;\n      menuCompact = JSON.stringify(parsed);\n    } else {\n      menuCompact = JSON.stringify(raw);\n      menuCount = Array.isArray(raw) ? raw.length : 1;\n    }\n  }\n} catch (e) {}\n\n// Connexion = JWT côté app : dès que userId est envoyé, l'utilisateur n'est plus visiteur.\n// (L'ancienne règle exigeait snap.first_name — faux négatif si prénom vide en BDD.)\nconst firstName =\n  (snap.first_name && String(snap.first_name).trim()) ||\n  (webhook.body && webhook.body.first_name && String(webhook.body.first_name).trim()) ||\n  'Membre';\nconst isConnected = Boolean(userId);\nconst plan = (snap.plan || (webhook.body && webhook.body.subscription_tier) || 'free').toLowerCase();\nconst isOraPlus = ['ora_plus', 'starter', 'premium', 'vip'].includes(plan);\nconst totalOrders = snap.total_orders || 0;\nconst isRegular = isConnected && totalOrders >= 3;\n\nlet clientStatus = 'VISITOR';\nif (isConnected) clientStatus = isOraPlus ? 'VIP_MEMBER' : 'FREE_MEMBER';\n\n// Signaux perso (compact JSON pour le prompt)\nconst personalSignals = {};\nif (snap.favorite_product) personalSignals.favorite = snap.favorite_product;\nif (snap.upcoming_event) personalSignals.upcoming_event = snap.upcoming_event;\nif (snap.upcoming_bilan) personalSignals.upcoming_bilan = snap.upcoming_bilan;\nif (totalOrders) personalSignals.total_orders = totalOrders;\n\n// 3. Bar settings (déjà chargés en étape 2 via la requête combinée)\nconst addressLine = (bar.address && bar.address.full) || '(non renseignée)';\nconst hoursCompact = Array.isArray(bar.hours)\n  ? bar.hours.map(h => `${h.label} ${h.value}`).join(' | ')\n  : '(non renseignées)';\nconst contact = bar.contact || {};\nconst contactLine = [contact.email, contact.phone, contact.instagram].filter(Boolean).join(' · ') || '(non renseigné)';\n\n// Óra+ compact\nconst oraPlus = (bar.subscription_info && bar.subscription_info.ora_plus) || null;\nconst oraPlusJson = oraPlus ? JSON.stringify({\n  name: oraPlus.name,\n  tagline: oraPlus.tagline,\n  price: oraPlus.price,\n  period: oraPlus.period,\n  highlight: oraPlus.highlight,\n  benefits: oraPlus.benefits,\n  cta_url: oraPlus.cta_url,\n}) : 'null';\n\n// 4. Closing tactique (adapté au statut + historique)\nlet closing;\nif (clientStatus === 'VISITOR') {\n  closing = 'Ferme par : \"Crée ton compte gratuit pour commander\". Jamais de demande de paiement ici.';\n} else if (clientStatus === 'FREE_MEMBER' && isRegular && oraPlus) {\n  closing = `${firstName} est un habitué (${totalOrders} commandes). Si le contexte s'y prête, glisse UNE FOIS le pitch Óra+ en citant 1 ou 2 bénéfices réels du JSON ora_plus ci-dessous. Utilise un lien markdown [S'abonner à ${oraPlus.name}](${oraPlus.cta_url}). Ne force jamais.`;\n} else if (clientStatus === 'FREE_MEMBER' && oraPlus) {\n  closing = `Conseille simplement. Si le produit est éligible Óra+ et que c'est naturel, glisse : \"Avec ${oraPlus.name} ce serait moins cher (${oraPlus.highlight})\". Une seule fois, sans insister.`;\n} else if (clientStatus === 'VIP_MEMBER') {\n  closing = `${firstName} est déjà abonné(e) ${oraPlus ? oraPlus.name : 'Óra+'}. Confirme simplement le plaisir, rappelle les avantages exclusifs (bilan prioritaire, places événements). Pas d'upsell.`;\n} else {\n  closing = 'Conseille simplement, pas d\\'upsell.';\n}\n\n// 5. Persona v3 (compacte, ~400 tokens vs ~900 en v2.1)\nconst who = isConnected ? firstName : 'un visiteur anonyme';\nconst personalJson = Object.keys(personalSignals).length ? JSON.stringify(personalSignals) : 'null';\n\nconst systemPrompt = `Tu es PessoBot, assistant du bar PessÓra (Martinique).\n\nRÈGLES ABSOLUES :\n1. JAMAIS d'info bar/menu/abonnement inventée. Produits / prix / kcal / pitch / ingrédients : UNIQUEMENT le JSON CATALOGUE_OFFICIEL ci-dessous (snapshot BDD) OU les champs renvoyés par get_menu dans ce même tour.\n2. INTERDIT : nommer une boisson absente du JSON, un prix ou des kcal non listés, ou des noms génériques type « smoothie immunité », Détox, Focus, pré-workout comme nom de produit.\n3. Reprends chaque name exactement comme dans le JSON (ex. DETOX MY BODY). Ne crée pas de variantes orthographiques.\n4. Si CATALOGUE_OFFICIEL est vide ([]) : ne fabrique pas de carte. Dis que la carte n'est pas disponible et renvoie vers [Menu](/menu).\n5. Si tu ne sais pas (hors carte) : dis-le.\n6. Tu parles à ${who} (${clientStatus}${isConnected ? `, plan=${plan}` : ''}). Reste court, chaleureux, précis.\n7. Pas de titres markdown lourds. Liens en [libellé](URL).\n8. Signaux perso avec tact, jamais listés brut.\n\nMÉTHODE :\n- Le snapshot menu est déjà fourni : réponds depuis ce JSON pour toute question carte, boisson, tarif ou conseil goût.\n- get_menu(category?) — optionnel pour filtrer wellness | energie | shakes | coffee si la question porte sur une seule gamme.\n- get_upcoming_events(limit?) — obligatoire pour événements, ateliers, dates.\n\nCATALOGUE_OFFICIEL (${menuCount} produit(s)) :\n${menuCompact}\n\nTOOLS :\n- get_menu(category?) — filtre par gamme (le snapshot ci-dessus reste la base).\n- get_upcoming_events(limit?) — événements publics à venir.\n\nINFOS BAR (pré-chargées) :\n- Adresse : ${addressLine}\n- Horaires : ${hoursCompact}\n- Contact : ${contactLine}\n\nPROFIL UTILISATEUR (JSON compact) : ${personalJson}\nABONNEMENT ÓRA+ (JSON, à citer tel quel) : ${oraPlusJson}\n\nCLOSING :\n${closing}`;\n\nreturn [{ json: { systemPrompt, userMessage: userMsg, sessionId } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2120,
+        560
+      ],
+      "id": "v3-buildprompt-001",
+      "name": "BUILD SYSTEM PROMPT"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.userMessage }}",
+        "options": {
+          "systemMessage": "={{ $json.systemPrompt }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -1880,
+        560
+      ],
+      "id": "v3-agent-001",
+      "name": "PessoBot Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook PessoBot').item.json.body.sessionid }}",
+        "tableName": "pessora_chat_memory",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        -1960,
+        760
+      ],
+      "id": "v3-memory-001",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "YIzw2d5idZRTu3ES",
+          "name": "KARIBLOOM PESSORA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        -2120,
+        760
+      ],
+      "id": "v3-deepseek-001",
+      "name": "DeepSeek Chat Model",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "s16Eub8KTcJLPBw5",
+          "name": "KARIBLOOM DEEPSEEK"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "get_menu",
+        "description": "Filtre le catalogue PessÓra par gamme. Le snapshot menu est déjà injecté dans le system prompt ; utilise cet outil si l'utilisateur demande une seule catégorie (wellness | energie | shakes | coffee). Sans argument = toute la carte. Réponse : items avec name (EXACT), price, calories, protein, pitch, ingredients, benefits.",
+        "workflowId": "REPLACE_WITH_GET_MENU_WORKFLOW_ID"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2,
+      "position": [
+        -1780,
+        760
+      ],
+      "id": "v3-tool-menu-001",
+      "name": "Tool: get_menu"
+    },
+    {
+      "parameters": {
+        "name": "get_upcoming_events",
+        "description": "Retourne les prochains événements actifs du bar PessÓra (ateliers, soirées, bilans collectifs). Argument `limit` optionnel (1-20, défaut 5). Appelle ce tool si l'utilisateur parle d'événements, d'activités, de dates, de prochains rendez-vous publics.",
+        "workflowId": "REPLACE_WITH_GET_EVENTS_WORKFLOW_ID"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2,
+      "position": [
+        -1660,
+        760
+      ],
+      "id": "v3-tool-events-001",
+      "name": "Tool: get_upcoming_events"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Nettoyage léger du markdown retourné par l'agent :\n// - on retire les titres markdown (# / ##) qui n'ont pas leur place dans une bulle de chat\n// - on convertit les puces '- ' / '• ' en '👉 ' (cohérent avec la persona)\n// - on supprime les séparateurs '---' / '***' (bruit visuel)\n// On LAISSE passer **bold** et *italic* : le front les rend en <strong>/<em>.\nlet rawText = $input.first().json.output || '';\nlet cleanText = rawText\n  .replace(/^[#]+\\s+/gm, '')\n  .replace(/^[-\\u2022]\\s+/gm, '👉 ')\n  .replace(/^\\s*-{3,}\\s*$/gm, '')\n  .trim();\nreturn [{ json: { response: cleanText } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1640,
+        560
+      ],
+      "id": "v3-format-001",
+      "name": "FORMAT RESPONSE"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -1420,
+        560
+      ],
+      "id": "v3-respond-200-001",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook PessoBot": {
+      "main": [
+        [
+          {
+            "node": "Verify Signature",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Signature": {
+      "main": [
+        [
+          {
+            "node": "Rate Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rate Check": {
+      "main": [
+        [
+          {
+            "node": "IF Rate Allowed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Rate Allowed": {
+      "main": [
+        [
+          {
+            "node": "Get Profile + Bar",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build 429 Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build 429 Message": {
+      "main": [
+        [
+          {
+            "node": "Respond (429 soft)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Profile + Bar": {
+      "main": [
+        [
+          {
+            "node": "Menu snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BUILD SYSTEM PROMPT": {
+      "main": [
+        [
+          {
+            "node": "PessoBot Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PessoBot Agent": {
+      "main": [
+        [
+          {
+            "node": "FORMAT RESPONSE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FORMAT RESPONSE": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "PessoBot Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "PessoBot Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: get_menu": {
+      "ai_tool": [
+        [
+          {
+            "node": "PessoBot Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: get_upcoming_events": {
+      "ai_tool": [
+        [
+          {
+            "node": "PessoBot Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Menu snapshot": {
+      "main": [
+        [
+          {
+            "node": "BUILD SYSTEM PROMPT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "s3-v3.1-combined-query",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "599c124565a8f36fe2fbc8f53114dcc39cdf941dcbdaac98566633b4f8753f55"
+  },
+  "id": "pessobot-v3",
+  "tags": []
+}

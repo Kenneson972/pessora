@@ -1,0 +1,361 @@
+---
+description: Déploiement Next.js 15 sur Vercel - env vars, domaine custom, CI/CD, preview deployments, Supabase prod, monitoring
+globs: "**/vercel.json,**/.github/workflows/**,**/.env*"
+alwaysApply: false
+---
+
+# Déploiement Next.js 15 — Vercel + Supabase + Stripe
+
+Complète kb-security, kb-supabase, kb-cart-checkout, kb-notifications. Ne remplace pas la config métier de chacune.
+
+## Plateforme recommandée : Vercel
+
+Pourquoi Vercel par défaut :
+- Intégration native Next 15 (App Router, PPR, Server Actions, image optimization, edge middleware).
+- Preview deployments automatiques sur chaque PR.
+- Edge network global, SSL auto, rollback instantané.
+- Cron jobs, Edge Config, Blob storage intégrés.
+
+**Alternatives** (si contrainte client rare) :
+- Self-hosted Node + PM2 + Nginx reverse proxy + Certbot.
+- Docker sur Fly.io / Render / Railway.
+- SST / OpenNext sur AWS si besoin AWS-natif.
+
+Dans tous les cas non-Vercel, prévoir : build `next build`, run `next start`, cache Redis externe si besoin, image optimization server (sharp installé), crons via cron OS ou service externe.
+
+## Setup Vercel
+
+1. Créer un compte Vercel, connecter GitHub.
+2. **Import Project** → sélectionner le repo → Framework : Next.js (auto-détecté).
+3. Configurer les env vars (voir section suivante).
+4. Déployer.
+5. Branches :
+   - `main` → Production.
+   - Toute autre branche poussée → Preview deployment automatique (URL unique `project-abc123.vercel.app`).
+
+## Variables d'environnement Vercel
+
+Dashboard → Settings → Environment Variables. **Scope par environnement** :
+
+| Variable | Production | Preview | Development |
+|---|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | prod url | preview/staging url | dev url |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | prod | staging | dev |
+| `SUPABASE_SERVICE_ROLE_KEY` | prod (**Encrypted**) | staging | dev |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `pk_live_...` | `pk_test_...` | `pk_test_...` |
+| `STRIPE_SECRET_KEY` | `sk_live_...` (**Encrypted**) | `sk_test_...` | `sk_test_...` |
+| `STRIPE_WEBHOOK_SECRET` | `whsec_live_...` | `whsec_test_...` | `whsec_test_...` |
+| `RESEND_API_KEY` | prod | prod (ou test) | test |
+| `NEXT_PUBLIC_SITE_URL` | `https://client.fr` | preview url | `http://localhost:3000` |
+
+Règles :
+- **Sensibles** = marquer Encrypted (service_role, stripe secret, webhook secret, resend).
+- **Jamais** commiter de secret dans `vercel.json` (il finit dans git).
+- **Jamais** mettre `pk_live` en preview (les testeurs déclencheraient de vrais paiements).
+- Validation : depuis le Dashboard, vérifier que la variable apparaît bien dans les 3 scopes souhaités avant de redéployer.
+
+### Import groupé
+
+```bash
+# depuis .env.local vers un scope Vercel
+vercel env pull .env.production  # download
+# ou via vercel env add/push pour chaque clé
+```
+
+## Domaine custom
+
+1. Vercel → Project → Settings → Domains → Add.
+2. DNS chez le registrar :
+   - **Apex** (`client.fr`) : A record vers `76.76.21.21` (ou ALIAS/ANAME si supporté).
+   - **www** : CNAME vers `cname.vercel-dns.com`.
+3. Vercel émet le certificat Let's Encrypt automatiquement (< 1 min en général).
+4. Choisir la stratégie de redirection :
+   - `www` → apex (classique, URL courte).
+   - ou apex → `www` (si souhaité).
+5. Vérifier `https://client.fr` ET `https://www.client.fr` en navigation privée.
+
+## Supabase prod
+
+### Séparation des environnements
+
+- **Projet Supabase prod** dédié (ex: `client-prod`).
+- **Projet Supabase staging** séparé (ex: `client-staging`).
+- Local dev : Supabase CLI (`supabase start`) ou projet dédié.
+
+### Migrations
+
+```bash
+# Créer une migration
+supabase migrations new add_produits_table
+
+# Appliquer en local
+supabase db reset
+
+# Pousser en prod (depuis un environnement de confiance, pas depuis Vercel)
+supabase link --project-ref <prod-ref>
+supabase db push
+```
+
+Automatiser via CI (GitHub Action) :
+
+```yaml
+# .github/workflows/db-migrate.yml
+name: Migrate Supabase
+on:
+  push:
+    branches: [main]
+    paths: ["supabase/migrations/**"]
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+      - run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+      - run: supabase db push
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+```
+
+### Backup / Recovery
+
+- Dashboard → Database → Backups.
+- Plan Free : backup journalier 7j.
+- Plan Pro : **Point-in-Time Recovery** (PITR) activé sur les projets critiques, fenêtre 7-28j.
+- Test de restauration périodique (trimestriel) sur un projet staging.
+
+### Storage
+
+- Buckets séparés public / privé.
+- RLS appliquée aux buckets privés.
+- CDN Supabase actif sur les buckets publics (auto).
+
+## Stripe prod
+
+1. Basculer l'interface Stripe en **Live mode**.
+2. Créer / recréer les produits et prix en live (les IDs diffèrent du test mode).
+3. **Webhooks prod** :
+   - Endpoint : `https://client.fr/api/stripe/webhook`.
+   - Évènements à écouter : `checkout.session.completed`, `payment_intent.succeeded`, `payment_intent.payment_failed`, `charge.refunded`, `customer.subscription.*` si abo.
+   - Récupérer le **Signing secret** live (`whsec_live_...`) → variable Vercel `STRIPE_WEBHOOK_SECRET` scope Production.
+4. Tester un paiement réel minimal (0.50€) en prod, rembourser aussitôt.
+5. Activer le mode **Radar** (antifraude Stripe) et ajuster les règles.
+
+## Emails (Resend)
+
+1. **Vérifier le domaine** `client.fr` dans Resend → DNS → copier les 3 records :
+   - SPF (TXT)
+   - DKIM (TXT, 2 records `resend._domainkey`)
+   - DMARC (TXT, ex: `v=DMARC1; p=quarantine; rua=mailto:dmarc@client.fr`)
+2. Attendre la validation (< 30 min).
+3. Expéditeur : `noreply@client.fr` ou `contact@client.fr`.
+4. En Vercel → `RESEND_API_KEY` (prod).
+5. Tester la délivrabilité : **mail-tester.com** → viser 10/10.
+
+## CI/CD
+
+Vercel fait le build et le deploy tout seul. GitHub Actions pour le reste :
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+      # Optionnel
+      - run: npm test
+      - run: npx playwright test
+```
+
+Activer dans Vercel : bloquer le merge si le build échoue (GitHub branch protection + Vercel check required).
+
+## Monitoring prod
+
+| Couche | Outil |
+|---|---|
+| Core Web Vitals | **Vercel Speed Insights** (`@vercel/speed-insights`) |
+| Traffic / pages | **Vercel Analytics** (`@vercel/analytics`) |
+| Erreurs runtime | **Sentry** (`@sentry/nextjs`) — recommandé |
+| Logs serveur | Vercel Logs (Runtime + Build) |
+| DB queries lentes | Supabase Dashboard → Database → Query Performance |
+| Paiements | Stripe Dashboard + alertes email |
+| Uptime | **Better Stack** ou StatusCake, check `/api/health` toutes les 1-5 min |
+
+Installation Sentry minimale :
+
+```ts
+// sentry.server.config.ts
+import * as Sentry from "@sentry/nextjs";
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  tracesSampleRate: 0.1,
+  environment: process.env.VERCEL_ENV ?? "development",
+});
+```
+
+## Health check
+
+```ts
+// app/api/health/route.ts
+import { NextResponse } from "next/server";
+import pkg from "@/package.json";
+
+export const dynamic = "force-dynamic";
+
+export async function GET() {
+  return NextResponse.json({
+    status: "ok",
+    version: pkg.version,
+    commit: process.env.VERCEL_GIT_COMMIT_SHA ?? "local",
+    env: process.env.VERCEL_ENV ?? "development",
+    timestamp: new Date().toISOString(),
+  });
+}
+```
+
+Configurer Better Stack : HTTP GET sur `https://client.fr/api/health`, alerte Slack/email si non-200.
+
+## Headers sécurité
+
+Deux options, voir kb-security pour le détail :
+- **`next.config.ts`** `async headers()` → statique mais portable.
+- **`middleware.ts`** → dynamique (CSP nonce par requête).
+- **`vercel.json`** `headers` → alternative Vercel-only si on préfère.
+
+```json
+// vercel.json (alternative)
+{
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" }
+      ]
+    }
+  ]
+}
+```
+
+## Rewrites / Redirects
+
+On n'écrit **jamais** de `.htaccess`. Tout passe par Next :
+
+```ts
+// next.config.ts
+const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      { source: "/ancien-chemin", destination: "/nouveau", permanent: true },
+      { source: "/produits/:slug/ancien", destination: "/produits/:slug", permanent: true },
+    ];
+  },
+  async rewrites() {
+    return [
+      { source: "/rss", destination: "/api/rss" },
+    ];
+  },
+};
+```
+
+Le `trailingSlash` se configure ici, pas via des règles serveur.
+
+## Cron jobs
+
+```json
+// vercel.json
+{
+  "crons": [
+    { "path": "/api/cron/sync-ical", "schedule": "*/15 * * * *" },
+    { "path": "/api/cron/send-digest", "schedule": "0 8 * * 1" }
+  ]
+}
+```
+
+```ts
+// app/api/cron/sync-ical/route.ts
+import { NextRequest, NextResponse } from "next/server";
+
+export async function GET(req: NextRequest) {
+  const auth = req.headers.get("authorization");
+  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  // ... tâche planifiée
+  return NextResponse.json({ ok: true });
+}
+```
+
+Vercel ajoute `Authorization: Bearer $CRON_SECRET` automatiquement aux cron hits. Déclarer `CRON_SECRET` en env var.
+
+## Edge Functions Supabase
+
+Pour les tâches qui doivent rester proches de la DB (heavy DB ops, secrets DB-side) :
+
+```bash
+supabase functions new notify-order
+supabase functions deploy notify-order --project-ref <prod-ref>
+```
+
+Appelées depuis Next via `supabase.functions.invoke("notify-order", { body })` ou en webhook DB.
+
+## Rollback
+
+Vercel → Deployments → choisir un déploiement antérieur → **Promote to Production**. Instantané, sans rebuild. Garder au moins 5 déploiements récents accessibles.
+
+En cas de régression post-migration DB : rollback Vercel **+** rollback migration Supabase (migration `down` ou restore PITR).
+
+## Checklist pré-livraison
+
+- [ ] Env vars prod configurées (Vercel → Production scope)
+- [ ] `SUPABASE_SERVICE_ROLE_KEY` et `STRIPE_SECRET_KEY` marquées Encrypted
+- [ ] Domaine custom actif, SSL valide, www → apex OK
+- [ ] Supabase migrations appliquées en prod
+- [ ] Supabase advisors = 0 critiques
+- [ ] Supabase RLS activée partout, PITR activé
+- [ ] Stripe en live mode, produits/prix créés, webhook prod enregistré avec signing secret
+- [ ] Test paiement réel 0.50€ puis remboursement
+- [ ] Resend domaine vérifié (SPF + DKIM + DMARC), test mail-tester 10/10
+- [ ] Headers sécurité actifs, securityheaders.com = A ou A+
+- [ ] `robots.ts` et `sitemap.ts` corrects, sitemap soumis à Search Console
+- [ ] OG image fonctionnelle (`/opengraph-image.tsx`)
+- [ ] `@vercel/analytics` + `@vercel/speed-insights` installés
+- [ ] Sentry configuré (optionnel mais recommandé)
+- [ ] Cron jobs planifiés et testés
+- [ ] Health check `/api/health` OK, monitoré par Better Stack
+- [ ] Backup DB activé + test de restauration
+- [ ] Rollback testé (promote ancien deploy)
+- [ ] Client a accès au projet Vercel (rôle viewer minimum)
+- [ ] Documentation remise : accès Vercel, Supabase, Stripe, Resend, DNS
+
+## Anti-patterns
+
+- **`.htaccess`** dans le repo (plus d'Apache, Vercel = Node/edge)
+- **FTP manuel** pour déployer (on déploie par git push)
+- **Même projet Supabase** pour dev, staging et prod
+- **Stripe test keys** en prod (ou l'inverse : live keys en preview)
+- Désactiver les **preview deployments** (perte énorme de feedback PR)
+- Secrets **en clair dans `vercel.json`** (le fichier est committé)
+- Migrations Supabase appliquées **à la main** depuis la console SQL (pas d'historique, pas de revert)
+- Pas de **CRON_SECRET** sur les routes cron (endpoints publics abusables)
+- Pas de **rollback testé** avant la mise en prod
+- Pas de **séparation des env vars** Production / Preview (secrets de prod exposés en preview)
+- `next start` derrière un CDN non configuré pour streaming (casse les Server Components streaming)

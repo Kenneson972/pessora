@@ -1,0 +1,272 @@
+@import "tailwindcss";
+/* HeroUI v3 : styles globaux via @heroui/styles — pas de HeroUIProvider requis côté React. */
+@import "@heroui/styles";
+/* HeroUI Pro v1 : composants avancés (KPI, DataGrid, AppLayout, charts…). */
+@import "@heroui-pro/react/css";
+
+/*
+ * Typographie premium locale :
+ * - Akkurat Pro (Regular/Bold) pour l'interface
+ * - Berthold Baskerville Book (Regular/Italic) pour l'éditorial
+ */
+@font-face {
+  font-family: 'Akkurat Pro';
+  src: local('Akkurat Pro Regular'), local('Akkurat Pro');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Akkurat Pro';
+  src: local('Akkurat Pro Bold');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Berthold Baskerville Book';
+  src: local('Berthold Baskerville Book Regular');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Berthold Baskerville Book';
+  src: local('Berthold Baskerville Book Italic');
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@theme {
+  /* Couleurs marque — préférer bg-noir / text-noir / hover:bg-anthracite dans les TSX plutôt que oklch(...) en dur. */
+  /* Surfaces : blanc / noir chaud — pas de beige */
+  --color-noir:        oklch(8% 0.005 55);
+  --color-anthracite:  oklch(17% 0.007 55);
+  --color-ivory:       oklch(100% 0 0);
+  --color-ivory-warm:  oklch(98% 0 0);
+  --color-gold:        oklch(75% 0.085 68);
+  --color-gold-dim:    oklch(57% 0.065 68);
+  --color-muted:       oklch(35% 0.004 55 / 0.38);
+
+  /*
+   * Surfaces sémantiques (luxe épuré — majorité clair, noir réservé au hero / typo)
+   * surface-page     : fond de page par défaut
+   * surface-muted    : bandes alternées très légères (oklch ~98.5%)
+   * surface-card     : cartes éditoriales type « papier »
+   * surface-hero     : hero sombre mais moins massif qu’un noir pur (anthracite chaud)
+   */
+  --color-surface-page:  oklch(100% 0 0);
+  --color-surface-muted: oklch(98.5% 0 0);
+  --color-surface-card:  oklch(99.2% 0 0);
+  /* Puits carré produit (carrousel accueil, grille menu) — neutre pur */
+  --color-surface-product-well: oklch(97% 0 0);
+  --color-surface-hero:    oklch(11% 0.006 55);
+  /* Badge / accent chaud (prix barré, pastilles éditoriales) — WCAG AA 4.5:1 on white */
+  --color-editorial-badge: oklch(32% 0.05 55);
+
+  /* Typography — Akkurat Pro + Berthold Baskerville */
+  --font-display: 'Berthold Baskerville Book', Georgia, serif;
+  --font-sans:    'Akkurat Pro', 'Akkurat', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-serif:   'Berthold Baskerville Book', Georgia, serif;
+
+  /* Radius — minimal, univers luxe */
+  --radius-card:    2px;
+  --radius-product: 2px;
+  --radius-pill:    24px;
+
+  /* Ombres éditoriales — couches très douces, pas de glow */
+  --shadow-editorial-sm:
+    0 1px 2px color-mix(in oklch, var(--color-noir) 4%, transparent),
+    0 12px 32px color-mix(in oklch, var(--color-noir) 5%, transparent);
+  --shadow-editorial-md:
+    0 2px 4px color-mix(in oklch, var(--color-noir) 5%, transparent),
+    0 20px 48px color-mix(in oklch, var(--color-noir) 7%, transparent);
+  --shadow-editorial-inset-frame:
+    inset 0 0 0 1px color-mix(in oklch, var(--color-noir) 8%, transparent);
+
+  /* Spacing sections (référence éditoriale) */
+  --space-section-y-sm: 4.5rem;
+  --space-section-y-md: 6.5rem;
+  --space-section-y-lg: 8.5rem;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    overflow-x: hidden;
+    max-width: 100%;
+    font-family: var(--font-sans);
+    font-weight: 300;
+    line-height: 1.65;
+    letter-spacing: 0.01em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #fff;
+    color: var(--color-noir);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+
+  img, video, iframe {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/*
+ * Éditorial minimaliste luxe — aligné sur HomeProductCarousel
+ * Utiliser ces utilitaires pour titres de section, tuiles produit, liens « voir tout ».
+ */
+@utility text-editorial-section-title {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  color: var(--color-noir);
+  @media (width >= 48rem) {
+    font-size: 0.75rem;
+  }
+}
+
+@utility text-editorial-product-name {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  line-height: 1.25;
+  color: var(--color-noir);
+}
+
+@utility text-editorial-product-meta {
+  font-family: var(--font-sans);
+  font-size: 0.5625rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  line-height: 1.375;
+  color: color-mix(in oklch, var(--color-noir) 48%, transparent);
+}
+
+@utility text-editorial-price {
+  font-family: var(--font-sans);
+  font-size: 0.625rem;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.07em;
+  color: color-mix(in oklch, var(--color-noir) 70%, transparent);
+}
+
+@utility text-editorial-tagline {
+  font-family: var(--font-sans);
+  font-size: 0.5rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.42em;
+  color: color-mix(in oklch, var(--color-noir) 40%, transparent);
+}
+
+@utility text-editorial-link-underline {
+  font-family: var(--font-sans);
+  font-size: 0.5625rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+  color: color-mix(in oklch, var(--color-noir) 55%, transparent);
+  border-bottom-width: 1px;
+  border-color: color-mix(in oklch, var(--color-noir) 30%, transparent);
+  padding-bottom: 1px;
+  transition: color 150ms ease, border-color 150ms ease;
+  &:hover {
+    color: var(--color-noir);
+    border-color: var(--color-noir);
+  }
+}
+
+@utility bg-editorial-badge {
+  background-color: var(--color-editorial-badge);
+}
+
+@utility text-editorial-kicker {
+  font-family: var(--font-sans);
+  font-size: 0.5625rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.32em;
+  color: color-mix(in oklch, var(--color-noir) 42%, transparent);
+}
+
+@utility text-editorial-hero-lead {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  line-height: 1.42;
+  color: color-mix(in oklch, white 88%, transparent);
+}
+
+@utility shadow-editorial-sm {
+  box-shadow: var(--shadow-editorial-sm);
+}
+
+@utility shadow-editorial-md {
+  box-shadow: var(--shadow-editorial-md);
+}
+
+@utility surface-editorial-inset {
+  box-shadow: var(--shadow-editorial-inset-frame);
+}
+
+/* Bloc citation / manifeste — serif, respiration */
+@utility text-editorial-manifesto {
+  font-family: var(--font-display);
+  font-size: clamp(1.125rem, 2.1vw, 1.5rem);
+  font-weight: 400;
+  line-height: 1.48;
+  letter-spacing: -0.015em;
+  color: color-mix(in oklch, var(--color-noir) 88%, transparent);
+}
+
+/* ─────────────── Óra+ ROI slider (HeroUI Pro CellSlider override) ─────────────── */
+/* La track CellSlider par défaut a un padding "settings cell" trop dense pour le
+   calculateur éditorial ; on neutralise le padding horizontal, on aplatit la hauteur
+   et on garde la teinte noire pour coller à la charte. L/Output sont en sr-only
+   via JSX, les slots Fill/Thumb héritent des classes BEM cell-slider__*. */
+.ora-cell-slider {
+  margin: 14px 0 4px;
+}
+.ora-cell-slider .cell-slider__track {
+  min-height: 44px;
+  padding-inline: 0;
+  background: transparent;
+  border: 0;
+}
+.ora-cell-slider .cell-slider__fill {
+  background: color-mix(in oklch, var(--color-noir) 14%, transparent);
+}
+.ora-cell-slider .cell-slider__thumb::after {
+  background: var(--color-noir);
+}

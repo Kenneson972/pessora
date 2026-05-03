@@ -1,0 +1,417 @@
+---
+description: Sécurité Next.js 15 + Supabase + Stripe - env vars, RLS, CSRF, CSP headers, rate limit, webhook signatures, secrets
+globs: "**/middleware.ts,**/next.config.*,**/app/api/**,**/lib/security/**,**/.env*"
+alwaysApply: false
+---
+
+# Sécurité Next.js 15 + Supabase + Stripe
+
+Complète kb-supabase, kb-cart-checkout, kb-auth, kb-api-routes, kb-notifications. Ne remplace pas les règles métier de chacune.
+
+## Principes
+
+- **Defense in depth**. Chaque couche valide, aucune ne fait confiance à la précédente.
+- **Validation à tous les niveaux** : client (UX), serveur (sécurité), DB (RLS).
+- **Secrets jamais côté client**. Si une valeur finit dans le bundle JS, elle est publique.
+- **Fail closed**. En cas de doute sur l'auth, on refuse.
+- **Audit** régulier : `npm audit`, advisors Supabase, rotation secrets.
+
+## Variables d'environnement
+
+Règle Next.js : **seules les variables préfixées `NEXT_PUBLIC_*` sont exposées au bundle client**. Tout le reste est server-only (RSC, route handlers, server actions, middleware).
+
+```bash
+# .env.local (jamais commit)
+
+# Public (bundle client OK)
+NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...       # OK, RLS protège
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
+NEXT_PUBLIC_SITE_URL=https://client.fr
+
+# Secret (server-only, JAMAIS dans le bundle)
+SUPABASE_SERVICE_ROLE_KEY=eyJ...            # bypass RLS, admin total
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+RESEND_API_KEY=re_...
+DATABASE_URL=postgresql://...               # si pooler direct
+```
+
+### Validation au boot (zod)
+
+```ts
+// lib/env.ts (server-only)
+import "server-only";
+import { z } from "zod";
+
+const envSchema = z.object({
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+  STRIPE_SECRET_KEY: z.string().startsWith("sk_"),
+  STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_"),
+  RESEND_API_KEY: z.string().startsWith("re_"),
+});
+
+export const env = envSchema.parse(process.env);
+```
+
+Crash au boot si une var manque, mieux qu'une 500 en prod à 3h du matin.
+
+### Fichiers .env
+
+```
+.gitignore :
+.env
+.env.local
+.env.*.local
+.env.production
+```
+
+Commité : `.env.example` avec valeurs bidons (`sk_live_REPLACE_ME`).
+
+### Rotation secrets
+
+- Rotation périodique (trimestrielle) des clés Stripe, Supabase service_role, Resend.
+- Rotation **immédiate** si fuite suspectée (commit accidentel, logs partagés).
+- Vercel : gérer via Dashboard → Settings → Environment Variables, séparer Production / Preview / Development, **jamais** coller en clair dans `vercel.json`.
+- Audit Supabase : Dashboard → Settings → API → voir les usages ; révoquer les tokens auth compromis via `auth.admin.signOut`.
+
+## RLS Supabase
+
+Voir kb-supabase pour le détail. Règles non négociables :
+
+- **RLS activée sur toutes les tables `public.*`**. `alter table X enable row level security;`
+- Policy par défaut = refus, on ajoute des `using (...)` explicites.
+- Jamais de requête front avec service_role key.
+- Advisors Supabase vérifiés avant chaque déploiement (`mcp__supabase__get_advisors` ou Dashboard → Advisors).
+
+```sql
+-- ❌ Table exposée sans RLS
+create table public.leads (email text, message text);
+
+-- ✅
+create table public.leads (email text, message text);
+alter table public.leads enable row level security;
+create policy "insert public" on public.leads for insert with check (true);
+-- pas de select policy = personne ne peut lire côté anon
+```
+
+## CSRF
+
+Next 15 App Router : pas de protection auto-magique. Les Server Actions ont une vérif `Origin` intégrée depuis 14.1. Les route handlers `POST/PUT/DELETE` sont à protéger manuellement :
+
+```ts
+// app/api/sensitive/route.ts
+import { NextRequest, NextResponse } from "next/server";
+
+const ALLOWED_ORIGINS = [
+  "https://client.fr",
+  "https://www.client.fr",
+  process.env.NODE_ENV === "development" ? "http://localhost:3000" : null,
+].filter(Boolean);
+
+export async function POST(req: NextRequest) {
+  const origin = req.headers.get("origin");
+  if (!origin || !ALLOWED_ORIGINS.includes(origin)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  // ... logique
+}
+```
+
+Alternative : token CSRF dans un cookie `httpOnly` + header custom, à vérifier côté serveur. Inutile si Origin suffit et que toutes les mutations passent par Server Actions.
+
+## Rate limiting
+
+Voir kb-api-routes pour l'implémentation. Résumé :
+
+- In-memory Map pour dev + single instance.
+- **Upstash Redis** (`@upstash/ratelimit` + `@upstash/redis`) en prod sur Vercel (multi-region).
+- Clé = IP + route ; sur mutations sensibles, IP + userId.
+
+| Endpoint | Limite | Fenêtre |
+|---|---|---|
+| `/api/leads` (contact) | 5 | 1 min |
+| `/api/auth/magic-link` | 3 | 10 min |
+| `/api/stripe/checkout` | 10 | 1 min |
+| `/api/search` | 60 | 1 min |
+
+## Headers sécurité
+
+Deux implémentations possibles : via `next.config.ts` (statique, applicable partout) ou via `middleware.ts` (dynamique, permet un nonce CSP par requête). Pour une CSP stricte avec nonce on choisit middleware.
+
+### Option A : next.config.ts (simple)
+
+```ts
+// next.config.ts
+import type { NextConfig } from "next";
+
+const securityHeaders = [
+  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Permissions-Policy", value: "geolocation=(), microphone=(), camera=(), payment=(self)" },
+];
+
+const nextConfig: NextConfig = {
+  async headers() {
+    return [{ source: "/:path*", headers: securityHeaders }];
+  },
+};
+
+export default nextConfig;
+```
+
+### Option B : middleware.ts (nonce CSP dynamique)
+
+```ts
+// middleware.ts
+import { NextRequest, NextResponse } from "next/server";
+
+export function middleware(req: NextRequest) {
+  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+
+  const csp = [
+    `default-src 'self'`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://js.stripe.com`,
+    `style-src 'self' 'unsafe-inline'`, // Tailwind + next/font OK
+    `img-src 'self' data: blob: https://*.supabase.co https://*.stripe.com`,
+    `font-src 'self' data:`,
+    `connect-src 'self' https://*.supabase.co https://api.stripe.com wss://*.supabase.co`,
+    `frame-src https://js.stripe.com https://hooks.stripe.com`,
+    `frame-ancestors 'none'`,
+    `form-action 'self'`,
+    `base-uri 'self'`,
+    `upgrade-insecure-requests`,
+  ].join("; ");
+
+  const res = NextResponse.next({
+    request: { headers: new Headers(req.headers) },
+  });
+
+  res.headers.set("Content-Security-Policy", csp);
+  res.headers.set("x-nonce", nonce);
+  res.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
+  res.headers.set("X-Content-Type-Options", "nosniff");
+  res.headers.set("X-Frame-Options", "DENY");
+  res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.headers.set("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
+
+  return res;
+}
+
+export const config = {
+  matcher: [{ source: "/((?!_next/static|_next/image|favicon.ico).*)" }],
+};
+```
+
+Dans un layout, récupérer le nonce :
+
+```tsx
+import { headers } from "next/headers";
+import Script from "next/script";
+
+export default async function RootLayout({ children }) {
+  const nonce = (await headers()).get("x-nonce") ?? "";
+  return (
+    <html>
+      <body>
+        {children}
+        <Script nonce={nonce} src="/analytics.js" strategy="afterInteractive" />
+      </body>
+    </html>
+  );
+}
+```
+
+Test : **securityheaders.com** doit sortir A ou A+.
+
+## Webhooks : toujours vérifier la signature
+
+### Stripe
+
+```ts
+// app/api/stripe/webhook/route.ts
+import Stripe from "stripe";
+import { NextRequest, NextResponse } from "next/server";
+
+export const runtime = "nodejs"; // pas edge, besoin du body brut
+export const dynamic = "force-dynamic";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+
+export async function POST(req: NextRequest) {
+  const body = await req.text(); // raw, PAS json()
+  const signature = req.headers.get("stripe-signature");
+
+  if (!signature) return NextResponse.json({ error: "No signature" }, { status: 400 });
+
+  let event: Stripe.Event;
+  try {
+    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+  } catch (err) {
+    return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+  }
+
+  // Idempotence : vérifier que event.id n'a pas déjà été traité
+  // ... handler
+  return NextResponse.json({ received: true });
+}
+```
+
+Voir kb-cart-checkout pour l'idempotence et les montants serveur.
+
+### Supabase Webhooks (DB webhooks, auth hooks)
+
+Même principe : vérifier `x-supabase-signature` (HMAC-SHA256 du body avec le secret du webhook).
+
+### Resend / Gmail / GitHub
+
+Chacun a son header de signature. Vérifier systématiquement. Un webhook non signé = endpoint public que n'importe qui peut spammer.
+
+## Upload fichiers
+
+Règles serveur (jamais confier à la validation front) :
+
+- **MIME type** vérifié sur le buffer réel (pas juste `file.type` envoyé par le client).
+- **Taille max** : `request.body` limitée côté route handler.
+- **Nom de fichier** sanitisé : enlever `../`, `/`, caractères NULL, renommer avec un UUID.
+- **Extension** whitelist, pas blacklist.
+- **Stockage** : Supabase Storage ou Vercel Blob, RLS sur le bucket.
+- **Antivirus** : optionnel sur un bucket public (ClamAV lambda, VirusTotal API).
+
+```ts
+import { z } from "zod";
+import { randomUUID } from "crypto";
+
+const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp"]);
+const MAX_BYTES = 5 * 1024 * 1024;
+
+export async function POST(req: Request) {
+  const form = await req.formData();
+  const file = form.get("file");
+  if (!(file instanceof File)) return new Response("Bad", { status: 400 });
+  if (file.size > MAX_BYTES) return new Response("Too large", { status: 413 });
+  if (!ALLOWED.has(file.type)) return new Response("Bad type", { status: 415 });
+
+  const safeName = `${randomUUID()}.${file.type.split("/")[1]}`;
+  // upload vers Supabase Storage avec safeName
+}
+```
+
+## SQL injection
+
+Avec Supabase JS SDK : les `.from().select().eq().filter()` utilisent des paramètres préparés côté PostgREST. **Impossible à injecter** tant qu'on n'utilise pas `.rpc()` avec input concaténé.
+
+```ts
+// ❌ Si une fonction SQL Postgres fait `execute format('select * from %I', table_name)`
+// avec table_name venant du client = injection
+await supabase.rpc("dangerous_fn", { table_name: userInput });
+
+// ✅ RPC avec args typés, jamais de SQL construit à partir d'input brut côté DB
+```
+
+## XSS
+
+React échappe par défaut tout ce qui est rendu via `{value}`. Dangers :
+
+- `dangerouslySetInnerHTML` avec du contenu user → sanitize avec **DOMPurify** (client) ou **isomorphic-dompurify** (SSR).
+- Markdown → `react-markdown` + plugin `rehype-sanitize`.
+- JSON-LD dans `<Script type="application/ld+json">` : OK si le contenu est contrôlé, **jamais** d'input user.
+- `href={userUrl}` : valider que l'URL commence par `https://` ou `/`, sinon risque `javascript:...`.
+
+```tsx
+const safeHref = (url: string) => {
+  try {
+    const u = new URL(url, "https://placeholder");
+    if (!["https:", "http:", "mailto:"].includes(u.protocol)) return "#";
+    return url;
+  } catch {
+    return "#";
+  }
+};
+```
+
+## Stripe
+
+Voir kb-cart-checkout. Rappels critiques :
+
+- **Montants calculés côté serveur**, jamais envoyés depuis le client.
+- Vérifier signature webhook (ci-dessus).
+- Idempotency key sur `paymentIntents.create` pour éviter les doubles débits sur retry.
+- Pas de clé secrète dans les Server Components rendus au client (utiliser `import "server-only"` pour verrouiller).
+
+## Auth
+
+Voir kb-auth. Rappels :
+
+- Sessions Supabase via cookies `httpOnly`, `secure` en prod, `sameSite: 'lax'`.
+- **Jamais** stocker le JWT dans localStorage pour un site public.
+- Password : Supabase hashe avec bcrypt auto. Jamais logger le password.
+- Magic link : rate-limité, lien à usage unique, expiration courte.
+- Rotation refresh token activée côté Supabase.
+
+## Logs
+
+Règles absolues :
+
+- Jamais logger : JWT, session token, password, carte bleue, secret Stripe, service_role key, header `Authorization`.
+- Masquer les PII dans les logs de prod (email → `u***@example.com`).
+- `console.log` de dev → retirer avant prod, ou wrapper avec `if (process.env.NODE_ENV !== 'production')`.
+- Sentry / Axiom : configurer un scrubber des champs sensibles.
+
+```ts
+const scrub = (obj: Record<string, unknown>) => {
+  const SENSITIVE = ["password", "token", "authorization", "secret", "apikey"];
+  const out = { ...obj };
+  for (const k of Object.keys(out)) {
+    if (SENSITIVE.some((s) => k.toLowerCase().includes(s))) out[k] = "[REDACTED]";
+  }
+  return out;
+};
+```
+
+## Dependencies
+
+- `npm audit` à chaque install, `npm audit fix` pour les hautes.
+- Dependabot / Renovate activé sur le repo.
+- Lockfile committé (`package-lock.json`).
+- Pin des versions mineures sur les deps sensibles (`next`, `stripe`, `@supabase/*`).
+- `npm ci` en CI, pas `npm install`.
+
+## Anti-patterns
+
+- `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY` **(erreur critique, rotation immédiate)**
+- Commit d'un `.env` / `.env.local`
+- Table Supabase `public.*` exposée sans RLS
+- Webhook Stripe / Supabase sans vérification de signature
+- `body: await req.json()` sur un webhook Stripe (casse la signature, il faut le raw)
+- Inline `<script>` sans nonce avec CSP stricte
+- `eval(...)` ou `new Function(userInput)`
+- `dangerouslySetInnerHTML` avec du markdown user non sanitizé
+- Mot de passe / token en query string (finit dans les logs serveur, referrer)
+- **`.htaccess` dans un projet Next.js** (plus d'Apache, Vercel = Node/edge)
+- Service_role key côté client via une route API publique qui la relaie
+- CORS `*` sur une route qui renvoie des données privées
+- Rate limit en mémoire sur Vercel (plusieurs instances → bypass)
+
+## Checklist sécurité
+
+- [ ] `.env*` dans `.gitignore`, `.env.example` commité
+- [ ] Validation zod des env vars au boot
+- [ ] `SUPABASE_SERVICE_ROLE_KEY` uniquement en server-only (`import "server-only"` dans `lib/supabase/admin.ts`)
+- [ ] RLS activée sur 100% des tables `public.*`
+- [ ] Advisors Supabase = 0 warnings critiques
+- [ ] CSP stricte avec nonce (middleware)
+- [ ] HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy
+- [ ] securityheaders.com = A ou A+
+- [ ] Signatures webhooks vérifiées (Stripe, Supabase, Resend)
+- [ ] Rate limit sur toutes les routes publiques écrivant en DB
+- [ ] CSRF : Origin check sur routes POST/PUT/DELETE
+- [ ] Uploads : MIME + taille + nom sanitisé
+- [ ] `npm audit` propre
+- [ ] Logs scrubbés (pas de secrets, PII masquées)
+- [ ] Cookies session `httpOnly`, `secure`, `sameSite: lax`
+- [ ] Sentry scrubber configuré
+- [ ] Rotation secrets planifiée au trimestre

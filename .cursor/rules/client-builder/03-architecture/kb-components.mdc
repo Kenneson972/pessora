@@ -1,0 +1,390 @@
+---
+description: Patterns composants Next.js 15 - Server vs Client, composition, Hero, Section, Card, Form, respect des boundaries
+globs: "**/components/**/*.tsx,**/app/**/*.tsx"
+alwaysApply: false
+---
+
+# Composants Karibloom — Next.js 15 + React 19
+
+> Complète — ne remplace pas — `kb-architecture.mdc`, `kb-forms.mdc`, `kb-error-states.mdc`, `kb-accessibility.mdc`.
+> Règle d'or : **Server Component par défaut**, `"use client"` est une exception justifiée.
+
+## 1. Server vs Client — arbre de décision
+
+```
+Ton composant a-t-il besoin de…
+├── useState, useReducer, useEffect, useContext        → client
+├── onClick, onChange, onSubmit (handler inline)       → client
+├── window, document, localStorage, IntersectionObs.   → client
+├── Lib client-only (gsap, framer-motion, leaflet,
+│   fullcalendar, chart qui mount côté DOM, Chakra
+│   avec color mode dynamique)                         → client
+├── Rien de tout ça                                    → SERVER (défaut)
+└── Fetch Supabase / Stripe / FS / env privé           → SERVER
+```
+
+Un Server Component ne peut pas rendre un hook React. Un Client Component ne peut pas `await` une Server Action inline comme un fetch — il l'**appelle** (la fonction est passée en prop).
+
+## 2. Composition — server enveloppe client
+
+La règle qui évite 90 % des erreurs : **la page est server, elle compose des sections server, qui montent des feuilles client** pour les interactions.
+
+```tsx
+// app/(marketing)/services/page.tsx  (server)
+import { Hero } from '@/components/marketing/Hero';
+import { PricingGrid } from '@/components/marketing/PricingGrid';
+import { FaqSection } from '@/components/marketing/FaqSection';
+import { services } from '@/content/services';
+import { faq } from '@/content/faq';
+
+export default function ServicesPage() {
+  return (
+    <>
+      <Hero title="Nos services" subtitle="Sélection Karibloom" />
+      <PricingGrid items={services} />
+      <FaqSection items={faq} />
+    </>
+  );
+}
+```
+
+```tsx
+// components/marketing/Hero.tsx  (server)
+import { CtaButton } from './CtaButton';
+
+export function Hero({ title, subtitle }: { title: string; subtitle: string }) {
+  return (
+    <section className="relative min-h-[70vh] grid place-items-center">
+      <img src="/hero.webp" alt="" className="absolute inset-0 h-full w-full object-cover" />
+      <div className="relative text-center">
+        <h1 className="text-5xl font-semibold">{title}</h1>
+        <p className="mt-3 text-lg">{subtitle}</p>
+        <CtaButton href="/contact" label="Prendre rendez-vous" />
+      </div>
+    </section>
+  );
+}
+```
+
+```tsx
+// components/marketing/CtaButton.tsx  (client — animation GSAP)
+'use client';
+import { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+
+export function CtaButton({ href, label }: { href: string; label: string }) {
+  const ref = useRef<HTMLAnchorElement>(null);
+  useEffect(() => { gsap.from(ref.current, { y: 20, opacity: 0, duration: 0.6 }); }, []);
+  return <a ref={ref} href={href} className="btn-primary">{label}</a>;
+}
+```
+
+Le Server Component (Hero) contient un Client Component (CtaButton). L'inverse **ne passe pas** : un Client Component ne peut pas importer un Server Component — il peut seulement en recevoir via `children` ou en prop.
+
+## 3. Passer des données au client — via props, pas Context
+
+```tsx
+// BON — server fetch, client affiche
+// app/(account)/commandes/page.tsx  (server)
+import { getOrders } from '@/lib/data/orders';
+import { OrdersTable } from '@/components/account/OrdersTable';
+
+export default async function OrdersPage() {
+  const orders = await getOrders();
+  return <OrdersTable initialOrders={orders} />;
+}
+```
+
+```tsx
+// components/account/OrdersTable.tsx  (client)
+'use client';
+import { useState } from 'react';
+import type { Order } from '@/types/domain';
+
+export function OrdersTable({ initialOrders }: { initialOrders: Order[] }) {
+  const [orders] = useState(initialOrders);
+  // realtime / filtres / tri ici
+  return <table>{/* ... */}</table>;
+}
+```
+
+- **Ne pas** utiliser un `Context` pour l'hydratation initiale — props directes.
+- Un `Context` sert aux données **transverses qui changent côté client** (cart, theme, session mirror).
+
+## 4. Hero pattern
+
+Server par défaut, hydrate juste ce qui bouge.
+
+```tsx
+// components/marketing/Hero.tsx  (server)
+import Image from 'next/image';
+import { HeroCta } from './HeroCta';
+
+type HeroProps = {
+  title: string;
+  subtitle?: string;
+  image: { src: string; alt: string };
+  ctaPrimary: { label: string; href: string };
+  ctaSecondary?: { label: string; href: string };
+};
+
+export function Hero({ title, subtitle, image, ctaPrimary, ctaSecondary }: HeroProps) {
+  return (
+    <section className="relative isolate overflow-hidden">
+      <Image src={image.src} alt={image.alt} fill priority sizes="100vw" className="object-cover" />
+      <div className="relative container py-24 md:py-36">
+        <h1 className="text-4xl md:text-6xl font-semibold tracking-tight">{title}</h1>
+        {subtitle && <p className="mt-4 max-w-xl text-lg opacity-80">{subtitle}</p>}
+        <HeroCta primary={ctaPrimary} secondary={ctaSecondary} />
+      </div>
+    </section>
+  );
+}
+```
+
+## 5. Section pattern — standardisation
+
+Un unique composant `Section` évite 40 variantes de padding/container dans le codebase.
+
+```tsx
+// components/ui/Section.tsx  (server)
+import { cn } from '@/lib/utils';
+
+type Props = {
+  title?: string;
+  subtitle?: string;
+  eyebrow?: string;
+  as?: 'section' | 'div';
+  className?: string;
+  children: React.ReactNode;
+};
+
+export function Section({ title, subtitle, eyebrow, as: As = 'section', className, children }: Props) {
+  return (
+    <As className={cn('py-16 md:py-24', className)}>
+      <div className="container">
+        {(eyebrow || title || subtitle) && (
+          <header className="mb-10 md:mb-14 max-w-2xl">
+            {eyebrow && <p className="text-sm uppercase tracking-wider opacity-70">{eyebrow}</p>}
+            {title && <h2 className="mt-2 text-3xl md:text-4xl font-semibold">{title}</h2>}
+            {subtitle && <p className="mt-3 text-base md:text-lg opacity-80">{subtitle}</p>}
+          </header>
+        )}
+        {children}
+      </div>
+    </As>
+  );
+}
+```
+
+Usage :
+
+```tsx
+<Section eyebrow="Nos offres" title="Choisissez votre pack">
+  <PricingGrid items={services} />
+</Section>
+```
+
+## 6. Card pattern — typé, variants, polymorphe
+
+```tsx
+// components/ui/Card.tsx  (server)
+import { forwardRef } from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { cn } from '@/lib/utils';
+
+const card = cva('rounded-2xl border transition', {
+  variants: {
+    variant: {
+      default: 'bg-white border-black/10',
+      elevated: 'bg-white border-transparent shadow-lg',
+      ghost: 'bg-transparent border-white/10',
+    },
+    padding: { sm: 'p-4', md: 'p-6', lg: 'p-8' },
+  },
+  defaultVariants: { variant: 'default', padding: 'md' },
+});
+
+type CardProps = React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof card> & { as?: 'div' | 'article' };
+
+export const Card = forwardRef<HTMLDivElement, CardProps>(
+  ({ className, variant, padding, as: As = 'div', ...props }, ref) => (
+    <As ref={ref as any} className={cn(card({ variant, padding }), className)} {...props} />
+  ),
+);
+Card.displayName = 'Card';
+```
+
+Exemple d'usage métier :
+
+```tsx
+// components/shop/ProductCard.tsx  (server)
+import Link from 'next/link';
+import Image from 'next/image';
+import { Card } from '@/components/ui/Card';
+import { PriceTag } from '@/components/shop/PriceTag';
+import type { Product } from '@/types/domain';
+
+export function ProductCard({ product }: { product: Product }) {
+  return (
+    <Card as="article" variant="elevated" padding="sm" className="group">
+      <Link href={`/produit/${product.slug}`} className="block">
+        <Image src={product.image_url} alt={product.name} width={480} height={640} className="rounded-xl" />
+        <h3 className="mt-3 font-medium">{product.name}</h3>
+        <PriceTag value={product.price_cents} currency={product.currency} />
+      </Link>
+    </Card>
+  );
+}
+```
+
+## 7. Form pattern — référence
+
+Voir `kb-forms.mdc`. En résumé : **react-hook-form + Zod + Server Action**. Le schéma Zod vit dans `lib/zod-schemas/` et est utilisé des deux côtés (client pour UX, serveur pour sécurité).
+
+```tsx
+// components/account/UpdateProfileForm.tsx  (client)
+'use client';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { profileSchema, type ProfileInput } from '@/lib/zod-schemas/profile';
+import { updateProfile } from '@/lib/actions/profile';
+
+export function UpdateProfileForm({ defaults }: { defaults: ProfileInput }) {
+  const form = useForm<ProfileInput>({ resolver: zodResolver(profileSchema), defaultValues: defaults });
+
+  const onSubmit = form.handleSubmit(async (data) => {
+    const res = await updateProfile(data);
+    if (!res.ok) form.setError('root', { message: res.error });
+  });
+
+  return <form onSubmit={onSubmit}>{/* inputs */}</form>;
+}
+```
+
+La Server Action est passée par **import**, pas par Context.
+
+## 8. Server Actions comme props (pattern Next 15)
+
+Le parent server peut créer une Server Action et la passer à un client component. Utile pour binder un paramètre.
+
+```tsx
+// app/(account)/commandes/[id]/page.tsx  (server)
+import { cancelOrder } from '@/lib/actions/orders';
+import { CancelButton } from '@/components/account/CancelButton';
+
+export default async function OrderPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const cancel = cancelOrder.bind(null, id);
+  return <CancelButton action={cancel} />;
+}
+```
+
+```tsx
+// components/account/CancelButton.tsx  (client)
+'use client';
+import { useTransition } from 'react';
+
+export function CancelButton({ action }: { action: () => Promise<void> }) {
+  const [pending, start] = useTransition();
+  return (
+    <button disabled={pending} onClick={() => start(() => action())}>
+      {pending ? 'Annulation…' : 'Annuler la commande'}
+    </button>
+  );
+}
+```
+
+## 9. Loading / Empty / Error
+
+Références : `kb-error-states.mdc`. Trois conventions :
+
+- **Loading** : `app/<segment>/loading.tsx` (Suspense boundary), ou `<Skeleton />` inline.
+- **Empty** : composant `<EmptyState icon title description cta />` dans `components/common/`.
+- **Error** : `app/<segment>/error.tsx` (client, reçoit `error`, `reset`).
+
+```tsx
+// app/(account)/commandes/error.tsx
+'use client';
+export default function Error({ error, reset }: { error: Error; reset: () => void }) {
+  return (
+    <div className="p-6">
+      <h2>Erreur de chargement</h2>
+      <p className="opacity-70">{error.message}</p>
+      <button onClick={reset} className="btn-primary mt-3">Réessayer</button>
+    </div>
+  );
+}
+```
+
+## 10. Providers — composition dans `app/providers.tsx`
+
+Ordre qui marche : QueryClient à l'extérieur, Theme UI à l'intérieur (certains thèmes lisent `window`).
+
+```tsx
+'use client';
+import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
+import { ChakraProvider } from '@chakra-ui/react';
+import { Theme } from '@radix-ui/themes';
+import { Toaster } from '@/components/ui/Toaster';
+import { useState } from 'react';
+import { system } from '@/lib/chakra-system';
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  const [qc] = useState(() => new QueryClient());
+  return (
+    <QueryClientProvider client={qc}>
+      <ChakraProvider value={system}>
+        <Theme appearance="light" accentColor="amber" radius="large">
+          {children}
+          <Toaster />
+        </Theme>
+      </ChakraProvider>
+    </QueryClientProvider>
+  );
+}
+```
+
+## 11. Layouts imbriqués + slot `children`
+
+Chaque segment peut définir son `layout.tsx`. Le layout **reste monté** entre navigations — c'est l'idéal pour sidebar, player audio, cart drawer.
+
+```tsx
+// app/(dashboard)/admin/layout.tsx  (server)
+import { AdminSidebar } from '@/components/dashboard/AdminSidebar';
+import { requireAdmin } from '@/lib/guards';
+
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  await requireAdmin();
+  return (
+    <div className="grid lg:grid-cols-[260px_1fr] min-h-screen">
+      <AdminSidebar />
+      <main className="p-6">{children}</main>
+    </div>
+  );
+}
+```
+
+## 12. Anti-patterns
+
+- `'use client'` propagé jusqu'au layout racine — tout devient client, bundle explose. **Remonter** la directive au plus bas niveau possible.
+- `useEffect(() => fetch(...))` pour charger la donnée initiale — le faire côté server (`await getOrders()`).
+- Import direct `@chakra-ui/react` ou `@heroui/react` dans `app/` — passer par `components/ui/`.
+- Passer une fonction non sérialisable d'un Server Component à un Client Component (autre qu'une Server Action).
+- Rendre un Server Component en enfant direct d'un Client Component (ne marche que via `children`).
+- `any` sur les props — `React.ComponentProps<'button'>` pour étendre un élément HTML.
+- Card / Button / Input dupliqués dans plusieurs dossiers — un seul dans `components/ui/`.
+- Logique métier inline dans un composant — extraire dans `lib/` ou un hook.
+
+## 13. Checklist composant
+
+- [ ] Nommé en `PascalCase`, fichier en `kebab-case.tsx`
+- [ ] `"use client"` **seulement** si nécessaire
+- [ ] Props typées, pas de `any`
+- [ ] Accessibilité : `aria-label` sur boutons icônes, labels sur inputs, `role` si sémantique custom, focus visible
+- [ ] Clavier : `Tab`, `Enter`, `Escape` fonctionnent
+- [ ] Images via `next/image` avec `alt` explicite
+- [ ] Variants via `cva` plutôt que conditionnelles inline
+- [ ] Pas d'import vendor UI direct (passer par `@/components/ui/*`)
+- [ ] Sous 500 lignes — sinon scinder
+- [ ] Exports nommés (pas de `default export` sauf pages/layouts Next)

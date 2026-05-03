@@ -1,0 +1,155 @@
+---
+description: Matrice décision rapide type de projet → stack (Next.js / React SPA) → UI (Radix / Chakra / HeroUI) compatible Client Builder V2
+alwaysApply: true
+---
+
+# Matrice projet → stack → UI (V2)
+
+Ce fichier fournit une **vue condensée** pour trancher **type de projet**, **stack** et **couche UI** avant tout scaffold significatif.
+
+**Complète (sans dupliquer les cores) :** `kb-stack-selection.mdc`, `stack-nextjs-app-router.mdc`, `stack-react-spa.mdc`, `kb-ui-routing.mdc`, `kb-core-workflow.mdc`, `kb-core-ui-ux.mdc`.
+
+**Ordre de lecture recommandé :** matrice (ce fichier) → détail arbitrage (`kb-stack-selection`) → profil technique (`stack-*`) → gouvernance imports (`kb-ui-routing`).
+
+---
+
+## 1. Principe fondamental
+
+Avant de créer ou structurer un projet, déterminer explicitement :
+
+1. **Type de projet** (ou profil métier dominant)
+2. **Stack recommandée** (Next.js App Router vs React SPA)
+3. **UI recommandée** (Radix, Chakra, HeroUI — seul ou combiné selon doctrine)
+4. **Pourquoi** (2–4 bullets max)
+
+### Précision : « React SPA »
+
+Ici, **React SPA** désigne un **React moderne côté client**, typiquement **Vite + React Router** (ou équivalent à jour).
+
+Pour les **nouveaux** projets, **ne pas** poser **CRA / CRACO** par défaut : préférer une toolchain maintenue (Vite, etc.). Les dépôts **legacy** Karibloom peuvent rester sur CRA/CRACO jusqu’à migration planifiée.
+
+### HeroUI
+
+**HeroUI** ne doit figurer dans la décision **que si** le projet l’a **intégré et validé** explicitement. Par défaut du pack Karibloom, voir **`kb-heroui.mdc`** (souvent **en pause**). Si HeroUI n’est pas disponible, utiliser les alternatives indiquées dans la matrice (ex. Radix + Chakra).
+
+---
+
+## 2. Matrice de décision
+
+| Type de projet | Stack recommandée | UI recommandée | Pourquoi |
+|----------------|-------------------|----------------|----------|
+| Site vitrine premium / corporate / branding fort | Next.js App Router | Radix (Themes / primitives) | SEO, SSR/RSC, contrôle visuel premium, cohérence marque |
+| Site local SEO / pages services / acquisition Google | Next.js App Router | Radix | Pages indexables, metadata, rendu serveur |
+| Plateforme réservation / booking + espace client | Next.js App Router | Radix + Chakra | Public/marketing en Radix ; zones denses (dashboard, tableaux) en Chakra via `components/ui` |
+| SaaS landing publique + dashboard privé | Next.js App Router | HeroUI **si validé**, sinon Radix + Chakra | Look startup rapide si HeroUI OK ; sinon frontière public Radix / dense Chakra |
+| Dashboard privé client / outil interne | React SPA (Vite + React Router) | Chakra | Peu ou pas de SEO ; densité et productivité |
+| Portail client privé léger | React SPA | Chakra | Même logique : app client-first, UI dense |
+| Microsite campagne / landing temporaire, SEO faible | React SPA | HeroUI **si validé**, sinon Radix | Rapidité visuelle ; sinon Radix + Tailwind si besoin léger |
+| Configurateur / simulateur / expérience très interactive | React SPA | Chakra ou HeroUI **si validé** | Interactivité côté client ; Chakra productif par défaut |
+| Projet très sur-mesure, design system fort | Next.js App Router | Radix | Contrôle fin, accessibilité, système durable |
+| MVP rapide orienté outil métier | React SPA | Chakra | Time-to-screen, composants denses, moins de besoin SEO |
+
+---
+
+## 3. Règles rapides — stack
+
+### Choisir **Next.js App Router** si
+
+- SEO / acquisition organique importants
+- pages publiques à forte valeur business
+- mix site marketing + app connectée (auth, réservation, paiement)
+- besoin de metadata, partage social, HTML indexable de qualité
+
+### Choisir **React SPA** si
+
+- dashboard, outil interne ou portail **sans** enjeu SEO majeur
+- produit surtout **applicatif** derrière une API
+- besoin de **vite** un front autonome (Vite + React Router)
+
+*Détail et format de décision :* `kb-stack-selection.mdc`.
+
+---
+
+## 4. Règles rapides — UI
+
+### Radix (Themes / primitives)
+
+- surfaces **publiques**, **premium**, **marketing**, **branding**
+- besoin de **contrôle** visuel et d’**accessibilité** solide
+- design system **sur-mesure**
+
+### Chakra UI
+
+- **dashboard**, **admin**, **formulaires denses**, **tableaux**, **feedbacks** riches
+- **productivité** et **MVP** orientés outil
+
+### HeroUI
+
+- **Uniquement** si **intégration validée** dans le boilerplate / le repo (voir `kb-heroui.mdc`)
+- landing / SaaS « look moderne » quand c’est le **choix produit** assumé
+- sinon : **ne pas** proposer ni installer sans instruction explicite
+
+*Encapsulation et imports :* `kb-ui-routing.mdc` (`components/ui`, adapters).
+
+---
+
+## 5. Cas recommandés (rappel)
+
+- **Public + SEO + branding** → Next.js + Radix
+- **Public + app privée + dashboard** → Next.js + Radix (public) + Chakra (dense), via `components/ui`
+- **Dashboard privé sans SEO** → React SPA + Chakra
+- **Très interactif côté client** → React SPA + Chakra ; HeroUI si validé
+- **SaaS moderne look startup** → Next.js + HeroUI si validé ; sinon Next.js + Radix + Chakra
+
+---
+
+## 6. Questions obligatoires avant de trancher
+
+1. **SEO** : fort, moyen, absent ?
+2. **Pages publiques** à forte valeur business ?
+3. **Dashboard / espace client** ?
+4. **Hybride site + app** ?
+5. **Backend séparé** ou monorepo intégré ?
+6. **Durée de vie** du projet (court vs long) ?
+7. **Niveau de branding** / sur-mesure ?
+8. Surface plutôt **marketing** ou **dense / applicative** ?
+9. **HeroUI** est-il **disponible et validé** sur ce projet ?
+
+---
+
+## 7. Format de sortie attendu avant bootstrap
+
+Produire un bloc court contenant :
+
+- **Type de projet**
+- **Stack recommandée**
+- **UI recommandée** (et mix public/dense si hybride)
+- **Pourquoi**
+- **Compromis** acceptés
+- **Niveau de confiance** (faible / moyen / élevé)
+- **Structure initiale** recommandée (1 phrase ou schéma minimal)
+- **Règles à activer ensuite** : `kb-stack-selection`, `stack-nextjs-app-router` **ou** `stack-react-spa`, `kb-ui-routing`, + règles domaine (SEO, forms, perf, etc.)
+
+---
+
+## 8. Anti-patterns
+
+- Choisir **SPA** par habitude malgré **fort SEO**
+- Choisir **Next.js** « parce que c’est moderne » sans besoin SSR/metadata/RSC
+- Choisir **Chakra** pour un site **premium public** sans stratégie de **personnalisation** / tokens (souvent **Radix** plus adapté en surface publique)
+- Choisir **Radix seul** pour un **dashboard très dense** si la **vélocité** équipe chute sans couche dense (souvent **Chakra** en zone admin)
+- Choisir **HeroUI** sans intégration ni validation
+- **Scaffolder** avant d’avoir tranché **stack + UI**
+
+---
+
+## 9. Standard final
+
+Aucun projet ne démarre sans :
+
+- choix **explicite** de **stack**
+- choix **explicite** de **UI** (et frontière **public / dense** si hybride)
+- **justification** courte alignée brief / objectifs business
+- cohérence avec **`kb-ui-routing.mdc`** (couche `components/ui`, vendors encapsulés)
+
+La matrice accélère la décision ; **`kb-stack-selection.mdc`** et les profils **`stack-*`** précisent l’exécution technique.

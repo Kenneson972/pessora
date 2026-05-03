@@ -1,0 +1,269 @@
+---
+description: UI/UX Pro Max - Design intelligence system pour sites clients Karibloom (styles, palettes, typographies, accessibilite, animations, base de données design searchable)
+globs: "**/*.jsx, **/*.tsx, **/*.css, **/tailwind.config.js, **/*.module.css"
+alwaysApply: false
+---
+
+# UI/UX Pro Max — Design Intelligence Karibloom
+
+Systeme de design professionnel integre au client builder Karibloom. Fournit 50+ styles UI, 161 palettes de couleurs, 57 pairings typographiques et 99 regles UX pour les sites clients en Martinique.
+
+---
+
+## Recherche dynamique (base de données UI Pro Max)
+
+Quand tu as besoin de recommandations précises, utilise le script de recherche depuis le repo `nextlevelbuilder-ui-ux-pro-max-skill` :
+
+```bash
+python3 src/ui-ux-pro-max/scripts/search.py "<query>" --domain <domain> -n 5
+
+# Domaines disponibles:
+# style     → Styles UI (glassmorphism, minimalisme, brutalism...)
+# color     → Palettes couleurs par type de produit
+# typography → Pairings Google Fonts
+# product   → Recommandations par type de site
+# ux        → Bonnes pratiques et anti-patterns
+# chart     → Types de graphiques
+# landing   → Structure de page et CTAs
+```
+
+**Exemples selon le client :**
+```bash
+python3 src/ui-ux-pro-max/scripts/search.py "restaurant food warm" --domain color -n 3
+python3 src/ui-ux-pro-max/scripts/search.py "SaaS dashboard modern" --domain style -n 3
+python3 src/ui-ux-pro-max/scripts/search.py "luxury premium elegant" --domain typography -n 3
+python3 src/ui-ux-pro-max/scripts/search.py "landing page CTA conversion" --domain landing -n 3
+```
+
+---
+
+## Quand activer ce skill
+
+Invoquer lors de : creation de page, choix couleurs/typo, revue composants, validation accessibilite, animations, dark mode, formulaires, navigation.
+
+---
+
+## Priorités de design (ordre d'importance)
+
+### 1. CRITIQUE — Accessibilité
+- Contraste minimum **4.5:1** (texte principal), **3:1** (texte secondaire / grands elements)
+- Focus visible sur tous les elements interactifs (pas de `outline: none` sans alternative)
+- Navigation clavier complète (Tab, Enter, Escape, Flèches)
+- Alt text sur toutes les images, labels sur tous les inputs
+- Ordre de focus HTML = ordre visuel
+
+### 2. CRITIQUE — Touch & Interaction
+- Taille minimale cible tactile : **44×44px** (boutons, icones, liens)
+- Espacement minimum entre cibles : **8px**
+- Feedback visuel dans les **80-150ms** après interaction
+- Pas de logique uniquement au hover (pas d'accès mobile)
+- Confirmation visuelle après soumission de formulaire
+
+### 3. HAUTE — Performance
+- Images : WebP, lazy loading, dimensions explicites (`width`/`height`)
+- Fonts : `font-display: swap`, preconnect Google Fonts
+- CLS < 0.1 — toujours réserver l'espace avant chargement
+- Animations : uniquement `transform` et `opacity` (pas width/height)
+- Lazy load composants lourds (cartes, galeries, cartes maps)
+
+### 4. HAUTE — Sélection de style
+- Cohérence du style sur toute la page (1 style dominant)
+- Icones SVG uniquement — jamais d'emoji comme icone structurelle
+- Elevation scale cohérente (ombres progressives)
+- Adaptation plateforme : mobile vs desktop vs tablette
+
+### 5. HAUTE — Layout & Responsive
+- **Mobile-first** — breakpoints : `sm:640px md:768px lg:1024px xl:1280px`
+- `viewport meta` obligatoire, pas de zoom désactivé
+- Zéro scroll horizontal sur mobile
+- Grilles fluides (pas de px fixes sur les conteneurs)
+
+### 6. MOYENNE — Typographie & Couleur
+- Taille corps minimum : **16px** (jamais moins sur mobile)
+- Line-height : **1.5–1.75** pour le texte courant
+- Tokens couleur sémantiques : `--color-primary`, `--color-text`, `--color-surface`
+- Dark mode : vérifier contraste indépendamment du light mode
+
+### 7. MOYENNE — Animations
+- Durée : **150–300ms** pour micro-interactions, 400–600ms pour transitions de page
+- Easing : `ease-out` pour entrées, `ease-in` pour sorties
+- Respecter `prefers-reduced-motion` :
+```css
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; }
+}
+```
+
+### 8. MOYENNE — Formulaires & Feedback
+- Labels visibles (jamais placeholder seul)
+- Messages d'erreur sous le champ concerné, en rouge (#D32F2F ou équivalent)
+- État loading explicite sur le bouton submit
+- Confirmation succès avec message clair
+
+### 9. HAUTE — Navigation
+- Bottom nav mobile : **max 5 items**
+- Deep linking fonctionnel (URL = état)
+- Comportement "retour" prévisible
+- State preservation lors navigation (scroll position, filtres)
+
+---
+
+## Styles UI disponibles (sélection par contexte client)
+
+| Style | Contexte idéal | Stack recommandée |
+|-------|---------------|-------------------|
+| **Glassmorphism** | Luxe, tech, premium | `backdrop-filter: blur(20px)` + bg semi-transparent |
+| **Claymorphism** | Fun, enfants, food | Ombres colorées douces + border-radius élevé |
+| **Minimalisme** | Corporate, B2B, consulting | Espace blanc généreux, typo forte |
+| **Brutalism** | Créatif, portfolio, disruptif | Bordures épaisses, couleurs saturées, asymétrie |
+| **Neumorphism** | Apps, dashboard, outils | `box-shadow` dual (claire + sombre) |
+| **Bento Grid** | SaaS, dashboards, portfolios | CSS Grid asymétrique, cartes thematiques |
+| **Dark Premium** | Agences, tech, gaming | Fond #0a0a0a + accents néon ou dorés |
+| **Liquid Ether** | Martinique premium, agence | Blobs animés SVG + glassmorphism + gradients |
+
+---
+
+## Palettes couleur par secteur (Martinique/Caraïbes)
+
+```css
+/* Restaurant / Food */
+--color-primary: #E65100;   /* Orange brûlé */
+--color-secondary: #FFF8E1; /* Crème chaude */
+
+/* Luxe / Bijouterie */
+--color-primary: #D4AF37;   /* Or métallique */
+--color-secondary: #0a0a0a; /* Noir profond */
+
+/* Santé / Bien-être */
+--color-primary: #2E7D32;   /* Vert nature */
+--color-secondary: #F1F8E9; /* Vert pâle */
+
+/* Tech / SaaS / Agence */
+--color-primary: #1565C0;   /* Bleu corporate */
+--color-secondary: #E3F2FD; /* Bleu ciel */
+
+/* Beauté / Coiffure */
+--color-primary: #AD1457;   /* Rose fuchsia */
+--color-secondary: #FCE4EC; /* Rose pâle */
+
+/* Construction / BTP */
+--color-primary: #F57F17;   /* Jaune sécurité */
+--color-secondary: #212121; /* Anthracite */
+
+/* Tourisme / Plage */
+--color-primary: #0077B6;   /* Bleu ocean */
+--color-secondary: #CAF0F8; /* Bleu ciel clair */
+```
+
+---
+
+## Pairings typographiques recommandés
+
+| Heading | Body | Style |
+|---------|------|-------|
+| Playfair Display | Lato | Luxe, élégant |
+| Poppins | Open Sans | Moderne, universel |
+| Montserrat | Roboto | Corporate, tech |
+| DM Serif Display | DM Sans | Editorial, premium |
+| Space Grotesk | Inter | SaaS, startup |
+| Cormorant Garamond | Raleway | Haut de gamme, mode |
+
+```css
+/* Import Google Fonts */
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+```
+
+---
+
+## Anti-patterns à JAMAIS faire
+
+```
+❌ Icones emoji comme éléments UI → utiliser SVG
+❌ Boutons icon-only sans aria-label
+❌ Supprimer le focus ring sans alternative visible
+❌ Texte gris sur fond gris clair (contraste insuffisant)
+❌ Cibles tactiles < 44×44px
+❌ Hover-only pour informations importantes (pas accessible mobile)
+❌ Chargement sans indicateur visuel
+❌ Animations sur width/height (layout thrashing)
+❌ Placeholder comme seul label de formulaire
+❌ Plus de 5 items dans la bottom nav mobile
+❌ Dark mode = simple inversion de couleurs
+❌ Images sans dimensions → CLS élevé
+```
+
+---
+
+## Workflow de design (5 étapes)
+
+### Étape 1 — Analyse client
+Extraire : secteur d'activité, audience cible, mots-clés style, plateforme principale, contraintes.
+
+### Étape 2 — Sélection système de design
+Choisir : 1 style dominant + palette couleur + pairing typo + animations
+
+### Étape 3 — Architecture page
+Définir structure : Hero → Social proof → Features → CTA → FAQ → Footer
+
+### Étape 4 — Implémentation
+- Composants Radix UI + shadcn/ui pour accessibilité native
+- Tailwind utilities-first
+- Variables CSS pour tokens
+
+### Étape 5 — Checklist qualité (avant livraison)
+```
+✅ Tous les tap targets ≥ 44×44px
+✅ Feedback touch < 150ms
+✅ Famille d'icones SVG cohérente
+✅ Contraste 4.5:1 light ET dark mode
+✅ Safe area (notches, gesture bars)
+✅ Rythme d'espacement 4/8dp
+✅ Ordre focus = ordre visuel
+✅ prefers-reduced-motion géré
+✅ CLS < 0.1 au chargement
+✅ HTML sémantique (header, main, nav, section, footer)
+✅ Lighthouse Performance > 90 mobile
+```
+
+---
+
+## Composants shadcn/ui prioritaires
+
+```bash
+npx shadcn@latest add button card dialog form input label select textarea badge
+npx shadcn@latest add accordion navigation-menu sheet tabs toast
+```
+
+Toujours passer par les primitives Radix (accessibilité gérée nativement) plutôt que du HTML custom pour : modales, tooltips, menus déroulants, accordéons.
+
+---
+
+## Animations Framer Motion — templates
+
+```jsx
+// Fade in au scroll
+const fadeIn = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } }
+}
+
+// Stagger enfants
+const staggerContainer = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1 } }
+}
+
+// Hover card
+const cardHover = {
+  whileHover: { y: -4, boxShadow: '0 20px 40px rgba(0,0,0,0.15)' },
+  transition: { duration: 0.2 }
+}
+```
+
+---
+
+## Sources & references
+- Repo original : https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
+- Stack Karibloom : React 19 + Tailwind 3.4 + Radix UI + Framer Motion
+- Hosting : o2switch + Cloudflare CDN

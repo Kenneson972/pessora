@@ -1,0 +1,70 @@
+{
+  "name": "PessoBot Tool — get_upcoming_events(limit?)",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-520, 0],
+      "id": "evt-trigger-001",
+      "name": "When called by Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalise `limit` (1–20, défaut 5) — mêmes variantes que get_menu :\n// { limit: 10 }, { query: '{\"limit\":3}' }, { query: \"8\" }, { query: { limit: 12 } }\n\nconst DEFAULT = 5;\nconst MIN = 1;\nconst MAX = 20;\n\nfunction clampLimit(n) {\n  if (!Number.isFinite(n)) return null;\n  return Math.min(Math.max(Math.trunc(n), MIN), MAX);\n}\n\nfunction pickLimit(obj) {\n  if (!obj || typeof obj !== 'object') return null;\n  const v = obj.limit;\n  if (v == null || v === '') return null;\n  return clampLimit(Number(v));\n}\n\nconst raw = $input.first().json ?? {};\nlet limit = pickLimit(raw);\n\nif (limit == null && raw.query != null) {\n  const q = raw.query;\n  if (typeof q === 'string') {\n    const s = q.trim();\n    if (s.startsWith('{')) {\n      try {\n        limit = pickLimit(JSON.parse(s));\n      } catch {\n        limit = null;\n      }\n    } else {\n      limit = clampLimit(Number(s));\n    }\n  } else if (typeof q === 'number') {\n    limit = clampLimit(q);\n  } else if (typeof q === 'object') {\n    limit = pickLimit(q);\n  }\n}\n\nif (limit == null) limit = DEFAULT;\n\nreturn [{ json: { limit } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-280, 0],
+      "id": "evt-norm-001",
+      "name": "Normalize tool args"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, title, slug, date, heure, location, type, description, price, is_free, places_max, registration_open FROM public.v_pessobot_events_upcoming LIMIT $1;",
+        "options": {
+          "queryReplacement": "={{ $json.limit }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [-40, 0],
+      "id": "evt-pg-001",
+      "name": "Query v_pessobot_events_upcoming",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": { "id": "YIzw2d5idZRTu3ES", "name": "KARIBLOOM PESSORA" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Réponse compacte pour le LLM — ignorer les items vides (alwaysOutputData).\nconst rows = $input\n  .all()\n  .map((i) => i.json)\n  .filter((j) => j && j.id != null && String(j.id).length > 0);\nif (rows.length === 0) {\n  return [\n    {\n      json: {\n        items: [],\n        note:\n          'Aucun événement à venir (vue v_pessobot_events_upcoming vide ou date < aujourd’hui). Vérifier events.active et events.date en base.',\n      },\n    },\n  ];\n}\nreturn [{ json: { count: rows.length, items: rows } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [200, 0],
+      "id": "evt-fmt-001",
+      "name": "Format for LLM"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When called by Agent": {
+      "main": [[{ "node": "Normalize tool args", "type": "main", "index": 0 }]]
+    },
+    "Normalize tool args": {
+      "main": [[{ "node": "Query v_pessobot_events_upcoming", "type": "main", "index": 0 }]]
+    },
+    "Query v_pessobot_events_upcoming": {
+      "main": [[{ "node": "Format for LLM", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "versionId": "s3-v3-tool-get-events-v2",
+  "meta": { "templateCredsSetupCompleted": true },
+  "tags": []
+}

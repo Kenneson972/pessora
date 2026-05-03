@@ -1,0 +1,70 @@
+{
+  "name": "PessoBot Tool — get_menu(category?)",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-520, 0],
+      "id": "menu-trigger-001",
+      "name": "When called by Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalise l'entrée du Call n8n Workflow Tool — plusieurs formes selon n8n / LangChain :\n// - { category: \"wellness\" } (structured tool)\n// - { query: \"{\\\"category\\\":\\\"wellness\\\"}\" } (DynamicTool, JSON string)\n// - { query: \"shakes\" } (string seule)\n// - { query: { category: \"coffee\" } } (imbrication)\n// Sortie : { category: \"\" | \"wellness\"|\"energie\"|\"shakes\"|\"coffee\" } pour queryReplacement Postgres.\n\nconst ALLOWED = new Set(['wellness', 'energie', 'shakes', 'coffee']);\n\nfunction pickCategory(obj) {\n  if (!obj || typeof obj !== 'object') return '';\n  const c = obj.category;\n  if (typeof c !== 'string') return '';\n  const t = c.trim().toLowerCase();\n  return ALLOWED.has(t) ? t : '';\n}\n\nconst raw = $input.first().json ?? {};\nlet category = pickCategory(raw);\n\nif (!category && raw.query != null) {\n  const q = raw.query;\n  if (typeof q === 'string') {\n    const s = q.trim();\n    if (s.startsWith('{')) {\n      try {\n        category = pickCategory(JSON.parse(s));\n      } catch {\n        category = '';\n      }\n    } else {\n      const low = s.toLowerCase();\n      category = ALLOWED.has(low) ? low : '';\n    }\n  } else if (typeof q === 'object') {\n    category = pickCategory(q);\n  }\n}\n\nreturn [{ json: { category } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-280, 0],
+      "id": "menu-norm-001",
+      "name": "Normalize tool args"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT slug, name, category, price, calories, protein, description, pitch, ingredients, benefits, badges FROM public.v_pessobot_menu WHERE ($1::text IS NULL OR TRIM($1::text) = '' OR LOWER(TRIM(category::text)) = LOWER(TRIM($1::text))) ORDER BY category, name;",
+        "options": {
+          "queryReplacement": "={{ $json.category }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [-40, 0],
+      "id": "menu-pg-001",
+      "name": "Query v_pessobot_menu",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": { "id": "YIzw2d5idZRTu3ES", "name": "KARIBLOOM PESSORA" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Formate la réponse du tool pour le LLM : liste compacte JSON.\nconst rows = $input.all().map((i) => i.json).filter((j) => j && j.slug != null && String(j.slug).length > 0);\nif (rows.length === 0) {\n  return [\n    {\n      json: {\n        items: [],\n        note:\n          'Aucun produit actif dans la base (vue v_pessobot_menu vide) ou filtre sans résultat. Catégories : wellness, energie, shakes, coffee.',\n      },\n    },\n  ];\n}\nreturn [{ json: { count: rows.length, items: rows } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [200, 0],
+      "id": "menu-fmt-001",
+      "name": "Format for LLM"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When called by Agent": {
+      "main": [[{ "node": "Normalize tool args", "type": "main", "index": 0 }]]
+    },
+    "Normalize tool args": {
+      "main": [[{ "node": "Query v_pessobot_menu", "type": "main", "index": 0 }]]
+    },
+    "Query v_pessobot_menu": {
+      "main": [[{ "node": "Format for LLM", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "versionId": "s3-v3-tool-get-menu-v2",
+  "meta": { "templateCredsSetupCompleted": true },
+  "tags": []
+}

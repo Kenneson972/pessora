@@ -1,0 +1,575 @@
+---
+description: Formulaires Next.js 15 - react-hook-form + Zod + Server Actions, validation double (client/serveur), erreurs fines, UTM tracking, anti-spam
+globs: "**/components/forms/**,**/app/**/actions.ts,**/lib/validations/**,**/components/ui/form*"
+alwaysApply: false
+---
+
+# Formulaires Karibloom - Next.js 15
+
+Pattern officiel pour tout formulaire sur un site client Karibloom : contact, lead, devis, inscription, upload. Un seul schéma Zod, utilisé côté client ET côté serveur. Mutations simples via Server Actions, intégrations tierces / uploads via Route Handlers.
+
+**Complète (ne remplace pas)** : `kb-api-routes.mdc` (rate limiting, auth), `kb-components.mdc` (UI inputs), `kb-security.mdc` (CSRF, sanitization).
+
+---
+
+## 1. Principes (non négociables)
+
+- **Validation double** : Zod côté client (UX) ET côté serveur (sécurité). Le client est toujours considéré compromis.
+- **Schéma partagé** : un seul fichier `lib/validations/xxx.ts` exporte le schéma et le type. Importé par le formulaire ET la Server Action.
+- **Server Actions** pour 90% des mutations (contact, lead, update profil, etc.).
+- **Route Handlers** uniquement pour : uploads binaires, webhooks tiers, intégrations externes (Stripe, Mailchimp).
+- **Never trust the client** : même si Zod a validé côté client, on re-valide côté serveur. Toujours.
+- **Feedback utilisateur explicite** : `isSubmitting`, toast succès, toast erreur, erreurs inline par champ.
+- **RGPD** : checkbox consent obligatoire, rejet serveur si non cochée.
+- **Accessibilité** : `aria-invalid`, `aria-describedby` pour les messages d'erreur.
+
+---
+
+## 2. Schéma Zod partagé
+
+Toujours dans `lib/validations/<feature>.ts`. Une source unique de vérité.
+
+```ts
+// lib/validations/contact.ts
+import { z } from "zod";
+
+export const contactSchema = z.object({
+  name: z.string().min(2, "Nom requis (2 caractères min)").max(100),
+  email: z.string().email("Email invalide").max(200),
+  phone: z
+    .string()
+    .regex(/^[+\d\s().-]{6,20}$/, "Numéro invalide")
+    .optional()
+    .or(z.literal("")),
+  subject: z.enum(["devis", "info", "support", "autre"], {
+    errorMap: () => ({ message: "Sujet requis" }),
+  }),
+  message: z.string().min(10, "Message trop court (10 caractères min)").max(2000),
+  consent: z.literal(true, {
+    errorMap: () => ({ message: "Vous devez accepter la politique de confidentialité" }),
+  }),
+  // Honeypot - doit rester vide
+  website: z.string().max(0).optional(),
+  // UTM - remplis côté client au mount
+  utm_source: z.string().optional(),
+  utm_medium: z.string().optional(),
+  utm_campaign: z.string().optional(),
+  utm_term: z.string().optional(),
+  utm_content: z.string().optional(),
+  referrer: z.string().optional(),
+});
+
+export type ContactInput = z.infer<typeof contactSchema>;
+```
+
+Règles :
+- Un schéma = un fichier.
+- Messages d'erreur en français, spécifiques (pas "Champ invalide").
+- Champs honeypot + UTM toujours inclus côté serveur.
+- Bornes explicites (`min`, `max`) sur chaque string — évite DoS par payload géant.
+
+---
+
+## 3. Server Action pattern
+
+```ts
+// app/contact/actions.ts
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+import { contactSchema } from "@/lib/validations/contact";
+import { rateLimit } from "@/lib/rate-limit";
+import { createClient } from "@/lib/supabase/server";
+import { sendContactEmail } from "@/lib/email";
+
+type ActionResult =
+  | { success: true }
+  | { success: false; error: string; fieldErrors?: Record<string, string[]> };
+
+export async function submitContact(input: unknown): Promise<ActionResult> {
+  // 1. Rate limit (IP) - voir kb-api-routes
+  const ip = (await headers()).get("x-forwarded-for") ?? "unknown";
+  const { allowed } = await rateLimit(`contact:${ip}`, { max: 5, window: 60 });
+  if (!allowed) {
+    return { success: false, error: "Trop de requêtes, réessayez dans une minute." };
+  }
+
+  // 2. Validation Zod serveur (source de vérité)
+  const parsed = contactSchema.safeParse(input);
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: "Formulaire invalide",
+      fieldErrors: parsed.error.flatten().fieldErrors,
+    };
+  }
+
+  // 3. Honeypot - si rempli, succès silencieux (ne pas alerter le bot)
+  if (parsed.data.website && parsed.data.website.length > 0) {
+    return { success: true };
+  }
+
+  // 4. Business logic
+  try {
+    const supabase = await createClient();
+    const { error: dbError } = await supabase.from("leads").insert({
+      name: parsed.data.name,
+      email: parsed.data.email,
+      phone: parsed.data.phone ?? null,
+      subject: parsed.data.subject,
+      message: parsed.data.message,
+      utm_source: parsed.data.utm_source ?? null,
+      utm_medium: parsed.data.utm_medium ?? null,
+      utm_campaign: parsed.data.utm_campaign ?? null,
+      utm_term: parsed.data.utm_term ?? null,
+      utm_content: parsed.data.utm_content ?? null,
+      referrer: parsed.data.referrer ?? null,
+      ip,
+    });
+    if (dbError) throw dbError;
+
+    await sendContactEmail(parsed.data);
+
+    // 5. Revalidation si la mutation affecte une page (admin dashboard, compteurs...)
+    revalidatePath("/admin/leads");
+
+    return { success: true };
+  } catch (e) {
+    console.error("[submitContact]", e);
+    return { success: false, error: "Erreur serveur, réessayez plus tard." };
+  }
+}
+```
+
+Points clés :
+- `"use server"` en haut du fichier.
+- Return type discriminé (`success: true | false`) pour TypeScript côté client.
+- Rate limit AVANT parsing (pas de work inutile).
+- Honeypot -> succès silencieux (ne JAMAIS dire au bot qu'il a été détecté).
+- `revalidatePath()` à chaque mutation qui affecte une UI rendue côté serveur.
+- Log serveur + message utilisateur générique (ne pas leak le stack trace).
+
+---
+
+## 4. Formulaire client (react-hook-form + zodResolver)
+
+```tsx
+// components/forms/ContactForm.tsx
+"use client";
+
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { contactSchema, type ContactInput } from "@/lib/validations/contact";
+import { submitContact } from "@/app/contact/actions";
+import { useToast } from "@/components/ui/use-toast";
+
+export function ContactForm() {
+  const { toast } = useToast();
+  const [submitted, setSubmitted] = useState(false);
+
+  const form = useForm<ContactInput>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      subject: "info",
+      message: "",
+      consent: false as unknown as true, // typage Zod literal(true)
+      website: "",
+    },
+    mode: "onBlur",
+  });
+
+  // UTM tracking au mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    form.setValue("utm_source", params.get("utm_source") ?? undefined);
+    form.setValue("utm_medium", params.get("utm_medium") ?? undefined);
+    form.setValue("utm_campaign", params.get("utm_campaign") ?? undefined);
+    form.setValue("utm_term", params.get("utm_term") ?? undefined);
+    form.setValue("utm_content", params.get("utm_content") ?? undefined);
+    form.setValue("referrer", document.referrer || undefined);
+  }, [form]);
+
+  const onSubmit = form.handleSubmit(async (values) => {
+    const res = await submitContact(values);
+
+    if (!res.success) {
+      // Erreurs par champ -> setError sur chaque champ
+      if (res.fieldErrors) {
+        for (const [field, messages] of Object.entries(res.fieldErrors)) {
+          form.setError(field as keyof ContactInput, {
+            type: "server",
+            message: messages?.[0],
+          });
+        }
+      }
+      toast({ title: "Erreur", description: res.error, variant: "destructive" });
+      return;
+    }
+
+    setSubmitted(true);
+    form.reset();
+    toast({ title: "Message envoyé", description: "Nous vous recontactons sous 24h." });
+  });
+
+  if (submitted) {
+    return (
+      <div role="status" aria-live="polite" className="rounded-xl bg-emerald-50 p-6 text-emerald-900">
+        <h3 className="font-semibold">Merci !</h3>
+        <p>Votre message a bien été envoyé. Nous revenons vers vous rapidement.</p>
+        <button
+          type="button"
+          onClick={() => setSubmitted(false)}
+          className="mt-4 text-sm underline"
+        >
+          Envoyer un autre message
+        </button>
+      </div>
+    );
+  }
+
+  const { errors, isSubmitting } = form.formState;
+
+  return (
+    <form onSubmit={onSubmit} noValidate className="space-y-5">
+      {/* Honeypot - caché à l'humain, visible au bot */}
+      <div aria-hidden="true" className="absolute left-[-9999px]">
+        <label htmlFor="website">Ne pas remplir</label>
+        <input
+          type="text"
+          id="website"
+          tabIndex={-1}
+          autoComplete="off"
+          {...form.register("website")}
+        />
+      </div>
+
+      <div>
+        <label htmlFor="name" className="block text-sm font-medium">Nom *</label>
+        <input
+          id="name"
+          type="text"
+          autoComplete="name"
+          aria-invalid={!!errors.name}
+          aria-describedby={errors.name ? "name-error" : undefined}
+          className="mt-1 w-full rounded-md border px-3 py-2"
+          {...form.register("name")}
+        />
+        {errors.name && (
+          <p id="name-error" role="alert" className="mt-1 text-sm text-red-600">
+            {errors.name.message}
+          </p>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium">Email *</label>
+        <input
+          id="email"
+          type="email"
+          autoComplete="email"
+          aria-invalid={!!errors.email}
+          aria-describedby={errors.email ? "email-error" : undefined}
+          className="mt-1 w-full rounded-md border px-3 py-2"
+          {...form.register("email")}
+        />
+        {errors.email && (
+          <p id="email-error" role="alert" className="mt-1 text-sm text-red-600">
+            {errors.email.message}
+          </p>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="message" className="block text-sm font-medium">Message *</label>
+        <textarea
+          id="message"
+          rows={5}
+          aria-invalid={!!errors.message}
+          aria-describedby={errors.message ? "message-error" : undefined}
+          className="mt-1 w-full rounded-md border px-3 py-2"
+          {...form.register("message")}
+        />
+        {errors.message && (
+          <p id="message-error" role="alert" className="mt-1 text-sm text-red-600">
+            {errors.message.message}
+          </p>
+        )}
+      </div>
+
+      <div className="flex items-start gap-2">
+        <input
+          id="consent"
+          type="checkbox"
+          aria-invalid={!!errors.consent}
+          className="mt-1"
+          {...form.register("consent")}
+        />
+        <label htmlFor="consent" className="text-sm">
+          J'accepte la <a href="/confidentialite" className="underline">politique de confidentialité</a> *
+        </label>
+      </div>
+      {errors.consent && (
+        <p role="alert" className="text-sm text-red-600">{errors.consent.message}</p>
+      )}
+
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="rounded-md bg-primary px-5 py-2.5 text-white disabled:opacity-50"
+      >
+        {isSubmitting ? "Envoi..." : "Envoyer"}
+      </button>
+    </form>
+  );
+}
+```
+
+---
+
+## 5. États de formulaire
+
+Tous les états sont lus depuis `form.formState` — pas de state local redondant.
+
+| État | Source | Usage |
+|---|---|---|
+| `isSubmitting` | `form.formState.isSubmitting` | Désactiver bouton, afficher "Envoi..." |
+| `isSubmitSuccessful` | `form.formState.isSubmitSuccessful` | Post-submit (combiné avec state local si besoin) |
+| `isDirty` | `form.formState.isDirty` | Warning "quitter sans enregistrer" |
+| `errors` | `form.formState.errors` | Messages inline par champ |
+| `isValid` | `form.formState.isValid` | Désactiver submit tant que invalide (UX discutable) |
+
+Les erreurs serveur sont injectées via `form.setError(field, { type: 'server', message })` — même rendu que les erreurs Zod client.
+
+---
+
+## 6. Anti-spam
+
+### Honeypot (obligatoire, gratuit)
+
+Champ caché en CSS (absolute, left -9999px) + `tabIndex={-1}` + `autoComplete="off"`. Les bots naïfs le remplissent. Côté serveur : si non vide -> return `{ success: true }` silencieux. **Ne jamais dire au bot qu'il a été détecté.**
+
+### Rate limiting (obligatoire, côté serveur)
+
+Voir `kb-api-routes.mdc`. Typiquement 5 soumissions / minute / IP pour un formulaire contact.
+
+### Turnstile / hCaptcha (optionnel, si spam persistant)
+
+```tsx
+// Composant client
+<Turnstile siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!} onSuccess={(token) => form.setValue("cf_token", token)} />
+```
+
+```ts
+// Server Action - vérif token
+const verify = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+  method: "POST",
+  body: new URLSearchParams({ secret: process.env.TURNSTILE_SECRET!, response: parsed.data.cf_token }),
+});
+const { success } = await verify.json();
+if (!success) return { success: false, error: "Vérification anti-bot échouée" };
+```
+
+Ajouter seulement si le honeypot + rate limit ne suffisent pas (spam récurrent observé).
+
+---
+
+## 7. UTM tracking
+
+Objectif : savoir d'où vient le lead (campagne Meta, Google Ads, newsletter...).
+
+```tsx
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"].forEach((key) => {
+    const value = params.get(key);
+    if (value) form.setValue(key as any, value);
+  });
+  if (document.referrer) form.setValue("referrer", document.referrer);
+}, [form]);
+```
+
+Stocker les 5 `utm_*` + `referrer` + `ip` en DB sur chaque lead. Le schéma Zod les accepte comme optionnels.
+
+Si besoin de persistance entre pages (clic depuis homepage -> formulaire 3 pages plus loin), stocker en `sessionStorage` au mount du site et relire dans le formulaire.
+
+---
+
+## 8. Upload de fichiers (Route Handler)
+
+Les Server Actions supportent FormData mais deviennent lourdes pour les binaires > 1 Mo. Préférer un Route Handler dédié + Supabase Storage.
+
+```ts
+// app/api/upload/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+
+const MAX_SIZE = 5 * 1024 * 1024; // 5 Mo
+const ALLOWED = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+
+export async function POST(req: NextRequest) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+
+  const formData = await req.formData();
+  const file = formData.get("file");
+  if (!(file instanceof File)) return NextResponse.json({ error: "Fichier manquant" }, { status: 400 });
+  if (file.size > MAX_SIZE) return NextResponse.json({ error: "Fichier trop lourd (5 Mo max)" }, { status: 400 });
+  if (!ALLOWED.includes(file.type)) return NextResponse.json({ error: "Type non autorisé" }, { status: 400 });
+
+  const path = `${user.id}/${Date.now()}-${file.name}`;
+  const { error } = await supabase.storage.from("uploads").upload(path, file, {
+    contentType: file.type,
+    upsert: false,
+  });
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  return NextResponse.json({ path });
+}
+```
+
+Côté client : `fetch("/api/upload", { method: "POST", body: formData })`. Preview local via `URL.createObjectURL(file)` avant upload.
+
+---
+
+## 9. Champs types courants
+
+### Input text / email / tel / textarea
+
+Standard `{...form.register("field")}`. Toujours `autoComplete="..."` approprié (`name`, `email`, `tel`, `postal-code`).
+
+### Select natif
+
+```tsx
+<select {...form.register("subject")} className="...">
+  <option value="">Choisir...</option>
+  <option value="devis">Demande de devis</option>
+  <option value="info">Renseignement</option>
+</select>
+```
+
+Schéma Zod : `z.enum(["devis", "info"])`.
+
+### Select shadcn / custom
+
+Utiliser `Controller` de react-hook-form pour les composants contrôlés (radix, custom) :
+
+```tsx
+import { Controller } from "react-hook-form";
+
+<Controller
+  control={form.control}
+  name="subject"
+  render={({ field }) => (
+    <Select value={field.value} onValueChange={field.onChange}>
+      <SelectTrigger><SelectValue /></SelectTrigger>
+      <SelectContent>
+        <SelectItem value="devis">Devis</SelectItem>
+        <SelectItem value="info">Info</SelectItem>
+      </SelectContent>
+    </Select>
+  )}
+/>
+```
+
+### Date picker (react-day-picker)
+
+```tsx
+<Controller
+  control={form.control}
+  name="date"
+  render={({ field }) => (
+    <DayPicker mode="single" selected={field.value} onSelect={field.onChange} />
+  )}
+/>
+```
+
+Schéma : `z.date()` ou `z.string().datetime()` selon sérialisation.
+
+### Checkbox (consent)
+
+```tsx
+<input type="checkbox" {...form.register("consent")} />
+```
+
+Schéma : `z.literal(true, { errorMap: () => ({ message: "Acceptation requise" }) })`.
+
+### Fichier + preview
+
+```tsx
+const [preview, setPreview] = useState<string | null>(null);
+
+<input
+  type="file"
+  accept="image/*"
+  onChange={(e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPreview(URL.createObjectURL(file));
+      form.setValue("file", file);
+    }
+  }}
+/>
+{preview && <img src={preview} alt="Aperçu" className="mt-2 h-32 rounded" />}
+```
+
+Pas de schéma Zod pour File -> validation manuelle côté serveur (type, taille).
+
+---
+
+## 10. Anti-patterns
+
+- Validation uniquement côté client. **Toujours** re-valider serveur.
+- Envoyer le formulaire vers un endpoint PHP (`/api/leads/xxx.php`). Legacy — on utilise Server Actions.
+- Hardcoder les règles de validation dans le JSX (`required`, `pattern="..."`). Les règles vivent dans le schéma Zod.
+- Oublier `revalidatePath()` après une mutation qui affecte l'UI rendue côté serveur (dashboard admin, compteurs).
+- Retourner le stack trace de l'erreur au client. Log serveur + message générique.
+- Révéler au bot que le honeypot a été détecté (`return { error: "spam détecté" }`). Retourner `success: true` silencieux.
+- Dupliquer le schéma Zod (un côté client, un côté serveur). Un seul fichier, importé des deux côtés.
+- `onSubmit` async sans gestion d'erreur. Toujours try/catch + toast d'erreur.
+- `disabled={!isValid}` sur le bouton submit. Empêche l'utilisateur de voir les erreurs en cliquant. Préférer `disabled={isSubmitting}` uniquement.
+- Bouton submit sans état `isSubmitting` -> double-submit possible.
+
+---
+
+## 11. Checklist avant livraison
+
+- [ ] Schéma Zod unique dans `lib/validations/<feature>.ts`
+- [ ] Schéma importé côté client (`zodResolver`) ET côté Server Action (`safeParse`)
+- [ ] Server Action en `"use server"` avec return type discriminé
+- [ ] Validation serveur AVANT toute logique métier
+- [ ] Honeypot `website` caché + check serveur silencieux
+- [ ] Rate limit côté serveur (5 req/min/IP minimum)
+- [ ] Checkbox RGPD obligatoire (`z.literal(true)`)
+- [ ] UTM tracking au mount (5 params + referrer)
+- [ ] `revalidatePath()` si la mutation affecte du contenu SSR
+- [ ] `aria-invalid` + `aria-describedby` sur chaque champ
+- [ ] Messages d'erreur avec `role="alert"` ou zone `aria-live`
+- [ ] Erreurs serveur injectées via `form.setError()`
+- [ ] `disabled={isSubmitting}` sur le bouton submit (anti double-submit)
+- [ ] Toast succès + toast erreur
+- [ ] Test manuel : formulaire vide, champs invalides, champs valides, double-submit
+- [ ] `autoComplete` correct sur chaque input (`name`, `email`, `tel`, etc.)
+- [ ] Upload binaire -> Route Handler, pas Server Action
+- [ ] Pas de secret hardcodé (clés Turnstile en `NEXT_PUBLIC_*` uniquement pour la clé site)
+
+---
+
+## 12. Quand utiliser Route Handler plutôt que Server Action
+
+| Cas | Outil |
+|---|---|
+| Formulaire de contact, lead, devis | Server Action |
+| Update profil utilisateur | Server Action |
+| Upload fichier > 1 Mo | Route Handler |
+| Webhook Stripe / Mailchimp / Resend | Route Handler |
+| Endpoint appelé depuis app mobile tierce | Route Handler |
+| Endpoint consommé par un CRON externe | Route Handler |
+| Intégration avec FormData complexe (multipart) | Route Handler |
+
+Par défaut : Server Action. Route Handler uniquement si l'un des cas ci-dessus s'applique.

@@ -1,0 +1,251 @@
+---
+description: Pièges Next.js App Router réels — force-dynamic, flash SSR/client, Promise.all, guillemets SWC, parallax mobile, contraste texte
+globs: "**/app/**/*.tsx, **/app/**/*.ts, **/components/**/*.tsx, **/lib/**/*.ts"
+alwaysApply: false
+---
+
+# Next.js App Router — Pièges réels (Dal Cielo)
+
+Règles issues de bugs rencontrés en production. Chaque section = un bug réel avec sa cause et son fix.
+
+---
+
+## 1. GET Route Handlers — Toujours `force-dynamic`
+
+**Problème :** Next.js met en cache les GET Route Handlers au moment du build (`force-static` par défaut). Un endpoint `/api/menu` retourne les données du build indéfiniment — les modifications Supabase/DB n'apparaissent jamais.
+
+**Symptôme typique :** Les données sont correctes en dev mais périmées en production. Ou : un composant client `useEffect` fetch l'API, reçoit `null`/données obsolètes, et écrase les données SSR correctes.
+
+**Fix obligatoire sur TOUT Route Handler qui lit une DB :**
+
+```typescript
+// src/app/api/menu/route.ts
+export const dynamic = 'force-dynamic'  // ← TOUJOURS sur les routes qui lisent une DB
+
+export async function GET() {
+  const data = await getFromDatabase()
+  const res = NextResponse.json(data)
+  res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate')
+  return res
+}
+```
+
+**Checklist :** Ajouter `force-dynamic` sur tous ces types de routes :
+- `/api/menu` — catalogue produits
+- `/api/orders/*` — commandes en temps réel
+- `/api/admin/*` — toutes les routes admin
+- `/api/announcement` — popups, pizza du chef
+- `/api/reviews` — avis
+
+---
+
+## 2. Flash SSR→Client — Ne jamais écraser les données SSR avec `null`
+
+**Problème :** Un composant reçoit des données via SSR (prop), initialise son state, puis `useEffect` re-fetch l'API. Si l'API retourne `null` (erreur transitoire, cache, popup désactivé), `setState(null)` efface les données SSR valides → flash : l'élément apparaît 100ms puis disparaît.
+
+**Incorrect — écrase le SSR avec null :**
+
+```tsx
+export const MonComposant = ({ data: propData }) => {
+  const [data, setData] = useState(propData ?? null)
+
+  useEffect(() => {
+    fetch('/api/data')
+      .then(res => res.json())
+      .then(json => {
+        setData(json.data)  // ← BUG : si json.data est null, efface le SSR
+      })
+  }, [])
+  // ...
+}
+```
+
+**Correct — garder le SSR si l'API renvoie null :**
+
+```tsx
+export const MonComposant = ({ data: propData }) => {
+  const [data, setData] = useState(propData ?? null)
+
+  useEffect(() => {
+    fetch('/api/data')
+      .then(res => res.ok ? res.json() : Promise.reject())
+      .then(json => {
+        if (json.data && json.data.id) {
+          setData(json.data)           // API OK → mettre à jour
+        } else if (!propData) {
+          setData(null)                // SSR était null + API confirme → cacher
+        }
+        // Si SSR avait data mais API renvoie null → garder SSR silencieusement
+        // (erreur transitoire Supabase, désactivation admin, etc.)
+      })
+      .catch(() => {})  // Erreur réseau → garder l'état SSR
+  }, []) // propData intentionnellement absent des deps (valeur SSR, immuable)
+}
+```
+
+**Règle :** `setData(null)` ne doit être appelé que si `!propData` (le SSR confirme l'absence).
+
+---
+
+## 3. Promise.all — Séparer les try/catch pour des fetches indépendants
+
+**Problème :** Un seul `try/catch` autour de `Promise.all` fait qu'une erreur sur un fetch annule TOUS les résultats. Exemple : `getPopup()` échoue → `getChefProduct()` retourne aussi `null` alors qu'il aurait réussi.
+
+**Incorrect — une seule erreur tue tout :**
+
+```typescript
+export async function GET() {
+  try {
+    const [popup, product] = await Promise.all([
+      getActivePopup(),
+      getChefProduct(),  // Toujours null si getActivePopup() throw
+    ])
+    return NextResponse.json({ popup, product })
+  } catch {
+    return NextResponse.json({ popup: null, product: null })  // Tout perdu
+  }
+}
+```
+
+**Correct — fetches indépendants, erreurs indépendantes :**
+
+```typescript
+export async function GET() {
+  let popup = null
+  let product = null
+  try { popup = await getActivePopup() } catch {}    // Erreur popup n'affecte pas product
+  try { product = await getChefProduct() } catch {}  // Indépendant
+  return NextResponse.json({ popup, product })
+}
+```
+
+**Règle :** Si deux fetches sont conceptuellement indépendants, leurs erreurs doivent l'être aussi. Utiliser `Promise.allSettled` ou des try/catch séparés.
+
+---
+
+## 4. SWC — Jamais de guillemets typographiques dans les fichiers TypeScript
+
+**Problème :** SWC (compilateur Next.js) rejette les guillemets Unicode typographiques `'` `'` `"` `"` (U+2018, U+2019, U+201C, U+201D) dans les fichiers `.ts`/`.tsx`. Le linter ou certains éditeurs les insèrent automatiquement.
+
+**Symptôme :** Build Vercel échoue avec `Unexpected character '…'` ou `SyntaxError: Unexpected token`.
+
+**Incorrect (SWC crash) :**
+```tsx
+// Ces guillemets sont U+2018/U+2019, pas des apostrophes ASCII
+const label = 'Commander l'exclu'
+const text = "C'est prêt"
+```
+
+**Correct :**
+```tsx
+// Apostrophes ASCII U+0027 uniquement
+const label = "Commander l'exclu"
+const text = "C'est prêt"
+// Ou en JSX, utiliser les entités HTML
+<p>Commander l&apos;exclu</p>
+```
+
+**Vérification avant commit :**
+```bash
+# Détecter les guillemets typographiques dans tous les fichiers TS/TSX
+grep -rn $'\xe2\x80\x98\|\xe2\x80\x99\|\xe2\x80\x9c\|\xe2\x80\x9d' src/
+# Ou avec hexdump sur un fichier suspect
+hexdump -C src/components/MonComposant.tsx | grep "e2 80 9"
+```
+
+**Config VSCode recommandée** (`settings.json`) :
+```json
+{
+  "editor.smartQuotes": "none"
+}
+```
+
+---
+
+## 5. Framer Motion — Désactiver le parallax sur mobile
+
+**Problème :** Les animations Framer Motion avec `useScroll` + `useTransform` (parallax) déclenchent des `transform` CSS à chaque scroll event sur mobile. Sur Android Chrome, ça force des repaints GPU → jank visible, batterie.
+
+`useReducedMotion` seul ne suffit pas : il n'est actif que si l'OS a "Réduire les animations" activé — pas le cas par défaut.
+
+**Incorrect — parallax actif sur tous les écrans :**
+
+```tsx
+const { scrollY } = useScroll()
+const prefersReducedMotion = useReducedMotion()
+const y = useTransform(scrollY, [0, 400], prefersReducedMotion ? [0, 0] : [0, 60])
+// Toujours actif sur mobile Android Chrome
+```
+
+**Correct — désactiver parallax sur mobile ET si prefers-reduced-motion :**
+
+```tsx
+const [isMobile, setIsMobile] = useState(false)
+const prefersReducedMotion = useReducedMotion()
+
+useEffect(() => {
+  setIsMobile(window.innerWidth <= 768)
+}, [])
+
+const disableParallax = prefersReducedMotion || isMobile
+const { scrollY } = useScroll()
+const y = useTransform(scrollY, [0, 400], disableParallax ? [0, 0] : [0, 60])
+```
+
+**Règle :** Tout effet parallax (scroll-linked transform) doit être désactivé sur mobile. Les animations `animate` / `whileInView` ne sont pas concernées.
+
+---
+
+## 6. Contraste WCAG AA — Séparer couleur bouton et couleur texte
+
+**Problème :** Une couleur primaire vibrante (#E17B5F, coral) est idéale pour les boutons (texte blanc dessus = contraste OK). Mais utiliser cette même couleur pour du texte standalone sur fond blanc donne un ratio 3.0:1 — insuffisant WCAG AA (minimum 4.5:1).
+
+**Vérification du contraste :** https://webaim.org/resources/contrastchecker/
+
+**Incorrect — même couleur pour bouton ET texte :**
+```tsx
+// tailwind.config.js
+colors: {
+  primary: '#E17B5F',  // Ratio 3.0:1 sur blanc — KO WCAG AA pour texte
+}
+
+// Usage problématique :
+<span className="text-primary">{prix}€</span>     // Prix en coral = illisible
+<a className="text-primary">Voir plus</a>          // Lien coral = KO accessibilité
+```
+
+**Correct — variante text dédiée :**
+```js
+// tailwind.config.js
+colors: {
+  primary: {
+    DEFAULT: '#E17B5F',   // Pour bg-primary (boutons, badges) — texte blanc dessus
+    text: '#C54A35',      // Pour text-primary-text (texte standalone) — ratio 4.5:1
+  }
+}
+```
+
+```tsx
+// Bouton — bg-primary avec texte blanc ✓
+<Button className="bg-primary text-white">Commander</Button>
+
+// Texte standalone — text-primary-text ✓
+<span className="text-primary-text font-bold">{prix}€</span>
+<a className="text-primary-text hover:underline">Voir plus</a>
+```
+
+**Règle :** Pour toute couleur de marque saturée, toujours créer deux variantes Tailwind : `DEFAULT` pour les backgrounds, `text` pour le texte standalone. Tester les deux sur https://webaim.org.
+
+---
+
+## Checklist déploiement
+
+Avant tout `git push` sur un projet Next.js App Router :
+
+- [ ] Tous les Route Handlers DB ont `export const dynamic = 'force-dynamic'`
+- [ ] Tous les Route Handlers ont `Cache-Control: no-store` dans la response
+- [ ] Les `useEffect` qui fetch n'écrasent pas les données SSR avec `null`
+- [ ] Aucun guillemet typographique `'` `"` dans les fichiers `.ts`/`.tsx`
+- [ ] Les animations parallax sont désactivées sur mobile (`window.innerWidth <= 768`)
+- [ ] Le texte standalone n'utilise pas la couleur primaire vibrante directement
+- [ ] `npm run build` passe sans erreurs TypeScript avant le push

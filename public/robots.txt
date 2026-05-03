@@ -1,0 +1,11 @@
+# Robots — PessÓra (SPA Vite). Ajuster Sitemap si le domaine canon change (voir aussi PageSEO).
+User-agent: *
+Allow: /
+
+Disallow: /admin
+Disallow: /mon-espace
+Disallow: /demo-espace
+Disallow: /mockup-luxe
+Disallow: /mockup-croquis-gerant
+
+Sitemap: https://pessora.mq/sitemap.xml

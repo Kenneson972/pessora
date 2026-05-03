@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- URLs publiques indexables — domaine canon à aligner avec la prod / DNS -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://pessora.mq/</loc><changefreq>weekly</changefreq><priority>1</priority></url>
+  <url><loc>https://pessora.mq/concept</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pessora.mq/menu</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://pessora.mq/nos-produits</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://pessora.mq/contact</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pessora.mq/contact-partenariat</loc><changefreq>monthly</changefreq><priority>0.65</priority></url>
+  <url><loc>https://pessora.mq/evenements</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://pessora.mq/bilan-bien-etre</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://pessora.mq/ora-plus</loc><changefreq>monthly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://pessora.mq/pessobot</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://pessora.mq/connexion</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://pessora.mq/inscription</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://pessora.mq/mentions-legales</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://pessora.mq/politique-confidentialite</loc><changefreq>yearly</changefreq><priority>0.35</priority></url>
+  <url><loc>https://pessora.mq/cgv</loc><changefreq>yearly</changefreq><priority>0.35</priority></url>
+</urlset>

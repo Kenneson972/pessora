@@ -1,0 +1,737 @@
+---
+description: Dashboards admin/proprio + espace client - Layouts protégés, sidebar, assistant-views, CRUD, analytics, empty states, NotificationBell
+globs: "**/app/dashboard/**, **/app/admin/**, **/app/espace-client/**, **/app/mon-compte/**, **/components/dashboard/**, **/components/espace-client/**, **/components/admin/**"
+alwaysApply: false
+---
+
+# Dashboards — Règles Karibloom
+
+Les projets Karibloom embarquent quasiment toujours **deux dashboards distincts** qui ne doivent surtout pas être confondus : l'**admin/proprio** qui gère son produit (villas, menu, stocks, commandes, analytics) et l'**espace client** qui consomme le service (réservations, livret, messagerie, documents). Les règles ci-dessous couvrent les deux mondes, leurs intersections (auth, sidebar, notifs) et leurs différences d'UX.
+
+## 1. Principe fondamental — deux mondes distincts
+
+|                        | Admin / Proprio                              | Espace client                                |
+|------------------------|----------------------------------------------|----------------------------------------------|
+| Path                   | `/dashboard/proprio`, `/admin`               | `/espace-client`, `/mon-compte`              |
+| Auth                   | Password (plus strict, MFA bienvenue)        | Magic link OTP                               |
+| UI density             | Dense, beaucoup de tableaux / KPI            | Aérée, orientée narration                    |
+| Actions                | CRUD complet (create, update, publish…)      | Lecture + édition profil + messaging         |
+| Sidebar                | Oui (navigation outils)                      | Oui (sections perso)                         |
+| Notifications          | Bell + realtime                              | Badge simple + emails                        |
+| Lib UI préférée        | Chakra / Recharts / FullCalendar             | HeroUI / Radix Themes                        |
+| Copy                   | Technique, orienté productivité              | Chaleureuse, à la 2e personne                |
+| Mobile                 | Responsive mais desktop-first                | Mobile-first obligatoire                     |
+
+Règle d'or : **ne jamais réutiliser un composant admin tel quel dans l'espace client**. Même un `<Table>` ne se comporte pas pareil (tri/filtre vs liste narrative). On duplique et on adapte.
+
+## 2. Structure des dossiers
+
+```
+app/
+  dashboard/
+    proprio/
+      layout.tsx                # protège + sidebar admin
+      page.tsx                  # vue liste (villas / produits / commandes)
+      loading.tsx
+      error.tsx
+      [id]/page.tsx             # éditeur ressource
+      [id]/not-found.tsx
+      submissions/page.tsx      # demandes entrantes
+      analytics/page.tsx        # stats (Recharts)
+      assistant/page.tsx        # IA copilot (onglets)
+  admin/                        # variante DALCIELO (hub unique)
+    layout.tsx
+    page.tsx                    # hub admin (tabs)
+    (tabs)/kitchen/page.tsx
+    (tabs)/menu/page.tsx
+    (tabs)/stocks/page.tsx
+    (tabs)/clients/page.tsx
+  espace-client/
+    layout.tsx                  # protège + EspaceClientShell
+    page.tsx                    # accueil perso
+    profil/page.tsx
+    reservations/page.tsx
+    reservations/[id]/page.tsx
+    messagerie/page.tsx
+    livret/page.tsx
+    documents/page.tsx
+  mon-compte/                   # variante e-commerce (DALCIELO)
+    layout.tsx
+    page.tsx
+    commandes/page.tsx
+    commandes/[id]/page.tsx
+
+components/
+  dashboard/
+    DashboardShell.tsx
+    Sidebar.tsx
+    NotificationBell.tsx
+    ActionMenu.tsx
+    StatCard.tsx
+    assistant-views/
+      StatsView.tsx
+      BookingsView.tsx
+      PlanningView.tsx
+      SubmissionsView.tsx
+      OTAHealthView.tsx
+      FinancesView.tsx
+  espace-client/
+    EspaceClientShell.tsx
+    PageTopbar.tsx
+    BookingCard.tsx
+    ProfileForm.tsx
+    TenantChatbot.tsx
+  admin/
+    KitchenMode.tsx
+    MenuManager.tsx
+    StocksManager.tsx
+    ReviewsManager.tsx
+
+app/actions/
+  villa.ts
+  booking.ts
+  menu.ts
+
+app/api/
+  dashboard/
+    analytics-bookings/route.ts
+    analytics-revenue/route.ts
+```
+
+## 3. Layout protégé — pattern type (Server Component)
+
+Toujours protéger **côté serveur** avec `redirect()`. Jamais un simple `useEffect` qui flashe la page avant de rediriger.
+
+```tsx
+// app/dashboard/proprio/layout.tsx
+import { redirect } from "next/navigation";
+import { getSupabaseServer } from "@/lib/supabase-server";
+import { DashboardShell } from "@/components/dashboard/DashboardShell";
+
+export default async function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const supabase = getSupabaseServer();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login?redirect=/dashboard/proprio");
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role, name, avatar_url")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile || !["admin", "proprio"].includes(profile.role)) {
+    redirect("/espace-client");
+  }
+
+  return (
+    <DashboardShell user={user} profile={profile}>
+      {children}
+    </DashboardShell>
+  );
+}
+```
+
+Pour l'espace client, même logique mais on redirige vers `/login?redirect=/espace-client` et on accepte tout utilisateur authentifié (pas de filtre role).
+
+## 4. Sidebar dashboard — composant client
+
+La sidebar est un **Client Component** car elle a besoin de `usePathname()`, d'un état collapse mobile et (souvent) d'un badge realtime sur Messagerie.
+
+```tsx
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  BarChart3,
+  Inbox,
+  MessageSquare,
+  Building2,
+  LogOut,
+  Menu,
+} from "lucide-react";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+
+type Item = {
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  badge?: number;
+};
+
+const ITEMS: Item[] = [
+  { href: "/dashboard/proprio", icon: LayoutDashboard, label: "Vue d'ensemble" },
+  { href: "/dashboard/proprio/analytics", icon: BarChart3, label: "Statistiques" },
+  { href: "/dashboard/proprio/submissions", icon: Inbox, label: "Demandes" },
+  { href: "/dashboard/proprio/villas", icon: Building2, label: "Villas" },
+  { href: "/dashboard/proprio/messagerie", icon: MessageSquare, label: "Messagerie" },
+];
+
+export function Sidebar({ pendingCount = 0 }: { pendingCount?: number }) {
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <button
+        type="button"
+        className="sm:hidden fixed top-4 left-4 z-40 p-2"
+        onClick={() => setOpen(true)}
+        aria-label="Ouvrir la navigation"
+      >
+        <Menu className="h-6 w-6" />
+      </button>
+
+      <aside
+        className={cn(
+          "fixed sm:sticky top-0 left-0 h-screen w-64 bg-white border-r z-50 transition-transform",
+          open ? "translate-x-0" : "-translate-x-full sm:translate-x-0"
+        )}
+      >
+        <nav className="flex flex-col h-full py-6 px-3">
+          <div className="flex-1 space-y-1">
+            {ITEMS.map((item) => {
+              const active =
+                pathname === item.href ||
+                (item.href !== "/dashboard/proprio" && pathname.startsWith(item.href));
+              const badge = item.href.endsWith("submissions") ? pendingCount : item.badge;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors",
+                    active
+                      ? "bg-amber-50 text-amber-900 font-medium"
+                      : "text-slate-600 hover:bg-slate-50"
+                  )}
+                  aria-current={active ? "page" : undefined}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span className="flex-1">{item.label}</span>
+                  {badge ? (
+                    <span className="text-xs bg-amber-500 text-white rounded-full px-2 py-0.5">
+                      {badge}
+                    </span>
+                  ) : null}
+                </Link>
+              );
+            })}
+          </div>
+
+          <form action="/auth/signout" method="post">
+            <button
+              type="submit"
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-50"
+            >
+              <LogOut className="h-4 w-4" />
+              Déconnexion
+            </button>
+          </form>
+        </nav>
+      </aside>
+    </>
+  );
+}
+```
+
+Toujours : items avec icônes Lucide, section active surlignée, collapse mobile (hamburger), badge notifications sur Messagerie/Submissions, bouton logout en bas.
+
+## 5. Assistant-views pattern (DIAMANTNOIR)
+
+Quand un dashboard admin a beaucoup de sous-sections (Stats, Bookings, Planning, Submissions, OTA, Finances, Maintenance), on préfère un pattern **onglets via `?view=…`** plutôt que dix routes imbriquées. Chaque view reste un Client Component indépendant, l'URL est partageable.
+
+```tsx
+// app/dashboard/proprio/assistant/page.tsx
+import { StatsView } from "@/components/dashboard/assistant-views/StatsView";
+import { BookingsView } from "@/components/dashboard/assistant-views/BookingsView";
+import { PlanningView } from "@/components/dashboard/assistant-views/PlanningView";
+import { FinancesView } from "@/components/dashboard/assistant-views/FinancesView";
+import { TabBar } from "@/components/dashboard/TabBar";
+
+const VIEWS = {
+  stats: StatsView,
+  bookings: BookingsView,
+  planning: PlanningView,
+  finances: FinancesView,
+} as const;
+
+type ViewKey = keyof typeof VIEWS;
+
+export default function AssistantPage({
+  searchParams,
+}: {
+  searchParams: { view?: string };
+}) {
+  const view = (searchParams.view ?? "stats") as ViewKey;
+  const Component = VIEWS[view] ?? StatsView;
+
+  return (
+    <>
+      <TabBar active={view} />
+      <Component />
+    </>
+  );
+}
+```
+
+Avantages : URL partageable (`?view=finances`), chaque view charge ses propres données à son rythme, pas de nested layouts inutiles.
+
+## 6. CRUD pattern — liste + édition
+
+### Vue liste (Server Component)
+
+```tsx
+// app/dashboard/proprio/page.tsx
+import { getSupabaseServer } from "@/lib/supabase-server";
+import { VillaList } from "@/components/dashboard/VillaList";
+import { EmptyState } from "@/components/ui/EmptyState";
+
+export default async function Page() {
+  const supabase = getSupabaseServer();
+  const { data: villas } = await supabase
+    .from("villas")
+    .select("id, name, price_per_night, published_at, archived_at")
+    .is("archived_at", null)
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (!villas?.length) {
+    return (
+      <EmptyState
+        title="Aucune villa pour le moment"
+        description="Ajoutez votre première villa pour commencer à recevoir des demandes."
+        cta={{ href: "/dashboard/proprio/new", label: "Ajouter ma première villa" }}
+      />
+    );
+  }
+
+  return <VillaList villas={villas} />;
+}
+```
+
+### Server Actions (`app/actions/villa.ts`)
+
+```tsx
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { z } from "zod";
+import { getSupabaseServer } from "@/lib/supabase-server";
+
+const VillaSchema = z.object({
+  name: z.string().min(2),
+  price_per_night: z.coerce.number().min(0),
+  description: z.string().optional(),
+});
+
+export async function createVilla(formData: FormData) {
+  const parsed = VillaSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: "Champs invalides" };
+
+  const supabase = getSupabaseServer();
+  const { data, error } = await supabase
+    .from("villas")
+    .insert(parsed.data)
+    .select("id")
+    .single();
+
+  if (error) return { error: error.message };
+  revalidatePath("/dashboard/proprio");
+  redirect(`/dashboard/proprio/${data.id}`);
+}
+
+export async function updateVilla(id: string, formData: FormData) {
+  const parsed = VillaSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: "Champs invalides" };
+
+  const supabase = getSupabaseServer();
+  const { error } = await supabase.from("villas").update(parsed.data).eq("id", id);
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/proprio");
+  revalidatePath(`/dashboard/proprio/${id}`);
+  revalidatePath(`/villas/${id}`);
+  return { ok: true };
+}
+
+export async function deleteVilla(id: string) {
+  const supabase = getSupabaseServer();
+  // Soft delete : on garde l'historique des réservations
+  const { error } = await supabase
+    .from("villas")
+    .update({ archived_at: new Date().toISOString() })
+    .eq("id", id);
+
+  if (error) return { error: error.message };
+  revalidatePath("/dashboard/proprio");
+}
+
+export async function publishVilla(id: string) {
+  const supabase = getSupabaseServer();
+  const { error } = await supabase
+    .from("villas")
+    .update({ published_at: new Date().toISOString() })
+    .eq("id", id);
+
+  if (error) return { error: error.message };
+  revalidatePath("/dashboard/proprio");
+  revalidatePath("/villas");
+  revalidatePath("/sitemap.xml");
+}
+```
+
+Menu d'actions par ligne via un `<ActionMenu />` (Radix Dropdown) qui wrap les Server Actions dans des `<form action={…}>`.
+
+## 7. Analytics — Recharts
+
+### StatCard (Server Component ok)
+
+```tsx
+// components/dashboard/StatCard.tsx
+import { TrendingUp, TrendingDown } from "lucide-react";
+
+type Props = {
+  title: string;
+  value: string;
+  delta?: string;
+  deltaTrend?: "up" | "down";
+  icon?: React.ComponentType<{ className?: string }>;
+};
+
+export function StatCard({ title, value, delta, deltaTrend = "up", icon: Icon }: Props) {
+  const Trend = deltaTrend === "up" ? TrendingUp : TrendingDown;
+  return (
+    <div className="rounded-2xl border bg-white p-5">
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-slate-500">{title}</span>
+        {Icon ? <Icon className="h-4 w-4 text-slate-400" /> : null}
+      </div>
+      <div className="mt-2 text-2xl font-semibold">{value}</div>
+      {delta ? (
+        <div
+          className={`mt-1 inline-flex items-center gap-1 text-xs ${
+            deltaTrend === "up" ? "text-emerald-600" : "text-rose-600"
+          }`}
+        >
+          <Trend className="h-3 w-3" />
+          {delta}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+```
+
+Usage :
+
+```tsx
+<StatCard
+  title="Revenus du mois"
+  value={formatPrice(4280)}
+  delta="+12%"
+  deltaTrend="up"
+  icon={TrendingUp}
+/>
+```
+
+### Graphique (Client Component obligatoire)
+
+```tsx
+"use client";
+
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+
+type Point = { month: string; total: number };
+
+export function BookingsChart({ data }: { data: Point[] }) {
+  return (
+    <div className="h-60 w-full">
+      <ResponsiveContainer>
+        <LineChart data={data}>
+          <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} />
+          <YAxis stroke="#94a3b8" fontSize={12} />
+          <Tooltip cursor={{ stroke: "#e2e8f0" }} />
+          <Line type="monotone" dataKey="total" strokeWidth={2} stroke="#D4AF37" dot={false} />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+```
+
+Données agrégées soit :
+- directement dans le RSC parent (simple, recommandé)
+- soit via `app/api/dashboard/analytics-{domain}/route.ts` si la donnée est partagée avec un widget client
+
+## 8. NotificationBell — realtime
+
+Complément de `kb-notifications.mdc`. La bell est toujours dans le topbar du DashboardShell et dans l'EspaceClientShell.
+
+```tsx
+"use client";
+
+import { useEffect, useState } from "react";
+import { Bell } from "lucide-react";
+import { getSupabaseBrowser } from "@/lib/supabase-browser";
+
+type Notification = {
+  id: string;
+  title: string;
+  body: string | null;
+  url: string | null;
+  read_at: string | null;
+  created_at: string;
+};
+
+export function NotificationBell({
+  userId,
+  initial,
+}: {
+  userId: string;
+  initial: Notification[];
+}) {
+  const [items, setItems] = useState<Notification[]>(initial);
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowser();
+    const channel = supabase
+      .channel(`notif-${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          setItems((prev) => [payload.new as Notification, ...prev].slice(0, 20));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
+
+  const unread = items.filter((n) => !n.read_at).length;
+
+  return (
+    <div className="relative">
+      <button type="button" className="p-2 rounded-full hover:bg-slate-100" aria-label="Notifications">
+        <Bell className="h-5 w-5" />
+        {unread > 0 ? (
+          <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-rose-500" />
+        ) : null}
+      </button>
+      {/* BellDropdown : liste + marquer comme lu */}
+    </div>
+  );
+}
+```
+
+Jamais de polling via `setInterval` : Supabase Realtime ou rien.
+
+## 9. Empty states, loading, errors
+
+Chaque dashboard doit avoir :
+
+- `loading.tsx` : skeletons de la vue (utiliser le skeleton-generator skill)
+- `error.tsx` : fallback avec CTA « Réessayer »
+- `not-found.tsx` pour `[id]/page.tsx` (villa supprimée, commande archivée)
+- **Empty state** dans les listes : illustration + message + CTA principal
+
+```tsx
+// app/dashboard/proprio/loading.tsx
+export default function Loading() {
+  return (
+    <div className="p-6 space-y-4">
+      <div className="h-8 w-48 rounded-md bg-slate-100 animate-pulse" />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="h-28 rounded-2xl bg-slate-100 animate-pulse" />
+        ))}
+      </div>
+      <div className="h-64 rounded-2xl bg-slate-100 animate-pulse" />
+    </div>
+  );
+}
+```
+
+```tsx
+// app/dashboard/proprio/error.tsx
+"use client";
+
+export default function Error({ reset }: { error: Error; reset: () => void }) {
+  return (
+    <div className="p-6">
+      <h2 className="text-lg font-semibold">Une erreur est survenue</h2>
+      <p className="text-sm text-slate-500 mt-1">Impossible de charger le dashboard.</p>
+      <button
+        type="button"
+        onClick={reset}
+        className="mt-3 rounded-lg bg-slate-900 text-white px-4 py-2 text-sm"
+      >
+        Réessayer
+      </button>
+    </div>
+  );
+}
+```
+
+## 10. Espace client — EspaceClientShell
+
+Orienté narration, pas dense. Beaucoup d'espace, typographie plus grande, icônes SVG custom par section (pas juste Lucide).
+
+```tsx
+// components/espace-client/EspaceClientShell.tsx
+import { PageTopbar } from "./PageTopbar";
+import { TenantChatbot } from "./TenantChatbot";
+
+type Crumb = { href?: string; label: string };
+
+export function EspaceClientShell({
+  title,
+  breadcrumbs,
+  currentVillaId,
+  children,
+}: {
+  title: string;
+  breadcrumbs?: Crumb[];
+  currentVillaId?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <PageTopbar title={title} breadcrumbs={breadcrumbs} />
+      <main className="container mx-auto max-w-3xl px-4 py-8">{children}</main>
+      <TenantChatbot villaId={currentVillaId} />
+    </div>
+  );
+}
+```
+
+Sections typiques de l'espace client :
+- Vue d'ensemble (prochaine réservation, actions en attente)
+- Mes réservations (liste avec statut pill)
+- Profil (photo, coordonnées, préférences)
+- Messagerie (concierge / support)
+- Documents (contrats, factures, règlement intérieur)
+- Livret d'accueil (PDF + pages live)
+- Conciergerie / services (demandes de prestation)
+- Checklist pré-arrivée
+
+Chaque section mérite son icône SVG custom (pas du Lucide générique) pour donner du caractère.
+
+## 11. Patterns spéciaux par domaine
+
+### Conciergerie / booking (DIAMANTNOIR)
+
+Calendrier planning (`@fullcalendar/react`), `PlanningView`, `OTAHealthView`, statut de sync iCal, `VillaSubmissionForm`.
+
+```tsx
+"use client";
+
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin from "@fullcalendar/interaction";
+
+export function PlanningView({ bookings }: { bookings: { id: string; title: string; start: string; end: string }[] }) {
+  return (
+    <FullCalendar
+      plugins={[dayGridPlugin, interactionPlugin]}
+      initialView="dayGridMonth"
+      locale="fr"
+      events={bookings}
+      height="auto"
+    />
+  );
+}
+```
+
+Détail complet (sync OTA, iCal, conflits) → voir `kb-booking.mdc`.
+
+### E-commerce (DALCIELO)
+
+`KitchenMode` (timer live des commandes en préparation), `StocksManager` (alertes rupture), `ReviewsManager` (modération avis), file d'attente estimée.
+
+```tsx
+"use client";
+
+import { useEffect, useState } from "react";
+
+export function KitchenMode({ orderId, startedAt }: { orderId: string; startedAt: string }) {
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    const start = new Date(startedAt).getTime();
+    const id = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 1000);
+    return () => clearInterval(id);
+  }, [startedAt]);
+
+  const mm = String(Math.floor(elapsed / 60)).padStart(2, "0");
+  const ss = String(elapsed % 60).padStart(2, "0");
+  const overdue = elapsed > 15 * 60;
+
+  return (
+    <div className={`rounded-lg border p-3 ${overdue ? "border-rose-400 bg-rose-50" : "border-slate-200"}`}>
+      <div className="text-xs text-slate-500">#{orderId.slice(0, 6)}</div>
+      <div className="font-mono text-2xl">{mm}:{ss}</div>
+    </div>
+  );
+}
+```
+
+Panier, checkout, statuts de commande → voir `kb-cart-checkout.mdc`.
+
+## 12. Mobile dashboard
+
+- Sidebar → drawer (`sm:hidden` toggle, `sm:sticky` sur desktop)
+- Tableaux → cards empilées (pas de scroll horizontal sur un tableau complexe)
+- Graphiques → `ResponsiveContainer`, swipeable ou desktop-only si très denses
+- Touch targets ≥ 44px (boutons d'action, menus…)
+- `viewport` avec `interactive-widget=resizes-content` pour éviter les sauts de clavier
+
+## 13. Anti-patterns
+
+| Ne fais pas | Fais plutôt |
+|-------------|-------------|
+| Charger toutes les villas en une fois | Pagination (`.range()`) dès 50+ items |
+| `<button onClick>` qui appelle `fetch` | Server Action dans `app/actions/*.ts` |
+| Oublier `revalidatePath` après mutation | Revalider liste + détail + pages publiques |
+| Dashboard sans état vide | Toujours un `<EmptyState>` avec CTA |
+| Password-protéger côté client seulement | `redirect()` dans le layout Server |
+| UI dense sur espace-client | Aérée, narrative, mobile-first |
+| Notifications en polling `setInterval` | Supabase Realtime (`postgres_changes`) |
+| Tableaux non triables / non filtrables en admin | Tri + filtre + search obligatoires |
+| Hard delete | Soft delete (`archived_at`) pour tout ce qui a un historique |
+| Réutiliser un composant admin dans l'espace client | Dupliquer et adapter la copy + le style |
+
+## 14. Checklist avant livraison
+
+1. Layouts admin **et** espace client protégés côté serveur (`redirect()`)
+2. Sidebar fonctionne en drawer mobile, état actif correct via `usePathname`
+3. Empty states présents sur chaque liste (villas, commandes, demandes, messages)
+4. `loading.tsx` et `error.tsx` dans chaque segment de route
+5. RBAC testé : un client ne peut pas atteindre `/dashboard/proprio` (redirigé)
+6. Notifications realtime branchées (pas de polling)
+7. Analytics chargées sans bloquer le premier paint (StatCards RSC, charts lazy)
+8. CRUD testé : create + update + soft delete + publish, tous via Server Actions
+9. Mobile validé (< 375px, menus accessibles, touch targets 44px)
+10. Accessibilité clavier : `aria-current`, focus visible, `aria-label` sur icon-only buttons
+
+Voir aussi : `kb-auth.mdc`, `kb-notifications.mdc`, `kb-booking.mdc`, `kb-cart-checkout.mdc`, `kb-supabase.mdc`.

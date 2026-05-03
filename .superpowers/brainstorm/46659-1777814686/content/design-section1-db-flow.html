@@ -1,0 +1,133 @@
+<h2>Design Cycle 1 — Section 1 : DB + Flux global</h2>
+<p class="subtitle">Valide chaque bloc avant qu'on passe à la section suivante</p>
+
+<div class="section">
+  <h3>1A — Changements DB</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:1rem">
+      <div class="label" style="color:#ef4444;margin-bottom:.75rem">Supprimé</div>
+      <div style="font-family:monospace;font-size:12px;line-height:2;color:#6b7280">
+        plan: <span style="text-decoration:line-through;color:#ef4444">'free' | 'starter' | 'premium' | 'vip'</span>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:1rem">
+      <div class="label" style="color:#16a34a;margin-bottom:.75rem">Remplacé par</div>
+      <div style="font-family:monospace;font-size:12px;line-height:2;color:#374151">
+        plan: <span style="color:#16a34a">'free' | 'ora_plus'</span>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:1rem">
+      <div class="label" style="color:#6366f1;margin-bottom:.75rem">Ajouté à profiles</div>
+      <div style="font-family:monospace;font-size:12px;line-height:2;color:#374151">
+        stripe_customer_id: <span style="color:#6366f1">text | null</span>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:1rem">
+      <div class="label" style="color:#6366f1;margin-bottom:.75rem">Ajouté à subscriptions</div>
+      <div style="font-family:monospace;font-size:12px;line-height:2;color:#374151">
+        stripe_price_id: <span style="color:#6366f1">text | null</span><br>
+        current_period_end: <span style="color:#6366f1">timestamp | null</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:.75rem;background:#fefce8;border:1px solid #fde68a;border-radius:6px;padding:.75rem;font-size:12px;color:#92400e">
+    <strong>Migration one-shot :</strong> UPDATE subscriptions SET plan = 'ora_plus' WHERE plan IN ('starter','premium','vip') AND status = 'active'
+  </div>
+</div>
+
+<div class="section">
+  <h3>1B — Flux complet souscription (Approche C)</h3>
+
+  <div style="display:flex;flex-direction:column;gap:.5rem;font-size:12px">
+
+    <div style="display:flex;align-items:center;gap:.75rem">
+      <div style="background:#6366f1;color:white;border-radius:6px;padding:.4rem .8rem;font-weight:600;white-space:nowrap;min-width:140px;text-align:center">1. /ora-plus</div>
+      <div style="color:#6b7280">Bouton "S'abonner" — aucune auth requise</div>
+    </div>
+
+    <div style="margin-left:70px;color:#9ca3af;font-size:11px">↓</div>
+
+    <div style="display:flex;align-items:center;gap:.75rem">
+      <div style="background:#6366f1;color:white;border-radius:6px;padding:.4rem .8rem;font-weight:600;white-space:nowrap;min-width:140px;text-align:center">2. Edge fn checkout</div>
+      <div style="color:#6b7280"><code>create-subscription-session</code> — mode: subscription, price_id, collect email + tel</div>
+    </div>
+
+    <div style="margin-left:70px;color:#9ca3af;font-size:11px">↓</div>
+
+    <div style="display:flex;align-items:center;gap:.75rem">
+      <div style="background:#7c3aed;color:white;border-radius:6px;padding:.4rem .8rem;font-weight:600;white-space:nowrap;min-width:140px;text-align:center">3. Stripe checkout</div>
+      <div style="color:#6b7280">Collecte CB, email déjà rempli si connu</div>
+    </div>
+
+    <div style="margin-left:70px;color:#9ca3af;font-size:11px">↓ (paiement confirmé)</div>
+
+    <div style="display:flex;align-items:flex-start;gap:.75rem">
+      <div style="background:#0891b2;color:white;border-radius:6px;padding:.4rem .8rem;font-weight:600;white-space:nowrap;min-width:140px;text-align:center;margin-top:.25rem">4. Webhook</div>
+      <div>
+        <div style="color:#6b7280;margin-bottom:.3rem"><code>checkout.session.completed</code> →</div>
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:.5rem;line-height:1.7;color:#374151">
+          • Cherche profil par email<br>
+          • Si nouveau : <code>auth.admin.inviteUserByEmail()</code> → magic link<br>
+          • Si existant : relie stripe_customer_id<br>
+          • Crée/met à jour subscription (plan: ora_plus, status: active)<br>
+          • Stocke stripe_customer_id sur profiles
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-left:70px;color:#9ca3af;font-size:11px">↓ en parallèle</div>
+
+    <div style="display:flex;align-items:flex-start;gap:.75rem">
+      <div style="background:#0891b2;color:white;border-radius:6px;padding:.4rem .8rem;font-weight:600;white-space:nowrap;min-width:140px;text-align:center;margin-top:.25rem">5. Page succès</div>
+      <div>
+        <div style="color:#6b7280;margin-bottom:.3rem"><code>/commande/succes?session_id=…</code> →</div>
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:.5rem;line-height:1.7;color:#374151">
+          • Appelle <code>verify-subscription-session</code> edge fn<br>
+          • Idempotent : si déjà traité par webhook → skip<br>
+          • Affiche "Bienvenue dans Ora+ — vérifie ton email" 🎉
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-left:70px;color:#9ca3af;font-size:11px">↓</div>
+
+    <div style="display:flex;align-items:center;gap:.75rem">
+      <div style="background:#16a34a;color:white;border-radius:6px;padding:.4rem .8rem;font-weight:600;white-space:nowrap;min-width:140px;text-align:center">6. Magic link</div>
+      <div style="color:#6b7280">Email Supabase → membre clique → <code>/mon-espace</code> avec Ora+ actif</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>1C — Webhooks gérés (Cycle 1)</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.75rem">
+
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:.75rem">
+      <div style="font-family:monospace;font-size:11px;color:#6366f1;margin-bottom:.4rem">checkout.session.completed</div>
+      <div style="font-size:12px;color:#6b7280">Création compte + subscription → magic link</div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:.75rem">
+      <div style="font-family:monospace;font-size:11px;color:#f59e0b;margin-bottom:.4rem">customer.subscription.deleted</div>
+      <div style="font-size:12px;color:#6b7280">status → cancelled, avantages perdus immédiatement</div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:.75rem">
+      <div style="font-family:monospace;font-size:11px;color:#10b981;margin-bottom:.4rem">invoice.paid</div>
+      <div style="font-size:12px;color:#6b7280">Renouvellement confirmé, current_period_end mis à jour</div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:.75rem">
+      <div style="font-family:monospace;font-size:11px;color:#ef4444;margin-bottom:.4rem">invoice.payment_failed</div>
+      <div style="font-size:12px;color:#6b7280">status → expired (Stripe gère les relances email)</div>
+    </div>
+
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:1.5rem">Est-ce que cette section 1 (DB + flux + webhooks) te convient avant qu'on passe à la section 2 (espace membre + gating des avantages) ?</p>

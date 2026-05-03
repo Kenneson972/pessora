@@ -1,0 +1,99 @@
+<h2>Ora+ × Stripe — Tour du scope</h2>
+<p class="subtitle">Ce chantier couvre plusieurs sous-systèmes indépendants. Voici l'état actuel et ce qui reste à construire.</p>
+
+<div class="section" style="margin-bottom:2rem">
+  <h3 style="margin-bottom:1rem">Ce qui existe déjà ✅</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.75rem">
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:1rem">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#16a34a;margin-bottom:.4rem">Landing page</div>
+      <div style="font-size:13px;color:#374151">/ora-plus — Hero, calculateur, avantages, CTA</div>
+    </div>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:1rem">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#16a34a;margin-bottom:.4rem">Portail Stripe</div>
+      <div style="font-size:13px;color:#374151">Edge function → gestion paiement si stripe_subscription_id existe</div>
+    </div>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:1rem">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#16a34a;margin-bottom:.4rem">Dashboard membre</div>
+      <div style="font-size:13px;color:#374151">Plan, date renouvellement, statut, lien gestion</div>
+    </div>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:1rem">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#16a34a;margin-bottom:.4rem">Admin membres</div>
+      <div style="font-size:13px;color:#374151">Liste + détail avec stripe_subscription_id affiché</div>
+    </div>
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:1rem">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#16a34a;margin-bottom:.4rem">Checkout produits</div>
+      <div style="font-size:13px;color:#374151">Panier → Stripe paiement ponctuel (boissons & gamme)</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3 style="margin-bottom:1rem">Les 4 sous-systèmes à construire</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0.75rem">
+
+    <div style="background:#fff;border:2px solid #6366f1;border-radius:8px;padding:1rem">
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem">
+        <span style="background:#6366f1;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">1</span>
+        <span style="font-weight:600;font-size:13px">Souscription Ora+</span>
+      </div>
+      <div style="font-size:12px;color:#6b7280;line-height:1.5">
+        Checkout <code>mode: subscription</code><br>
+        Création Stripe Customer<br>
+        Stockage <code>stripe_customer_id</code><br>
+        Insertion en DB après paiement
+      </div>
+      <div style="margin-top:.75rem;font-size:11px;font-weight:600;color:#6366f1;text-transform:uppercase;letter-spacing:.06em">Priorité 1</div>
+    </div>
+
+    <div style="background:#fff;border:2px solid #f59e0b;border-radius:8px;padding:1rem">
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem">
+        <span style="background:#f59e0b;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:font-size:11px;font-weight:700;flex-shrink:0">2</span>
+        <span style="font-weight:600;font-size:13px">Webhooks Stripe</span>
+      </div>
+      <div style="font-size:12px;color:#6b7280;line-height:1.5">
+        <code>subscription.updated</code><br>
+        <code>subscription.deleted</code><br>
+        <code>invoice.paid</code><br>
+        <code>invoice.payment_failed</code><br>
+        Sync automatique DB ↔ Stripe
+      </div>
+      <div style="margin-top:.75rem;font-size:11px;font-weight:600;color:#f59e0b;text-transform:uppercase;letter-spacing:.06em">Priorité 2</div>
+    </div>
+
+    <div style="background:#fff;border:2px solid #10b981;border-radius:8px;padding:1rem">
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem">
+        <span style="background:#10b981;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">3</span>
+        <span style="font-weight:600;font-size:13px">Espace membre enrichi</span>
+      </div>
+      <div style="font-size:12px;color:#6b7280;line-height:1.5">
+        Voir ses factures (PDF Stripe)<br>
+        Statut paiement en cours<br>
+        Annulation en 1 clic<br>
+        Moyen de paiement → portail
+      </div>
+      <div style="margin-top:.75rem;font-size:11px;font-weight:600;color:#10b981;text-transform:uppercase;letter-spacing:.06em">Priorité 3</div>
+    </div>
+
+    <div style="background:#fff;border:2px solid #ef4444;border-radius:8px;padding:1rem">
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem">
+        <span style="background:#ef4444;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">4</span>
+        <span style="font-weight:600;font-size:13px">Admin Stripe</span>
+      </div>
+      <div style="font-size:12px;color:#6b7280;line-height:1.5">
+        MRR & chiffre mensuel<br>
+        Détail membre avec Stripe ID<br>
+        Paiements échoués → alerte<br>
+        Lien direct profil Stripe
+      </div>
+      <div style="margin-top:.75rem;font-size:11px;font-weight:600;color:#ef4444;text-transform:uppercase;letter-spacing:.06em">Priorité 4</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="section" style="margin-top:1.5rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:1.25rem">
+  <h3 style="margin-bottom:.5rem;font-size:14px">Approche recommandée</h3>
+  <p style="font-size:13px;color:#475569;line-height:1.6">
+    Construire dans cet ordre : <strong>1 → 2 → 3 → 4</strong>. Sans webhooks (2), l'espace membre (3) et l'admin (4) ne se synchonisent pas automatiquement avec Stripe. Un seul spec + plan pour couvrir les 4 — ou on peut les faire en 2 cycles (1+2 ensemble, puis 3+4).
+  </p>
+</div>

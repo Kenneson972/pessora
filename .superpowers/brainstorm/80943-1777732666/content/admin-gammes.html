@@ -1,0 +1,96 @@
+<h2>Admin Gammes — Structure</h2>
+<p class="subtitle">Comment organiser l'administration des gammes (Sport, Skin, Wellness) avec leurs sous-catégories ?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px;background:#f8f4ef;border-radius:8px 8px 0 0;">
+      <div style="background:white;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);font-size:12px;">
+        <!-- Header tabs -->
+        <div style="display:flex;border-bottom:2px solid #f0ece4;background:#fafafa;">
+          <div style="padding:8px 14px;border-bottom:2px solid #d4af7a;margin-bottom:-2px;font-weight:700;color:#d4af7a;font-size:11px;">Sport</div>
+          <div style="padding:8px 14px;color:#888;font-size:11px;">Skin</div>
+          <div style="padding:8px 14px;color:#888;font-size:11px;">Wellness</div>
+        </div>
+        <!-- Sub-tabs -->
+        <div style="display:flex;gap:6px;padding:8px 10px;background:#fafafa;border-bottom:1px solid #f0ece4;">
+          <span style="background:#d4af7a;color:white;border-radius:12px;padding:2px 10px;font-size:10px;font-weight:600;">Sport</span>
+          <span style="background:#f0ece4;color:#666;border-radius:12px;padding:2px 10px;font-size:10px;">Bien-Être</span>
+          <span style="background:#f0ece4;color:#666;border-radius:12px;padding:2px 10px;font-size:10px;">Encas</span>
+          <span style="background:#e8f4e8;color:#4a9a4a;border-radius:12px;padding:2px 10px;font-size:10px;border:1px dashed #4a9a4a;">+ sous-cat</span>
+        </div>
+        <!-- Table -->
+        <div style="padding:6px 10px;">
+          <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f5f5f5;">
+            <span style="color:#333;font-weight:600;">Formula 1 950g</span>
+            <span style="color:#d4af7a;font-weight:700;">65€</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f5f5f5;">
+            <span style="color:#333;font-weight:600;">Créatine</span>
+            <span style="color:#d4af7a;font-weight:700;">45€</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:5px 0;">
+            <span style="color:#333;font-weight:600;">Rebuild Whey</span>
+            <span style="color:#d4af7a;font-weight:700;">90€</span>
+          </div>
+          <div style="padding:6px 0;border-top:1px solid #f0ece4;margin-top:4px;">
+            <button style="background:#d4af7a;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;">+ Ajouter produit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Page dédiée avec onglets Gamme + sous-catégories</h3>
+      <p>Une nouvelle page /admin/gammes avec 3 onglets principaux (Sport/Skin/Wellness) et des pills pour les sous-catégories. CRUD complet par sous-catégorie.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:16px;background:#f8f4ef;border-radius:8px 8px 0 0;">
+      <div style="background:white;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);font-size:12px;">
+        <!-- Sidebar + content -->
+        <div style="display:flex;">
+          <!-- Sidebar -->
+          <div style="width:110px;background:#fafafa;border-right:1px solid #f0ece4;padding:8px 0;">
+            <div style="font-size:10px;color:#888;font-weight:700;padding:0 10px 4px;text-transform:uppercase;">Gamme Sport</div>
+            <div style="padding:5px 10px;background:#fff4e6;border-left:2px solid #d4af7a;font-weight:600;color:#d4af7a;font-size:10px;">Sport</div>
+            <div style="padding:5px 10px;color:#666;font-size:10px;">Bien-Être</div>
+            <div style="padding:5px 10px;color:#666;font-size:10px;">Encas</div>
+            <div style="height:1px;background:#f0ece4;margin:4px 0;"></div>
+            <div style="font-size:10px;color:#888;font-weight:700;padding:4px 10px;text-transform:uppercase;">Skin</div>
+            <div style="padding:5px 10px;color:#666;font-size:10px;">Nettoyage</div>
+            <div style="padding:5px 10px;color:#666;font-size:10px;">Korean</div>
+            <div style="padding:5px 10px;color:#666;font-size:10px;">Contour</div>
+            <div style="padding:5px 10px;color:#666;font-size:10px;">Sérum</div>
+            <div style="height:1px;background:#f0ece4;margin:4px 0;"></div>
+            <div style="font-size:10px;color:#888;font-weight:700;padding:4px 10px;text-transform:uppercase;">Wellness</div>
+          </div>
+          <!-- Content -->
+          <div style="flex:1;padding:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="font-weight:700;font-size:11px;color:#333;">Sport — 11 produits</span>
+              <button style="background:#d4af7a;color:white;border:none;border-radius:5px;padding:3px 8px;font-size:10px;">+ Ajouter</button>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f5f5f5;">
+              <span style="font-size:10px;font-weight:600;">Formula 1 950g</span>
+              <span style="font-size:10px;color:#d4af7a;font-weight:700;">65€</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f5f5f5;">
+              <span style="font-size:10px;font-weight:600;">Créatine</span>
+              <span style="font-size:10px;color:#d4af7a;font-weight:700;">45€</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:4px 0;">
+              <span style="font-size:10px;font-weight:600;">Rebuild Whey</span>
+              <span style="font-size:10px;color:#d4af7a;font-weight:700;">90€</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Sidebar navigation avec toutes les sous-catégories</h3>
+      <p>Navigation latérale montrant toutes les gammes et sous-catégories en permanence. Plus rapide pour passer d'une sous-catégorie à l'autre sans perdre le contexte.</p>
+    </div>
+  </div>
+
+</div>

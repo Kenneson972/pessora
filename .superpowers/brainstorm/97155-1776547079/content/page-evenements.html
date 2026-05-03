@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PESSORA — Événements</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #faf9f7; color: #111; font-family: 'DM Sans', sans-serif; font-weight: 300; }
+svg { display: block; }
+
+/* ── HEADER ── */
+.header-wrap { position: sticky; top: 0; z-index: 100; background: #fff; border-bottom: 1px solid rgba(0,0,0,0.1); box-shadow: 0 1px 8px rgba(0,0,0,0.04); }
+.nav-top { padding: 0 48px; height: 56px; display: flex; align-items: center; gap: 24px; }
+.logo { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 22px; letter-spacing: 0.28em; text-transform: uppercase; color: #000; flex-shrink: 0; }
+.search-bar { flex: 1; max-width: 440px; margin: 0 auto; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(0,0,0,0.18); border-radius: 24px; padding: 0 16px; height: 36px; background: #fff; }
+.search-bar input { border: none; outline: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 12px; color: rgba(0,0,0,0.4); width: 100%; }
+.nav-btn { display: flex; align-items: center; gap: 7px; border: 1px solid #000; border-radius: 24px; padding: 6px 14px; font-size: 11px; font-weight: 400; letter-spacing: 0.08em; color: #000; cursor: pointer; flex-shrink: 0; }
+.nav-btn svg { width: 15px; height: 15px; }
+.nav-icon-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; flex-shrink: 0; }
+.nav-icon-btn svg { width: 16px; height: 16px; }
+.nav-badge { position: absolute; top: -4px; right: -4px; width: 16px; height: 16px; border-radius: 50%; background: #3d6b3e; color: #fff; font-size: 8px; display: flex; align-items: center; justify-content: center; }
+.nav-cats { padding: 0 48px; height: 72px; display: flex; align-items: center; justify-content: center; gap: 0; border-top: 1px solid rgba(0,0,0,0.07); overflow-x: auto; }
+.nav-cat { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 8px 24px; border-radius: 8px; cursor: pointer; transition: background 0.15s; white-space: nowrap; flex-shrink: 0; height: 56px; }
+.nav-cat:hover { background: rgba(0,0,0,0.04); }
+.nav-cat.active { background: #f0f0ee; }
+.nav-cat svg { width: 22px; height: 22px; opacity: 0.65; }
+.nav-cat.active svg { opacity: 1; }
+.nav-cat span { font-size: 11px; font-weight: 300; color: rgba(0,0,0,0.6); }
+.nav-cat.active span { color: #000; font-weight: 400; }
+
+/* ── HERO VIDÉO — Événements ── */
+.hero-video {
+  position: relative; height: 56vh; min-height: 380px;
+  background: #0a0a0a;
+  display: flex; align-items: flex-end;
+  overflow: hidden;
+}
+.hero-vbg {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 60% 40%, rgba(30,60,30,0.45) 0%, transparent 65%),
+              linear-gradient(155deg, #0f1f0f 0%, #0a0a0a 50%, #111 100%);
+}
+.hero-content { position: relative; z-index: 2; padding: 0 60px 56px; }
+.hero-eyebrow { font-size: 9px; font-weight: 400; letter-spacing: 0.45em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 16px; }
+.hero-title { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 68px; line-height: 0.93; color: #fff; letter-spacing: -0.02em; }
+.hero-title em { font-style: italic; color: rgba(255,255,255,0.6); }
+
+/* ── FILTER TABS ── */
+.filter-bar { background: #fff; padding: 0 60px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(0,0,0,0.08); height: 60px; overflow-x: auto; }
+.filter-tab { display: inline-flex; align-items: center; border: 1.5px solid rgba(0,0,0,0.2); border-radius: 24px; padding: 7px 18px; font-size: 12px; font-weight: 400; color: rgba(0,0,0,0.6); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+.filter-tab:hover { border-color: #000; color: #000; }
+.filter-tab.active { background: #000; color: #fff; border-color: #000; }
+
+/* ── PROCHAIN ÉVÉNEMENT — grande card hero ── */
+.next-event {
+  margin: 40px 60px 0;
+  border-radius: 20px; overflow: hidden;
+  display: grid; grid-template-columns: 1fr 1fr;
+  min-height: 400px;
+  background: #0a0a0a;
+}
+.next-event-img {
+  background: linear-gradient(135deg, #1e3a1e 0%, #0f1f0f 100%);
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.next-event-img-label {
+  position: absolute; top: 20px; left: 20px;
+  font-size: 8px; font-weight: 400; letter-spacing: 0.28em; text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+}
+.run-icon {
+  width: 88px; height: 88px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0.3;
+}
+.next-event-content { padding: 52px 52px; display: flex; flex-direction: column; justify-content: space-between; }
+.event-tag { display: inline-block; font-size: 8px; font-weight: 400; letter-spacing: 0.22em; text-transform: uppercase; background: #3d6b3e; color: #fff; padding: 4px 10px; border-radius: 3px; margin-bottom: 20px; align-self: flex-start; }
+.next-event-title { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 46px; line-height: 1.0; color: #fff; margin-bottom: 16px; }
+.next-event-title em { font-style: italic; color: rgba(255,255,255,0.6); }
+.next-event-meta { font-size: 10px; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.28); line-height: 2.0; margin-bottom: 36px; }
+.next-event-cta { display: inline-flex; align-items: center; gap: 8px; background: #fff; color: #000; border-radius: 28px; padding: 12px 28px; font-size: 11px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; align-self: flex-start; }
+.next-event-cta svg { width: 14px; height: 14px; }
+
+/* ── TOUS LES ÉVÉNEMENTS — grille cards ── */
+.events-section { padding: 52px 60px 20px; }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 28px; }
+.section-title { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 36px; color: #000; }
+.see-all { font-size: 10px; font-weight: 400; letter-spacing: 0.18em; text-transform: uppercase; color: #000; border-bottom: 1px solid #000; padding-bottom: 1px; }
+
+.events-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+
+.event-card {
+  background: #fff; border-radius: 16px; overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.06);
+  cursor: pointer; transition: box-shadow 0.2s;
+  display: flex; flex-direction: column;
+}
+.event-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.1); }
+
+.event-card-img {
+  position: relative; aspect-ratio: 16/9; overflow: hidden;
+}
+.event-card-img-bg { position: absolute; inset: 0; transition: transform 0.5s ease; }
+.event-card:hover .event-card-img-bg { transform: scale(1.04); }
+.event-card-img-grad { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%); }
+.event-card-img-label {
+  position: absolute; bottom: 14px; left: 14px;
+  font-size: 8px; font-weight: 400; letter-spacing: 0.25em; text-transform: uppercase;
+  color: rgba(255,255,255,0.75);
+}
+
+.event-card-body { padding: 20px 20px 18px; flex: 1; display: flex; flex-direction: column; }
+.event-card-type { font-size: 8px; font-weight: 400; letter-spacing: 0.22em; text-transform: uppercase; color: #3d6b3e; margin-bottom: 8px; }
+.event-card-title { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 22px; line-height: 1.1; color: #000; margin-bottom: 12px; }
+.event-card-title em { font-style: italic; }
+.event-card-meta { font-size: 10px; color: rgba(0,0,0,0.38); letter-spacing: 0.05em; line-height: 1.8; margin-top: auto; }
+.event-card-footer { padding: 0 20px 18px; display: flex; align-items: center; justify-content: space-between; }
+.event-card-spots { font-size: 10px; color: rgba(0,0,0,0.35); letter-spacing: 0.05em; }
+.event-card-spots strong { color: #3d6b3e; font-weight: 400; }
+.arrow-btn { width: 36px; height: 36px; border-radius: 50%; background: #000; display: flex; align-items: center; justify-content: center; }
+.arrow-btn svg { width: 14px; height: 14px; }
+
+/* Card "complet" */
+.event-card.complet .event-card-img-bg { filter: grayscale(0.6) brightness(0.7); }
+.complet-badge {
+  position: absolute; top: 14px; right: 14px;
+  font-size: 8px; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase;
+  background: rgba(0,0,0,0.7); color: rgba(255,255,255,0.7);
+  padding: 4px 10px; border-radius: 4px;
+}
+
+/* ── RUN CLUB — section récurrente ── */
+.runclub-section {
+  margin: 40px 60px 64px;
+  border-radius: 20px; overflow: hidden;
+  background: #0a0a0a;
+  display: flex; align-items: center;
+  padding: 52px 60px;
+  gap: 60px;
+}
+.runclub-text { flex: 1; }
+.runclub-eyebrow { font-size: 9px; letter-spacing: 0.42em; text-transform: uppercase; color: rgba(255,255,255,0.28); margin-bottom: 14px; }
+.runclub-title { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 42px; color: #fff; line-height: 1.0; margin-bottom: 16px; }
+.runclub-title em { font-style: italic; color: rgba(255,255,255,0.55); }
+.runclub-meta { font-size: 10px; color: rgba(255,255,255,0.28); letter-spacing: 0.15em; text-transform: uppercase; }
+.runclub-cta { display: inline-flex; align-items: center; gap: 8px; background: #fff; color: #000; border-radius: 28px; padding: 13px 30px; font-size: 11px; font-weight: 400; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; flex-shrink: 0; }
+.runclub-cta svg { width: 14px; height: 14px; }
+
+/* ── FOOTER ── */
+.footer { background: #0a0a0a; padding: 52px 60px 28px; display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 40px; }
+.footer-logo { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 20px; letter-spacing: 0.28em; text-transform: uppercase; color: #fff; margin-bottom: 10px; }
+.footer-tagline { font-size: 11px; color: rgba(255,255,255,0.28); line-height: 1.8; }
+.footer-col-title { font-size: 9px; font-weight: 400; letter-spacing: 0.28em; text-transform: uppercase; color: rgba(255,255,255,0.25); margin-bottom: 14px; }
+.footer-link { display: block; font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 9px; }
+.footer-bottom { background: #0a0a0a; border-top: 1px solid rgba(255,255,255,0.07); padding: 16px 60px; display: flex; justify-content: space-between; }
+.footer-copy { font-size: 10px; color: rgba(255,255,255,0.18); letter-spacing: 0.08em; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header-wrap">
+  <div class="nav-top">
+    <div class="logo">Pessóra</div>
+    <div class="search-bar">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" placeholder="Shakes, gauffres, événements…" />
+    </div>
+    <div class="nav-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"/></svg>
+      Mon Espace
+    </div>
+    <div class="nav-icon-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/></svg>
+      <div class="nav-badge">0</div>
+    </div>
+  </div>
+  <div class="nav-cats">
+    <div class="nav-cat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z"/><path d="M8 12c0-2.2 1.8-4 4-4s4 1.8 4 4"/></svg>
+      <span>Shakes</span>
+    </div>
+    <div class="nav-cat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="8" width="18" height="10" rx="2"/><path d="M7 8V6a5 5 0 0110 0v2"/></svg>
+      <span>Gauffres</span>
+    </div>
+    <div class="nav-cat active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      <span>Événements</span>
+    </div>
+    <div class="nav-cat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      <span>Bilan</span>
+    </div>
+    <div class="nav-cat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="12" cy="5" r="2"/><path d="M12 7v5M8.5 17l3.5-5 3.5 5M5 20l3-4M19 20l-3-4"/></svg>
+      <span>Run Club</span>
+    </div>
+    <div class="nav-cat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      <span>Réserver</span>
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero-video">
+  <div class="hero-vbg"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Communauté · Fort-de-France</div>
+    <div class="hero-title">Nos<br><em>événements</em></div>
+  </div>
+</section>
+
+<!-- FILTER TABS -->
+<div class="filter-bar">
+  <div class="filter-tab active">Tous</div>
+  <div class="filter-tab">Run Club</div>
+  <div class="filter-tab">Pop-up</div>
+  <div class="filter-tab">Atelier</div>
+  <div class="filter-tab">Partenariats</div>
+</div>
+
+<!-- PROCHAIN ÉVÉNEMENT — grande card -->
+<div class="next-event">
+  <div class="next-event-img">
+    <div class="next-event-img-label">Photo · Run Club</div>
+    <div class="run-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1" width="36" height="36"><circle cx="12" cy="5" r="2"/><path d="M12 7v5M8.5 17l3.5-5 3.5 5M5 20l3-4M19 20l-3-4"/></svg>
+    </div>
+  </div>
+  <div class="next-event-content">
+    <div>
+      <div class="event-tag">Prochain événement</div>
+      <div class="next-event-title">Run Club<br><em>chaque mercredi</em></div>
+      <div class="next-event-meta">
+        Mercredi 23 avril 2026<br>
+        6h00 · Départ Pessóra<br>
+        Fort-de-France
+      </div>
+    </div>
+    <div class="next-event-cta">
+      S'inscrire
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </div>
+  </div>
+</div>
+
+<!-- TOUS LES ÉVÉNEMENTS -->
+<section class="events-section">
+  <div class="section-head">
+    <div class="section-title">Tous les événements</div>
+    <span class="see-all">Agenda complet</span>
+  </div>
+
+  <div class="events-grid">
+
+    <!-- Card 1 -->
+    <div class="event-card">
+      <div class="event-card-img">
+        <div class="event-card-img-bg" style="background:linear-gradient(150deg,#1e3a1e,#0a0a0a);"></div>
+        <div class="event-card-img-grad"></div>
+        <div class="event-card-img-label">Run Club · Mercredi</div>
+      </div>
+      <div class="event-card-body">
+        <div class="event-card-type">Run Club</div>
+        <div class="event-card-title">Course matinale<br><em>Fort-de-France</em></div>
+        <div class="event-card-meta">
+          Mercredi 23 avril 2026<br>
+          6h00 · Départ Pessóra
+        </div>
+      </div>
+      <div class="event-card-footer">
+        <div class="event-card-spots"><strong>8 places</strong> disponibles</div>
+        <div class="arrow-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="event-card">
+      <div class="event-card-img">
+        <div class="event-card-img-bg" style="background:linear-gradient(150deg,#111,#1a2e1a);"></div>
+        <div class="event-card-img-grad"></div>
+        <div class="event-card-img-label">Pop-up · GigaFit</div>
+      </div>
+      <div class="event-card-body">
+        <div class="event-card-type">Pop-up</div>
+        <div class="event-card-title">Pop-up<br><em>GigaFit Lamentin</em></div>
+        <div class="event-card-meta">
+          Samedi 26 avril 2026<br>
+          9h00 – 13h00 · GigaFit
+        </div>
+      </div>
+      <div class="event-card-footer">
+        <div class="event-card-spots"><strong>Entrée libre</strong></div>
+        <div class="arrow-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3 — Complet -->
+    <div class="event-card complet">
+      <div class="event-card-img">
+        <div class="event-card-img-bg" style="background:linear-gradient(150deg,#0a0a0a,#1a1a1a);"></div>
+        <div class="event-card-img-grad"></div>
+        <div class="event-card-img-label">Atelier · Nutrition</div>
+        <div class="complet-badge">Complet</div>
+      </div>
+      <div class="event-card-body">
+        <div class="event-card-type" style="color:rgba(0,0,0,0.3);">Atelier</div>
+        <div class="event-card-title">Atelier<br><em>Nutrition sportive</em></div>
+        <div class="event-card-meta">
+          Dimanche 27 avril 2026<br>
+          10h00 · Pessóra Bar
+        </div>
+      </div>
+      <div class="event-card-footer">
+        <div class="event-card-spots" style="color:rgba(0,0,0,0.3);">Complet</div>
+        <div class="arrow-btn" style="background:#ccc;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="event-card">
+      <div class="event-card-img">
+        <div class="event-card-img-bg" style="background:linear-gradient(150deg,#1a3a1e,#0f2010);"></div>
+        <div class="event-card-img-grad"></div>
+        <div class="event-card-img-label">Run Club · Mai</div>
+      </div>
+      <div class="event-card-body">
+        <div class="event-card-type">Run Club</div>
+        <div class="event-card-title">Course matinale<br><em>Fort-de-France</em></div>
+        <div class="event-card-meta">
+          Mercredi 30 avril 2026<br>
+          6h00 · Départ Pessóra
+        </div>
+      </div>
+      <div class="event-card-footer">
+        <div class="event-card-spots"><strong>12 places</strong> disponibles</div>
+        <div class="arrow-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 5 -->
+    <div class="event-card">
+      <div class="event-card-img">
+        <div class="event-card-img-bg" style="background:linear-gradient(150deg,#0a1a0a,#111);"></div>
+        <div class="event-card-img-grad"></div>
+        <div class="event-card-img-label">Partenariat · Salle</div>
+      </div>
+      <div class="event-card-body">
+        <div class="event-card-type">Partenariat</div>
+        <div class="event-card-title">Défi fitness<br><em>CrossFit 972</em></div>
+        <div class="event-card-meta">
+          Samedi 3 mai 2026<br>
+          8h00 – 12h00 · CrossFit 972
+        </div>
+      </div>
+      <div class="event-card-footer">
+        <div class="event-card-spots"><strong>20 places</strong> disponibles</div>
+        <div class="arrow-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 6 -->
+    <div class="event-card">
+      <div class="event-card-img">
+        <div class="event-card-img-bg" style="background:linear-gradient(150deg,#1e2e1e,#0a0a0a);"></div>
+        <div class="event-card-img-grad"></div>
+        <div class="event-card-img-label">Pop-up · Marché</div>
+      </div>
+      <div class="event-card-body">
+        <div class="event-card-type">Pop-up</div>
+        <div class="event-card-title">Marché<br><em>La Galleria</em></div>
+        <div class="event-card-meta">
+          Dimanche 4 mai 2026<br>
+          8h00 – 14h00 · La Galleria
+        </div>
+      </div>
+      <div class="event-card-footer">
+        <div class="event-card-spots"><strong>Entrée libre</strong></div>
+        <div class="arrow-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- RUN CLUB récurrent -->
+<div class="runclub-section">
+  <div class="runclub-text">
+    <div class="runclub-eyebrow">Chaque semaine</div>
+    <div class="runclub-title">Run Club<br><em>Pessóra</em></div>
+    <div class="runclub-meta">Tous les mercredis · 6h00 · Fort-de-France</div>
+  </div>
+  <div class="runclub-cta">
+    Rejoindre le club
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div>
+    <div class="footer-logo">Pessóra</div>
+    <div class="footer-tagline">Bar protéiné<br>Fort-de-France, Martinique</div>
+  </div>
+  <div>
+    <div class="footer-col-title">Menu</div>
+    <span class="footer-link">Shakes</span>
+    <span class="footer-link">Gauffres</span>
+    <span class="footer-link">Carte complète</span>
+  </div>
+  <div>
+    <div class="footer-col-title">Espace</div>
+    <span class="footer-link">Événements</span>
+    <span class="footer-link">Run Club</span>
+    <span class="footer-link">Bilan Bien-être</span>
+  </div>
+  <div>
+    <div class="footer-col-title">Contact</div>
+    <span class="footer-link">Instagram</span>
+    <span class="footer-link">WhatsApp</span>
+    <span class="footer-link">Fort-de-France</span>
+  </div>
+</footer>
+<div class="footer-bottom">
+  <span class="footer-copy">© 2026 Pessóra</span>
+  <span class="footer-copy">Fort-de-France · Martinique</span>
+</div>
+
+</body>
+</html>

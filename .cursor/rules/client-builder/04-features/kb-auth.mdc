@@ -1,0 +1,566 @@
+---
+description: Auth Supabase - Magic link OTP (clients) + password (admin), middleware, protected routes, RBAC admin/proprio/tenant
+globs: "**/app/login/**, **/app/register/**, **/app/auth/**, **/middleware.ts, **/components/auth/**"
+alwaysApply: false
+---
+
+# Auth — Règles Karibloom
+
+Auth sur les projets Karibloom : **Supabase Auth** (Next.js 15 App Router + TypeScript).
+Deux workflows selon le rôle, RBAC via RLS, protection des routes côté serveur uniquement.
+
+---
+
+## 1. Principe fondamental
+
+**Deux workflows distincts selon le rôle.** Ne jamais tout mélanger dans un seul formulaire.
+
+- **Admin / Proprio** → email + password (`signInWithPassword`)
+  - Comptes créés à la main ou via invitation
+  - Sessions longues, besoin de reset password, éventuellement 2FA
+- **Tenant / client final** → magic link OTP (`signInWithOtp`)
+  - UX one-shot : pas de password à retenir
+  - Code 6 chiffres par email, vérification, puis session
+  - Si nouveau user : upsert profil minimal (nom, téléphone)
+
+**RBAC = RLS Supabase.** `auth.uid()` comparé aux colonnes `owner_id` / `user_id` dans les policies. On NE crée PAS un middleware applicatif qui vérifie un champ `role` pour toutes les requêtes — c'est la DB qui est la source de vérité.
+
+**Zones protégées** → check `supabase.auth.getUser()` dans le **layout serveur** (ou middleware). Jamais côté client seul.
+
+---
+
+## 2. Structure des routes auth
+
+```
+app/
+  login/
+    page.tsx                      # Login - 2 tabs (Propriétaire | Client)
+  register/
+    page.tsx                      # Inscription password (admin/proprio invités)
+  auth/
+    callback/route.ts             # Callback magic link / OAuth
+    reset-password/page.tsx       # Nouveau password après email de reset
+    confirm/route.ts              # Confirm email after signup (optionnel)
+  espace-client/
+    layout.tsx                    # Protège la zone tenant
+    page.tsx
+  dashboard/
+    proprio/
+      layout.tsx                  # Protège la zone admin/proprio + check role
+      page.tsx
+
+components/auth/
+  TenantMagicLinkFlow.tsx         # Flow OTP tenant (email → code → profile)
+  PasswordLoginForm.tsx           # Form password admin/proprio
+  LogoutButton.tsx                # signOut + redirect /
+
+lib/
+  supabase-server.ts              # createServerClient (cookies next/headers)
+  supabase-browser.ts             # createBrowserClient
+```
+
+---
+
+## 3. Login page — pattern à deux onglets
+
+`app/login/page.tsx` avec tabs. Inspiré du DIAMANTNOIR.
+
+```tsx
+"use client";
+
+import { useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { PasswordLoginForm } from "@/components/auth/PasswordLoginForm";
+import { TenantMagicLinkFlow } from "@/components/auth/TenantMagicLinkFlow";
+
+type Tab = "proprio" | "tenant";
+
+export default function LoginPage() {
+  const params = useSearchParams();
+  const router = useRouter();
+  const redirect = params.get("redirect") ?? "/espace-client";
+  const initialTab = (params.get("tab") as Tab) ?? "tenant";
+  const [tab, setTab] = useState<Tab>(initialTab);
+  const [error, setError] = useState<string | null>(null);
+
+  return (
+    <main className="mx-auto max-w-md px-4 py-16">
+      <h1 className="mb-6 font-serif text-3xl">Connexion</h1>
+
+      <div role="tablist" className="mb-8 flex gap-2 border-b">
+        <button
+          role="tab"
+          aria-selected={tab === "tenant"}
+          onClick={() => setTab("tenant")}
+          className={tab === "tenant" ? "border-b-2 border-primary px-4 py-2" : "px-4 py-2"}
+        >
+          Client
+        </button>
+        <button
+          role="tab"
+          aria-selected={tab === "proprio"}
+          onClick={() => setTab("proprio")}
+          className={tab === "proprio" ? "border-b-2 border-primary px-4 py-2" : "px-4 py-2"}
+        >
+          Propriétaire
+        </button>
+      </div>
+
+      {error && (
+        <div role="alert" className="mb-4 rounded bg-red-50 p-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      {tab === "tenant" ? (
+        <TenantMagicLinkFlow redirect={redirect} onError={setError} />
+      ) : (
+        <PasswordLoginForm
+          redirect={redirect}
+          onError={setError}
+          onSuccess={() => router.push(redirect)}
+        />
+      )}
+    </main>
+  );
+}
+```
+
+**Erreurs en français.** Jamais afficher `error.message` Supabase brut — mapper vers FR :
+- `Invalid login credentials` → "Email ou mot de passe incorrect."
+- `Email not confirmed` → "Merci de confirmer votre email avant de vous connecter."
+- `For security purposes, you can only request this once every 60 seconds` → "Patientez 60s avant une nouvelle tentative."
+
+---
+
+## 4. Magic link OTP (tenant) — `TenantMagicLinkFlow`
+
+Pattern complet, state machine à 3 steps.
+
+```tsx
+"use client";
+
+import { useEffect, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { getSupabaseBrowser } from "@/lib/supabase-browser";
+
+type Step = "email" | "otp" | "profile";
+
+export function TenantMagicLinkFlow({
+  redirect,
+  onError,
+}: {
+  redirect: string;
+  onError: (msg: string | null) => void;
+}) {
+  const supabase = getSupabaseBrowser();
+  const router = useRouter();
+  const params = useSearchParams();
+
+  const [step, setStep] = useState<Step>("email");
+  const [email, setEmail] = useState(params.get("email") ?? "");
+  const [code, setCode] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [resendIn, setResendIn] = useState(0);
+
+  // Timer "Renvoyer dans Xs"
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    const id = setInterval(() => setResendIn((s) => s - 1), 1000);
+    return () => clearInterval(id);
+  }, [resendIn]);
+
+  async function sendOtp(e?: React.FormEvent) {
+    e?.preventDefault();
+    onError(null);
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirect)}`,
+        shouldCreateUser: true,
+      },
+    });
+    setLoading(false);
+    if (error) return onError("Impossible d'envoyer le code. Réessayez dans quelques secondes.");
+    setStep("otp");
+    setResendIn(60);
+  }
+
+  async function verifyCode(e: React.FormEvent) {
+    e.preventDefault();
+    onError(null);
+    setLoading(true);
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token: code,
+      type: "email",
+    });
+    setLoading(false);
+    if (error) {
+      if (error.message.includes("expired")) return onError("Code expiré, renvoyez-en un nouveau.");
+      return onError("Code invalide. Vérifiez les 6 chiffres reçus par email.");
+    }
+    // Nouveau user ? → profile form, sinon redirect direct
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", data.user!.id)
+      .maybeSingle();
+
+    if (!profile?.full_name) {
+      setStep("profile");
+    } else {
+      router.push(redirect);
+      router.refresh();
+    }
+  }
+
+  async function saveProfile(e: React.FormEvent) {
+    e.preventDefault();
+    onError(null);
+    setLoading(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return onError("Session perdue, recommencez.");
+    const { error } = await supabase.from("profiles").upsert({
+      id: user.id,
+      email: user.email,
+      full_name: fullName,
+      phone,
+      role: "tenant",
+    });
+    setLoading(false);
+    if (error) return onError("Erreur lors de l'enregistrement du profil.");
+    router.push(redirect);
+    router.refresh();
+  }
+
+  if (step === "email") {
+    return (
+      <form onSubmit={sendOtp} className="space-y-4">
+        <label className="block">
+          <span className="text-sm">Votre email</span>
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="mt-1 w-full rounded border px-3 py-2"
+          />
+        </label>
+        <button type="submit" disabled={loading} className="w-full rounded bg-primary px-4 py-2 text-white disabled:opacity-60">
+          {loading ? "Envoi…" : "Recevoir un code"}
+        </button>
+      </form>
+    );
+  }
+
+  if (step === "otp") {
+    return (
+      <form onSubmit={verifyCode} className="space-y-4">
+        <p className="text-sm text-neutral-600">Code envoyé à <strong>{email}</strong></p>
+        <input
+          inputMode="numeric"
+          pattern="\d{6}"
+          maxLength={6}
+          required
+          value={code}
+          onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+          className="w-full rounded border px-3 py-2 text-center text-xl tracking-widest"
+          placeholder="123456"
+        />
+        <button type="submit" disabled={loading || code.length !== 6} className="w-full rounded bg-primary px-4 py-2 text-white disabled:opacity-60">
+          {loading ? "Vérification…" : "Valider"}
+        </button>
+        <button
+          type="button"
+          disabled={resendIn > 0}
+          onClick={() => sendOtp()}
+          className="w-full text-sm text-neutral-600 underline disabled:opacity-60"
+        >
+          {resendIn > 0 ? `Renvoyer le code dans ${resendIn}s` : "Renvoyer le code"}
+        </button>
+      </form>
+    );
+  }
+
+  // step === "profile"
+  return (
+    <form onSubmit={saveProfile} className="space-y-4">
+      <h2 className="font-serif text-xl">Finaliser votre profil</h2>
+      <input required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Nom complet" className="w-full rounded border px-3 py-2" />
+      <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Téléphone (optionnel)" className="w-full rounded border px-3 py-2" />
+      <button type="submit" disabled={loading} className="w-full rounded bg-primary px-4 py-2 text-white disabled:opacity-60">
+        {loading ? "Enregistrement…" : "Continuer"}
+      </button>
+    </form>
+  );
+}
+```
+
+**Note sur la révocation** : un OTP Supabase n'est utilisable qu'une fois et expire après 1h (config dashboard). Pas de logique de revocation manuelle nécessaire.
+
+---
+
+## 5. Password flow (admin / proprio)
+
+```ts
+// Inscription (via page /register, idéalement derrière un lien d'invitation)
+const { error } = await supabase.auth.signUp({
+  email,
+  password,                 // min 8 chars — contrainte UI + Supabase dashboard
+  options: {
+    emailRedirectTo: `${origin}/auth/confirm`,
+    data: { full_name: fullName },
+  },
+});
+
+// Connexion
+const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+// Mot de passe oublié
+await supabase.auth.resetPasswordForEmail(email, {
+  redirectTo: `${origin}/auth/reset-password`,
+});
+
+// Sur la page reset-password (après clic lien email)
+await supabase.auth.updateUser({ password: newPassword });
+```
+
+Règles :
+- **Min 8 caractères** côté UI, **vérifier aussi côté Supabase** (Auth → Providers → Email → min length).
+- Confirmer le password dans un second champ.
+- Invalider la session active après `updateUser({ password })` → forcer re-login sur autres devices via `supabase.auth.signOut({ scope: "others" })`.
+
+---
+
+## 6. Protection des routes — pattern layout
+
+`app/espace-client/layout.tsx` (zone tenant) :
+
+```tsx
+import { redirect } from "next/navigation";
+import { getSupabaseServer } from "@/lib/supabase-server";
+import { EspaceClientShell } from "@/components/espace-client/Shell";
+
+export default async function Layout({ children }: { children: React.ReactNode }) {
+  const supabase = getSupabaseServer();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login?redirect=/espace-client");
+  return <EspaceClientShell user={user}>{children}</EspaceClientShell>;
+}
+```
+
+`app/dashboard/proprio/layout.tsx` (zone admin/proprio, check rôle en plus) :
+
+```tsx
+import { redirect } from "next/navigation";
+import { getSupabaseServer } from "@/lib/supabase-server";
+
+export default async function Layout({ children }: { children: React.ReactNode }) {
+  const supabase = getSupabaseServer();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login?redirect=/dashboard/proprio&tab=proprio");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile || !["admin", "proprio"].includes(profile.role)) {
+    redirect("/espace-client"); // renvoie vers la zone autorisée
+  }
+
+  return <>{children}</>;
+}
+```
+
+**Toujours `getUser()` côté serveur, jamais `getSession()` seul** — `getSession` lit le cookie sans valider, `getUser` fait un appel au serveur Supabase et vérifie le JWT.
+
+---
+
+## 7. RBAC — 3 niveaux
+
+**Schéma recommandé** :
+
+```sql
+create table profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  email text,
+  full_name text,
+  phone text,
+  role text not null default 'tenant' check (role in ('admin', 'proprio', 'tenant')),
+  created_at timestamptz default now()
+);
+
+alter table profiles enable row level security;
+
+-- Un user ne voit/modifie que son propre profil
+create policy "own profile read" on profiles for select using (auth.uid() = id);
+create policy "own profile update" on profiles for update using (auth.uid() = id);
+
+-- Les admins voient tout
+create policy "admin read all" on profiles for select
+  using (exists (select 1 from profiles p where p.id = auth.uid() and p.role = 'admin'));
+```
+
+**Check côté serveur** (layouts, route handlers, server actions) :
+
+```ts
+const { data: profile } = await supabase
+  .from("profiles")
+  .select("role")
+  .eq("id", user.id)
+  .single();
+
+if (!profile || !["admin", "proprio"].includes(profile.role)) {
+  redirect("/espace-client");
+}
+```
+
+**Alternative fail-safe** : laisser RLS filtrer. Une requête admin qui retourne 0 lignes côté non-admin = pas d'accès, pas de leak. On peut combiner les deux (redirect UX + RLS sécurité).
+
+**Règle absolue** :
+> Jamais se fier au rôle côté client pour une décision de sécurité. Le client ne sert qu'à afficher/masquer des éléments UI. La sécurité est **toujours** côté DB (RLS) et côté server component (check explicite).
+
+---
+
+## 8. Middleware Next.js (optionnel mais recommandé)
+
+`middleware.ts` à la racine — refresh cookies + early redirect pages privées :
+
+```ts
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
+
+const PROTECTED = ["/espace-client", "/dashboard"];
+
+export async function middleware(req: NextRequest) {
+  let res = NextResponse.next({ request: req });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => req.cookies.getAll(),
+        setAll: (cookies) => {
+          cookies.forEach(({ name, value, options }) => {
+            res.cookies.set(name, value, options);
+          });
+        },
+      },
+    }
+  );
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const needsAuth = PROTECTED.some((p) => req.nextUrl.pathname.startsWith(p));
+  if (needsAuth && !user) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/login";
+    url.searchParams.set("redirect", req.nextUrl.pathname);
+    return NextResponse.redirect(url);
+  }
+
+  return res;
+}
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+};
+```
+
+Règles :
+- **Pas de travail async lourd** (DB heavy, fetches externes) → edge-friendly.
+- Le check de rôle reste dans les layouts — le middleware fait juste le check "connecté ou non".
+
+---
+
+## 9. Sessions & cookies
+
+- Supabase SDK gère les cookies via `@supabase/ssr` (lib officielle pour Next 15).
+- Browser client : `persistSession: true, autoRefreshToken: true` par défaut.
+- Server client : utilise `cookies()` de `next/headers`.
+
+**Logout propre** :
+
+```tsx
+"use client";
+import { getSupabaseBrowser } from "@/lib/supabase-browser";
+import { useRouter } from "next/navigation";
+
+export function LogoutButton() {
+  const router = useRouter();
+  async function logout() {
+    await getSupabaseBrowser().auth.signOut();
+    router.push("/");
+    router.refresh(); // invalide le cache server components
+  }
+  return <button onClick={logout}>Se déconnecter</button>;
+}
+```
+
+Toujours `router.refresh()` après signOut/signIn pour que les server components rerendent avec la nouvelle session.
+
+---
+
+## 10. Emails personnalisés
+
+Dashboard Supabase → **Auth → Email Templates** :
+- **Magic Link** : objet + texte en FR, mentionner le nom du site client
+- **Confirm signup** : uniquement si signup public activé
+- **Reset password** : lien avec CTA visible
+
+**URL de redirection** : remplacer `{{ .SiteURL }}` par `NEXT_PUBLIC_SITE_URL` (à définir dans Auth → URL Configuration). Ajouter les URLs autorisées :
+- `https://domaine-client.fr/**`
+- `http://localhost:3000/**` (dev)
+
+**SMTP custom obligatoire en prod** (Brevo, Resend, SendGrid) → éviter le spam et le rate limit Supabase (30 emails/h par défaut).
+
+Dashboard → **Auth → SMTP Settings** :
+- Host, port, user, password du provider
+- Sender email = email du domaine client (ex : `contact@villa-client.fr`)
+
+---
+
+## 11. Anti-patterns
+
+**NON :**
+- Stocker le rôle en `localStorage` pour décider d'une permission
+- Rediriger côté client seul (l'attaquant contourne avec devtools)
+- Oublier `router.refresh()` après login/logout → server components servent du cache périmé
+- Oublier d'invalider les autres sessions après changement de password
+- Forcer un password pour un tenant one-shot (UX naze, booking abandonnée)
+- `setPersistence` custom dans React sans cleanup → sessions fantômes
+- Exposer `SUPABASE_SERVICE_ROLE_KEY` dans un component client pour "vérifier un user" — bypass RLS, leak total
+- Faire confiance à `getSession()` côté serveur pour des décisions sensibles → utiliser `getUser()` qui valide le JWT
+
+**OUI :**
+- Rôle lu depuis `profiles` côté serveur, à chaque requête sensible
+- Protection dans le **layout** (empêche l'accès à toutes les pages enfants)
+- Erreurs traduites en FR, jamais les messages Supabase bruts
+- `router.refresh()` systématique après un changement d'auth
+- RLS activée sur TOUTES les tables dès la migration initiale
+- Service role key uniquement dans route handlers / server actions / cron jobs
+- `getUser()` côté serveur, `getSession()` uniquement côté client pour lire l'état
+
+---
+
+## 12. Checklist avant mise en prod
+
+- [ ] **RLS activée** sur `profiles` et toutes les tables métier (commandes, réservations, bilans, etc.)
+- [ ] Tous les **layouts protégés** testés en incognito (redirect vers `/login?redirect=…`)
+- [ ] **Check de rôle** testé : un `tenant` ne peut pas accéder à `/dashboard/proprio`
+- [ ] **SMTP custom** configuré (Brevo/Resend), emails testés depuis une adresse externe
+- [ ] **Templates emails** traduits en FR, CTA visible, identité visuelle client
+- [ ] **Reset password** fonctionne bout-en-bout (email → lien → nouveau password → login)
+- [ ] **Logout** invalide bien la session (test : reload après logout = redirect login)
+- [ ] **Expiration session** : JWT = 1h, refresh token = 30 jours (défaut OK) — documenté
+- [ ] **URLs autorisées** : ajouter le domaine prod dans Auth → URL Configuration
+- [ ] **Redirect URLs** magic link : uniquement `/auth/callback` autorisé
+- [ ] **2FA** : documenté comme optionnel, activable par admin/proprio si besoin
+- [ ] **Rate limit** Supabase auth vérifié (30 req/h par défaut, augmenter si volume attendu)

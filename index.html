@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Favicon : marque Pessóra (logo noir) -->
+    <link rel="icon" type="image/png" href="/logo-o.png" sizes="any" />
+    <link rel="apple-touch-icon" href="/logo-o.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#3A5F1A" />
+
+    <!-- SEO -->
+    <title>PessÓra - Le 1er Bar Protéiné & Bien-Être de Martinique</title>
+    <meta name="description" content="PessÓra - Le 1er Bar Protéiné & Bien-Être de Martinique. Coffee, shakes, lattes et boissons protéinées pour votre équilibre au quotidien. Fort-de-France." />
+    <meta name="keywords" content="bar protéiné, Martinique, Fort-de-France, coffee protéiné, shakes protéinés, bien-être, fitness, boissons healthy, La Véranda Cluny" />
+    <meta name="author" content="PessÓra" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://www.pessora.mq/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:site_name" content="PessÓra" />
+    <meta property="og:title" content="PessÓra - Le 1er Bar Protéiné & Bien-Être de Martinique" />
+    <meta property="og:description" content="Coffee, shakes, lattes et boissons protéinées pour accompagner votre quotidien et vos objectifs fitness. Venez nous retrouver à Fort-de-France." />
+    <meta property="og:image" content="https://www.pessora.mq/logo.png" />
+    <meta property="og:image:width" content="1024" />
+    <meta property="og:image:height" content="1024" />
+    <meta property="og:url" content="https://www.pessora.mq/" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="PessÓra - Bar Protéiné & Bien-Être | Martinique" />
+    <meta name="twitter:description" content="Coffee, shakes et boissons protéinées à Fort-de-France. Équilibre et plaisir au quotidien." />
+    <meta name="twitter:image" content="https://www.pessora.mq/logo.png" />
+
+    <!-- Polices Montserrat : @import dans src/index.css — preconnect seulement -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Preload logo marque (header / above the fold) -->
+    <link rel="preload" as="image" href="/logo-pessora.png" />
+
+    <!-- JSON-LD LocalBusiness (SEO structuré) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CafeOrCoffeeShop",
+      "name": "PessÓra",
+      "description": "Le 1er Bar Protéiné & Bien-Être de Martinique. Coffee, shakes, lattes et boissons protéinées.",
+      "url": "https://www.pessora.mq",
+      "image": "https://www.pessora.mq/logo.png",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "C.C. La Véranda – Cluny",
+        "addressLocality": "Fort-de-France",
+        "postalCode": "97200",
+        "addressRegion": "Martinique",
+        "addressCountry": "FR"
+      },
+      "openingHoursSpecification": [
+        { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"], "opens": "09:30", "closes": "18:00" },
+        { "@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "10:30", "closes": "14:00" }
+      ],
+      "telephone": "+596696XXXXXX",
+      "email": "contact@pessora.mq",
+      "sameAs": ["https://www.instagram.com/pessora.mq/"]
+    }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

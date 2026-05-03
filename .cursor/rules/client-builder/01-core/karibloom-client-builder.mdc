@@ -1,0 +1,325 @@
+---
+description: Skill principal Karibloom Client Builder - architecture globale, patterns, stack Next.js 15 + Supabase + Stripe
+alwaysApply: true
+---
+
+# Karibloom Client Builder
+
+Fichier maître du système. Philosophie, architecture, pointeurs. Les détails techniques sont dans les règles dédiées — ce fichier ne les ré-explique pas.
+
+---
+
+## Section 1 — Vision
+
+Karibloom est une **agence web basée en Martinique** spécialisée dans les sites clients haut de gamme : conciergeries de luxe, location saisonnière, e-commerce artisanal, restauration, SaaS locaux.
+
+**Objectif** : livrer **vite, bien, maintenable**. Pas de code jetable, pas de stack exotique, pas de dette technique gratuite.
+
+**Niveau attendu** : production-ready dès la v1 — SEO, performance, sécurité, accessibilité, RGPD. Un site Karibloom doit pouvoir encaisser du trafic et des paiements le jour de sa mise en ligne.
+
+**Stack unique** (non négociable) :
+
+```
+Next.js 15 App Router + React 19 + TypeScript strict
++ Supabase (Postgres, Auth, Storage, Realtime)
++ Stripe (Checkout, Webhooks, Customer Portal)
++ Tailwind 3.4 + Chakra UI 3 + Radix Themes + HeroUI
++ Vercel
+```
+
+Voir `kb-stack-selection.mdc` — aucune exception sans validation explicite.
+
+---
+
+## Section 2 — Types de projets Karibloom
+
+Chaque projet tombe dans une (ou plusieurs) de ces catégories. Le type dicte les features activées, pas la stack.
+
+### Vitrine marketing
+
+- Présentation de l'activité, SEO local, lead gen
+- Pages services, blog éditorial, formulaires contact
+- Exemples de stack front activée : `kb-seo`, `kb-forms`, `kb-animations`, `kb-cookie-consent`
+
+### Conciergerie / location saisonnière (ex : DIAMANTNOIR)
+
+- Catalogue propriétés (fiches, médias, équipements)
+- **Booking engine** avec disponibilités, sync iCal Airbnb/Booking
+- Paiement Stripe + acomptes
+- **Espace client** (réservations, factures, documents)
+- **Dashboard propriétaire** (calendrier, revenus, tâches ménage)
+
+### E-commerce (ex : DALCIELO pizzeria)
+
+- Catalogue produits, variantes, stock
+- **Panier** + **Checkout Stripe**
+- Commandes, statuts, livraison / click & collect
+- Compte client, historique, réassort
+- Admin commandes temps réel
+
+### Restauration
+
+- Menu digital, allergènes, suggestions
+- Commande en ligne (click & collect / livraison)
+- Fidélité, programme de points, QR table
+- Notifications SMS / email
+
+### SaaS / dashboard (ex : PESSORA)
+
+- Multi-tenant (RLS par organisation)
+- Analytics, KPIs, graphiques (Recharts)
+- Facturation récurrente Stripe (Customer Portal)
+- Admin + rôles granulaires
+
+Un projet peut cumuler plusieurs types — la stack reste identique, les **features** s'empilent.
+
+---
+
+## Section 3 — Architecture projet type
+
+Structure canonique à reproduire sur chaque projet (détails dans `stack-nextjs-app-router.mdc`).
+
+```
+app/
+  (marketing)/            # Route group site public
+    page.tsx              # home
+    services/page.tsx
+    blog/[slug]/page.tsx
+    layout.tsx            # layout marketing
+  (shop)/                 # Route group e-commerce
+    produits/page.tsx
+    panier/page.tsx
+    checkout/page.tsx
+  (account)/              # Route group espace client
+    compte/
+      commandes/page.tsx
+      reservations/page.tsx
+      layout.tsx          # layout avec sidebar client
+  (dashboard)/            # Route group admin / pro
+    admin/
+      commandes/page.tsx
+      stats/page.tsx
+      layout.tsx          # layout admin
+  api/
+    stripe/webhook/route.ts
+    ical/[propertyId]/route.ts
+  layout.tsx              # layout racine (providers, fonts, metadata)
+  globals.css
+components/
+  ui/                     # primitives (Button, Input, Card wrappés)
+  marketing/              # Hero, Features, Testimonials
+  shop/                   # ProductCard, Cart, CheckoutForm
+  booking/                # Calendar, BookingForm
+  dashboard/              # StatCard, DataTable
+  layout/                 # Header, Footer, Sidebar
+lib/
+  supabase/
+    client.ts             # browser client
+    server.ts             # server client (cookies)
+    admin.ts              # service_role (server only)
+  stripe/
+    client.ts
+    server.ts
+  utils.ts
+  actions/                # Server Actions (createBookingAction, etc.)
+hooks/
+  useCart.ts
+  useUser.ts
+types/
+  database.ts             # généré via supabase gen types
+  domain.ts
+supabase/
+  migrations/             # SQL migrations versionnées
+  seed.sql
+middleware.ts             # auth + RBAC + i18n
+```
+
+**Règles architecturales** (détails dans les règles dédiées) :
+
+- **Route groups** `(marketing)`, `(account)`, `(dashboard)`, `(shop)` pour isoler layouts et middlewares
+- **Séparation server / client stricte** : tout est RSC par défaut, `"use client"` ajouté ponctuellement
+- **3 clients Supabase** : browser (`lib/supabase/client.ts`), server (`lib/supabase/server.ts`), admin (`lib/supabase/admin.ts` — service_role, jamais exporté vers le client)
+- **Middleware Next.js** pour auth + RBAC + i18n (voir `kb-auth.mdc`)
+- **Types générés** depuis Supabase : `supabase gen types typescript --project-id X > types/database.ts`
+
+---
+
+## Section 4 — Features récurrentes
+
+Chaque feature a sa règle dédiée. Ce fichier ne fait que pointer — **ne pas dupliquer** les détails ici.
+
+| Feature | Règle | Résumé 1 ligne |
+|---------|-------|----------------|
+| Auth + RBAC | `kb-auth.mdc` | Supabase Auth + middleware + rôles + RLS |
+| Supabase général | `kb-supabase.mdc` | 3 clients, RLS, migrations, types générés |
+| API Routes + Server Actions | `kb-api-routes.mdc` | Mutations via Server Actions, webhooks via Route Handlers |
+| Dashboard admin + espace client | `kb-dashboard.mdc` | Layouts, sidebar, DataTable, stats Recharts |
+| Booking engine | `kb-booking.mdc` | Dispos, sync iCal, FullCalendar, Stripe acompte |
+| Panier + Checkout Stripe | `kb-cart-checkout.mdc` | Cart server-side, Stripe Checkout, webhook |
+| Notifications + emails | `kb-notifications.mdc` | Resend / Supabase, templates React Email |
+| Wishlist + Compare | `kb-wishlist-compare.mdc` | Listes persistées Supabase, compare table |
+| Forms | `kb-forms.mdc` | react-hook-form + Zod + Server Actions |
+| SEO | `kb-seo.mdc` | `metadata`, `generateMetadata`, sitemap, JSON-LD |
+| Images | `kb-image-optimizer.mdc` | `next/image`, AVIF, sizes, priority |
+| Performance | `kb-performance.mdc` | RSC, streaming, Suspense, CWV |
+| Sécurité | `kb-security.mdc` | RLS, CSRF, CSP, webhook signatures |
+| Déploiement | `kb-deployment.mdc` | Vercel, env vars, previews, migrations prod |
+| Responsive mobile | `kb-mobile-responsive.mdc` | Tailwind breakpoints, touch targets, fluid typo |
+| Error states | `kb-error-states.mdc` | `error.tsx`, `not-found.tsx`, loading skeletons |
+| Cookie consent RGPD | `kb-cookie-consent.mdc` | vanilla-cookieconsent, Consent Mode v2 |
+| Dark mode | `kb-dark-mode.mdc` | `next-themes`, CSS vars, FOUC prevention |
+| Animations | `kb-animations.mdc` | framer-motion, GSAP, View Transitions |
+| Micro-interactions | `kb-micro-interactions.mdc` | Hover, ripple, skeleton, counters |
+| i18n | `kb-i18n.mdc` | `next-intl`, hreflang, FR/EN/créole |
+| PWA | `kb-pwa.mdc` | `next-pwa`, manifest, offline, install prompt |
+
+**Règle** : pour travailler sur une feature, lire sa règle dédiée. Ne pas reconstituer le pattern depuis ce fichier.
+
+---
+
+## Section 5 — Workflow standard
+
+Ordre d'exécution pour un nouveau projet client :
+
+1. **Brief client** → décision type(s) de projet (Section 2), liste features activées, palette, contenu initial
+2. **Init projet Next 15** :
+   ```bash
+   npx create-next-app@latest nom-client --typescript --tailwind --app --eslint
+   ```
+3. **Setup Supabase** :
+   - créer projet Supabase
+   - `.env.local` : `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+   - instancier `lib/supabase/{client,server,admin}.ts`
+   - première migration + RLS
+4. **Setup Stripe** (si paiement) : clés test, `lib/stripe/{client,server}.ts`, route webhook
+5. **Design tokens** : palette client via skill `color-palette` → `app/globals.css` + tokens Tailwind
+6. **Composants UI de base** : `components/ui/` (Button, Input, Card, Dialog) — mix Chakra + Radix + HeroUI selon `kb-ui-routing.mdc`
+7. **Architecture routes + layouts** : route groups, layouts, middleware auth
+8. **Implémentation par feature** : auth d'abord si besoin, puis la feature principale (booking / cart / dashboard), puis le reste
+9. **SEO** : `metadata` sur chaque page, `sitemap.ts`, `robots.ts`, JSON-LD (voir `kb-seo.mdc`)
+10. **Tests + audit** : Playwright pour flows critiques (login, booking, checkout), Lighthouse, skill `ui-audit`
+11. **Déploiement Vercel** : projet lié au repo, env vars, migrations prod, monitoring (Sentry / Logtail), DNS client
+
+---
+
+## Section 6 — Standards qualité
+
+Ce qui fait qu'un projet est **livrable** :
+
+- **TypeScript strict** : `strict: true`, `noUncheckedIndexedAccess: true`, `noImplicitOverride: true`
+- **ESLint + Prettier** : config Karibloom partagée, pre-commit hook
+- **Fichiers < 500 lignes** (limite molle — au-dessus, découper)
+- **Accessibilité WCAG AA** : labels, focus visible, ARIA, contrastes vérifiés
+- **Lighthouse > 90 mobile** sur toutes les pages publiques clés
+- **Core Web Vitals dans le vert** (LCP < 2.5s, CLS < 0.1, INP < 200ms)
+- **RLS activée** sur toutes les tables avec données utilisateur — tests automatisés des policies
+- **Secrets jamais commités** : `.env*` dans `.gitignore`, secrets Vercel pour la prod
+- **Tests Playwright** pour les flows critiques : login, signup, booking complet, checkout complet
+- **Migrations versionnées** : toute modif de schéma Supabase passe par un fichier dans `supabase/migrations/`
+- **Commits conventionnels** : `feat:`, `fix:`, `chore:`, `docs:`
+
+---
+
+## Section 7 — Stack UI détaillée
+
+Mix contrôlé de 4 libs. Chacune a un usage précis, pas de doublons.
+
+| Lib | Usage privilégié | Exemples |
+|-----|------------------|----------|
+| **Chakra UI 3** | Composants complexes riches | `Table`, `Toast`, `Menu`, `Tabs`, `NumberInput`, `Alert` |
+| **HeroUI 3** | Composants modernes / effets | `Card` 3D, `Dropdown` animé, `Modal`, `Snippet`, `Skeleton` |
+| **Radix Themes 3.3** | Marketing premium, sections éditoriales | `Section`, `Container`, `Flex`, `Grid`, `Heading`, `Callout` |
+| **Tailwind 3.4** | Layout, utilities, spacing, couleurs | `flex`, `grid`, `gap-*`, `text-*`, `bg-*`, responsive `md:`, `lg:` |
+
+**Règles de mix** (détails dans `kb-ui-routing.mdc`) :
+
+- **Une page = 1 lib dominante** : marketing → Radix ; dashboard → Chakra ; composants spéciaux → HeroUI
+- **Tailwind partout** pour le layout
+- Ne pas empiler Chakra Button + HeroUI Button + Radix Button sur la même page : **choisir**
+- Primitives de base projet (`components/ui/button.tsx`, etc.) wrap **une seule** des libs — le reste passe par elles
+
+---
+
+## Section 8 — Conventions
+
+- **Nommage fichiers** : `kebab-case.tsx` (ex : `product-card.tsx`)
+- **Exports** : `PascalCase` pour composants, `camelCase` pour fonctions
+- **Variables** : `camelCase`
+- **Types / Interfaces** : `PascalCase`, pas de préfixe `I`. Suffixe `Type` uniquement si collision (ex : `Product` entité vs `ProductType` enum)
+- **Composants** : un composant principal par fichier, sous-composants privés OK dans le même fichier
+- **Props** : `type FooProps = { ... }` (préférer `type` à `interface`)
+- **Server Actions** : suffixe `Action` — `createBookingAction`, `updateProfileAction`, placés dans `lib/actions/` ou collocalisés dans `app/.../actions.ts`
+- **Hooks** : préfixe `use` — `useCart`, `useUser`, placés dans `hooks/`
+- **Utils** : `lib/utils.ts` pour les helpers généraux, fonctions **pures**
+- **Imports** : ordre obligatoire
+  1. React / Next
+  2. Librairies externes
+  3. `@/` (alias racine)
+  4. Relatifs `./` et `../`
+- **Dates** : `date-fns` (pas de `moment`), timezone explicite si ambiguïté
+- **Monétaire** : centimes entiers (`price_cents: number`), jamais `float`
+
+---
+
+## Section 9 — Anti-patterns transversaux
+
+Ce qui **ne doit jamais** apparaître dans un projet Karibloom (chaque pattern a sa règle détaillée — ici on liste les drapeaux rouges) :
+
+- CRA / CRACO — **interdit** (voir `kb-stack-selection.mdc`)
+- PHP / Express séparé — **interdit** sauf micro-service validé
+- `"use client"` dans un layout racine ou "partout par défaut"
+- `useEffect` pour charger la donnée initiale d'une page → **passer par un Server Component**
+- `service_role` key utilisée côté client ou passée au browser
+- Webhook Stripe sans vérification de signature
+- Prix calculé côté client (panier) puis envoyé tel quel à Stripe
+- Tables Supabase sans RLS
+- Pages sans `metadata` / `generateMetadata`
+- `<img>` nu sans `width` / `height` → utiliser `next/image`
+- `servicesData.js` utilisé comme source de vérité runtime → migrer vers Supabase
+- `fetch` client vers `/api/*` quand un Server Component ou une Server Action suffirait
+- Secrets dans le repo ou dans `NEXT_PUBLIC_*` (ces vars sont publiques par définition)
+- `any` TypeScript par défaut → typer ou `unknown` + narrowing
+- Composants > 500 lignes → découper
+
+---
+
+## Section 10 — Points d'entrée documentation
+
+Pour naviguer dans le système de règles :
+
+- **`_INDEX.mdc`** : carte complète de toutes les règles avec leurs globs et priorités
+- **`karibloom-client-builder.mdc`** (ce fichier) : philosophie + architecture + pointeurs
+- **`kb-stack-selection.mdc`** : stack imposée et exceptions
+- **`stack-nextjs-app-router.mdc`** : détails Next.js (RSC, caching, routing, data fetching)
+- **`kb-*.mdc` dans `03-features/`** : une règle par feature fonctionnelle
+- **`kb-*.mdc` dans `04-quality/`** : règles transverses (perf, sécu, a11y, SEO)
+- **Skills Cowork** (`anthropic-skills:*`) : actions automatisées (scaffold, audit, palette, etc.)
+
+**Ordre de lecture conseillé pour un nouveau contributeur** :
+
+1. Ce fichier
+2. `kb-stack-selection.mdc`
+3. `stack-nextjs-app-router.mdc`
+4. `_INDEX.mdc` pour la carte
+5. Les `kb-*.mdc` des features concernées par la tâche du jour
+
+---
+
+## Section 11 — Apprentissages continus
+
+La mutualisation entre projets clients est **volontaire**. Chaque projet doit documenter ce qu'il apprend pour que les suivants en profitent.
+
+- **`docs/ACTIONS_LOG.md`** (par projet) : journal global des décisions majeures, migrations, incidents, patterns découverts. Voir règle `kb-action-documentation.mdc` et skill `session-log`.
+- **`docs/logs/YYYY-MM-DD.md`** : log par session de travail, contexte détaillé, diffs notables
+- **Lessons learned** : dès qu'un pattern se révèle générique (ex : hook `useCart` partagé entre DALCIELO et un futur e-commerce), le remonter dans la règle `kb-*.mdc` correspondante
+- **`RECAP_TRAVAIL_{CLIENT}.md`** (optionnel) : synthèse à destination du client, livrée avec le site
+
+La doc n'est **jamais** une option. Un projet sans `ACTIONS_LOG.md` est un projet qui perd sa mémoire.
+
+---
+
+## Résumé en une phrase
+
+**Karibloom = Next.js 15 App Router + Supabase + Stripe + TypeScript strict + Tailwind/Chakra/Radix/HeroUI + Vercel, une règle par feature, zéro improvisation stack, livraison production-ready dès la v1.**
+
+Pour tout le reste : lire la règle dédiée.

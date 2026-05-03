@@ -1,0 +1,335 @@
+---
+description: Modèle de données - Supabase (tables, enums, RLS) + données statiques (content/*.ts) pour le marketing
+globs: "**/supabase/migrations/**,**/types/database.types.ts,**/content/**,**/lib/data/**"
+alwaysApply: false
+---
+
+# Data Model Karibloom — Supabase + Contenu statique
+
+> Complète — ne remplace pas — `kb-supabase.mdc`, `kb-auth.mdc`, `kb-architecture.mdc`.
+> Stack : PostgreSQL (Supabase 2.45) · TypeScript strict · types générés via `supabase gen types`.
+
+## 1. Deux sources de données — séparation stricte
+
+| Source | Quand | Où | Exemples |
+|---|---|---|---|
+| **Supabase (dynamique)** | Donnée qui change, appartient à un user, touche à de l'auth / paiement / réservation | `supabase/migrations/`, accès via `lib/supabase*.ts` | `users`, `orders`, `bookings`, `products`, `cart_items`, `wishlist`, `notifications`, `properties` |
+| **Fichiers TS (statique marketing)** | Contenu éditorial figé, géré par le dev/designer, déployé avec le build | `content/*.ts` | Services marketing, FAQ, témoignages, équipe, process, valeurs |
+
+Règle : **on ne stocke jamais du contenu marketing figé dans Supabase** (ça ajoute des requêtes pour rien et complique le SEO). Inversement, **on ne code jamais en dur une donnée transactionnelle** — toujours Supabase.
+
+## 2. Génération des types Supabase
+
+```bash
+# Depuis la racine du projet client
+npx supabase gen types typescript --project-id <PROJECT_REF> --schema public > types/database.types.ts
+```
+
+Commande à relancer **à chaque migration**. À mettre dans un script npm :
+
+```json
+// package.json
+{
+  "scripts": {
+    "db:types": "supabase gen types typescript --project-id $SUPABASE_PROJECT_REF --schema public > types/database.types.ts"
+  }
+}
+```
+
+Le fichier `database.types.ts` est **généré** — jamais édité à la main, jamais formaté par le dev.
+
+## 3. Import et dérivation des types
+
+```ts
+// types/domain.ts
+import type { Database } from './database.types';
+
+type Tables<T extends keyof Database['public']['Tables']> =
+  Database['public']['Tables'][T]['Row'];
+type Insert<T extends keyof Database['public']['Tables']> =
+  Database['public']['Tables'][T]['Insert'];
+type Update<T extends keyof Database['public']['Tables']> =
+  Database['public']['Tables'][T]['Update'];
+type Enums<T extends keyof Database['public']['Enums']> =
+  Database['public']['Enums'][T];
+
+export type Order       = Tables<'orders'>;
+export type NewOrder    = Insert<'orders'>;
+export type OrderUpdate = Update<'orders'>;
+export type OrderStatus = Enums<'order_status'>;
+
+export type Product     = Tables<'products'>;
+export type Booking     = Tables<'bookings'>;
+export type Profile     = Tables<'profiles'>;
+```
+
+Les composants et hooks importent **toujours** depuis `@/types/domain`, jamais `database.types`. Ça permet de renommer une table sans casser l'UI.
+
+## 4. Conventions de tables
+
+| Règle | Exemple |
+|---|---|
+| Nom de table au pluriel, `snake_case` | `orders`, `booking_slots`, `order_items` |
+| Colonne `id uuid primary key default gen_random_uuid()` | — |
+| `created_at timestamptz not null default now()` | obligatoire partout |
+| `updated_at timestamptz not null default now()` + trigger | obligatoire si la ligne est mutable |
+| Soft delete optionnel : `deleted_at timestamptz` | tables à audit |
+| FK explicite : `user_id uuid references auth.users(id) on delete cascade` | toujours préciser `on delete` |
+| Index sur toutes les FK et colonnes filtrées | `create index on orders(user_id);` |
+| Statuts métier : enum PostgreSQL, pas `text` libre | `order_status` |
+| Montants en centimes `int`, devise séparée | `price_cents int`, `currency text default 'EUR'` |
+| Nommage FK : `<table_singulier>_id` | `product_id`, `order_id` |
+
+### Exemple — table `orders`
+
+```sql
+-- supabase/migrations/20260420120000_create_orders.sql
+create type public.order_status as enum ('pending', 'paid', 'shipped', 'delivered', 'cancelled', 'refunded');
+
+create table public.orders (
+  id              uuid primary key default gen_random_uuid(),
+  user_id         uuid not null references auth.users(id) on delete cascade,
+  status          public.order_status not null default 'pending',
+  total_cents     integer not null check (total_cents >= 0),
+  currency        text not null default 'EUR' check (char_length(currency) = 3),
+  stripe_session_id text unique,
+  shipping_address jsonb,
+  notes           text,
+  created_at      timestamptz not null default now(),
+  updated_at      timestamptz not null default now()
+);
+
+create index orders_user_id_idx on public.orders(user_id);
+create index orders_status_idx  on public.orders(status);
+create index orders_created_at_idx on public.orders(created_at desc);
+
+-- trigger updated_at
+create trigger orders_set_updated_at
+before update on public.orders
+for each row execute function public.set_updated_at();
+
+alter table public.orders enable row level security;
+-- policies : voir kb-supabase.mdc
+```
+
+## 5. Enums vs check constraints
+
+- **Enum PostgreSQL** : valeur fermée, utilisée partout, typée côté TS automatiquement.
+- **Check constraint** : validation ponctuelle (longueur, regex, borne numérique).
+
+```sql
+-- Enum — réutilisable
+create type public.booking_status as enum ('draft', 'confirmed', 'cancelled');
+
+-- Check — contrainte locale
+alter table public.products
+  add constraint products_price_positive check (price_cents > 0);
+```
+
+Changer un enum (`alter type ... add value`) est **irréversible** sans migration complexe — réfléchir avant.
+
+## 6. Migrations — convention de nommage
+
+```
+supabase/migrations/
+  20260418090000_create_profiles.sql
+  20260418093000_create_orders.sql
+  20260419140000_add_stripe_session_to_orders.sql
+  20260420110000_enable_rls_on_orders.sql
+```
+
+Règles :
+
+- Format : `YYYYMMDDHHMMSS_<verbe>_<cible>.sql` en UTC
+- Un changement logique = une migration
+- **Jamais** éditer une migration poussée — ajouter une migration corrective
+- Réversible si possible (`drop ... if exists` avant `create`)
+- Mettre **tout** dans la migration : table + index + trigger + RLS + policies
+
+## 7. Données statiques marketing — `content/*.ts`
+
+Remplace l'ancien `servicesData.js`. Typé, immuable, livré dans le bundle.
+
+```ts
+// content/services.ts
+import type { LucideIcon } from 'lucide-react';
+import { Sparkles, Home, Car } from 'lucide-react';
+
+export type Service = {
+  readonly id: string;
+  readonly slug: string;
+  readonly title: string;
+  readonly tagline: string;
+  readonly description: string;
+  readonly priceFrom: number;       // en euros, TTC
+  readonly currency: 'EUR';
+  readonly icon: LucideIcon;
+  readonly features: readonly string[];
+  readonly cta: { label: string; href: string };
+  readonly available: boolean;
+  readonly badge?: 'NOUVEAU' | 'POPULAIRE';
+};
+
+export const services = [
+  {
+    id: 'conciergerie',
+    slug: 'conciergerie',
+    title: 'Conciergerie Premium',
+    tagline: 'Gestion locative clé en main',
+    description: 'Accueil voyageurs, ménage, maintenance, optimisation tarifaire.',
+    priceFrom: 180,
+    currency: 'EUR',
+    icon: Sparkles,
+    features: ['Accueil 24/7', 'Ménage pro', 'Tarification dynamique', 'Reporting mensuel'],
+    cta: { label: 'Demander un devis', href: '/contact?service=conciergerie' },
+    available: true,
+    badge: 'POPULAIRE',
+  },
+  // ...
+] as const satisfies readonly Service[];
+```
+
+Points clés :
+
+- `as const` fige les littéraux (évite l'élargissement `string`)
+- `satisfies readonly Service[]` valide la forme **sans** perdre l'inférence
+- `readonly` partout — impossible de muter en runtime par erreur
+- `icon` : on passe le composant, pas une string emoji (lucide-react est la convention)
+
+### Autres fichiers `content/`
+
+```ts
+// content/faq.ts
+export type FaqItem = { question: string; answer: string; category?: string };
+export const faq = [
+  { question: 'Combien de temps pour livrer ?', answer: '…', category: 'livraison' },
+] as const satisfies readonly FaqItem[];
+```
+
+```ts
+// content/testimonials.ts
+export type Testimonial = {
+  author: string;
+  role: string;
+  content: string;
+  rating: 1 | 2 | 3 | 4 | 5;
+  avatarUrl?: string;
+};
+export const testimonials = [ /* ... */ ] as const satisfies readonly Testimonial[];
+```
+
+## 8. Lecture côté server (App Router)
+
+Centraliser les accès Supabase dans `lib/data/<domain>.ts` — jamais de requête inline dans une page.
+
+```ts
+// lib/data/orders.ts
+import 'server-only';
+import { createServerSupabase } from '@/lib/supabase-server';
+import type { Order } from '@/types/domain';
+
+export async function getOrders(): Promise<Order[]> {
+  const supabase = await createServerSupabase();
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export async function getOrderById(id: string): Promise<Order | null> {
+  const supabase = await createServerSupabase();
+  const { data, error } = await supabase.from('orders').select('*').eq('id', id).maybeSingle();
+  if (error) throw error;
+  return data;
+}
+```
+
+`import 'server-only'` fait **échouer le build** si le fichier fuite dans un bundle client — filet de sécurité indispensable.
+
+## 9. ISR / revalidation pour pages data-driven
+
+Pour des pages lues souvent mais modifiées rarement (catalogue produit), on combine fetch server + `revalidate`.
+
+```tsx
+// app/(shop)/produit/[slug]/page.tsx
+import { getProductBySlug } from '@/lib/data/products';
+
+export const revalidate = 300; // 5 min — voir kb-performance pour les seuils
+
+export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const product = await getProductBySlug(slug);
+  if (!product) return null;
+  return <ProductDetail product={product} />;
+}
+```
+
+Révalidation à la demande (webhook après update Supabase ou après Server Action) :
+
+```ts
+// app/api/revalidate/route.ts
+import { revalidateTag, revalidatePath } from 'next/cache';
+export async function POST(req: Request) {
+  const { tag, path, secret } = await req.json();
+  if (secret !== process.env.REVALIDATE_SECRET) return new Response('forbidden', { status: 403 });
+  if (tag) revalidateTag(tag);
+  if (path) revalidatePath(path);
+  return Response.json({ ok: true });
+}
+```
+
+## 10. Realtime — typage
+
+```ts
+// hooks/use-order-updates.ts
+'use client';
+import { useEffect, useState } from 'react';
+import { createBrowserSupabase } from '@/lib/supabase';
+import type { Order } from '@/types/domain';
+
+export function useOrderUpdates(initial: Order[]) {
+  const [orders, setOrders] = useState(initial);
+  useEffect(() => {
+    const supabase = createBrowserSupabase();
+    const channel = supabase
+      .channel('orders')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
+        // payload.new est typé unknown — narrower via zod ou cast explicite
+        const next = payload.new as Order;
+        setOrders((curr) => curr.map((o) => (o.id === next.id ? next : o)));
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+  return orders;
+}
+```
+
+## 11. Anti-patterns
+
+- JSON en dur dans un composant (`const services = [...]` dans `Hero.tsx`) — sortir dans `content/` ou Supabase.
+- Contenu marketing figé stocké dans Supabase (coût requête, SEO dégradé, complexité de cache).
+- Transactionnel hardcodé en TS (prix d'une commande, stock) — **toujours** Supabase.
+- Éditer `types/database.types.ts` à la main — il sera régénéré.
+- Requête Supabase inline dans `app/*/page.tsx` — passer par `lib/data/<domain>.ts`.
+- Oublier `import 'server-only'` dans `lib/data/*` ou `lib/supabase-admin.ts`.
+- Enum PostgreSQL + colonne `text` libre qui devraient correspondre — source de drift.
+- FK sans `on delete` explicite — surprise garantie quand un user est supprimé.
+- Pas d'index sur FK — `n+1` ralentit tout le dashboard.
+- `any` sur un payload Realtime — caster avec schéma Zod ou type généré.
+- Migrations rejouées / éditées après push — toujours ajouter une migration corrective.
+
+## 12. Checklist nouveau modèle de données
+
+- [ ] Migration SQL horodatée dans `supabase/migrations/`
+- [ ] Colonnes `id`, `created_at`, `updated_at` (+ trigger) présentes
+- [ ] FK avec `on delete` explicite
+- [ ] Index sur FK + colonnes filtrées/triées
+- [ ] Enum PostgreSQL pour statuts (pas `text`)
+- [ ] RLS activée + policies posées (voir `kb-supabase.mdc`)
+- [ ] `npm run db:types` lancé → `database.types.ts` à jour
+- [ ] Type métier exporté depuis `types/domain.ts`
+- [ ] Accès centralisé dans `lib/data/<domain>.ts` avec `import 'server-only'`
+- [ ] Page qui consomme définit `revalidate` si c'est du contenu public

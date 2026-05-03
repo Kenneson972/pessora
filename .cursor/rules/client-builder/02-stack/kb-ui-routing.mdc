@@ -1,0 +1,293 @@
+---
+description: UI Routing V2 - Gouvernance des bibliothèques UI, choix de la bibliothèque principale, règles de mix contrôlé, couche components/ui et import boundaries
+alwaysApply: true
+---
+
+# UI Routing V2
+
+Ce fichier définit comment choisir, organiser et gouverner la couche UI dans Client Builder V2.
+
+Son rôle est d'éviter :
+
+- le mélange anarchique des bibliothèques UI
+- les imports vendors dispersés dans tout le projet
+- les incohérences visuelles
+- les décisions opportunistes non maintenables
+
+**Articulation :** sur les projets qui possèdent déjà une règle **spécifique** (ex. `components/ui` détaillé pour un repo donné), celle-ci **précise** les chemins et exceptions locales. Ce document reste la **doctrine** portable d'un projet à l'autre.
+
+---
+
+## 1. Principe fondamental
+
+Par défaut :
+
+**un projet = une bibliothèque UI principale**
+
+Cette bibliothèque principale porte la majorité :
+
+- des primitives UI
+- des patterns visuels
+- des interactions récurrentes
+- des conventions de composition
+
+### Exception autorisée
+
+Une seconde bibliothèque peut être utilisée si :
+
+- elle répond à un besoin clair que la principale couvre mal
+- son usage reste limité à des surfaces précises
+- elle est encapsulée derrière une couche du type `components/ui` (ou équivalent)
+- elle ne fuit pas dans les pages métier
+
+---
+
+## 2. Hiérarchie de décision
+
+Quand il faut choisir une stratégie UI, raisonner dans cet ordre :
+
+1. Type de projet
+2. Niveau de branding
+3. Densité fonctionnelle
+4. Besoin de rapidité vs finesse de contrôle
+5. Existant du repo
+6. Coût de cohérence à long terme
+
+Ne jamais choisir une bibliothèque uniquement parce qu'un composant isolé semble pratique.
+
+---
+
+## 3. Choix par type de projet
+
+### Radix Themes / Radix Primitives
+
+À privilégier si le projet est surtout :
+
+- premium, branding fort
+- vitrine haut de gamme, corporate élégant
+- sur-mesure, design system durable
+- besoin fort de contrôle visuel
+
+### Chakra UI (ou équivalent dense)
+
+À privilégier si le projet est surtout :
+
+- dashboard, portail client, back-office
+- écran dense, MVP rapide
+- interface fonctionnelle riche
+- besoin fort de composants productifs
+
+### Mix Radix + Chakra
+
+Autorisé seulement si la frontière est claire.
+
+Exemple de répartition acceptable :
+
+- **Radix** (ou stack « premium ») pour surfaces publiques, marketing, branding
+- **Chakra** (ou stack « dense ») pour dashboard, admin, écrans applicatifs chargés
+
+Dans ce cas, une couche `components/ui` (ou équivalent) est **fortement recommandée**.
+
+---
+
+## 4. Règle d'architecture UI
+
+Les pages et composants métier **ne doivent pas dépendre directement** des vendors UI, sauf **exception documentée**.
+
+### Règle
+
+Les imports UI doivent passer par :
+
+- `@/components/ui` ou alias équivalent
+- ou toute couche d'abstraction explicitement définie par le projet
+
+### Vendors autorisés en direct typiquement dans
+
+- `components/ui/adapters/**`
+- fichiers de **bootstrap** (`app/providers.tsx`, layout racine client, etc.)
+- fichiers explicitement allowlistés (convention + ESLint si présent)
+
+### Interdiction générale
+
+Ne pas importer directement depuis les packages vendors UI (Radix, Chakra, etc.) depuis :
+
+- les pages routes
+- les composants métier / features
+- les écrans applicatifs
+
+… sauf exception documentée dans la convention du projet.
+
+---
+
+## 5. Structure recommandée de la couche UI
+
+```txt
+components/ui/
+  index.ts              # API publique (ré-exports contrôlés)
+  foundation/           # tokens, helpers, pas de vendor lourd
+  adapters/
+    radix/              # ou autre stack « premium »
+    chakra/             # ou autre stack « dense »
+  primitives/           # boutons, inputs, cards, tabs, etc.
+  composed/             # modals, shells, patterns récurrents
+  domain/               # optionnel — widgets très métier, sans vendor direct
+```
+
+### Rôle des couches
+
+| Couche | Rôle |
+|--------|------|
+| **foundation/** | Helpers UI, tokens partagés, conventions légères |
+| **adapters/** | Seuls fichiers qui importent les vendors ; mapping vers l'API interne |
+| **primitives/** | API stable consommée par le reste du projet |
+| **composed/** | Assemblages récurrents (layout de modal, barres d'outils, etc.) |
+| **domain/** | Optionnel ; UI spécifique produit, toujours sans fuite vendor |
+
+---
+
+## 6. Politique de mix des bibliothèques
+
+### Règle de base
+
+Ne pas mélanger deux bibliothèques dans un même composant sans justification.
+
+### Si mix nécessaire
+
+Le mix doit être :
+
+- localisé
+- encapsulé
+- documenté brièvement
+- justifié par un vrai besoin
+
+### Interdictions
+
+- Pas de deux vendors importés ensemble dans une **page métier**
+- Pas de choix opportuniste composant par composant sans doctrine
+- Pas de troisième bibliothèque UI ajoutée sans arbitrage explicite
+
+---
+
+## 7. Politique de composants maison
+
+Dès qu'un pattern devient récurrent, il doit être absorbé par la couche UI.
+
+### Signaux qui justifient un composant maison
+
+- utilisé à plusieurs endroits
+- variations répétées
+- logique visuelle à harmoniser
+- vendor à masquer
+- besoin métier fréquent
+
+### Exemples de noms côté système
+
+`UiButton`, `UiCard`, `UiInput`, `UiDialog`, `UiTable`, `UiTabs`, `UiBadge`, etc. (préfixe ou convention définie par le projet).
+
+---
+
+## 8. Conventions de nommage
+
+### Primitives publiques du design system
+
+Utiliser un préfixe explicite si cela améliore la lisibilité et évite les collisions (ex. `UiButton`, `UiDialog`).
+
+### Composants métier
+
+Pas de préfixe `Ui` obligatoire : `BookingSummaryCard`, `OwnerMetricCard`, `HeroSearchWidget`, etc.
+
+### Principe
+
+La couche UI expose des **primitives système**.  
+La couche métier expose des composants **orientés usage**.
+
+---
+
+## 9. Méthode de migration sur un projet existant
+
+1. Auditer les imports directs vendor
+2. Identifier les composants à plus fort ROI (réutilisation, risque, visibilité)
+3. Créer la structure `components/ui` (ou équivalent)
+4. Encapsuler par vagues ; stabiliser l'API publique avant de tout migrer
+5. Ajouter des garde-fous (ESLint, script CI, revue) pour éviter la rechute
+
+### Priorités fréquentes
+
+Button, Card, Input, Dialog / Modal, Tabs, Table, Toast / Alert, Drawer, Popover, DropdownMenu.
+
+---
+
+## 10. Garde-fous obligatoires
+
+### Recommandé
+
+- `no-restricted-imports` (ou équivalent) pour interdire les imports vendor hors zones autorisées
+- Liste blanche explicite pour bootstrap (`providers`, etc.)
+
+### Revue
+
+Vérifier systématiquement :
+
+- la page importe-t-elle depuis la couche UI ?
+- le composant existe-t-il déjà ?
+- un nouveau pattern duplique-t-il un existant ?
+- la surface respecte-t-elle la doctrine public vs dashboard ?
+
+---
+
+## 11. Doctrine par surface
+
+### Surfaces publiques / marketing / premium
+
+Préférer :
+
+- structure sobre, contrôle visuel fort
+- cohérence de marque
+- composés élégants, densité modérée
+
+### Surfaces dashboard / admin / app
+
+Préférer :
+
+- densité maîtrisée
+- assemblage rapide, états riches
+- tableaux, filtres, formulaires robustes
+- feedback utilisateur clair
+
+---
+
+## 12. Règle de décision finale
+
+Avant d'ajouter une bibliothèque, un import vendor direct ou une nouvelle abstraction, se poser :
+
+- est-ce cohérent avec la bibliothèque principale ?
+- est-ce cohérent avec la stratégie du projet ?
+- est-ce réutilisable ?
+- est-ce que cela réduit vraiment la dette ?
+- est-ce que cela simplifie le futur au lieu de le compliquer ?
+
+Si la réponse n'est pas clairement oui, **ne pas** l'introduire.
+
+---
+
+## 13. Résultat attendu
+
+Le projet doit donner l'impression d'un système cohérent où :
+
+- la couche UI est **gouvernée**
+- les vendors sont **encapsulés**
+- les pages parlent **métier**, pas bibliothèque
+- les primitives sont **stables**
+- la maintenance future est **facilitée**
+
+---
+
+## 14. Utilisation conjointe des trois cores V2
+
+| Fichier | Rôle |
+|---------|------|
+| **kb-core-workflow.mdc** | Comportement agent : plan, lots, vérif, cause racine, impact minimal |
+| **kb-core-ui-ux.mdc** | Exigence qualité UI/UX permanente |
+| **kb-ui-routing.mdc** | Gouvernance bibliothèques et frontière `components/ui` |
+
+Les règles métier spécialisées (SEO, forms, performance, règles stack, etc.) restent en vigueur en complément.

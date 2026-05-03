@@ -1,0 +1,33 @@
+---
+description: Documentation systematique des actions projet (journal global + journal de session)
+alwaysApply: true
+---
+
+# Documentation des actions
+
+## Objectif
+- Chaque action importante doit etre documentee dans le projet client pour assurer tracabilite et audit.
+
+## Emplacements obligatoires
+- Journal global: `docs/ACTIONS_LOG.md`
+- Journal de session: `docs/logs/YYYY-MM-DD.md`
+
+## Quand documenter
+- A chaque modification significative:
+  - routes API, logique metier, securite, SQL/migrations, UI, config, scripts.
+
+## Format minimal d'une entree action
+- `type`: api | ui | sql | config | script | docs | security | perf
+- `summary`: ce qui a ete fait
+- `files`: fichiers impactes
+- `why`: raison metier/technique
+- `impact`: effet attendu (utilisateur/systeme)
+- `verify`: verification effectuee (build, test, lint, manuel)
+
+## Regles d'ecriture
+- Toujours append-only (pas d'ecrasement du journal).
+- Resume court dans `ACTIONS_LOG.md`, details dans le fichier de session.
+- Utiliser un timestamp ISO.
+
+## Synchronisation builder-rules
+- Copie canonique dans le pack : `01-core/kb-action-documentation.mdc` (identique à ce fichier).

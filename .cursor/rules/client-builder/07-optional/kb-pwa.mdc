@@ -1,0 +1,307 @@
+---
+description: PWA Karibloom - manifest.json, service worker Workbox, offline fallback, install prompt A2HS, cache stratégies
+globs: "**/public/**"
+alwaysApply: false
+---
+
+# Progressive Web App (PWA) Karibloom
+
+Une PWA donne à un site web les caractéristiques d'une app mobile : installable sur l'écran d'accueil, utilisable hors ligne (partiellement), notifications push. Argument de vente fort en Martinique où la connexion 4G est inégale.
+
+---
+
+## 1. manifest.json
+
+```json
+// public/manifest.json
+{
+  "name": "NomComplet Du Client",
+  "short_name": "NomCourt",
+  "description": "Description courte du service du client",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#COULEUR_PRIMAIRE",
+  "orientation": "any",
+  "lang": "fr-FR",
+  "scope": "/",
+  "categories": ["business", "lifestyle"],
+  "icons": [
+    { "src": "/icons/icon-72x72.png",   "sizes": "72x72",   "type": "image/png" },
+    { "src": "/icons/icon-96x96.png",   "sizes": "96x96",   "type": "image/png" },
+    { "src": "/icons/icon-128x128.png", "sizes": "128x128", "type": "image/png" },
+    { "src": "/icons/icon-144x144.png", "sizes": "144x144", "type": "image/png" },
+    { "src": "/icons/icon-152x152.png", "sizes": "152x152", "type": "image/png" },
+    { "src": "/icons/icon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/icon-384x384.png", "sizes": "384x384", "type": "image/png" },
+    { "src": "/icons/icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/home-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Page d'accueil sur mobile"
+    },
+    {
+      "src": "/screenshots/home-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Page d'accueil sur desktop"
+    }
+  ]
+}
+```
+
+### Génération des icônes depuis le logo
+
+```bash
+# Installer sharp-cli
+npm install -g sharp-cli
+
+# Générer toutes les tailles depuis un PNG 512x512
+for size in 72 96 128 144 152 192 384 512; do
+  sharp -i public/logo-source.png -o public/icons/icon-${size}x${size}.png resize $size $size
+done
+```
+
+---
+
+## 2. Balises HTML dans index.html
+
+```html
+<!-- public/index.html — dans le <head> -->
+<link rel="manifest" href="/manifest.json" />
+<meta name="theme-color" content="#COULEUR_PRIMAIRE" />
+<meta name="mobile-web-app-capable" content="yes" />
+
+<!-- Safari iOS spécifique -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="NomCourt" />
+<link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+
+<!-- Windows Tiles -->
+<meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
+<meta name="msapplication-TileColor" content="#COULEUR_PRIMAIRE" />
+```
+
+---
+
+## 3. Service Worker avec Workbox (CRA/CRACO)
+
+```bash
+npm install workbox-webpack-plugin workbox-window
+```
+
+```js
+// craco.config.js — ajouter le plugin Workbox
+const { InjectManifest } = require('workbox-webpack-plugin');
+const path = require('path');
+
+module.exports = {
+  webpack: {
+    plugins: {
+      add: [
+        new InjectManifest({
+          swSrc: './src/service-worker.js',
+          swDest: 'service-worker.js',
+          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB max
+        }),
+      ],
+    },
+  },
+};
+```
+
+```js
+// src/service-worker.js — stratégies de cache Workbox
+import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
+import { registerRoute } from 'workbox-routing';
+import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
+import { ExpirationPlugin } from 'workbox-expiration';
+import { CacheableResponsePlugin } from 'workbox-cacheable-response';
+
+// Nettoyage des anciens caches
+cleanupOutdatedCaches();
+
+// Précache des assets build (JS, CSS, HTML)
+precacheAndRoute(self.__WB_MANIFEST);
+
+// ════════════════════════════════════════
+// STRATÉGIE 1 : Images → Cache First (30 jours)
+// Les images changent rarement, prioriser la vitesse
+// ════════════════════════════════════════
+registerRoute(
+  ({ request }) => request.destination === 'image',
+  new CacheFirst({
+    cacheName: 'kb-images-v1',
+    plugins: [
+      new CacheableResponsePlugin({ statuses: [0, 200] }),
+      new ExpirationPlugin({ maxEntries: 60, maxAgeSeconds: 30 * 24 * 60 * 60 }),
+    ],
+  })
+);
+
+// ════════════════════════════════════════
+// STRATÉGIE 2 : Fonts → Cache First (1 an)
+// ════════════════════════════════════════
+registerRoute(
+  ({ url }) => url.origin === 'https://fonts.gstatic.com',
+  new CacheFirst({
+    cacheName: 'kb-fonts-v1',
+    plugins: [
+      new CacheableResponsePlugin({ statuses: [0, 200] }),
+      new ExpirationPlugin({ maxAgeSeconds: 365 * 24 * 60 * 60 }),
+    ],
+  })
+);
+
+// ════════════════════════════════════════
+// STRATÉGIE 3 : API/données → Network First (fallback cache)
+// Contenu dynamique : on tente le réseau d'abord
+// ════════════════════════════════════════
+registerRoute(
+  ({ url }) => url.pathname.startsWith('/api/') || url.pathname.includes('.php'),
+  new NetworkFirst({
+    cacheName: 'kb-api-v1',
+    plugins: [
+      new ExpirationPlugin({ maxEntries: 30, maxAgeSeconds: 24 * 60 * 60 }),
+    ],
+  })
+);
+
+// ════════════════════════════════════════
+// STRATÉGIE 4 : Pages HTML → Stale While Revalidate
+// ════════════════════════════════════════
+registerRoute(
+  ({ request }) => request.mode === 'navigate',
+  new NetworkFirst({
+    cacheName: 'kb-pages-v1',
+    plugins: [
+      new ExpirationPlugin({ maxEntries: 10, maxAgeSeconds: 7 * 24 * 60 * 60 }),
+    ],
+    networkTimeoutSeconds: 3, // fallback cache si pas de réponse en 3s
+  })
+);
+```
+
+---
+
+## 4. Enregistrement du SW dans React
+
+```jsx
+// src/serviceWorkerRegistration.js
+export function register() {
+  if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker
+        .register('/service-worker.js')
+        .then(reg => console.log('[SW] Enregistré:', reg.scope))
+        .catch(err => console.error('[SW] Erreur:', err));
+    });
+  }
+}
+
+// src/index.js
+import { register } from './serviceWorkerRegistration';
+register(); // appeler APRÈS ReactDOM.createRoot().render()
+```
+
+---
+
+## 5. Prompt d'installation (Add to Home Screen)
+
+```jsx
+// hooks/useInstallPrompt.js
+import { useState, useEffect } from 'react';
+
+export const useInstallPrompt = () => {
+  const [prompt, setPrompt] = useState(null);
+  const [installed, setInstalled] = useState(false);
+
+  useEffect(() => {
+    const handler = (e) => { e.preventDefault(); setPrompt(e); };
+    window.addEventListener('beforeinstallprompt', handler);
+
+    // Détecter si déjà installé
+    window.addEventListener('appinstalled', () => setInstalled(true));
+
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const triggerInstall = async () => {
+    if (!prompt) return;
+    prompt.prompt();
+    const { outcome } = await prompt.userChoice;
+    if (outcome === 'accepted') setInstalled(true);
+    setPrompt(null);
+  };
+
+  return { canInstall: !!prompt && !installed, installed, triggerInstall };
+};
+
+// Bannière d'installation discrète
+const InstallBanner = () => {
+  const { canInstall, triggerInstall } = useInstallPrompt();
+  const [dismissed, setDismissed] = useState(
+    () => localStorage.getItem('kb_install_dismissed') === '1'
+  );
+
+  if (!canInstall || dismissed) return null;
+
+  return (
+    <div className="install-banner" role="alert" aria-live="polite">
+      <span>📱 Installer l'app pour y accéder hors ligne</span>
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <button className="btn-primary" style={{ padding: '6px 14px', fontSize: '0.85rem' }} onClick={triggerInstall}>
+          Installer
+        </button>
+        <button
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+          onClick={() => { localStorage.setItem('kb_install_dismissed', '1'); setDismissed(true); }}
+          aria-label="Fermer"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+  );
+};
+```
+
+```css
+.install-banner {
+  position: fixed; bottom: 1rem; left: 1rem; right: 1rem;
+  background: var(--bg-card); border: 1px solid var(--border-color);
+  border-radius: 12px; padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  box-shadow: var(--shadow-hover); z-index: 1000;
+  font-size: 0.9rem; color: var(--text-primary);
+  animation: slideUp 0.3s ease;
+  backdrop-filter: blur(var(--glass-blur));
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+@media (min-width: 768px) {
+  .install-banner { max-width: 420px; left: auto; }
+}
+```
+
+---
+
+## Checklist PWA avant livraison
+
+- [ ] `manifest.json` créé avec toutes les icônes (72 à 512px)
+- [ ] Icônes `maskable` pour Android (icon-192 et icon-512 avec `"purpose": "maskable"`)
+- [ ] Screenshots ajoutés au manifest (améliore le prompt d'installation)
+- [ ] Balises Apple Touch Icon dans index.html (iOS)
+- [ ] Service worker enregistré uniquement en production
+- [ ] Stratégies de cache définies pour images, fonts, API et pages HTML
+- [ ] Bannière `<InstallBanner />` ajoutée dans App.jsx (position: fixed)
+- [ ] Test Lighthouse PWA : score 100
+- [ ] Test offline : ouvrir DevTools > Application > Service Workers > cocher "Offline" → le site doit afficher quelque chose

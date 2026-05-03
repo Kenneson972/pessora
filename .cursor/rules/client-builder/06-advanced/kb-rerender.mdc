@@ -1,0 +1,295 @@
+---
+description: Re-renders Karibloom - functional setState, derived state, lazy init, deps narrowing, useMediaQuery
+globs: "**/components/**/*.tsx, **/components/**/*.jsx, **/hooks/**/*.ts, **/hooks/**/*.tsx"
+alwaysApply: false
+---
+
+# Re-renders Karibloom
+
+Règles pour éliminer les re-renders inutiles, les stale closures et les états redondants.
+Impact : stabilité des callbacks, 0 bug de closure, moins de renders par interaction.
+
+---
+
+## 1. Functional setState — Éviter les stale closures dans useCallback
+
+Quand un setState dépend de la valeur courante, toujours utiliser la forme fonctionnelle.
+Cela rend le callback stable (pas de dépendance sur l'état), élimine les bugs de closure.
+
+**Incorrect (stale closure ou dépendance instable) :**
+
+```tsx
+function Cart() {
+  const [items, setItems] = useState<Item[]>([])
+
+  // ❌ Recréé à chaque changement de items
+  const addItem = useCallback((item: Item) => {
+    setItems([...items, item])
+  }, [items])
+
+  // ❌ Bug silencieux : items est la valeur au moment du montage
+  const removeItem = useCallback((id: string) => {
+    setItems(items.filter(i => i.id !== id))
+  }, []) // items manquant dans les deps
+}
+```
+
+**Correct (callback stable, jamais de stale closure) :**
+
+```tsx
+function Cart() {
+  const [items, setItems] = useState<Item[]>([])
+
+  // ✅ Stable — jamais recréé, toujours à jour
+  const addItem = useCallback((item: Item) => {
+    setItems(curr => [...curr, item])
+  }, [])
+
+  // ✅ Sûr — curr est toujours la valeur courante
+  const removeItem = useCallback((id: string) => {
+    setItems(curr => curr.filter(i => i.id !== id))
+  }, [])
+
+  // ✅ Toggle sur valeur courante
+  const toggleItem = useCallback((id: string) => {
+    setItems(curr => curr.map(i =>
+      i.id === id ? { ...i, selected: !i.selected } : i
+    ))
+  }, [])
+}
+```
+
+**Quand utiliser la forme fonctionnelle :**
+- setState qui dépend de la valeur précédente
+- Dans `useCallback` ou `useMemo` quand l'état est référencé
+- Handlers d'événements qui modifient l'état
+- Opérations asynchrones qui mettent à jour l'état
+
+**Quand la forme directe est OK :**
+- `setValue(newValue)` — valeur externe, pas de dépendance à l'état courant
+- `setLoading(true)` — valeur statique
+
+---
+
+## 2. Derived State — Calculer pendant le rendu, pas dans un effet
+
+Si une valeur peut être calculée depuis props/state existants, ne pas la mettre en state ni dans un useEffect.
+
+**Incorrect (render supplémentaire, état redondant) :**
+
+```tsx
+function UserProfile({ firstName, lastName }: Props) {
+  const [fullName, setFullName] = useState('')
+
+  // ❌ Déclenche un render supplémentaire à chaque changement
+  useEffect(() => {
+    setFullName(`${firstName} ${lastName}`)
+  }, [firstName, lastName])
+
+  return <h1>{fullName}</h1>
+}
+```
+
+**Correct (0 effet, 0 état redondant, 1 seul render) :**
+
+```tsx
+function UserProfile({ firstName, lastName }: Props) {
+  // ✅ Calculé pendant le render, toujours synchrone
+  const fullName = `${firstName} ${lastName}`
+
+  return <h1>{fullName}</h1>
+}
+```
+
+**Autres exemples de dérivation directe :**
+
+```tsx
+// ❌
+const [filteredItems, setFilteredItems] = useState([])
+useEffect(() => {
+  setFilteredItems(items.filter(i => i.active))
+}, [items])
+
+// ✅
+const filteredItems = items.filter(i => i.active)
+// Ou avec useMemo si le calcul est coûteux
+const filteredItems = useMemo(() => items.filter(i => i.active), [items])
+```
+
+---
+
+## 3. Lazy State Init — Initialisation coûteuse dans useState
+
+Passer une fonction à `useState` pour les valeurs initiales coûteuses.
+Sans ça, l'initialiser s'exécute à **chaque render** même si elle n'est utilisée qu'une fois.
+
+**Incorrect (recalculé à chaque render) :**
+
+```tsx
+function FilteredList({ items }: Props) {
+  // ❌ buildIndex() tourne à CHAQUE render (filtrage, hover, etc.)
+  const [index, setIndex] = useState(buildSearchIndex(items))
+
+  // ❌ JSON.parse à chaque render
+  const [cart, setCart] = useState(
+    JSON.parse(localStorage.getItem('cart') || '[]')
+  )
+}
+```
+
+**Correct (exécuté une seule fois à l'init) :**
+
+```tsx
+function FilteredList({ items }: Props) {
+  // ✅ buildIndex() tourne UNE SEULE FOIS
+  const [index, setIndex] = useState(() => buildSearchIndex(items))
+
+  // ✅ JSON.parse une seule fois, avec try-catch (incognito Safari)
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    try {
+      const stored = localStorage.getItem('cart:v1')
+      return stored ? JSON.parse(stored) : []
+    } catch {
+      return []
+    }
+  })
+}
+```
+
+**Cas d'usage typiques :**
+- Lecture de `localStorage` / `sessionStorage`
+- Construction d'index de recherche ou de Maps
+- Transformations lourdes de données initiales
+- Lecture de cookies ou du DOM au montage
+
+---
+
+## 4. Narrow Dependencies — Deps primitives, pas objets
+
+Passer les propriétés primitives dans les deps, pas l'objet entier.
+Un objet change de référence à chaque render même si son contenu est identique.
+
+**Incorrect (effet re-run inutile) :**
+
+```tsx
+// ❌ Tourne à chaque render car user est un nouvel objet à chaque fois
+useEffect(() => {
+  logUserActivity(user.id)
+}, [user])
+
+// ❌ Tourne à chaque px de resize
+const width = useWindowWidth()
+useEffect(() => {
+  if (width < 768) enableMobileMode()
+}, [width])
+```
+
+**Correct (tourne uniquement quand la valeur change) :**
+
+```tsx
+// ✅ Tourne seulement si user.id change
+useEffect(() => {
+  logUserActivity(user.id)
+}, [user.id])
+
+// ✅ Tourne seulement au franchissement du breakpoint
+const isMobile = width < 768
+useEffect(() => {
+  if (isMobile) enableMobileMode()
+}, [isMobile])
+```
+
+---
+
+## 5. useMediaQuery — Booléen, pas la valeur continue
+
+Pour le responsive, s'abonner à un booléen dérivé plutôt qu'à la largeur brute.
+`useWindowWidth()` déclenche un render à chaque pixel. `useMediaQuery()` seulement au franchissement.
+
+**Incorrect (re-render à chaque px de resize) :**
+
+```tsx
+function Header() {
+  const width = useWindowWidth()    // re-render à 1280, 1279, 1278...
+  const isMobile = width < 768
+
+  return <nav className={isMobile ? 'mobile-nav' : 'desktop-nav'} />
+}
+```
+
+**Correct (re-render uniquement au changement de breakpoint) :**
+
+```tsx
+// Hook léger à garder dans src/hooks/useMediaQuery.ts
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia(query).matches
+  )
+  useEffect(() => {
+    const mql = window.matchMedia(query)
+    const handler = (e: MediaQueryListEvent) => setMatches(e.matches)
+    mql.addEventListener('change', handler)
+    return () => mql.removeEventListener('change', handler)
+  }, [query])
+  return matches
+}
+
+// Usage
+function Header() {
+  const isMobile = useMediaQuery('(max-width: 767px)')  // re-render : 2 fois max
+  return <nav className={isMobile ? 'mobile-nav' : 'desktop-nav'} />
+}
+```
+
+---
+
+## 6. Extraire en composant memoïsé — Early return avant le calcul coûteux
+
+Déplacer le calcul coûteux dans un sous-composant memo pour bénéficier du early return.
+
+**Incorrect (calcule même quand inutile) :**
+
+```tsx
+function Profile({ user, loading }: Props) {
+  // ❌ computeAvatarId tourne même pendant le loading
+  const avatar = useMemo(() => {
+    const id = computeAvatarId(user)
+    return <Avatar id={id} />
+  }, [user])
+
+  if (loading) return <Skeleton />
+  return <div>{avatar}</div>
+}
+```
+
+**Correct (saute le calcul si loading) :**
+
+```tsx
+const UserAvatar = memo(function UserAvatar({ user }: { user: User }) {
+  const id = useMemo(() => computeAvatarId(user), [user])
+  return <Avatar id={id} />
+})
+
+function Profile({ user, loading }: Props) {
+  if (loading) return <Skeleton />  // ✅ UserAvatar pas monté = pas de calcul
+  return (
+    <div>
+      <UserAvatar user={user} />
+    </div>
+  )
+}
+```
+
+---
+
+## Checklist composant
+
+- [ ] Tous les `useCallback` avec setState utilisent `curr => ...` si l'état est référencé
+- [ ] Aucun `useEffect` dont le seul rôle est de dériver et setter un état
+- [ ] `useState(() => fn())` pour toute init depuis localStorage ou calcul lourd
+- [ ] Deps `useEffect`/`useMemo` : primitives (`user.id`) pas objets (`user`)
+- [ ] Responsive : `useMediaQuery(bool)` pas `useWindowWidth()`
+
+---
+
+Référence : skills-react-best-practices (Vercel) — `rerender-functional-setstate.md`, `rerender-derived-state-no-effect.md`, `rerender-lazy-state-init.md`, `rerender-dependencies.md`, `rerender-derived-state.md`, `rerender-memo.md`

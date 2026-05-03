@@ -1,0 +1,46 @@
+---
+description: Contexte projet PESSORA - stack, structure, sécurité
+globs:
+alwaysApply: true
+---
+
+# Projet PESSORA
+
+Site client PessÓra (bar protéiné & bien-être, Martinique). Ce rule s'applique pour tout travail sur ce projet.
+
+## Stack
+
+- **Frontend** : React + Vite, React Router, Tailwind v4, **HeroUI v3** (`@heroui/react`, `@heroui/styles`), Framer Motion
+- **Skill agent HeroUI** (doc composants v3, scripts `list_components` / `get_component_docs`, etc.) : `.agents/skills/heroui-react/SKILL.md` — aussi accessible via `.cursor/skills/heroui-react`. Installation officielle : [HeroUI — Agent Skills](https://heroui.com/docs/react/getting-started/agent-skills) (`npx skills add heroui-inc/heroui -y`). Préférer les **composants composés v3** (ex. `Card.Header` / `Card.Title`) et consulter la doc MDX avant d’implémenter un composant peu familier.
+- **UI/UX Pro Max** (guidelines multi-stacks, design system search) : `.cursor/skills/ui-ux-pro-max/SKILL.md` — install via [ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) : `npm i -g uipro-cli` puis `uipro init --ai cursor` à la racine du projet. Recherche : `python3 .cursor/skills/ui-ux-pro-max/scripts/search.py "…" --stack react`.
+- **Auth / Data** : API backend (o2switch) — client dans `src/lib/apiClient.ts`, BDD MySQL (voir `docs/O2SWITCH_SCHEMA.sql`)
+- **Contenu** : Données dans `src/data/` (menuData, infoData, productsData)
+- **Chatbot** : PessoBot via webhook n8n
+
+## Structure
+
+- `src/pages/` : routes (Home, Menu, Contact, auth, member, Admin)
+- `src/components/` : layout (Header, Footer), common (Chatbot, ScrollToTop), member (MemberLayout), ProtectedRoute, DemoAuthWrapper
+- `src/contexts/AuthContext.tsx` : état auth (session via API o2switch)
+- Routes protégées : `/mon-espace/*` (ProtectedRoute), `/admin` protégé par rôle admin
+
+## Sécurité (à respecter)
+
+- **Audit** : Suivre les recommandations de `docs/AUDIT_SECURITE_PESSORA.md`.
+- **Validation** : Formulaires (Login, Register, Contact futur) avec Zod + react-hook-form quand possible.
+- **Secrets** : Aucune clé en dur ; uniquement `VITE_*` pour le client ; pas de service role côté front.
+- **Admin** : Route `/admin` protégée (auth + rôle admin) ; contrôle d’accès côté API backend.
+- **Auth** : Session via API (JWT en header ou cookie) ; token stocké côté client pour les appels authentifiés.
+- Ne pas réintroduire les appels agent log vers 127.0.0.1:7244 en prod ; URL webhook en variable d’env.
+
+## Conventions
+
+- Data-driven : contenu métier dans `src/data/`, pas en dur dans les composants.
+- Design : variables CSS / Tailwind (primary, primary-forest, neutral-cream, etc.). Direction **premium type Apple** : beaucoup d’air, hiérarchie typo fine (titres serrés, sous-textes plus légers), surfaces sobres (`backdrop-blur`, bordures quasi invisibles), animations courtes et douces.
+
+### Style « minimaliste luxe éditorial » (référence site)
+
+- **Source** : carrousel accueil `HomeProductCarousel` + jetons dans [`src/index.css`](src/index.css).
+- **Utilitaires Tailwind** : `text-editorial-section-title`, `text-editorial-product-name`, `text-editorial-product-meta`, `text-editorial-price`, `text-editorial-tagline`, `text-editorial-link-underline`, `bg-editorial-badge`, couleur **`bg-surface-product-well`** pour les puits produit carrés.
+- **Règles** : titres de section en petit uppercase + large tracking ; méta produit en 9px uppercase gris ; prix discret ; liens d’action type souligné fin (`text-editorial-link-underline`) ; éviter les gros dégradés et le **doré décoratif** au profit du noir/gris ; rayons d’alerte **2px** (pas 12px).
+- Pas de `dangerouslySetInnerHTML` sur contenu utilisateur ou bot (risque XSS).

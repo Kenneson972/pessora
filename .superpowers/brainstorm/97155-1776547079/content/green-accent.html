@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #111; color: #fff; font-family: 'DM Sans', sans-serif; }
+
+.header { text-align: center; padding: 28px 16px 20px; font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(255,255,255,0.3); }
+
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+
+.panel { background: #fff; cursor: pointer; border: 3px solid transparent; transition: border-color 0.15s; }
+.panel:hover { border-color: #555; }
+.panel.sel { border-color: #000; }
+
+/* Shared nav */
+.nav { background: #fff; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #000; }
+.logo { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 15px; letter-spacing: 0.22em; text-transform: uppercase; color: #000; }
+.nav-links { display: flex; gap: 16px; }
+.nav-link { font-size: 8px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(0,0,0,0.4); }
+
+/* Hero section */
+.hero { background: #0a0a0a; padding: 40px 20px 32px; }
+.eyebrow { font-size: 8px; letter-spacing: 0.4em; text-transform: uppercase; margin-bottom: 14px; font-weight: 300; }
+.title { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 48px; line-height: 1.0; color: #fff; letter-spacing: -0.01em; }
+.title em { font-style: italic; }
+.rule { width: 24px; height: 1px; margin: 18px 0; }
+.sub { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.35); font-weight: 300; }
+.cta { display: inline-block; margin-top: 22px; padding: 10px 22px; font-size: 8px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 400; }
+
+/* White section */
+.white-section { background: #fff; padding: 24px 20px; border-top: 1px solid; }
+.ws-label { font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 300; margin-bottom: 10px; }
+.ws-items { display: flex; flex-direction: column; gap: 8px; }
+.ws-item { display: flex; align-items: center; gap: 10px; }
+.ws-dot { width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0; }
+.ws-text { font-size: 9px; color: rgba(0,0,0,0.5); font-weight: 300; }
+
+/* Badge */
+.badge { font-size: 7px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 400; display: inline-block; padding: 4px 10px; margin-top: 8px; }
+
+/* Label bar */
+.label-bar { padding: 12px 16px; border-top: 2px solid #000; background: #fff; text-align: center; }
+.label-bar strong { display: block; font-size: 11px; color: #000; letter-spacing: 0.05em; margin-bottom: 2px; }
+.label-bar span { font-size: 9px; color: rgba(0,0,0,0.4); }
+
+/* ===== GREEN A: Forest Profond #1e3a1f ===== */
+.ga-eyebrow { color: #1e3a1f; }
+.ga-em { color: rgba(255,255,255,0.8); }
+.ga-rule { background: #1e3a1f; }
+.ga-cta { border: 1px solid #1e3a1f; color: #1e3a1f; background: transparent; }
+.ga-ws { border-color: rgba(30,58,31,0.15); }
+.ga-ws-label { color: #1e3a1f; }
+.ga-dot { background: #1e3a1f; }
+.ga-badge { background: rgba(30,58,31,0.08); color: #1e3a1f; }
+.ga-nav-accent { color: #1e3a1f; }
+
+/* ===== GREEN B: Sauge Luxe #3d6b3e ===== */
+.gb-eyebrow { color: #3d6b3e; }
+.gb-em { color: rgba(255,255,255,0.8); }
+.gb-rule { background: #3d6b3e; }
+.gb-cta { border: 1px solid #3d6b3e; color: #3d6b3e; background: transparent; }
+.gb-ws { border-color: rgba(61,107,62,0.15); }
+.gb-ws-label { color: #3d6b3e; }
+.gb-dot { background: #3d6b3e; }
+.gb-badge { background: rgba(61,107,62,0.08); color: #3d6b3e; }
+.gb-nav-accent { color: #3d6b3e; }
+
+/* ===== GREEN C: Vert Herbe actuel #4a7c35 ===== */
+.gc-eyebrow { color: #4a7c35; }
+.gc-em { color: rgba(255,255,255,0.8); }
+.gc-rule { background: #4a7c35; }
+.gc-cta { border: 1px solid #4a7c35; color: #4a7c35; background: transparent; }
+.gc-ws { border-color: rgba(74,124,53,0.15); }
+.gc-ws-label { color: #4a7c35; }
+.gc-dot { background: #4a7c35; }
+.gc-badge { background: rgba(74,124,53,0.08); color: #4a7c35; }
+.gc-nav-accent { color: #4a7c35; }
+
+.footer { text-align: center; padding: 20px; font-size: 10px; color: rgba(255,255,255,0.2); letter-spacing: 0.1em; }
+</style>
+</head>
+<body>
+
+<div class="header">Nuance de vert accent — utilisée à 5% seulement (eyebrow · règle · CTA outline · dots)</div>
+
+<div class="grid">
+
+  <!-- GREEN A: Forest Profond -->
+  <div class="panel" onclick="this.classList.toggle('sel')">
+    <div class="nav">
+      <div class="logo">Pessóra</div>
+      <div class="nav-links">
+        <span class="nav-link">Carte</span>
+        <span class="nav-link ga-nav-accent">Événements</span>
+        <span class="nav-link">Espace</span>
+      </div>
+    </div>
+    <div class="hero">
+      <div class="eyebrow ga-eyebrow">Bar Protéiné · Fort-de-France</div>
+      <div class="title">Nourris<br><em class="ga-em">l'essentiel</em></div>
+      <div class="rule ga-rule"></div>
+      <div class="sub">Shakes · Gauffres · Bilan Bien-être</div>
+      <div class="cta ga-cta">Découvrir</div>
+    </div>
+    <div class="white-section ga-ws">
+      <div class="ws-label ga-ws-label">Ce que nous faisons</div>
+      <div class="ws-items">
+        <div class="ws-item"><div class="ws-dot ga-dot"></div><div class="ws-text">Shakes protéinés haute qualité</div></div>
+        <div class="ws-item"><div class="ws-dot ga-dot"></div><div class="ws-text">Run Club chaque mercredi</div></div>
+        <div class="ws-item"><div class="ws-dot ga-dot"></div><div class="ws-text">Bilan Bien-être 30 min gratuit</div></div>
+      </div>
+      <div class="badge ga-badge">Nouveau · Pop-up GigaFit</div>
+    </div>
+    <div class="label-bar">
+      <strong>A — Forest Profond</strong>
+      <span>#1e3a1f — Très sombre, presque noir. Le plus luxe.</span>
+    </div>
+  </div>
+
+  <!-- GREEN B: Sauge Luxe -->
+  <div class="panel" onclick="this.classList.toggle('sel')">
+    <div class="nav">
+      <div class="logo">Pessóra</div>
+      <div class="nav-links">
+        <span class="nav-link">Carte</span>
+        <span class="nav-link gb-nav-accent">Événements</span>
+        <span class="nav-link">Espace</span>
+      </div>
+    </div>
+    <div class="hero">
+      <div class="eyebrow gb-eyebrow">Bar Protéiné · Fort-de-France</div>
+      <div class="title">Nourris<br><em class="gb-em">l'essentiel</em></div>
+      <div class="rule gb-rule"></div>
+      <div class="sub">Shakes · Gauffres · Bilan Bien-être</div>
+      <div class="cta gb-cta">Découvrir</div>
+    </div>
+    <div class="white-section gb-ws">
+      <div class="ws-label gb-ws-label">Ce que nous faisons</div>
+      <div class="ws-items">
+        <div class="ws-item"><div class="ws-dot gb-dot"></div><div class="ws-text">Shakes protéinés haute qualité</div></div>
+        <div class="ws-item"><div class="ws-dot gb-dot"></div><div class="ws-text">Run Club chaque mercredi</div></div>
+        <div class="ws-item"><div class="ws-dot gb-dot"></div><div class="ws-text">Bilan Bien-être 30 min gratuit</div></div>
+      </div>
+      <div class="badge gb-badge">Nouveau · Pop-up GigaFit</div>
+    </div>
+    <div class="label-bar">
+      <strong>B — Sauge Luxe</strong>
+      <span>#3d6b3e — Équilibré, nature premium. Recommandé.</span>
+    </div>
+  </div>
+
+  <!-- GREEN C: Herbe Actuel -->
+  <div class="panel" onclick="this.classList.toggle('sel')">
+    <div class="nav">
+      <div class="logo">Pessóra</div>
+      <div class="nav-links">
+        <span class="nav-link">Carte</span>
+        <span class="nav-link gc-nav-accent">Événements</span>
+        <span class="nav-link">Espace</span>
+      </div>
+    </div>
+    <div class="hero">
+      <div class="eyebrow gc-eyebrow">Bar Protéiné · Fort-de-France</div>
+      <div class="title">Nourris<br><em class="gc-em">l'essentiel</em></div>
+      <div class="rule gc-rule"></div>
+      <div class="sub">Shakes · Gauffres · Bilan Bien-être</div>
+      <div class="cta gc-cta">Découvrir</div>
+    </div>
+    <div class="white-section gc-ws">
+      <div class="ws-label gc-ws-label">Ce que nous faisons</div>
+      <div class="ws-items">
+        <div class="ws-item"><div class="ws-dot gc-dot"></div><div class="ws-text">Shakes protéinés haute qualité</div></div>
+        <div class="ws-item"><div class="ws-dot gc-dot"></div><div class="ws-text">Run Club chaque mercredi</div></div>
+        <div class="ws-item"><div class="ws-dot gc-dot"></div><div class="ws-text">Bilan Bien-être 30 min gratuit</div></div>
+      </div>
+      <div class="badge gc-badge">Nouveau · Pop-up GigaFit</div>
+    </div>
+    <div class="label-bar">
+      <strong>C — Herbe Actuelle</strong>
+      <span>#4a7c35 — Proche du vert actuel. Plus vif, plus visible.</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">Le vert n'apparaît que sur : eyebrow text · ligne de séparation · border CTA outline · petits dots · badges</div>
+
+</body>
+</html>

@@ -1,0 +1,191 @@
+---
+description: Profil de stack Next.js App Router pour Client Builder V2 - Server Components, layouts, data fetching serveur, boundaries client, performance et organisation de projet
+globs: "**/app/**/*.ts,**/app/**/*.tsx,**/components/**/*.ts,**/components/**/*.tsx,**/lib/**/*.ts,**/lib/**/*.tsx,**/hooks/**/*.ts,**/hooks/**/*.tsx,**/middleware.ts,**/next.config.*"
+alwaysApply: false
+---
+
+# Stack Profile — Next.js App Router
+
+Conventions lorsque le projet utilise **Next.js App Router** (décision documentée via `kb-stack-selection.mdc`).
+
+**Complète :** `kb-core-workflow.mdc`, `kb-core-ui-ux.mdc`, `kb-ui-routing.mdc`.
+
+**Ne remplace pas :** règles SEO, performance, forms, sécurité, images, i18n, etc. — les combiner.
+
+---
+
+## 1. Principe fondamental
+
+Raisonner **serveur d’abord**.
+
+- **Server Components par défaut**
+- **Client Components** uniquement si nécessaire (interactivité, hooks navigateur, libs client-only)
+- **Données initiales** récupérées côté **serveur** quand elles servent au rendu
+
+### Interdictions
+
+- `"use client"` par réflexe sur toute la page
+- `useEffect` + `fetch` pour des données initiales purement affichables côté serveur
+- traiter App Router comme une simple SPA React
+
+---
+
+## 2. Server vs Client
+
+### Server Components (par défaut)
+
+Pages, layouts, sections statiques ou semi-statiques, assemblage, **fetch initial**, SEO / metadata, contenu principal.
+
+### Client Components (si nécessaire)
+
+État local interactif, formulaires complexes, menus / drawers / popovers / onglets interactifs, cartes, calendriers, DnD, tout ce qui exige `window` / `document` ou hooks client exclusifs.
+
+---
+
+## 3. Organisation App Router
+
+### Structure recommandée
+
+```txt
+app/
+  (marketing)/          # route groups selon besoin
+  (dashboard)/
+  api/
+  layout.tsx
+  page.tsx
+  loading.tsx
+  error.tsx
+  not-found.tsx
+
+components/
+  ui/
+  layout/
+  [domain]/             # marketing, dashboard, booking, etc.
+
+lib/
+  actions/              # server actions si utilisées
+  server/
+  client/
+  utils/
+  validations/
+
+hooks/                  # hooks majoritairement utilisés par composants client
+```
+
+### Règles
+
+- **Route groups** pour séparer les zones sans casser les URLs
+- **`app/`** orienté orchestration des routes et composition ; **éviter d’y concentrer toute la logique métier**
+- Composants métier réutilisables plutôt dans `components/`
+
+---
+
+## 4. Data fetching
+
+- Privilégier le fetch dans les **Server Components** (pages, layouts) ou modules **`lib/server/`**
+- Utiliser cache / revalidation Next selon le besoin métier
+- Éviter la duplication serveur + client pour le même jeu de données initial
+
+**Règle :** si la donnée est nécessaire au **premier rendu**, elle doit venir du **serveur** par défaut.
+
+---
+
+## 5. Client boundaries
+
+Isoler **`"use client"`** au **plus petit périmètre** utile (feuille interactive dans une page serveur).
+
+### Interdictions
+
+- propager `"use client"` en cascade sans raison
+- clientiser tout un dashboard pour un seul widget interactif
+- layout racine client sans nécessité
+
+---
+
+## 6. Providers
+
+- Centraliser Theme / i18n / query / autre dans un fichier du type **`app/providers.tsx`** (souvent client)
+- Garder **`layout.tsx`** **serveur** autant que possible
+- Limiter les providers globaux ; préférer une portée locale quand c’est possible
+
+---
+
+## 7. UI et design system
+
+- Appliquer **`kb-ui-routing.mdc`** : pages et features importent via **`components/ui`** (ou alias projet)
+- **Pas d’import direct** des vendors UI dans les pages / composants métier (sauf exceptions documentées, ex. bootstrap)
+
+---
+
+## 8. Mutations et API
+
+- **Server Actions** : mutations proches de l’UI, formulaires simples
+- **Route Handlers** (`app/api`) : webhooks, intégrations tierces, endpoints partagés, logique HTTP explicite
+
+Valider les entrées, ne jamais exposer de secrets côté client, gérer auth / erreurs.
+
+---
+
+## 9. SEO (App Router)
+
+- **`metadata`** / `generateMetadata` selon les besoins
+- Titres, descriptions, Open Graph sur les routes importantes
+- Contenus stratégiques rendus **côté serveur** quand l’indexation compte
+
+---
+
+## 10. Performance Next.js
+
+- RSC pour limiter le JS envoyé
+- **`next/dynamic`** pour widgets lourds non critiques
+- **`next/image`** (ou politique image équivalente) pour LCP
+- **Suspense** / streaming quand utile
+
+### À éviter
+
+- hydrater des arbres entiers inutilement
+- charger des librairies lourdes sur toutes les routes
+
+---
+
+## 11. Erreurs fréquentes
+
+- Trop de `"use client"` en haut de l’arbre
+- Fetch initial en `useEffect` alors qu’un SC suffit
+- Logique métier dense dans `app/` au lieu de `components/` / `lib/`
+- Vendors UI directs dans les pages
+- Providers dupliqués ou empilés sans besoin
+
+---
+
+## 12. Méthode de travail recommandée
+
+1. Lister ce qui est **serveur** vs **client**
+2. Définir les **boundaries** minimales
+3. Poser routes, layouts, groupes
+4. Placer le **fetch** au bon niveau
+5. Passer l’UI par **`components/ui`**
+6. Vérifier loading / error / perf / hydration
+
+---
+
+## 13. Décision rapide « ce composant ? »
+
+Se demander dans l’ordre :
+
+1. Besoin du navigateur ?
+2. État / interaction locale ?
+3. Hook client indispensable ?
+
+Si tout est non → rester **serveur**.
+
+---
+
+## 14. Standard attendu
+
+Un projet Next.js App Router aligné avec ce profil :
+
+- RSC par défaut, boundaries client minimales
+- Fetch au bon endroit
+- UI gouvernée (`components/ui`)
+- Lisible, performant, maintenable

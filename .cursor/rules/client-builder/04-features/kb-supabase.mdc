@@ -1,0 +1,331 @@
+---
+description: Supabase - Clients browser/server/admin, RLS, Storage, Realtime, migrations SQL, types générés
+globs: "**/lib/supabase*.ts, **/app/api/**/*.ts, **/*.sql"
+alwaysApply: false
+---
+
+# Supabase — Règles Karibloom
+
+## 1. Principe fondamental
+
+Trois clients Supabase, jamais mélangés :
+
+- **browser** : singleton, clé anon, utilisé dans les Client Components
+- **server** : recréé à chaque requête, clé anon, `cache: "no-store"`, utilisé en RSC et Route Handlers
+- **admin** : clé `service_role`, JAMAIS côté client, contourne RLS
+
+Règles non négociables :
+
+- RLS activée sur TOUTES les tables. Pas d'exception, rien de public par défaut.
+- Les types TS sont générés depuis le schéma (`supabase gen types`), pas écrits à la main.
+- Zéro `NEXT_PUBLIC_` sur la service role.
+
+## 2. Les 3 clients
+
+### `lib/supabase.ts` (browser + admin)
+
+```ts
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/supabase";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+
+let supabaseBrowserClient: ReturnType<typeof createClient<Database>> | null = null;
+
+export const getSupabaseBrowser = () => {
+  if (supabaseBrowserClient) return supabaseBrowserClient;
+  if (!supabaseUrl || !supabaseAnonKey) return null;
+  supabaseBrowserClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
+  return supabaseBrowserClient;
+};
+
+export const supabaseAdmin = () => {
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
+    throw new Error("Supabase admin is not configured.");
+  }
+  return createClient<Database>(supabaseUrl, supabaseServiceRoleKey, {
+    auth: { persistSession: false },
+  });
+};
+```
+
+### `lib/supabase-server.ts` (RSC, Route Handlers)
+
+```ts
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/supabase";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+
+export const getSupabaseServer = () => {
+  return createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    global: {
+      fetch: (url, options) => fetch(url, { ...options, cache: "no-store" }),
+    },
+    auth: { persistSession: false },
+  });
+};
+```
+
+## 3. Variables d'environnement
+
+`.env.local` (jamais commit) :
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
+```
+
+- `NEXT_PUBLIC_*` = bundlée côté navigateur. OK pour URL et anon key.
+- `SUPABASE_SERVICE_ROLE_KEY` = JAMAIS préfixée `NEXT_PUBLIC_`. Fuite = compromission totale de la base.
+- Ajouter `.env*` dans `.gitignore` et bloquer via `.htaccess` (voir kb-security).
+
+## 4. RLS — règle d'or
+
+Activation systématique, policies nommées `{table}_{action}_{who}`.
+
+### Patterns types
+
+- **Lecture publique** : `FOR SELECT USING (true)`
+- **Propriétaire CRUD** : `FOR ALL USING (auth.uid() = owner_id)`
+- **Utilisateur auth lit ses données** : `FOR SELECT USING (auth.uid() = user_id)`
+- **Insertion publique (leads, formulaires)** : `FOR INSERT WITH CHECK (true)` — restreindre colonnes via trigger
+
+### Exemple complet — `wishlist(user_id uuid, villa_id uuid)`
+
+```sql
+CREATE TABLE IF NOT EXISTS public.wishlist (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  villa_id uuid NOT NULL REFERENCES public.villas(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (user_id, villa_id)
+);
+
+ALTER TABLE public.wishlist ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY wishlist_select_own ON public.wishlist
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY wishlist_insert_own ON public.wishlist
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY wishlist_delete_own ON public.wishlist
+  FOR DELETE USING (auth.uid() = user_id);
+```
+
+Tester les policies avec le SQL Editor Supabase en impersonant un user via `SET request.jwt.claims`.
+
+## 5. Migrations SQL
+
+Deux conventions acceptées :
+
+- **Supabase CLI** : `supabase/migrations/YYYYMMDDHHMMSS_description.sql`
+- **Projet simple** : fichiers racine ou `/sql/` nommés `schema.sql`, `supabase-migrations-v1.sql`, `add_{feature}.sql`
+
+Règles :
+
+- TOUJOURS idempotent : `CREATE TABLE IF NOT EXISTS`, `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`, `CREATE POLICY IF NOT EXISTS` (ou `DROP POLICY IF EXISTS` avant CREATE).
+- Jamais de `DROP TABLE` / `DROP COLUMN` en prod sans backup.
+- Tester d'abord sur projet de staging ou branche Supabase.
+- Une migration = un feature ou un fix. Pas de migrations fourre-tout.
+- Commit le SQL dans git, pas seulement dans le dashboard.
+
+## 6. Storage
+
+Buckets typiques : `profile-avatars`, `villa-photos`, `documents`, `event-covers`.
+
+Policies de bucket :
+
+```sql
+-- Public peut lire si bucket public
+CREATE POLICY "villa_photos_public_read" ON storage.objects
+  FOR SELECT USING (bucket_id = 'villa-photos');
+
+-- Owner peut upload dans son dossier
+CREATE POLICY "villa_photos_owner_insert" ON storage.objects
+  FOR INSERT WITH CHECK (
+    bucket_id = 'villa-photos'
+    AND auth.uid()::text = (storage.foldername(name))[1]
+  );
+```
+
+Upload via API Route (contourne RLS si admin requis) :
+
+```ts
+const { data, error } = await supabaseAdmin().storage
+  .from("villa-photos")
+  .upload(`${villaId}/${filename}`, file, {
+    upsert: false,
+    contentType: file.type,
+  });
+
+const { data: { publicUrl } } = supabaseAdmin().storage
+  .from("villa-photos")
+  .getPublicUrl(data.path);
+```
+
+Règles :
+
+- Path toujours namespacé : `{ownerId}/{resourceId}/{filename}`.
+- Valider MIME et taille côté serveur avant upload.
+- Buckets privés → utiliser `createSignedUrl(path, expiresIn)`.
+
+## 7. Realtime
+
+Pattern notification (inspiré DIAMANTNOIR `NotificationBell`) :
+
+```ts
+useEffect(() => {
+  const supabase = getSupabaseBrowser();
+  if (!supabase) return;
+
+  const channel = supabase
+    .channel("notifications")
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "notifications" },
+      (payload) => setNotifications((prev) => [payload.new, ...prev])
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, []);
+```
+
+Règles :
+
+- TOUJOURS `removeChannel` dans le cleanup. Sinon fuite de sockets.
+- Un channel par feature, nommage explicite (`notifications`, `bookings-user-${id}`).
+- Activer Realtime par table dans le dashboard (`ALTER PUBLICATION supabase_realtime ADD TABLE x`).
+- Filtrer côté serveur via `filter` param, pas en JS.
+
+## 8. Types générés TypeScript
+
+Génération :
+
+```bash
+npx supabase gen types typescript --project-id xxxxxxxx > types/supabase.ts
+```
+
+Usage :
+
+```ts
+import type { Database } from "@/types/supabase";
+createClient<Database>(url, key);
+```
+
+Règles :
+
+- Régénérer après CHAQUE migration qui change le schéma.
+- Commit `types/supabase.ts` dans git.
+- Créer les types business séparés dans `types/index.ts` (ex : `BookingStatus`, `Booking`, `Villa`).
+- Ne PAS exposer les champs internes (`owner_id`, `payment_intent_id`, `stripe_customer_id`) dans les types publics côté front.
+- Préférer `Database["public"]["Tables"]["villas"]["Row"]` plutôt que redéfinir.
+
+## 9. Conventions de nommage
+
+- **Tables** : `snake_case` pluriel → `bookings`, `villas`, `notifications`, `wishlist_items`
+- **Colonnes** : `snake_case` → `created_at`, `start_date`, `owner_id`
+- **Enums** : `CREATE TYPE booking_status AS ENUM ('pending', 'confirmed', 'cancelled');`
+- **Clés primaires** : `id uuid PRIMARY KEY DEFAULT gen_random_uuid()`
+- **Timestamps** : `timestamptz NOT NULL DEFAULT now()` pour `created_at` / `updated_at`
+- **Dates sans heure** : `date` → côté client string ISO `YYYY-MM-DD`
+- **Foreign keys** : suffixe `_id` + `REFERENCES table(id) ON DELETE CASCADE|SET NULL`
+- **Index** : nommés `idx_{table}_{columns}` → `idx_bookings_user_id_created_at`
+
+## 10. Où utiliser quel client ?
+
+| Contexte | Client |
+|---|---|
+| Server Component (page async, layout) | `getSupabaseServer()` |
+| Route Handler / Server Action (lecture publique) | `getSupabaseServer()` |
+| Route Handler / Server Action (écriture, bypass RLS) | `supabaseAdmin()` |
+| Client Component (useEffect, handler) | `getSupabaseBrowser()` |
+| Auth navigateur (login, OTP, session) | `getSupabaseBrowser()` |
+| Webhook Stripe / job système | `supabaseAdmin()` avec garde env |
+| Cron / script node | `supabaseAdmin()` |
+
+## 11. Anti-patterns
+
+### Exposer la service role
+```ts
+// ❌ service role bundlée côté client
+const key = process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY;
+
+// ✅ uniquement côté serveur
+const admin = supabaseAdmin();
+```
+
+### Admin dans un RSC pour du public
+```ts
+// ❌ contourne RLS sans raison, risque de fuite
+const supabase = supabaseAdmin();
+const { data } = await supabase.from("villas").select("*");
+
+// ✅ serveur anon, RLS joue son rôle
+const supabase = getSupabaseServer();
+const { data } = await supabase.from("villas").select("id, name, price");
+```
+
+### Realtime sans cleanup
+```ts
+// ❌ fuite de channel à chaque re-render
+useEffect(() => {
+  supabase.channel("x").on(...).subscribe();
+}, []);
+
+// ✅ return avec removeChannel
+useEffect(() => {
+  const ch = supabase.channel("x").on(...).subscribe();
+  return () => { supabase.removeChannel(ch); };
+}, []);
+```
+
+### Table sans RLS
+```sql
+-- ❌ table créée, RLS oubliée → tout lisible avec anon key
+CREATE TABLE bookings (...);
+
+-- ✅
+CREATE TABLE bookings (...);
+ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY ... ;
+```
+
+### `select("*")` en prod
+```ts
+// ❌ expose owner_id, stripe_customer_id, internal_notes
+.from("villas").select("*")
+
+// ✅ colonnes explicites
+.from("villas").select("id, name, price, cover_url, city")
+```
+
+### Migration non contrôlée
+```sql
+-- ❌ non idempotent, casse au 2e run
+CREATE TABLE villas (...);
+
+-- ✅
+CREATE TABLE IF NOT EXISTS villas (...);
+```
+
+## 12. Checklist avant mise en prod
+
+1. RLS activée sur 100% des tables (`SELECT tablename FROM pg_tables WHERE schemaname='public'` puis vérifier `pg_policies`).
+2. `SUPABASE_SERVICE_ROLE_KEY` uniquement côté serveur, pas de `NEXT_PUBLIC_`.
+3. Migrations rejouées sur staging avec succès.
+4. Policies Storage testées avec compte test (owner vs autre user).
+5. Types `types/supabase.ts` régénérés et commit.
+6. Backup DB AVANT tout `ALTER` destructif.
+7. Logs Supabase vérifiés (pas d'erreur 401/403 récurrente).
+8. Monitoring erreurs activé (Sentry / logs Next) sur les appels Supabase.
+9. `.env.local` absent du repo, variables renseignées sur l'hébergeur.
+10. Realtime : channels listés et limités au nécessaire (quota projet).

@@ -1,0 +1,398 @@
+---
+description: Performance Next.js 15 - RSC, streaming, dynamic imports, next/image, fonts, cache, revalidate, Core Web Vitals
+globs: "**/app/**,**/components/**,**/next.config.*,**/lib/**"
+alwaysApply: false
+---
+
+# Performance Next.js 15
+
+Complète kb-image-optimizer, kb-supabase, kb-api-routes. Ne remplace pas kb-security.
+
+## Principes
+
+- **Maximiser les Server Components (RSC)**. Le JS qui ne tourne pas sur le client est gratuit.
+- **Minimiser le JS client**. Chaque `"use client"` coûte du bundle, de l'hydration, de l'INP.
+- **Streamer avec Suspense**. Ne jamais bloquer toute la page sur le fetch le plus lent.
+- **Cacher agressivement**. Next 15 est opt-in sur le cache fetch : on active consciemment `revalidate` ou `cache: 'force-cache'`.
+- **Mesurer avant d'optimiser**. Lighthouse mobile + Vercel Speed Insights + `next build` output.
+
+## Core Web Vitals cibles
+
+| Métrique | Cible | Seuil alerte |
+|---|---|---|
+| **LCP** (Largest Contentful Paint) | < 2.5s | 4s |
+| **INP** (Interaction to Next Paint) | < 200ms | 500ms |
+| **CLS** (Cumulative Layout Shift) | < 0.1 | 0.25 |
+| **TTFB** (Time to First Byte) | < 600ms | 1.5s |
+| **FCP** (First Contentful Paint) | < 1.8s | 3s |
+
+Mesure officielle : CrUX (terrain) via Vercel Speed Insights. Lighthouse = synthétique, utile pour régressions.
+
+## Mesure
+
+```bash
+# Build local avec output des tailles par route
+npm run build
+
+# Exemple output à surveiller:
+# Route (app)                  Size    First Load JS
+# ┌ ○ /                        3.2 kB  142 kB
+# ├ ○ /produits                5.1 kB  158 kB
+# ├ ƒ /compte/[id]             2.8 kB  165 kB
+```
+
+**Budget First Load JS** :
+- Pages publiques (SEO) : < 200 kB
+- Dashboards connectés : < 300 kB
+- Alerter si > 400 kB
+
+Tools :
+- `@vercel/analytics` + `@vercel/speed-insights` (installés dans `app/layout.tsx`)
+- Lighthouse CI en GitHub Actions optionnel
+- `@next/bundle-analyzer` pour diagnostiquer les bundles lourds
+
+## Server Components par défaut
+
+```tsx
+// app/produits/page.tsx — RSC, zéro JS client
+import { createClient } from "@/lib/supabase/server";
+
+export default async function ProduitsPage() {
+  const supabase = await createClient();
+  const { data: produits } = await supabase.from("produits").select("*");
+
+  return (
+    <ul>
+      {produits?.map((p) => (
+        <li key={p.id}>{p.nom}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+Un composant reste RSC tant qu'il ne contient ni `useState`, ni `useEffect`, ni event handler. On passe `"use client"` **au plus proche de la feuille interactive**, jamais en haut de l'arbre.
+
+```tsx
+// ❌ use client sur une page entière juste pour un bouton
+"use client";
+export default function Page() { /* 500 lignes */ }
+
+// ✅ Isoler le bouton
+// app/page.tsx (RSC)
+import AddToCartButton from "./AddToCartButton";
+export default async function Page() {
+  const produits = await getProduits();
+  return produits.map((p) => <AddToCartButton key={p.id} id={p.id} />);
+}
+
+// app/AddToCartButton.tsx (client)
+"use client";
+export default function AddToCartButton({ id }: { id: string }) {
+  return <button onClick={() => add(id)}>Ajouter</button>;
+}
+```
+
+## Dynamic imports (next/dynamic)
+
+Pour les widgets lourds non critiques au premier rendu :
+
+```tsx
+"use client";
+import dynamic from "next/dynamic";
+
+// Pas de SSR, pas dans le bundle initial
+const FullCalendar = dynamic(() => import("@fullcalendar/react"), {
+  ssr: false,
+  loading: () => <CalendarSkeleton />,
+});
+
+const RichEditor = dynamic(() => import("@/components/RichEditor"), {
+  ssr: false,
+  loading: () => <div className="h-96 animate-pulse bg-neutral-100" />,
+});
+
+const Chart = dynamic(() => import("recharts").then((m) => m.LineChart), {
+  ssr: false,
+});
+```
+
+Cibles typiques : `fullcalendar`, `recharts`/`chart.js`, `leaflet`/`mapbox`, `tiptap`/`lexical`, `monaco-editor`, `framer-motion` lourd.
+
+## Streaming avec Suspense
+
+Découper la page en sections qui streament indépendamment :
+
+```tsx
+// app/dashboard/page.tsx
+import { Suspense } from "react";
+
+export default function Dashboard() {
+  return (
+    <>
+      <Header /> {/* instant */}
+      <Suspense fallback={<StatsSkeleton />}>
+        <Stats /> {/* stream quand prêt */}
+      </Suspense>
+      <Suspense fallback={<OrdersSkeleton />}>
+        <RecentOrders />
+      </Suspense>
+    </>
+  );
+}
+
+async function Stats() {
+  const stats = await fetchStats(); // lent
+  return <StatsGrid data={stats} />;
+}
+```
+
+**loading.tsx** au niveau route = shell instantané pendant que la page RSC se résout :
+
+```tsx
+// app/dashboard/loading.tsx
+export default function Loading() {
+  return <DashboardSkeleton />;
+}
+```
+
+## Parallèle fetch (anti-waterfall)
+
+```tsx
+// ❌ Waterfall : B attend A
+async function Page() {
+  const user = await getUser();
+  const orders = await getOrders(user.id);
+  const products = await getProducts();
+}
+
+// ✅ Parallèle quand pas de dépendance
+async function Page() {
+  const [user, products] = await Promise.all([getUser(), getProducts()]);
+  const orders = await getOrders(user.id); // dépend de user
+}
+```
+
+## Preload critical
+
+```tsx
+import { preload } from "react";
+import { getUser } from "@/lib/data";
+
+export default function Layout({ children }) {
+  preload("user-current", getUser); // hint navigateur + warm cache
+  return <>{children}</>;
+}
+```
+
+## Cache et revalidation
+
+Next 15 : fetch **non cached par défaut** (breaking change). On opt-in :
+
+```tsx
+// ISR 1h : cache partagé, revalidation background
+await fetch(url, { next: { revalidate: 3600 } });
+
+// Static forever
+await fetch(url, { cache: "force-cache" });
+
+// Dynamic, jamais cacher
+await fetch(url, { cache: "no-store" });
+
+// Tag pour invalidation ciblée
+await fetch(url, { next: { tags: ["produits"] } });
+```
+
+Invalidation après mutation (Server Action ou route handler) :
+
+```tsx
+"use server";
+import { revalidatePath, revalidateTag } from "next/cache";
+
+export async function updateProduit(id: string, data: FormData) {
+  await supabase.from("produits").update(/* ... */).eq("id", id);
+  revalidateTag("produits");
+  revalidatePath(`/produits/${id}`);
+}
+```
+
+**unstable_cache** pour memoization serveur coûteuse (hors fetch) :
+
+```tsx
+import { unstable_cache } from "next/cache";
+
+const getStats = unstable_cache(
+  async () => computeExpensiveStats(),
+  ["stats-v1"],
+  { revalidate: 600, tags: ["stats"] }
+);
+```
+
+Pour les dashboards connectés (data utilisateur) : `cache: 'no-store'` + `export const dynamic = 'force-dynamic'` sur la route.
+
+## Fonts
+
+```tsx
+// app/layout.tsx
+import { Inter, Playfair_Display } from "next/font/google";
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-playfair",
+  weight: ["400", "700"], // pas 100-900, on ne sert que ce qu'on utilise
+});
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="fr" className={`${inter.variable} ${playfair.variable}`}>
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+`display: 'swap'` = FOUT plutôt que FOIT = LCP préservé. Sous-setting `latin` = -70% sur le poids.
+
+## next/image
+
+Voir kb-image-optimizer. Rappel du principe : toujours `width`/`height`, `sizes` pour responsive, `priority` sur le LCP uniquement, `fetchPriority="high"` en complément.
+
+```tsx
+<Image
+  src="/hero.jpg"
+  alt="..."
+  width={1920}
+  height={1080}
+  priority
+  sizes="100vw"
+/>
+```
+
+## Third-party scripts
+
+```tsx
+import Script from "next/script";
+
+// Analytics, chat, pixels : après hydration
+<Script src="https://plausible.io/js/script.js" strategy="afterInteractive" />
+
+// Widgets non critiques : quand idle
+<Script src="https://widget.com/embed.js" strategy="lazyOnload" />
+
+// Avant hydration (rare, ex: polyfill critique)
+<Script src="/polyfill.js" strategy="beforeInteractive" />
+```
+
+Jamais de `<script>` brut dans un composant client, on laisse Next gérer l'injection.
+
+## Bundle analyzer
+
+```ts
+// next.config.ts
+import type { NextConfig } from "next";
+import bundleAnalyzer from "@next/bundle-analyzer";
+
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
+
+const nextConfig: NextConfig = {
+  // ...
+};
+
+export default withBundleAnalyzer(nextConfig);
+```
+
+```bash
+ANALYZE=true npm run build
+# Ouvre un rapport HTML par route
+```
+
+Cibles suspectes : `moment` (utiliser `date-fns` ou `dayjs`), `lodash` (import par méthode), `@mui/material` entier sur une page publique, `aws-sdk` côté client.
+
+## optimizePackageImports
+
+```ts
+// next.config.ts
+const nextConfig: NextConfig = {
+  experimental: {
+    optimizePackageImports: [
+      "lucide-react",
+      "date-fns",
+      "@radix-ui/react-icons",
+      "recharts",
+    ],
+  },
+};
+```
+
+Next n'importe que les symboles utilisés, même si la lib n'exporte pas par fichier. Gain typique : -40% sur `lucide-react`.
+
+## React Compiler (opt-in)
+
+Si le compilo React est stable dans la version de Next utilisée : auto-mémoisation, plus besoin de `useMemo`/`useCallback` défensifs.
+
+```ts
+// next.config.ts
+const nextConfig: NextConfig = {
+  experimental: {
+    reactCompiler: true,
+  },
+};
+```
+
+Valider en staging avant de généraliser. Garder un fallback `useMemo` sur les hotspots connus.
+
+## Partial Prerendering (PPR)
+
+Si stable dans la version cible : une même route mélange statique (shell) et dynamique (sections Suspense).
+
+```ts
+// next.config.ts
+const nextConfig: NextConfig = {
+  experimental: { ppr: "incremental" },
+};
+```
+
+```tsx
+// app/produits/[slug]/page.tsx
+export const experimental_ppr = true;
+```
+
+Shell statique servi instantanément du CDN, sections dynamiques streamées. Sans PPR, une seule `cookies()`/`headers()` bascule toute la route en dynamic.
+
+## Anti-patterns
+
+- `CRACO` / Webpack manual config **(legacy CRA, à bannir)**
+- `"use client"` sur `app/layout.tsx` racine
+- `useEffect` + `fetch` pour la data initiale d'une page (on est en RSC maintenant)
+- Import statique d'une lib lourde utilisée une seule fois (`import Chart from "recharts"` sans dynamic)
+- N+1 fetch dans une boucle sans `Promise.all`
+- Pas de `<Suspense>` et pas de `loading.tsx` sur une route lente
+- `priority` sur plusieurs images par page (dilue le préchargement)
+- Ajouter `framer-motion` sur une page publique juste pour un fade-in (CSS suffit)
+- Fonts chargées avec tous les poids 100-900 italique et roman
+- `cache: 'no-store'` global par prudence (casse l'ISR sur les pages qui pourraient être cachées)
+
+## Checklist prod
+
+- [ ] Lighthouse mobile > 90 sur 4 métriques
+- [ ] First Load JS < 200 kB sur pages publiques
+- [ ] LCP < 2.5s mesuré en terrain (Speed Insights)
+- [ ] INP < 200ms, pas de handler > 50ms sur interaction critique
+- [ ] Pas de CLS sur le chargement images/fonts
+- [ ] Pas de warning hydration mismatch
+- [ ] Fonts subsetées (`subsets: ['latin']`) + `display: 'swap'`
+- [ ] `next/image` partout, `priority` seulement sur le LCP
+- [ ] `@vercel/analytics` + `@vercel/speed-insights` actifs
+- [ ] Suspense + loading.tsx sur toutes les routes lentes
+- [ ] `revalidate` ou `revalidateTag` configuré pour chaque mutation
+- [ ] Bundle analyzer passé, aucune dep > 100 kB non justifiée
+- [ ] Cron de vérif `npm run build` en CI

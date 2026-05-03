@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PESSORA — Direction Noir/Blanc</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; background: #1a1a1a; color: #fff; }
+
+  .page-title { text-align:center; padding: 32px 24px 8px; font-size: 13px; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+  .page-sub { text-align:center; padding: 0 24px 32px; font-size: 12px; color: rgba(255,255,255,0.3); }
+
+  .variants { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; max-width: 1200px; margin: 0 auto; }
+
+  .variant-label { padding: 16px 0 12px; text-align: center; font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
+
+  /* === VARIANT A: PUR NOIR/BLANC === */
+  .va { background: #000; }
+  .va-nav { background: #000; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .va-logo { font-family: Georgia, serif; font-size: 14px; letter-spacing: 0.2em; color: #fff; text-transform: uppercase; }
+  .va-links { display: flex; gap: 18px; }
+  .va-link { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
+  .va-hero { padding: 56px 24px 40px; }
+  .va-eyebrow { font-size: 8px; letter-spacing: 0.4em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 20px; }
+  .va-title { font-family: Georgia, serif; font-size: 52px; line-height: 1.0; letter-spacing: -0.03em; color: #fff; }
+  .va-title em { font-style: italic; }
+  .va-rule { width: 32px; height: 1px; background: #fff; margin: 24px 0; }
+  .va-sub { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.3); }
+  .va-cta { display: inline-block; margin-top: 28px; padding: 12px 24px; border: 1px solid rgba(255,255,255,0.8); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #fff; }
+  .va-card-row { display: flex; gap: 1px; padding: 0; }
+  .va-card { flex: 1; background: #0d0d0d; padding: 24px 18px; border-top: 1px solid rgba(255,255,255,0.07); }
+  .va-card-num { font-size: 28px; font-family: Georgia, serif; color: rgba(255,255,255,0.12); margin-bottom: 10px; }
+  .va-card-title { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-bottom: 6px; }
+  .va-card-text { font-size: 9px; color: rgba(255,255,255,0.3); line-height: 1.5; }
+
+  /* === VARIANT B: NOIR + OR CHAMPAGNE === */
+  .vb { background: #0a0a0a; }
+  .vb-nav { background: #0a0a0a; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .vb-logo { font-family: Georgia, serif; font-size: 14px; letter-spacing: 0.2em; color: #fff; text-transform: uppercase; }
+  .vb-links { display: flex; gap: 18px; }
+  .vb-link { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
+  .vb-hero { padding: 56px 24px 40px; }
+  .vb-eyebrow { font-size: 8px; letter-spacing: 0.4em; text-transform: uppercase; color: #c9a96e; margin-bottom: 20px; }
+  .vb-title { font-family: Georgia, serif; font-size: 52px; line-height: 1.0; letter-spacing: -0.03em; color: #fff; }
+  .vb-title em { font-style: italic; color: #c9a96e; }
+  .vb-rule { width: 32px; height: 1px; background: #c9a96e; margin: 24px 0; }
+  .vb-sub { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.3); }
+  .vb-cta { display: inline-block; margin-top: 28px; padding: 12px 24px; background: #c9a96e; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #000; }
+  .vb-card-row { display: flex; gap: 1px; }
+  .vb-card { flex: 1; background: #111; padding: 24px 18px; border-top: 1px solid rgba(201,169,110,0.15); }
+  .vb-card-num { font-size: 28px; font-family: Georgia, serif; color: rgba(201,169,110,0.2); margin-bottom: 10px; }
+  .vb-card-title { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-bottom: 6px; }
+  .vb-card-text { font-size: 9px; color: rgba(255,255,255,0.3); line-height: 1.5; }
+
+  /* === VARIANT C: NOIR/BLANC INVERSÉ (sections blanches) === */
+  .vc { background: #fff; }
+  .vc-nav { background: #fff; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; }
+  .vc-logo { font-family: Georgia, serif; font-size: 14px; letter-spacing: 0.2em; color: #000; text-transform: uppercase; }
+  .vc-links { display: flex; gap: 18px; }
+  .vc-link { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(0,0,0,0.4); }
+  .vc-hero { background: #0a0a0a; padding: 56px 24px 40px; }
+  .vc-eyebrow { font-size: 8px; letter-spacing: 0.4em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 20px; }
+  .vc-title { font-family: Georgia, serif; font-size: 52px; line-height: 1.0; letter-spacing: -0.03em; color: #fff; }
+  .vc-title em { font-style: italic; }
+  .vc-rule { width: 32px; height: 1px; background: #fff; margin: 24px 0; }
+  .vc-sub { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.3); }
+  .vc-cta { display: inline-block; margin-top: 28px; padding: 12px 24px; border: 1px solid rgba(255,255,255,0.8); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #fff; }
+  .vc-card-row { display: flex; gap: 0; background: #fff; }
+  .vc-card { flex: 1; background: #fff; padding: 24px 18px; border-right: 1px solid #f0f0f0; border-top: 1px solid #f0f0f0; }
+  .vc-card:last-child { border-right: none; }
+  .vc-card-num { font-size: 28px; font-family: Georgia, serif; color: rgba(0,0,0,0.08); margin-bottom: 10px; }
+  .vc-card-title { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(0,0,0,0.7); margin-bottom: 6px; }
+  .vc-card-text { font-size: 9px; color: rgba(0,0,0,0.4); line-height: 1.5; }
+
+  .selected-label { display: none; }
+  .selected-bar { display: none; }
+  .choice-indicator { display: none; }
+
+  .variant-wrapper {
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .variant-wrapper:hover { border-color: rgba(255,255,255,0.2); }
+  .variant-wrapper.selected { border-color: rgba(255,255,255,0.6); }
+
+  .variant-badge { text-align: center; padding: 10px; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.05); }
+  .variant-badge strong { color: rgba(255,255,255,0.9); }
+
+  .footer-note { text-align: center; padding: 32px; font-size: 11px; color: rgba(255,255,255,0.25); }
+</style>
+<script>
+function pick(el, choice) {
+  document.querySelectorAll('.variant-wrapper').forEach(w => w.classList.remove('selected'));
+  el.classList.add('selected');
+  // send to superpowers events
+  if (window.recordChoice) window.recordChoice(choice, el.querySelector('.variant-badge strong').textContent);
+  // fallback: write to localStorage for reading
+  localStorage.setItem('pessora-choice', choice);
+}
+</script>
+</head>
+<body>
+
+<div class="page-title">Direction Nespresso — Noir / Blanc</div>
+<div class="page-sub">Clique sur un mockup pour le sélectionner, ou dis-moi directement dans le terminal</div>
+
+<div class="variants">
+
+  <!-- A: PUR NOIR/BLANC -->
+  <div class="variant-wrapper" onclick="pick(this, 'A')">
+    <div class="va">
+      <div class="va-nav">
+        <div class="va-logo">Pessóra</div>
+        <div class="va-links">
+          <span class="va-link">Carte</span>
+          <span class="va-link">Événements</span>
+          <span class="va-link">Connexion</span>
+        </div>
+      </div>
+      <div class="va-hero">
+        <div class="va-eyebrow">Bar Protéiné · Fort-de-France</div>
+        <div class="va-title">Nourris<br><em>l'essentiel</em></div>
+        <div class="va-rule"></div>
+        <div class="va-sub">Shakes · Gauffres · Bilan Bien-être</div>
+        <div class="va-cta">Découvrir</div>
+      </div>
+      <div class="va-card-row">
+        <div class="va-card">
+          <div class="va-card-num">01</div>
+          <div class="va-card-title">Protéines</div>
+          <div class="va-card-text">Shakes & gauffres</div>
+        </div>
+        <div class="va-card">
+          <div class="va-card-num">02</div>
+          <div class="va-card-title">Run Club</div>
+          <div class="va-card-text">Chaque mercredi</div>
+        </div>
+        <div class="va-card">
+          <div class="va-card-num">03</div>
+          <div class="va-card-title">Bilan</div>
+          <div class="va-card-text">30 min · Gratuit</div>
+        </div>
+      </div>
+    </div>
+    <div class="variant-badge">A — <strong>Pur Noir/Blanc</strong><br><span style="font-size:9px; opacity:0.6">Zéro couleur. Ultra-minimaliste.</span></div>
+  </div>
+
+  <!-- B: NOIR + OR CHAMPAGNE -->
+  <div class="variant-wrapper" onclick="pick(this, 'B')">
+    <div class="vb">
+      <div class="vb-nav">
+        <div class="vb-logo">Pessóra</div>
+        <div class="vb-links">
+          <span class="vb-link">Carte</span>
+          <span class="vb-link">Événements</span>
+          <span class="vb-link">Connexion</span>
+        </div>
+      </div>
+      <div class="vb-hero">
+        <div class="vb-eyebrow">Bar Protéiné · Fort-de-France</div>
+        <div class="vb-title">Nourris<br><em>l'essentiel</em></div>
+        <div class="vb-rule"></div>
+        <div class="vb-sub">Shakes · Gauffres · Bilan Bien-être</div>
+        <div class="vb-cta">Découvrir</div>
+      </div>
+      <div class="vb-card-row">
+        <div class="vb-card">
+          <div class="vb-card-num">01</div>
+          <div class="vb-card-title">Protéines</div>
+          <div class="vb-card-text">Shakes & gauffres</div>
+        </div>
+        <div class="vb-card">
+          <div class="vb-card-num">02</div>
+          <div class="vb-card-title">Run Club</div>
+          <div class="vb-card-text">Chaque mercredi</div>
+        </div>
+        <div class="vb-card">
+          <div class="vb-card-num">03</div>
+          <div class="vb-card-title">Bilan</div>
+          <div class="vb-card-text">30 min · Gratuit</div>
+        </div>
+      </div>
+    </div>
+    <div class="variant-badge">B — <strong>Noir + Or Champagne</strong><br><span style="font-size:9px; opacity:0.6">Comme Nespresso. Or très discret.</span></div>
+  </div>
+
+  <!-- C: INVERSÉ (nav blanche, hero noir) -->
+  <div class="variant-wrapper" onclick="pick(this, 'C')">
+    <div class="vc">
+      <div class="vc-nav">
+        <div class="vc-logo">Pessóra</div>
+        <div class="vc-links">
+          <span class="vc-link">Carte</span>
+          <span class="vc-link">Événements</span>
+          <span class="vc-link">Connexion</span>
+        </div>
+      </div>
+      <div class="vc-hero">
+        <div class="vc-eyebrow">Bar Protéiné · Fort-de-France</div>
+        <div class="vc-title">Nourris<br><em>l'essentiel</em></div>
+        <div class="vc-rule"></div>
+        <div class="vc-sub">Shakes · Gauffres · Bilan Bien-être</div>
+        <div class="vc-cta">Découvrir</div>
+      </div>
+      <div class="vc-card-row">
+        <div class="vc-card">
+          <div class="vc-card-num">01</div>
+          <div class="vc-card-title">Protéines</div>
+          <div class="vc-card-text">Shakes & gauffres</div>
+        </div>
+        <div class="vc-card">
+          <div class="vc-card-num">02</div>
+          <div class="vc-card-title">Run Club</div>
+          <div class="vc-card-text">Chaque mercredi</div>
+        </div>
+        <div class="vc-card">
+          <div class="vc-card-num">03</div>
+          <div class="vc-card-title">Bilan</div>
+          <div class="vc-card-text">30 min · Gratuit</div>
+        </div>
+      </div>
+    </div>
+    <div class="variant-badge">C — <strong>Inversé Nav Blanche</strong><br><span style="font-size:9px; opacity:0.6">Header clair + hero noir. Dynamique.</span></div>
+  </div>
+
+</div>
+
+<div class="footer-note">
+  A = #000 + #fff pur · B = #0a0a0a + #fff + accent #c9a96e · C = nav #fff / sections #000 alternées
+</div>
+
+<script>
+// Hook into superpowers if available
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof toggleSelect === 'undefined') {
+    window.toggleSelect = function() {};
+  }
+});
+</script>
+</body>
+</html>

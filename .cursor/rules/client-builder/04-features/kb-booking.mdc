@@ -1,0 +1,817 @@
+---
+description: Moteur de réservation - disponibilités, prix dynamique, sync iCal, confirmation booking
+globs: "**/app/**/*.ts,**/app/**/*.tsx,**/components/booking/**,**/lib/booking/**,**/lib/price-engine.ts,**/lib/ical-sync.ts"
+alwaysApply: false
+---
+
+# kb-booking — Moteur de réservation
+
+Pilier des projets conciergerie / locations saisonnières (type DIAMANTNOIR). Gère dispo, pricing, sync OTA, checkout Stripe, confirmation. Source de vérité : **Supabase**. Paiement : **Stripe Checkout**. Sync externe : **iCal (Airbnb / Booking / Expedia / Vrbo)**.
+
+## Complète / Ne remplace pas
+
+- `kb-supabase.mdc` — clients browser/server/admin, RLS, migrations
+- `kb-api-routes.mdc` — patterns Route Handlers Next.js 15
+- `kb-cart-checkout.mdc` — pattern Stripe Checkout générique (commerce)
+- `kb-components.mdc` — conventions UI, client/server components
+- `kb-auth.mdc` — magic link tenant, session espace-client
+
+Cette règle ajoute la **logique métier booking** : calendrier, pricing, overlap, iCal, cycle de vie d'une réservation.
+
+---
+
+## 1. Principes fondamentaux
+
+1. **Source de vérité Supabase.** Une réservation n'existe qu'après un insert dans `bookings`. Jamais de state local persistant côté client.
+2. **Prix calculé serveur.** Le client affiche une estimation ; le serveur re-calcule au moment du quote ET au moment du checkout. Le montant envoyé à Stripe vient **toujours** de `calculatePrice()` côté serveur.
+3. **Dates UTC en base, affichage localisé.** Stocker `date` ou `timestamptz` en UTC. Afficher en `Europe/Paris` (ou `America/Martinique` selon client). Utiliser `date-fns-tz`, jamais `toLocaleDateString` sans timezone.
+4. **Anti double-booking.** Un `EXCLUDE USING GIST` sur `daterange` en base + vérification server-side avant insert. **Jamais** se reposer sur la vérif client.
+5. **Idempotence partout.** Webhook Stripe, sync iCal, insert booking : tout doit pouvoir être rejoué sans doublon. `external_id` unique par (`villa_id`, `source`).
+6. **Statuts explicites.** `pending → confirmed → completed` (nominal). `pending → cancelled`, `confirmed → cancelled → refunded`. Jamais de mutation implicite.
+
+---
+
+## 2. Modèle de données
+
+Les cinq tables du domaine. RLS activée partout.
+
+```sql
+-- Bien immobilier / logement
+create table properties (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid references auth.users(id) on delete set null,
+  slug text unique not null,
+  name text not null,
+  location text,
+  capacity int not null default 2,
+  price_per_night numeric(10,2) not null,
+  cleaning_fee numeric(10,2) not null default 0,
+  min_nights int not null default 1,
+  max_nights int not null default 30,
+  checkin_time time default '16:00',
+  checkout_time time default '11:00',
+  timezone text not null default 'Europe/Paris',
+  ical_url text,                -- legacy canal unique
+  ota_channels jsonb default '[]'::jsonb, -- [{source, ical_url, label}]
+  ical_export_token text unique, -- pour URL publique .ics
+  created_at timestamptz default now()
+);
+
+-- Réservation (directe ou OTA)
+create table bookings (
+  id uuid primary key default gen_random_uuid(),
+  property_id uuid references properties(id) on delete cascade not null,
+  start_date date not null,
+  end_date date not null,
+  guest_count int not null default 1,
+  guest_name text,
+  guest_email text,
+  guest_phone text,
+  status text not null default 'pending'
+    check (status in ('pending','confirmed','cancelled','refunded','no_show','completed')),
+  payment_status text not null default 'unpaid'
+    check (payment_status in ('unpaid','paid','refunded','partial')),
+  source text not null default 'direct'
+    check (source in ('direct','airbnb','booking','expedia','vrbo','trivago')),
+  total_price numeric(10,2) not null default 0,
+  cleaning_fee numeric(10,2) not null default 0,
+  tourist_tax numeric(10,2) not null default 0,
+  stripe_session_id text,
+  stripe_payment_intent_id text,
+  external_id text,              -- UID iCal source externe
+  access_token uuid default gen_random_uuid(), -- guest voit via token
+  notes text,
+  created_at timestamptz default now(),
+  constraint booking_dates_valid check (end_date > start_date),
+  unique (property_id, external_id)
+);
+
+-- Blocage manuel du proprio (entretien, séjour perso)
+create table availability_blocks (
+  id uuid primary key default gen_random_uuid(),
+  property_id uuid references properties(id) on delete cascade not null,
+  start_date date not null,
+  end_date date not null,
+  reason text,
+  created_at timestamptz default now()
+);
+
+-- Règles de prix (saisonnier, weekend, long séjour)
+create table pricing_rules (
+  id uuid primary key default gen_random_uuid(),
+  property_id uuid references properties(id) on delete cascade not null,
+  kind text not null check (kind in ('seasonal','weekend','weekly_discount','min_stay')),
+  start_date date,
+  end_date date,
+  multiplier numeric(4,2),       -- ex: 1.5 pour haute saison
+  discount_percent int,          -- ex: 10 pour -10% sur 7+ nuits
+  priority int not null default 0
+);
+
+-- Flux iCal entrants (audit + last sync)
+create table ical_feeds (
+  id uuid primary key default gen_random_uuid(),
+  property_id uuid references properties(id) on delete cascade not null,
+  source text not null,
+  ical_url text not null,
+  last_sync_at timestamptz,
+  last_sync_status text,
+  last_error text,
+  inserted_count int default 0
+);
+
+-- Anti double-booking (exclusion sur ranges)
+create extension if not exists btree_gist;
+alter table bookings add column period daterange
+  generated always as (daterange(start_date, end_date, '[)')) stored;
+alter table bookings
+  add constraint bookings_no_overlap
+  exclude using gist (property_id with =, period with &&)
+  where (status in ('pending','confirmed'));
+```
+
+**Clé** : la contrainte `exclude` empêche en base deux bookings actifs qui se chevauchent. C'est la dernière ligne de défense — on valide aussi côté app pour un message propre.
+
+---
+
+## 3. Price engine
+
+**JAMAIS côté client pour le total envoyé à Stripe.** Le client peut estimer pour l'UX, le serveur est autoritaire.
+
+Pattern DIAMANTNOIR (simple, à étendre) — `lib/price-engine.ts` :
+
+```ts
+// lib/price-engine.ts — PUR, déterministe, testable
+import type { PricingRule } from '@/types';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+export interface PriceInput {
+  startDate: Date;
+  endDate: Date;
+  basePrice: number;
+  cleaningFee?: number;
+  touristTaxPerNight?: number;
+  rules?: PricingRule[];
+}
+
+export interface PriceBreakdown {
+  nights: number;
+  subtotal: number;        // base * nights, après multipliers
+  cleaningFee: number;
+  touristTax: number;
+  discount: number;        // long-stay
+  total: number;
+  lines: Array<{ label: string; amount: number }>;
+}
+
+export const calculatePrice = (input: PriceInput): PriceBreakdown => {
+  const { startDate, endDate, basePrice, cleaningFee = 0,
+          touristTaxPerNight = 0, rules = [] } = input;
+
+  const nights = Math.ceil((endDate.getTime() - startDate.getTime()) / DAY_MS);
+  if (nights <= 0) {
+    return emptyBreakdown();
+  }
+
+  // 1. Prix par nuit, appliquer les multipliers (saison, weekend)
+  let subtotal = 0;
+  for (let i = 0; i < nights; i++) {
+    const day = new Date(startDate.getTime() + i * DAY_MS);
+    subtotal += basePrice * nightMultiplier(day, rules);
+  }
+
+  // 2. Discount long séjour (7+ nuits)
+  const weekly = rules.find(r => r.kind === 'weekly_discount');
+  const discount = weekly && nights >= 7
+    ? Math.round(subtotal * (weekly.discount_percent! / 100))
+    : 0;
+
+  // 3. Taxe de séjour
+  const touristTax = Math.round(touristTaxPerNight * nights * input.guestCount ?? 1);
+
+  const total = subtotal - discount + cleaningFee + touristTax;
+
+  return {
+    nights,
+    subtotal,
+    cleaningFee,
+    touristTax,
+    discount,
+    total,
+    lines: [
+      { label: `${formatEur(basePrice)} × ${nights} nuit${nights > 1 ? 's' : ''}`, amount: subtotal },
+      ...(discount ? [{ label: `Remise ${weekly!.discount_percent}% (long séjour)`, amount: -discount }] : []),
+      ...(cleaningFee ? [{ label: 'Frais de ménage', amount: cleaningFee }] : []),
+      ...(touristTax ? [{ label: 'Taxe de séjour', amount: touristTax }] : []),
+    ],
+  };
+};
+
+const nightMultiplier = (day: Date, rules: PricingRule[]): number => {
+  // Haute saison d'abord (priorité)
+  const seasonal = rules
+    .filter(r => r.kind === 'seasonal')
+    .sort((a, b) => b.priority - a.priority)
+    .find(r => isWithin(day, r.start_date!, r.end_date!));
+  if (seasonal?.multiplier) return seasonal.multiplier;
+
+  // Weekend (ven-sam-dim)
+  const weekend = rules.find(r => r.kind === 'weekend');
+  if (weekend?.multiplier && [5, 6, 0].includes(day.getDay())) {
+    return weekend.multiplier;
+  }
+  return 1;
+};
+```
+
+**Ce qu'il faut retenir :**
+- Fonction pure → facile à tester unitairement (`Vitest`, snapshot breakdown).
+- `lines[]` nourrit directement l'UI récap et la metadata Stripe.
+- Jamais de `fetch` ou d'accès Supabase ici — la fonction reçoit déjà ses données.
+
+---
+
+## 4. Disponibilités
+
+Calcul dispo **exclusivement serveur**. Le front ne reconstruit jamais le calendrier depuis la liste brute des bookings sans passer par une vue serveur — sinon risque de leak.
+
+```ts
+// lib/booking/availability.ts
+import { createSupabaseServer } from '@/lib/supabase-server';
+import { addDays, differenceInDays } from 'date-fns';
+
+export interface AvailabilityCheck {
+  available: boolean;
+  conflicts: Array<{ start_date: string; end_date: string; source: string }>;
+  nights: number;
+}
+
+export async function checkAvailability(
+  propertyId: string,
+  startDate: string,  // 'YYYY-MM-DD'
+  endDate: string
+): Promise<AvailabilityCheck> {
+  const supabase = createSupabaseServer();
+
+  // Buffer checkout : 1 nuit de battement pour ménage (configurable par property)
+  const nights = differenceInDays(new Date(endDate), new Date(startDate));
+
+  const { data: conflicts, error } = await supabase
+    .from('bookings')
+    .select('start_date, end_date, source')
+    .eq('property_id', propertyId)
+    .in('status', ['pending', 'confirmed'])
+    .or(`and(start_date.lt.${endDate},end_date.gt.${startDate})`);
+
+  if (error) throw error;
+
+  const { data: blocks } = await supabase
+    .from('availability_blocks')
+    .select('start_date, end_date')
+    .eq('property_id', propertyId)
+    .or(`and(start_date.lt.${endDate},end_date.gt.${startDate})`);
+
+  return {
+    available: (conflicts?.length ?? 0) === 0 && (blocks?.length ?? 0) === 0,
+    conflicts: [...(conflicts ?? []), ...(blocks ?? []).map(b => ({ ...b, source: 'block' }))],
+    nights,
+  };
+}
+```
+
+**Vue SQL pour le calendrier public** (expose uniquement les plages, pas les données guest) :
+
+```sql
+create view booking_calendar_slots as
+select property_id, start_date, end_date, source
+from bookings
+where status in ('pending','confirmed')
+union all
+select property_id, start_date, end_date, 'block' as source
+from availability_blocks;
+
+-- RLS : anyone can select (c'est public par design)
+grant select on booking_calendar_slots to anon, authenticated;
+```
+
+---
+
+## 5. Sync iCal (Airbnb / Booking / Vrbo / Expedia)
+
+**Import** via `node-ical`. **Export** via un endpoint `.ics` signé par token. Tous les OTAs majeurs parlent iCal RFC 5545.
+
+### Import — pattern multi-sources
+
+```ts
+// lib/ical-sync.ts
+import ical from 'node-ical';
+import type { SupabaseClient } from '@supabase/supabase-js';
+
+export type OTASource = 'airbnb' | 'booking' | 'expedia' | 'vrbo' | 'trivago';
+
+export const detectOTASource = (url: string): OTASource | 'direct' => {
+  if (url.includes('airbnb.')) return 'airbnb';
+  if (url.includes('booking.com')) return 'booking';
+  if (url.includes('expedia.') || url.includes('homeaway.')) return 'expedia';
+  if (url.includes('vrbo.com')) return 'vrbo';
+  return 'direct';
+};
+
+export async function syncOTAChannel(
+  channel: { source: OTASource; ical_url: string },
+  propertyId: string,
+  supabase: SupabaseClient
+) {
+  const events = await ical.async.fromURL(channel.ical_url);
+
+  const rows = Object.values(events)
+    .filter(e => e.type === 'VEVENT')
+    .map(e => ({
+      property_id: propertyId,
+      start_date: toDateOnly(e.start as Date),
+      end_date: toDateOnly(e.end as Date),
+      status: 'confirmed' as const,
+      source: channel.source,
+      guest_name: e.summary || `Réservation ${channel.source}`,
+      total_price: 0,
+      // Namespacer par source pour éviter collision d'UIDs entre OTAs
+      external_id: `${channel.source}_${e.uid}`,
+    }));
+
+  if (!rows.length) return { inserted: 0, deleted: 0 };
+
+  const externalIds = rows.map(r => r.external_id);
+
+  // 1. Supprimer les bookings de cette source qui ne sont plus dans le flux
+  const { count: deleted } = await supabase
+    .from('bookings')
+    .delete({ count: 'exact' })
+    .eq('property_id', propertyId)
+    .eq('source', channel.source)
+    .not('external_id', 'in', `(${externalIds.map(id => `'${id}'`).join(',')})`);
+
+  // 2. Upsert les actuels (idempotent grâce au unique (property_id, external_id))
+  const { error } = await supabase
+    .from('bookings')
+    .upsert(rows, { onConflict: 'property_id,external_id' });
+
+  if (error) throw error;
+  return { inserted: rows.length, deleted: deleted ?? 0 };
+}
+```
+
+### Cron horaire (Vercel cron)
+
+```json
+// vercel.json
+{
+  "crons": [{ "path": "/api/sync", "schedule": "0 * * * *" }]
+}
+```
+
+```ts
+// app/api/sync/route.ts
+export const runtime = 'nodejs';
+
+export async function GET(req: Request) {
+  // Vercel cron injecte un header Authorization avec CRON_SECRET
+  const auth = req.headers.get('authorization');
+  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  const supabase = supabaseAdmin();
+  const results = await syncAllPropertiesOTA(supabase);
+  return Response.json({ synced: results.length, results });
+}
+```
+
+### Export `.ics` public
+
+```ts
+// app/api/ical/[token]/route.ts
+export async function GET(_: Request, { params }: { params: { token: string } }) {
+  const supabase = supabaseAdmin();
+  const { data: property } = await supabase
+    .from('properties')
+    .select('id, name, timezone')
+    .eq('ical_export_token', params.token)
+    .single();
+
+  if (!property) return new Response('Not found', { status: 404 });
+
+  const { data: bookings } = await supabase
+    .from('bookings')
+    .select('id, start_date, end_date, guest_name, source')
+    .eq('property_id', property.id)
+    .in('status', ['pending', 'confirmed']);
+
+  const ics = buildIcs(property, bookings ?? []);
+  return new Response(ics, {
+    headers: {
+      'Content-Type': 'text/calendar; charset=utf-8',
+      'Cache-Control': 'public, max-age=300', // 5min
+    },
+  });
+}
+```
+
+**Token dans l'URL** plutôt que params query (partage facile, révocable en regénérant).
+
+---
+
+## 6. BookingCalendar UI
+
+Deux patterns selon besoin :
+
+- **Lecture seule** (affichage dispo sur fiche) → `FullCalendar` background events, c'est ce qu'utilise DIAMANTNOIR (`components/booking/AvailabilityCalendar.tsx`).
+- **Sélection de dates** (checkout) → `react-day-picker` v8 en `range mode`, léger, accessible, contrôlable.
+
+```tsx
+// components/booking/DateRangePicker.tsx
+'use client';
+import { DayPicker, type DateRange } from 'react-day-picker';
+import { fr } from 'date-fns/locale';
+import { differenceInDays } from 'date-fns';
+
+interface Props {
+  propertyId: string;
+  minNights: number;
+  maxNights: number;
+  blockedRanges: Array<{ start: Date; end: Date }>;
+  onSelect: (range: DateRange | undefined) => void;
+}
+
+export function DateRangePicker({ minNights, maxNights, blockedRanges, onSelect }: Props) {
+  const disabled = [
+    { before: new Date() },
+    ...blockedRanges.map(r => ({ from: r.start, to: r.end })),
+  ];
+
+  return (
+    <DayPicker
+      mode="range"
+      locale={fr}
+      numberOfMonths={2}
+      disabled={disabled}
+      onSelect={(range) => {
+        if (range?.from && range?.to) {
+          const nights = differenceInDays(range.to, range.from);
+          if (nights < minNights || nights > maxNights) return;
+        }
+        onSelect(range);
+      }}
+    />
+  );
+}
+```
+
+**À éviter** : date inputs HTML natifs sur desktop pour le range. OK pour mobile (clavier natif OS) — pattern DIAMANTNOIR `PriceCalculator.tsx` l'assume.
+
+---
+
+## 7. Flow de réservation (5 étapes)
+
+```
+ ┌────────┐   ┌──────┐   ┌──────┐   ┌──────────────┐   ┌──────────────┐
+ │ Select │ → │Quote │ → │Guest │ → │Stripe Checkout│ → │ Webhook      │
+ │ dates  │   │Server│   │Form  │   │Session        │   │ confirm+send │
+ └────────┘   └──────┘   └──────┘   └──────────────┘   └──────────────┘
+   client     server      client      server               server
+```
+
+1. **Select dates** (client) — DateRangePicker, affichage prix estimé.
+2. **Quote** (server action) — `createBookingQuote()` recalcule le prix, vérifie dispo, retourne un `quoteId` (stocké en cache 15min) + breakdown signé.
+3. **Guest form** (client) — nom / email / tel / nb voyageurs / CGU. Valide avec Zod.
+4. **Payment intent** (server action) — `confirmBooking()` insère un `booking status='pending'`, crée la Stripe Checkout Session, redirect.
+5. **Webhook** (route handler) — `checkout.session.completed` → update `status='confirmed', payment_status='paid'`, trigger email confirmation.
+
+**Ne jamais** faire l'insert final (status confirmed) avant le webhook Stripe. Le webhook est la seule source d'autorité du paiement.
+
+---
+
+## 8. Server Actions et API Routes
+
+### Quote — Server Action
+
+```ts
+// app/actions/booking.ts
+'use server';
+import { z } from 'zod';
+import { createSupabaseServer } from '@/lib/supabase-server';
+import { calculatePrice } from '@/lib/price-engine';
+import { checkAvailability } from '@/lib/booking/availability';
+
+const QuoteInput = z.object({
+  propertyId: z.string().uuid(),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  guestCount: z.number().int().positive().max(30),
+});
+
+export async function createBookingQuote(raw: unknown) {
+  const input = QuoteInput.parse(raw);
+
+  const supabase = createSupabaseServer();
+  const { data: property, error } = await supabase
+    .from('properties')
+    .select('*, pricing_rules(*)')
+    .eq('id', input.propertyId)
+    .single();
+
+  if (error || !property) return { error: 'Property not found' };
+  if (input.guestCount > property.capacity) {
+    return { error: `Capacité max ${property.capacity}` };
+  }
+
+  const availability = await checkAvailability(
+    input.propertyId, input.startDate, input.endDate
+  );
+  if (!availability.available) return { error: 'Dates indisponibles' };
+
+  const price = calculatePrice({
+    startDate: new Date(input.startDate),
+    endDate: new Date(input.endDate),
+    basePrice: property.price_per_night,
+    cleaningFee: property.cleaning_fee,
+    rules: property.pricing_rules,
+  });
+
+  return { quote: { ...price, propertyId: input.propertyId, ...input } };
+}
+```
+
+### Confirm + Stripe Session — Route Handler
+
+```ts
+// app/api/booking/route.ts
+import { NextResponse } from 'next/server';
+import Stripe from 'stripe';
+import { supabaseAdmin } from '@/lib/supabase';
+import { calculatePrice } from '@/lib/price-engine';
+import { checkAvailability } from '@/lib/booking/availability';
+
+export const runtime = 'nodejs';
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: '2023-10-16' });
+
+export async function POST(req: Request) {
+  const { propertyId, startDate, endDate, guestCount, guestName, guestEmail } = await req.json();
+
+  // 1. RE-VALIDER côté serveur (jamais trust le client)
+  const supabase = supabaseAdmin();
+  const { data: property } = await supabase.from('properties')
+    .select('*, pricing_rules(*)').eq('id', propertyId).single();
+  if (!property) return NextResponse.json({ error: 'Property not found' }, { status: 404 });
+
+  const availability = await checkAvailability(propertyId, startDate, endDate);
+  if (!availability.available) {
+    return NextResponse.json({ error: 'Dates indisponibles' }, { status: 409 });
+  }
+
+  const price = calculatePrice({
+    startDate: new Date(startDate), endDate: new Date(endDate),
+    basePrice: property.price_per_night, cleaningFee: property.cleaning_fee,
+    rules: property.pricing_rules,
+  });
+
+  // 2. Insert booking pending (la contrainte exclude empêche tout overlap)
+  const { data: booking, error: insertError } = await supabase
+    .from('bookings')
+    .insert({
+      property_id: propertyId, start_date: startDate, end_date: endDate,
+      guest_count: guestCount, guest_name: guestName, guest_email: guestEmail,
+      status: 'pending', payment_status: 'unpaid', source: 'direct',
+      total_price: price.total, cleaning_fee: price.cleaningFee,
+    })
+    .select().single();
+  if (insertError) {
+    // Code 23P01 = exclusion violation (overlap)
+    if (insertError.code === '23P01') {
+      return NextResponse.json({ error: 'Dates réservées entre-temps' }, { status: 409 });
+    }
+    throw insertError;
+  }
+
+  // 3. Stripe Checkout Session
+  const session = await stripe.checkout.sessions.create({
+    mode: 'payment',
+    customer_email: guestEmail,
+    success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/booking/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/properties/${property.slug}?cancelled=1`,
+    metadata: { bookingId: booking.id, propertyId },
+    line_items: [{
+      quantity: 1,
+      price_data: {
+        currency: 'eur',
+        unit_amount: Math.round(price.total * 100),
+        product_data: {
+          name: `Séjour — ${property.name}`,
+          description: `${startDate} → ${endDate} (${price.nights} nuits)`,
+        },
+      },
+    }],
+    // Expire le pending si pas payé
+    expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
+  });
+
+  await supabase.from('bookings')
+    .update({ stripe_session_id: session.id }).eq('id', booking.id);
+
+  return NextResponse.json({ url: session.url, bookingId: booking.id });
+}
+```
+
+### Webhook Stripe — idempotent
+
+```ts
+// app/api/webhooks/stripe/route.ts
+export const runtime = 'nodejs';
+
+export async function POST(req: Request) {
+  const body = await req.text();
+  const sig = req.headers.get('stripe-signature');
+  if (!sig) return NextResponse.json({ error: 'Missing signature' }, { status: 400 });
+
+  let event: Stripe.Event;
+  try {
+    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!);
+  } catch (err) {
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object as Stripe.Checkout.Session;
+    const bookingId = session.metadata?.bookingId;
+    if (!bookingId) return NextResponse.json({ received: true });
+
+    const supabase = supabaseAdmin();
+
+    // Idempotence : update conditional — si déjà confirmed, no-op
+    const { data: updated } = await supabase
+      .from('bookings')
+      .update({
+        status: 'confirmed',
+        payment_status: 'paid',
+        stripe_payment_intent_id: session.payment_intent as string,
+      })
+      .eq('id', bookingId)
+      .eq('status', 'pending')  // ← idempotent
+      .select().single();
+
+    if (updated) {
+      // Envoi email — fire and forget, ne pas bloquer le webhook
+      fetch(`${baseUrl}/api/notifications/booking-confirmation`, {
+        method: 'POST',
+        body: JSON.stringify({ bookingId }),
+      }).catch(e => console.error('Email failed:', e));
+    }
+  }
+
+  if (event.type === 'checkout.session.expired') {
+    const session = event.data.object as Stripe.Checkout.Session;
+    await supabaseAdmin().from('bookings')
+      .update({ status: 'cancelled' })
+      .eq('stripe_session_id', session.id).eq('status', 'pending');
+  }
+
+  return NextResponse.json({ received: true });
+}
+```
+
+---
+
+## 9. RLS et sécurité
+
+Trois rôles : **anon** (guest qui réserve), **authenticated** (owner, admin), **service_role** (webhooks, crons).
+
+```sql
+alter table bookings enable row level security;
+alter table properties enable row level security;
+alter table availability_blocks enable row level security;
+
+-- Guest voit SA réservation via access_token (URL signée)
+create policy "guest_via_token" on bookings for select
+  using (access_token::text = current_setting('request.jwt.claims', true)::json->>'booking_token');
+
+-- Owner voit les réservations de ses properties
+create policy "owner_reads_bookings" on bookings for select
+  using (exists (
+    select 1 from properties p
+    where p.id = bookings.property_id and p.owner_id = auth.uid()
+  ));
+
+-- Admin tout
+create policy "admin_all" on bookings for all
+  using (auth.jwt() ->> 'role' = 'admin');
+
+-- Anon NE PEUT PAS insérer directement : seul le service_role via API le fait
+-- (pas de policy insert → refusé par défaut)
+
+-- Properties : public en lecture (catalogue), owner/admin en write
+create policy "public_reads_properties" on properties for select
+  using (true);
+create policy "owner_updates_property" on properties for update
+  using (owner_id = auth.uid());
+```
+
+**Accès guest à sa confirmation** : URL `/booking/success?session_id=cs_xxx` → le serveur lookup via `supabaseAdmin` (service_role contourne RLS) avec `session_id`, retourne un payload minimal sans PII d'autres bookings (pattern DIAMANTNOIR `app/api/booking-session/route.ts`). Rate-limiter l'endpoint.
+
+---
+
+## 10. Emails transactionnels
+
+Voir `kb-notifications.mdc` pour la config Resend/Postmark. À déclencher :
+
+- **Booking confirmation** (guest) : immédiat après webhook `checkout.session.completed`.
+- **New booking alert** (owner/admin) : idem, via route `/api/notifications/booking-alert`.
+- **Booking cancelled** (guest + owner) : après transition `→ cancelled`.
+- **Checkin reminder** (guest) : cron J-2, template avec welcome book + code porte.
+- **Review request** (guest) : cron J+1 après `end_date`.
+
+**Toujours** via route handler (pas depuis le webhook Stripe directement) pour timeout isolé. Pattern : fire-and-forget + retry SQS-like via table `email_queue` si premier envoi échoue.
+
+---
+
+## 11. Gestion des statuts
+
+Machine d'états stricte. Seules ces transitions sont autorisées :
+
+| De        | Vers         | Trigger                          |
+|-----------|--------------|----------------------------------|
+| `pending` | `confirmed`  | Webhook `checkout.session.completed` |
+| `pending` | `cancelled`  | Webhook `checkout.session.expired` OU action admin |
+| `confirmed` | `cancelled`| Action guest (via token, si politique le permet) OU admin |
+| `cancelled` | `refunded` | Admin + Stripe refund |
+| `confirmed` | `completed`| Cron quotidien, quand `end_date < today` |
+| `confirmed` | `no_show`  | Admin seul |
+
+Encoder via un helper + triggers Postgres en complément :
+
+```ts
+// lib/booking/state-machine.ts
+const ALLOWED: Record<string, string[]> = {
+  pending: ['confirmed', 'cancelled'],
+  confirmed: ['cancelled', 'completed', 'no_show'],
+  cancelled: ['refunded'],
+  completed: [],
+  refunded: [],
+  no_show: [],
+};
+
+export function canTransition(from: string, to: string): boolean {
+  return ALLOWED[from]?.includes(to) ?? false;
+}
+```
+
+---
+
+## 12. Anti-patterns
+
+À ne **jamais** faire :
+
+1. **Calcul de prix côté client envoyé à Stripe.** Le client peut manipuler la valeur. Serveur recalcule toujours.
+2. **`select * from bookings where dates overlap` côté client** pour vérifier dispo. Leak des données guest + logique bypassable. → Server action ou vue `booking_calendar_slots`.
+3. **Insert direct sans la contrainte `exclude` GIST.** Deux requêtes concurrentes peuvent passer la vérif app puis toutes deux insérer. La contrainte base est la seule garantie atomique.
+4. **Update du status sans filtre d'état actuel.** `update ... where id = ?` peut overwrite une annulation en cours. Toujours `where id = ? and status = 'pending'`.
+5. **Timezone implicite.** `new Date('2026-05-01')` interprète UTC ou local selon le contexte. Utiliser `date-fns-tz` + toujours spécifier la TZ de la property.
+6. **Webhook non-idempotent.** Stripe peut livrer 2x le même événement. Filtrer sur `status = 'pending'` dans l'update, stocker `event.id` pour dédupliquer si besoin.
+7. **Magic link de confirmation guest dans l'URL.** `access_token` uuid oui, jamais de JWT long ou de données en clair.
+8. **Sync iCal sans `external_id` namespacé par source.** Deux OTAs peuvent utiliser le même UID → collision. Prefixer : `${source}_${uid}`.
+9. **Oubli du buffer checkout.** Un guest part à 11h, le suivant arrive à 16h. Si `end_date = start_date` du suivant autorisé, OK ; mais si ménage 1 jour requis, bloquer J+1. Configurable par property.
+10. **Double envoi d'email de confirmation.** Trigger d'email dans le webhook → le webhook est rejoué → 2 emails. Soit tracker dans `email_sent_at` column, soit idempotence via `where email_sent_at is null`.
+11. **Exposer `stripe_session_id` côté client longtemps.** OK pour la redirect `/success?session_id=cs_xxx` immédiate, pas à long terme en URL.
+12. **Cron iCal sans auth.** `/api/sync` doit vérifier `CRON_SECRET` sinon n'importe qui peut DOS les OTAs.
+
+---
+
+## 13. Checklist avant livraison
+
+- [ ] Contrainte `exclude using gist` active sur `bookings` (test: essayer d'insérer 2 bookings qui se chevauchent → PostgreSQL refuse).
+- [ ] `calculatePrice()` couvert par tests unitaires (weekend, saison, long stay, ménage, taxe).
+- [ ] RLS testées : anon ne peut pas lire toutes les bookings ; owner ne voit que les siennes ; guest via token only.
+- [ ] Webhook Stripe vérifie signature + idempotent (rejouer 2x le même event → un seul email).
+- [ ] Cron `/api/sync` protégé par `CRON_SECRET`, log les erreurs dans `ical_feeds.last_error`.
+- [ ] Import iCal testé avec les 4 OTAs majeurs (Airbnb, Booking, Vrbo, Expedia) — UIDs conservés, bookings mis à jour sans doublon.
+- [ ] Export `.ics` téléchargeable via `ical_export_token`, TTL cache 5min.
+- [ ] Checkout Stripe expire à 30min (pending cleanup automatique).
+- [ ] Email confirmation envoyé, template testé (preview via Resend/Postmark dashboard).
+- [ ] Page `/booking/success?session_id=...` rate-limitée, ne leak pas de PII si booking pas confirmé.
+- [ ] Timezone de la property respectée pour l'affichage (guest en Asie voit bien "arrivée 16h heure locale Martinique").
+- [ ] State machine testée : toutes transitions autorisées OK, toutes interdites rejetées.
+- [ ] Calendrier public (`booking_calendar_slots`) ne leak que dates + source, jamais nom/email guest.
+
+---
+
+**Fichiers de référence DIAMANTNOIR** (patterns validés en prod) :
+- `lib/price-engine.ts` — moteur de prix pur
+- `lib/ical-sync.ts` — sync Airbnb de base
+- `lib/ota-hub.ts` — hub multi-OTAs (Airbnb, Booking, Vrbo, Expedia, Trivago)
+- `app/api/booking/route.ts` — création booking + Stripe Checkout
+- `app/api/webhooks/stripe/route.ts` — webhook confirmation
+- `app/api/sync/route.ts` — cron Vercel horaire
+- `app/api/sync-ota/route.ts` — sync manuelle depuis dashboard
+- `app/api/booking-session/route.ts` — lookup post-paiement rate-limité
+- `components/booking/AvailabilityCalendar.tsx` — FullCalendar read-only
+- `components/booking/PriceCalculator.tsx` — widget estimation client
+- `components/booking/CheckoutView.tsx` — récap + paiement

@@ -1,0 +1,106 @@
+<h2>Design Cycle 2 — MRR + Paiements échoués Admin</h2>
+<p class="subtitle">Où et comment afficher ces données dans l'admin ?</p>
+
+<div class="section">
+  <h3>Option A — Tout dans AdminOverview (une seule page)</h3>
+  <div class="mockup">
+    <div class="mockup-header">AdminOverview — état actuel + nouveaux blocs</div>
+    <div class="mockup-body" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px">
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:12px;text-align:center">
+        <div style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Membres</div>
+        <div style="font-size:20px;font-weight:300;color:#111">142</div>
+      </div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:12px;text-align:center">
+        <div style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Abonnés actifs</div>
+        <div style="font-size:20px;font-weight:300;color:#111">38</div>
+      </div>
+      <div style="background:#eef2ff;border:2px solid #6366f1;border-radius:4px;padding:12px;text-align:center">
+        <div style="font-size:9px;color:#6366f1;text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:4px">MRR ★ NOUVEAU</div>
+        <div style="font-size:20px;font-weight:300;color:#111">946,20€</div>
+        <div style="font-size:9px;color:#6b7280">38 × 24,90€</div>
+      </div>
+      <div style="background:#fef2f2;border:2px solid #ef4444;border-radius:4px;padding:12px;text-align:center">
+        <div style="font-size:9px;color:#ef4444;text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:4px">Échoués ★ NOUVEAU</div>
+        <div style="font-size:20px;font-weight:300;color:#111">3</div>
+        <div style="font-size:9px;color:#6b7280">membres expired</div>
+      </div>
+    </div>
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:4px;padding:10px;margin-bottom:8px">
+      <div style="font-size:9px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">★ Paiements échoués — NOUVEAU</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#374151;background:white;border-radius:3px;padding:5px 8px">
+          <span>Marie D. — marie@email.com</span><span style="color:#ef4444">expired depuis 3j</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#374151;background:white;border-radius:3px;padding:5px 8px">
+          <span>Jean-Paul M. — jp@email.com</span><span style="color:#ef4444">expired depuis 7j</span>
+        </div>
+      </div>
+    </div>
+    <div style="background:#f8fafc;border:1px dashed #e2e8f0;border-radius:4px;padding:8px;text-align:center;font-size:11px;color:#9ca3af">
+      … reste de l'AdminOverview inchangé …
+    </div>
+  </div>
+  <div class="pros-cons" style="margin-top:.5rem">
+    <div class="pros"><h4>Pour</h4><ul><li>Tout visible en une page</li><li>Moins de navigation</li></ul></div>
+    <div class="cons"><h4>Contre</h4><ul><li>AdminOverview devient chargée</li></ul></div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Option B — MRR dans AdminOverview + Échoués dans AdminMembers</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+    <div class="mockup">
+      <div class="mockup-header">AdminOverview — KPI MRR ajouté</div>
+      <div class="mockup-body" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:6px">
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:10px;text-align:center">
+          <div style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Membres</div>
+          <div style="font-size:18px;font-weight:300;color:#111">142</div>
+        </div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;padding:10px;text-align:center">
+          <div style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">Abonnés</div>
+          <div style="font-size:18px;font-weight:300;color:#111">38</div>
+        </div>
+        <div style="background:#eef2ff;border:2px solid #6366f1;border-radius:4px;padding:10px;text-align:center">
+          <div style="font-size:9px;color:#6366f1;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">MRR ★</div>
+          <div style="font-size:18px;font-weight:300;color:#111">946€</div>
+        </div>
+      </div>
+      <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:4px;padding:8px;text-align:center;font-size:11px;color:#856404">
+        ⚠ 3 paiements échoués → voir AdminMembers
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">AdminMembers — onglet "Échoués" ajouté</div>
+      <div class="mockup-body">
+        <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
+          <span style="font-size:10px;border:1px solid #e2e8f0;border-radius:20px;padding:3px 10px;color:#6b7280">Tous</span>
+          <span style="font-size:10px;border:1px solid #e2e8f0;border-radius:20px;padding:3px 10px;color:#6b7280">Gratuit</span>
+          <span style="font-size:10px;border:1px solid #e2e8f0;border-radius:20px;padding:3px 10px;color:#6b7280">Óra+</span>
+          <span style="font-size:10px;border:2px solid #ef4444;border-radius:20px;padding:3px 10px;color:#ef4444;font-weight:600">⚠ Échoués (3)</span>
+        </div>
+        <div style="font-size:11px;color:#6b7280;text-align:center;padding:8px">Liste filtrée des membres expired…</div>
+      </div>
+    </div>
+  </div>
+  <div class="pros-cons" style="margin-top:.5rem">
+    <div class="pros"><h4>Pour</h4><ul><li>Logique : échoués = problème membre → AdminMembers</li><li>AdminOverview reste propre</li></ul></div>
+    <div class="cons"><h4>Contre</h4><ul><li>Navigation entre 2 pages</li></ul></div>
+  </div>
+</div>
+
+<div class="options" style="margin-top:1rem">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Tout dans AdminOverview</h3>
+      <p>MRR + alertes échoués + liste compacte — une seule page</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>MRR dans Overview + Échoués dans AdminMembers</h3>
+      <p>KPI MRR dans Overview, onglet "Échoués" dans la liste membres</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,40 @@
+ALTER TABLE public.gamme_products
+  ADD COLUMN IF NOT EXISTS slug TEXT UNIQUE;
+
+-- Slugs pour les 36 produits existants (nom → slug)
+UPDATE public.gamme_products SET slug = 'formula-1-950g'              WHERE name = 'Formula 1 950g';
+UPDATE public.gamme_products SET slug = 'creatine'                    WHERE name = 'Créatine';
+UPDATE public.gamme_products SET slug = 'rebuild-whey'                WHERE name = 'Rebuild Whey';
+UPDATE public.gamme_products SET slug = 'gel-prolong'                 WHERE name = 'Gel Prolong';
+UPDATE public.gamme_products SET slug = 'electrolytes-cr7-boite'      WHERE name = 'Electrolytes CR7 Boîte';
+UPDATE public.gamme_products SET slug = 'electrolytes-sachet-x10'     WHERE name = 'Electrolytes Sachet x10';
+UPDATE public.gamme_products SET slug = 'omega-3'                     WHERE name = 'Omega 3';
+UPDATE public.gamme_products SET slug = 'hydrate'                     WHERE name = 'Hydrate';
+UPDATE public.gamme_products SET slug = 'protein-drink-pdm'           WHERE name = 'Protein Drink PDM';
+UPDATE public.gamme_products SET slug = 'liftoff-pamplemousse'        WHERE name = 'LiftOff Pamplemousse';
+UPDATE public.gamme_products SET slug = 'liftoff-citron'              WHERE name = 'LiftOff Citron';
+UPDATE public.gamme_products SET slug = 'chips-bbq-onions-x10'        WHERE name = 'Chips BBQ Onions x10';
+UPDATE public.gamme_products SET slug = 'barre-sport-x6'              WHERE name = 'Barre Sport x6';
+UPDATE public.gamme_products SET slug = 'barre-cereales-x7'           WHERE name = 'Barre Céréales x7';
+UPDATE public.gamme_products SET slug = 'barres-collations-x14'       WHERE name = 'Barres Collations x14';
+UPDATE public.gamme_products SET slug = 'gel-nettoyant-resurface'     WHERE name = 'Gel Nettoyant Resurface';
+UPDATE public.gamme_products SET slug = 'gommage'                     WHERE name = 'Gommage';
+UPDATE public.gamme_products SET slug = 'lotion-tonique-revitalisant' WHERE name = 'Lotion Tonique Revitalisant';
+UPDATE public.gamme_products SET slug = 'masque-d-argile'             WHERE name = 'Masque d''Argile';
+UPDATE public.gamme_products SET slug = 'exfoliant'                   WHERE name = 'Exfoliant';
+UPDATE public.gamme_products SET slug = 'creme-hydratante-fps-30'     WHERE name = 'Crème Hydratante FPS 30';
+UPDATE public.gamme_products SET slug = 'creme-hydrant-eclat'         WHERE name = 'Crème Hydrant Éclat';
+UPDATE public.gamme_products SET slug = 'lotion-nourrissante'         WHERE name = 'Lotion Nourrissante';
+UPDATE public.gamme_products SET slug = 'gel-contour-yeux'            WHERE name = 'Gel Contour Yeux';
+UPDATE public.gamme_products SET slug = 'creme-hydrant-yeux'          WHERE name = 'Crème Hydrant Yeux';
+UPDATE public.gamme_products SET slug = 'creme-contour-yeux'          WHERE name = 'Crème Contour Yeux';
+UPDATE public.gamme_products SET slug = 'serum-rides'                 WHERE name = 'Sérum Rides';
+UPDATE public.gamme_products SET slug = 'serum-niacinamide-10'        WHERE name = 'Sérum Niacinamide 10%';
+UPDATE public.gamme_products SET slug = 'creme-tension-ultime'        WHERE name = 'Crème Tension Ultime';
+UPDATE public.gamme_products SET slug = 'creme-de-nuit'               WHERE name = 'Crème de Nuit';
+UPDATE public.gamme_products SET slug = 'aloe-vera'                   WHERE name = 'Aloe Vera';
+UPDATE public.gamme_products SET slug = 'collagene'                   WHERE name = 'Collagène';
+UPDATE public.gamme_products SET slug = 'the-detox'                   WHERE name = 'Thé Detox';
+UPDATE public.gamme_products SET slug = 'fibres'                      WHERE name = 'Fibres';
+UPDATE public.gamme_products SET slug = 'complex-vitamine'            WHERE name = 'Complex Vitamine';
+UPDATE public.gamme_products SET slug = 'mineral-complex'             WHERE name = 'Minéral Complex';

@@ -1,0 +1,574 @@
+---
+description: Wishlist et Compare - localStorage guest + sync Supabase logged-in, merge automatique, compare tableau
+globs: "**/store/wishlist*,**/store/compare*,**/context/Wishlist*,**/components/wishlist/**,**/components/compare/**,**/hooks/useWishlist*,**/hooks/useCompare*"
+alwaysApply: false
+---
+
+# Wishlist et Compare — Règles Karibloom
+
+Deux features jumelles sur les sites e-commerce (DALCIELO) et conciergerie (DIAMANTNOIR) :
+
+- **Wishlist (favoris)** : sauvegarder des propriétés / produits favoris, sync entre devices si logged-in, conservation en localStorage si guest.
+- **Compare (comparateur)** : sélectionner 2 à 4 items (villas, produits) et les comparer côte à côte dans un tableau.
+
+Mêmes patterns de persistance, même logique de merge au login, même traitement hydration SSR.
+
+**Complète, ne remplace pas** : `kb-supabase.mdc`, `kb-auth.mdc`, `kb-components.mdc`. La wishlist / compare s'appuient sur la session Supabase, les RLS, et les cards produit/propriété existantes.
+
+---
+
+## 1. Principes fondamentaux
+
+**Guest (non connecté)** → `localStorage`
+- Clé versionnée : `kb_wishlist_v1`, `kb_compare_v1`
+- Purement côté client, aucun appel réseau
+- Survit aux reloads, pas aux changements de device
+
+**Logged-in (connecté)** → DB Supabase
+- Table `wishlist_items` et `compare_items`
+- RLS : `user_id = auth.uid()` pour chaque row
+- Sync temps réel via le store (optimistic UI + rollback si erreur)
+
+**Au login** → merge localStorage → DB
+- Upsert tous les items locaux vers la DB
+- Puis vider le localStorage
+- Si conflit (même `item_id` déjà en DB) → `ignoreDuplicates: true`
+
+**Au logout** → reset le store
+- Vider `items` en mémoire
+- Vider `localStorage` (pour ne pas mélanger deux comptes sur le même device)
+
+**Une seule source de vérité à un instant T.** Connecté = DB. Guest = localStorage. Jamais les deux en même temps.
+
+---
+
+## 2. Modèle de données
+
+### Table `wishlist_items`
+
+```sql
+create table if not exists wishlist_items (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid not null references auth.users(id) on delete cascade,
+  item_id    uuid not null,
+  item_type  text not null check (item_type in ('villa','product','service')),
+  created_at timestamptz not null default now(),
+  unique(user_id, item_id, item_type)
+);
+
+create index wishlist_items_user_idx on wishlist_items(user_id);
+alter table wishlist_items enable row level security;
+```
+
+### Table `compare_items`
+
+```sql
+create table if not exists compare_items (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid not null references auth.users(id) on delete cascade,
+  item_id    uuid not null,
+  item_type  text not null check (item_type in ('villa','product','service')),
+  position   smallint not null default 0,
+  created_at timestamptz not null default now(),
+  unique(user_id, item_id, item_type)
+);
+
+alter table compare_items enable row level security;
+```
+
+**Contrainte `unique(user_id, item_id, item_type)`** obligatoire — empêche les doublons côté DB et permet l'upsert avec `onConflict`.
+
+**On stocke uniquement l'ID + le type**, pas les détails de l'item (nom, image, prix). Le détail sera re-fetch au render. Évite le drift entre les données persistées et les données à jour.
+
+**Référence projet** : voir `DIAMANTNOIR/diamant-noir/supabase/migrations/wishlist.sql` pour un exemple quasi identique (version villa-only).
+
+---
+
+## 3. Store Zustand avec middleware `persist`
+
+Pour un code client minimal et reactive, **Zustand + middleware persist** sur la clé localStorage. Alternative acceptable : React Context (voir `DIAMANTNOIR/diamant-noir/contexts/WishlistContext.tsx`) mais Zustand scale mieux dès qu'on a plusieurs features de persistance.
+
+```ts
+// store/wishlist.ts
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+
+export type ItemType = "villa" | "product" | "service";
+
+interface WishlistState {
+  items: { itemId: string; itemType: ItemType }[];
+  toggle: (itemId: string, itemType: ItemType) => void;
+  isInWishlist: (itemId: string) => boolean;
+  clear: () => void;
+  setAll: (items: WishlistState["items"]) => void; // utilisé par le sync
+}
+
+export const useWishlist = create<WishlistState>()(
+  persist(
+    (set, get) => ({
+      items: [],
+      toggle: (itemId, itemType) => {
+        const exists = get().items.some((i) => i.itemId === itemId);
+        set({
+          items: exists
+            ? get().items.filter((i) => i.itemId !== itemId)
+            : [...get().items, { itemId, itemType }],
+        });
+      },
+      isInWishlist: (itemId) => get().items.some((i) => i.itemId === itemId),
+      clear: () => set({ items: [] }),
+      setAll: (items) => set({ items }),
+    }),
+    {
+      name: "kb_wishlist_v1",
+      // ne persiste QUE les items — pas les fonctions
+      partialize: (s) => ({ items: s.items }),
+    }
+  )
+);
+```
+
+**Clé versionnée `kb_wishlist_v1`** : si le shape change, passer à `v2` force un reset propre chez les utilisateurs existants.
+
+Store `compare` strictement identique, avec en plus une limite (cf. section 5).
+
+---
+
+## 4. Hook de sync Supabase
+
+Le hook `useWishlistSync()` est monté **une seule fois** dans un layout racine côté client. Il gère :
+
+1. Au mount, si user → fetch DB → set le store
+2. Si items en local pas en DB → upsert + clear local (merge au login)
+3. Si no user → ne touche à rien (guest pur)
+4. Réactif aux changements de `useUser()` (login/logout)
+
+```ts
+// hooks/useWishlistSync.ts
+"use client";
+import { useEffect } from "react";
+import { useWishlist } from "@/store/wishlist";
+import { createClient } from "@/lib/supabase-browser";
+import { useUser } from "@/hooks/useUser";
+
+export function useWishlistSync() {
+  const user = useUser();
+  const { items, setAll, clear } = useWishlist();
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    // Logout : reset le store en mémoire et en local
+    if (!user) {
+      clear();
+      return;
+    }
+
+    (async () => {
+      // 1. Fetch la DB
+      const { data: dbItems = [] } = await supabase
+        .from("wishlist_items")
+        .select("item_id, item_type")
+        .eq("user_id", user.id);
+
+      // 2. Merge : items locaux pas encore en DB
+      const dbKeys = new Set(dbItems.map((i) => `${i.item_type}:${i.item_id}`));
+      const toUpsert = items
+        .filter((l) => !dbKeys.has(`${l.itemType}:${l.itemId}`))
+        .map((l) => ({
+          user_id: user.id,
+          item_id: l.itemId,
+          item_type: l.itemType,
+        }));
+
+      if (toUpsert.length > 0) {
+        await supabase
+          .from("wishlist_items")
+          .upsert(toUpsert, {
+            onConflict: "user_id,item_id,item_type",
+            ignoreDuplicates: true,
+          });
+      }
+
+      // 3. Source de vérité = DB + items qu'on vient d'upsert
+      const merged = [
+        ...dbItems.map((d) => ({ itemId: d.item_id, itemType: d.item_type })),
+        ...toUpsert.map((t) => ({ itemId: t.item_id, itemType: t.item_type })),
+      ];
+      setAll(merged);
+    })();
+  }, [user?.id]); // seulement quand l'identité user change
+}
+```
+
+**Pourquoi `user?.id` en dep et pas `user` entier** → évite de relancer le sync à chaque re-render si `useUser()` retourne un nouvel objet à référence différente.
+
+**Montage** : une seule fois dans `app/providers.tsx` ou équivalent, via un composant vide `<WishlistSyncMount />`.
+
+---
+
+## 5. Limite Compare : max 4 items
+
+Différence clé avec la wishlist : **limite dure sur le nombre d'items simultanés**. 2 minimum pour qu'une comparaison ait du sens, 4 maximum pour tenir sur desktop en colonnes.
+
+```ts
+// store/compare.ts — extrait
+const MAX_COMPARE = 4;
+
+add: (itemId, itemType) => {
+  const current = get().items;
+  if (current.length >= MAX_COMPARE) {
+    toast.error(`Maximum ${MAX_COMPARE} items à comparer`);
+    return;
+  }
+  set({ items: [...current, { itemId, itemType }] });
+},
+```
+
+**Pattern "silencieux"** possible (voir `DIAMANTNOIR/diamant-noir/contexts/CompareContext.tsx`) : `return prev` sans toast, mais le bouton Compare passe en `disabled` quand `canAdd === false`. Les deux patterns sont OK — préférer le toast si le CTA n'est pas forcément visible.
+
+**Valeur dérivée exposée** : `canAdd = items.length < MAX_COMPARE`. Les cards s'en servent pour désactiver leur bouton.
+
+---
+
+## 6. UI Wishlist
+
+### Bouton cœur sur les cards
+
+Cœur plein / vide, placé en overlay `absolute top-3 right-3` sur les `PropertyCard` / `ProductCard`. Doit :
+
+- Être clickable sans naviguer (`e.preventDefault()` + `e.stopPropagation()`)
+- Avoir `aria-label` dynamique (`"Ajouter aux favoris"` / `"Retirer des favoris"`)
+- Micro-animation au clic (scale 1.25 pendant 300ms)
+
+Implémentation de référence : `DIAMANTNOIR/diamant-noir/components/villas/WishlistButton.tsx`.
+
+```tsx
+// components/wishlist/WishlistButton.tsx
+"use client";
+import { Heart } from "lucide-react";
+import { useWishlist } from "@/store/wishlist";
+
+export function WishlistButton({ itemId, itemType }: {
+  itemId: string;
+  itemType: "villa" | "product" | "service";
+}) {
+  const { isInWishlist, toggle } = useWishlist();
+  const fav = isInWishlist(itemId);
+  return (
+    <button
+      onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggle(itemId, itemType); }}
+      aria-label={fav ? "Retirer des favoris" : "Ajouter aux favoris"}
+      className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90"
+    >
+      <Heart className={fav ? "fill-rose-500 stroke-rose-500" : "stroke-neutral-700"} size={15} />
+    </button>
+  );
+}
+```
+
+### Page `/favoris` (ou `/wishlist`)
+
+Liste les items persistés. Le store n'a que des IDs → on re-fetch les détails côté serveur :
+
+```tsx
+// app/favoris/page.tsx — Server Component
+export default async function FavorisPage() {
+  const user = await getUser();
+  const ids = user
+    ? await fetchWishlistIds(user.id)          // depuis la DB
+    : []; // les guests voient un prompt login (ou la liste client-side via un composant)
+  const items = await fetchItemsByIds(ids);
+  return <WishlistGrid items={items} />;
+}
+```
+
+Pour un rendu guest sans login, dédoubler avec un composant client qui lit le store. Documenter le choix dans le code.
+
+### Badge compteur dans le header
+
+`count = items.length` exposé par le store. Attention au hydration (cf. section 11).
+
+---
+
+## 7. UI Compare
+
+### Bouton "Comparer" sur les cards
+
+Similaire au cœur, mais libellé explicite. États : `"Comparer"` / `"Selectionne"` / `disabled`. Référence : `DIAMANTNOIR/diamant-noir/components/villas/CompareButton.tsx`.
+
+### Barre flottante en bas de page
+
+S'affiche dès qu'un item est ajouté. Contient :
+
+- Les slots occupés (thumbnail + nom + bouton retirer)
+- Les slots vides (placeholders dashed)
+- Bouton `"Comparer"` principal (disabled si `count < 2`)
+- Bouton `"Effacer"` secondaire
+
+Référence : `DIAMANTNOIR/diamant-noir/components/villas/CompareBar.tsx`.
+
+Montage global : dans le layout racine, pas dans chaque page. Le composant retourne `null` si `count === 0` — aucun impact DOM quand vide.
+
+### Page `/comparer`
+
+Tableau : **1 colonne par item**, **1 ligne par attribut comparé** (prix, surface, localisation, équipements, etc.). Attributs définis par le type d'item.
+
+```tsx
+<table>
+  <thead>
+    <tr>
+      <th></th>
+      {items.map((i) => <th key={i.id}>{i.name}</th>)}
+    </tr>
+  </thead>
+  <tbody>
+    {ATTRIBUTES.map((attr) => (
+      <tr key={attr.key}>
+        <td>{attr.label}</td>
+        {items.map((i) => <td key={i.id}>{formatAttr(i, attr)}</td>)}
+      </tr>
+    ))}
+  </tbody>
+</table>
+```
+
+Responsive : sur mobile, passer en carousel horizontal (scroll-snap-x) plutôt qu'un tableau compressé.
+
+---
+
+## 8. Anti-patterns
+
+- Stocker les details complets (nom, image, prix) en localStorage
+  - Un changement de prix en DB ne sera jamais refleté. Garder juste l'ID + type, re-fetch au render.
+- Oublier la limite compare
+  - 5+ colonnes = tableau illisible, re-fetch explosif.
+- Oublier le merge au login
+  - Le user ajoute 3 villas en guest, se connecte, tout disparait. Mauvaise UX et support client garanti.
+- Pas de RLS sur `wishlist_items` / `compare_items`
+  - Fuite des favoris entre users. Policies `select/insert/delete using (auth.uid() = user_id)` OBLIGATOIRES.
+- Pas de contrainte `unique(user_id, item_id, item_type)`
+  - Doublons silencieux en DB, badge compteur faux.
+- Render du badge compteur sans gestion hydration
+  - Hydration mismatch warning + flash visuel (cf. section 11).
+- Sync Supabase dans chaque composant qui utilise le store
+  - N requetes concurrentes. UN SEUL `useWishlistSync()` au niveau racine.
+
+Bon pattern :
+
+```tsx
+// ✅ app/providers.tsx
+export function Providers({ children }) {
+  return (
+    <>
+      <WishlistSyncMount />
+      <CompareSyncMount />
+      {children}
+    </>
+  );
+}
+```
+
+Mauvais pattern :
+
+```tsx
+// ❌ dans chaque PropertyCard
+function PropertyCard() {
+  useWishlistSync(); // sync re-fired à chaque card
+  ...
+}
+```
+
+---
+
+## 9. RLS (Row Level Security)
+
+Chaque user voit et modifie **uniquement ses items**. Pas d'exception.
+
+```sql
+-- SELECT
+create policy "wishlist_select_own"
+  on wishlist_items for select
+  to authenticated
+  using (auth.uid() = user_id);
+
+-- INSERT
+create policy "wishlist_insert_own"
+  on wishlist_items for insert
+  to authenticated
+  with check (auth.uid() = user_id);
+
+-- DELETE
+create policy "wishlist_delete_own"
+  on wishlist_items for delete
+  to authenticated
+  using (auth.uid() = user_id);
+
+-- UPDATE (optionnel, rare sur wishlist)
+-- create policy "wishlist_update_own" ...
+```
+
+Mêmes policies pour `compare_items`. Anon role = AUCUN accès — les guests ne touchent que leur localStorage.
+
+**À tester** : ouvrir deux sessions en parallèle (user A + user B), vérifier qu'aucun leak cross-user.
+
+---
+
+## 10. Server Actions avec Zod
+
+Alternative server-side aux mutations client direct. Utile quand :
+
+- On veut une validation stricte + audit
+- On veut que le cache Next.js se revalide (`revalidatePath('/favoris')`)
+
+```ts
+// app/actions/wishlist.ts
+"use server";
+import { z } from "zod";
+import { createClient } from "@/lib/supabase-server";
+import { revalidatePath } from "next/cache";
+
+const ToggleSchema = z.object({
+  itemId: z.string().uuid(),
+  itemType: z.enum(["villa", "product", "service"]),
+});
+
+export async function toggleWishlist(input: z.infer<typeof ToggleSchema>) {
+  const { itemId, itemType } = ToggleSchema.parse(input);
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { data: existing } = await supabase
+    .from("wishlist_items")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("item_id", itemId)
+    .eq("item_type", itemType)
+    .maybeSingle();
+
+  if (existing) {
+    await supabase.from("wishlist_items").delete().eq("id", existing.id);
+  } else {
+    await supabase.from("wishlist_items").insert({
+      user_id: user.id, item_id: itemId, item_type: itemType,
+    });
+  }
+  revalidatePath("/favoris");
+}
+
+export async function clearWishlist() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+  await supabase.from("wishlist_items").delete().eq("user_id", user.id);
+  revalidatePath("/favoris");
+}
+
+const AddCompareSchema = z.object({
+  itemId: z.string().uuid(),
+  itemType: z.enum(["villa", "product", "service"]),
+});
+
+export async function addToCompare(input: z.infer<typeof AddCompareSchema>) {
+  const { itemId, itemType } = AddCompareSchema.parse(input);
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthorized");
+
+  const { count } = await supabase
+    .from("compare_items")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id);
+
+  if ((count ?? 0) >= 4) {
+    throw new Error("Maximum 4 items à comparer");
+  }
+
+  await supabase.from("compare_items").insert({
+    user_id: user.id, item_id: itemId, item_type: itemType,
+  });
+  revalidatePath("/comparer");
+}
+```
+
+**Choix entre store direct et server action** : pour le toggle ultra-rapide (cœur sur une card), le store client suffit — mutation optimiste, sync DB en background. Pour les actions critiques ou paginées, server action.
+
+---
+
+## 11. Hydration SSR : éviter le flash
+
+Le store lit `localStorage` → disponible **uniquement côté client**. Le serveur rend `items = []`. Sans précaution : le badge passe de `0` à `3` au mount → **hydration mismatch warning** + flash visuel.
+
+### Pattern `useHydrated()`
+
+```ts
+// hooks/useHydrated.ts
+"use client";
+import { useEffect, useState } from "react";
+export function useHydrated() {
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
+  return hydrated;
+}
+```
+
+### Application au badge wishlist
+
+```tsx
+"use client";
+export function WishlistBadge() {
+  const hydrated = useHydrated();
+  const count = useWishlist((s) => s.items.length);
+  if (!hydrated) return <span className="inline-block w-4 h-4 bg-neutral-200 animate-pulse" />;
+  if (count === 0) return null;
+  return <span className="badge">{count}</span>;
+}
+```
+
+### Alternative : `skipHydration` sur Zustand persist
+
+```ts
+persist(..., { name: "kb_wishlist_v1", skipHydration: true })
+
+// puis dans providers.tsx
+useEffect(() => { useWishlist.persist.rehydrate(); }, []);
+```
+
+Couple avec un `useHydrated()` pour les parties visibles.
+
+**Règle d'or** : tout composant qui lit `items.length` ou `isInWishlist()` et qui est rendu côté serveur doit soit :
+
+- Skeleton pre-hydration
+- `return null` pre-hydration
+- Etre strictement client (`"use client"` + rendu conditionnel)
+
+---
+
+## 12. Checklist avant livraison
+
+- [ ] Tables `wishlist_items` et `compare_items` créees, RLS **enabled**
+- [ ] Contrainte `unique(user_id, item_id, item_type)` en place (sinon doublons)
+- [ ] Policies SELECT / INSERT / DELECTE testees avec 2 users (pas de leak cross-user)
+- [ ] Clés localStorage versionnees : `kb_wishlist_v1`, `kb_compare_v1`
+- [ ] Merge au login testé : ajouter items en guest → login → items présents en DB + local vidé
+- [ ] Logout vide le store (pas de fuite entre comptes sur le même device)
+- [ ] Limite `MAX_COMPARE = 4` respectée (UI + server action)
+- [ ] `useWishlistSync()` monté **une seule fois** au niveau racine
+- [ ] Badge wishlist pas de hydration mismatch (pattern `useHydrated()` ou skeleton)
+- [ ] `WishlistButton` : `preventDefault()` + `stopPropagation()` + `aria-label` dynamique
+- [ ] `CompareBar` monté global, retourne `null` si `count === 0`
+- [ ] Page `/comparer` responsive : tableau desktop, carousel scroll-snap mobile
+- [ ] Server actions avec Zod + `revalidatePath()` sur les routes concernees
+- [ ] Pas de details complets d'items en localStorage — juste `{ itemId, itemType }`
+
+---
+
+**Références projet :**
+
+- `DIAMANTNOIR/diamant-noir/contexts/WishlistContext.tsx` — version Context (avant refacto Zustand)
+- `DIAMANTNOIR/diamant-noir/contexts/CompareContext.tsx` — limite 3 items, même logique
+- `DIAMANTNOIR/diamant-noir/components/villas/WishlistButton.tsx` — bouton cœur overlay card
+- `DIAMANTNOIR/diamant-noir/components/villas/CompareBar.tsx` — barre flottante, slots, CTA
+- `DIAMANTNOIR/diamant-noir/components/villas/CompareButton.tsx` — bouton compare card
+- `DIAMANTNOIR/diamant-noir/supabase/migrations/wishlist.sql` — migration + RLS minimale

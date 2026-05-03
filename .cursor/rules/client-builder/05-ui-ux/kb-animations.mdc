@@ -1,0 +1,85 @@
+---
+description: Animations Karibloom - Scroll fade, shimmer, word reveal, Framer Motion, WebGL
+globs: "**/App.jsx, **/App.css, **/blocks/**"
+alwaysApply: false
+---
+
+# Animations Karibloom
+
+## Scroll fade-in (systeme global dans App.jsx)
+
+IntersectionObserver global applique `data-animate="fade"` sur les selecteurs cibles et ajoute `is-visible` au scroll.
+
+```jsx
+// App.jsx useEffect
+const autoSelectors = [
+  'section', 'footer', '.section-title', '.feature-card',
+  '.pack-card', '.testimonial-card', '.blog-card', '.cta-box',
+  '.timeline-step', '.grid > *', '[data-hero="true"]'
+];
+
+const observer = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting || entry.intersectionRatio > 0.12) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  },
+  { threshold: 0.12, rootMargin: '0px 0px -15% 0px' }
+);
+
+// Staggered delay automatique par position dans le parent
+const siblings = Array.from(parent.children).filter(c => c.matches('[data-animate="fade"]'));
+delay = Math.min(index * 0.08, 0.48);
+element.style.setProperty('--fade-delay', `${delay.toFixed(2)}s`);
+```
+
+### Usage manuel
+```jsx
+<div data-animate="fade" data-fade-delay="0.2">Contenu</div>
+```
+
+## Word Reveal (hero luxe)
+
+```jsx
+<h1>
+  {title.split(' ').map((word, i) => (
+    <span key={i} className="luxe-word-reveal" style={{ animationDelay: `${i * 0.1}s` }}>
+      {word}{' '}
+    </span>
+  ))}
+</h1>
+```
+
+## Framer Motion
+
+```jsx
+import { motion } from 'framer-motion';
+
+<motion.div
+  initial={{ opacity: 0, y: 30 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true, margin: "-15%" }}
+  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+>
+
+// Stagger
+const container = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
+const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
+```
+
+## WebGL (desktop only)
+
+```jsx
+// Desactiver sur mobile et prefers-reduced-motion
+const isMobile = window.innerWidth <= 768 || /Android|iPhone/i.test(navigator.userAgent);
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+{!isMobile && !prefersReducedMotion && (
+  <Suspense fallback={null}>
+    <LiquidEther colors={['#000000', '#D4AF37', '#FFD700']} dpr={Math.min(devicePixelRatio, 2)} />
+  </Suspense>
+)}
+```

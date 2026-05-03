@@ -1,0 +1,78 @@
+<h2>Design Cycle 2 — Espace membre : date de renouvellement</h2>
+<p class="subtitle">La donnée <code>currentPeriodEnd</code> est disponible — où l'afficher dans Subscription.tsx ?</p>
+
+<div class="section">
+  <h3>Option A — Dans la carte plan, sous le prix</h3>
+  <div class="mockup">
+    <div class="mockup-header">Subscription.tsx — carte plan Óra+</div>
+    <div class="mockup-body" style="max-width:360px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:36px;height:36px;background:#f1f5f9;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px">👑</div>
+          <span style="font-size:8px;color:#9ca3af;text-transform:uppercase;letter-spacing:.2em">Best Value</span>
+        </div>
+        <span style="font-size:8px;border:1px solid #e2e8f0;padding:4px 10px;border-radius:2px;color:#6b7280;text-transform:uppercase;letter-spacing:.12em">Actif</span>
+      </div>
+      <div style="font-size:36px;font-weight:300;color:#111;line-height:1;margin-bottom:4px">Óra+</div>
+      <div style="font-size:11px;font-style:italic;color:#9ca3af;margin-bottom:20px">Plus qu'une boisson, un style de vie !</div>
+      <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px">
+        <span style="font-size:40px;font-weight:300;color:#111">24,90€</span>
+        <span style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em">/mois</span>
+      </div>
+      <div style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:4px;padding:8px 12px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:10px;color:#6366f1;text-transform:uppercase;letter-spacing:.08em;font-weight:600">★ Prochain prélèvement</span>
+        <span style="font-size:12px;color:#4f46e5;font-weight:500">3 juin 2026</span>
+      </div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:2px;padding:10px 14px;margin-bottom:16px">
+        <span style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em">Jusqu'à -50% sur nos boissons</span>
+      </div>
+      <button style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:2px;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#6b7280;background:white">Gérer mon abonnement</button>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Option B — Ligne discrète juste au-dessus du bouton</h3>
+  <div class="mockup">
+    <div class="mockup-header">Subscription.tsx — carte plan Óra+</div>
+    <div class="mockup-body" style="max-width:360px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:36px;height:36px;background:#f1f5f9;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px">👑</div>
+          <span style="font-size:8px;color:#9ca3af;text-transform:uppercase;letter-spacing:.2em">Best Value</span>
+        </div>
+        <span style="font-size:8px;border:1px solid #e2e8f0;padding:4px 10px;border-radius:2px;color:#6b7280;text-transform:uppercase;letter-spacing:.12em">Actif</span>
+      </div>
+      <div style="font-size:36px;font-weight:300;color:#111;line-height:1;margin-bottom:4px">Óra+</div>
+      <div style="font-size:11px;font-style:italic;color:#9ca3af;margin-bottom:20px">Plus qu'une boisson, un style de vie !</div>
+      <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:20px">
+        <span style="font-size:40px;font-weight:300;color:#111">24,90€</span>
+        <span style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em">/mois</span>
+      </div>
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:2px;padding:10px 14px;margin-bottom:16px">
+        <span style="font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em">Jusqu'à -50% sur nos boissons</span>
+      </div>
+      <div style="text-align:center;margin-bottom:10px">
+        <span style="font-size:10px;color:#9ca3af">Renouvellement le <strong style="color:#6b7280">3 juin 2026</strong></span>
+      </div>
+      <button style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:2px;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#6b7280;background:white">Gérer mon abonnement</button>
+    </div>
+  </div>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Bloc indigo mis en avant</h3>
+      <p>Entre le prix et le bandeau "-50%" — visuellement distinct, bien visible</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Ligne discrète juste avant le bouton</h3>
+      <p>Texte sobre centré — info présente sans surcharger</p>
+    </div>
+  </div>
+</div>

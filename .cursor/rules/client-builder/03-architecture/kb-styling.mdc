@@ -1,0 +1,91 @@
+---
+description: Design system Karibloom - CSS Variables, Tailwind, glassmorphism, shimmer
+globs: "**/*.css, **/tailwind.config.js, **/postcss.config.js"
+alwaysApply: false
+---
+
+# Styling Karibloom
+
+## Variables CSS (src/styles/variables.css)
+
+Adapter les couleurs au client :
+
+```css
+:root {
+  --color-black: #000000;
+  --color-black-soft: #0a0a0a;
+  --color-white: #FFFFFF;
+
+  /* Couleur principale (adapter au client) */
+  --color-primary: #D4AF37;
+  --color-primary-light: #F4E5C2;
+  --color-primary-deep: #B38728;
+  --color-primary-shine: #FCF6BA;
+  --gradient-primary-metallic: linear-gradient(135deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+
+  --color-gray: #333333;
+  --color-gray-medium: #666666;
+  --color-gray-light: #B0B0B0;
+
+  --font-heading: 'Poppins', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  --transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-luxe: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --glass-bg: rgba(10, 10, 10, 0.6);
+  --glass-blur: blur(12px);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+
+  --border-radius: 12px;
+  --radius-lg: 16px;
+  --shadow-primary: 0 8px 24px rgba(212, 175, 55, 0.2);
+}
+```
+
+## Effets
+
+```css
+/* Shimmer text */
+.shimmer-primary {
+  background: linear-gradient(90deg, var(--color-primary-deep), var(--color-primary-shine), var(--color-primary-deep), var(--color-primary-shine), var(--color-primary-deep));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 5s linear infinite;
+}
+@keyframes shimmer { to { background-position: 200% center; } }
+
+/* Glassmorphism */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  border-radius: var(--radius-lg);
+}
+
+/* Fade-in au scroll */
+[data-animate="fade"] {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s var(--ease-luxe) var(--fade-delay, 0.18s),
+              transform 0.6s var(--ease-luxe) var(--fade-delay, 0.18s);
+}
+[data-animate="fade"].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+```
+
+## Tailwind Config
+
+Utiliser HSL CSS variables pour les couleurs via shadcn/ui pattern. Dark mode `["class"]`. Plugin `tailwindcss-animate`.
+
+## Utils
+
+```js
+// src/lib/utils.js
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+export function cn(...inputs) { return twMerge(clsx(inputs)); }
+```

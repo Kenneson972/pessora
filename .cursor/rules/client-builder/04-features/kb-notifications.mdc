@@ -1,0 +1,722 @@
+---
+description: Notifications temps réel (Supabase Realtime) + emails transactionnels (Resend) - NotificationBell, templates, idempotence
+globs: "**/components/notifications/**,**/lib/email/**,**/lib/resend*,**/app/api/notifications/**,**/hooks/useNotifications*"
+alwaysApply: false
+---
+
+# kb-notifications — Notifications temps réel + Emails transactionnels
+
+Pattern Karibloom pour **notifier l'utilisateur** sur deux canaux complémentaires :
+une cloche dans le dashboard (in-app, Realtime) et un email transactionnel
+(confirmation commande, booking, reset password). Un seul event métier →
+deux sorties synchronisées, idempotentes, loguées.
+
+## Complète / Ne remplace pas
+
+- `kb-supabase` — client browser/server, RLS, migrations
+- `kb-dashboard` — sidebar, header, layout admin où vit la cloche
+- `kb-api-routes` — Route Handlers et Server Actions qui émettent les events
+- `kb-auth` — `auth.uid()`, session, rôles
+- `kb-cookie-consent` — marketing vs transactionnel (RGPD)
+
+---
+
+## 1. Deux systèmes distincts — ne jamais les mélanger
+
+| Canal | Stockage | Transport | Coût | Latence | Use case |
+|-------|----------|-----------|------|---------|----------|
+| **In-app** | Table `notifications` | Supabase Realtime (WS) | $0 | <100 ms | Cloche, badge, feed dashboard |
+| **Email transactionnel** | Resend + log DB | SMTP Resend | ~$0.0004 / mail | 1-5 s | Confirmation, reçu, reset password |
+
+Règle d'or : **1 event métier = 1 insert `notifications` + 1 `sendEmail()`**,
+dans la même Server Action, avec idempotence des deux côtés.
+
+Ne JAMAIS utiliser le feed in-app pour du marketing. Ne JAMAIS utiliser le
+domaine transactionnel pour des newsletters (voir §14).
+
+---
+
+## 2. Modèle de données — table `notifications`
+
+```sql
+-- supabase/migrations/xxxx_notifications.sql
+create type notification_type as enum (
+  'booking_created',
+  'booking_cancelled',
+  'booking_confirmed',
+  'order_paid',
+  'order_shipped',
+  'order_refunded',
+  'new_message',
+  'new_review',
+  'payment_failed',
+  'stripe_payout',
+  'system'
+);
+
+create table public.notifications (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  type        notification_type not null,
+  title       text not null,
+  body        text not null,
+  link        text,                            -- URL relative : /dashboard/orders/123
+  metadata    jsonb not null default '{}'::jsonb,
+  read_at     timestamptz,
+  created_at  timestamptz not null default now()
+);
+
+create index notifications_user_unread_idx
+  on public.notifications (user_id, created_at desc)
+  where read_at is null;
+
+create index notifications_user_created_idx
+  on public.notifications (user_id, created_at desc);
+```
+
+`metadata jsonb` permet d'attacher du contexte sans altérer le schéma :
+`order_id`, `booking_id`, `amount`, `ai_score`, etc.
+
+---
+
+## 3. Insertion — toujours serveur, jamais client
+
+Les notifications sont écrites depuis une **Server Action**, un **Route
+Handler**, ou un **webhook** (Stripe, n8n). Utiliser `supabaseAdmin()` —
+l'insertion est cross-user (l'admin crée une notif pour un membre) et doit
+bypasser les RLS du client.
+
+```ts
+// lib/notifications/create.ts
+import { supabaseAdmin } from '@/lib/supabase/admin'
+import type { Database } from '@/types/supabase'
+
+type NotificationInsert = Database['public']['Tables']['notifications']['Insert']
+
+export async function createNotification(notif: NotificationInsert) {
+  const db = supabaseAdmin()
+  const { data, error } = await db
+    .from('notifications')
+    .insert(notif)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('[notifications] insert failed', error)
+    throw error
+  }
+  return data
+}
+```
+
+Jamais depuis le client : un user ne peut pas créer de notif pour lui-même
+ni pour un autre. Les policies INSERT/UPDATE/DELETE sont fermées côté client
+(§6).
+
+---
+
+## 4. Realtime Bell — `components/notifications/NotificationBell.tsx`
+
+Client component. Subscribe à `postgres_changes` filtré par `user_id` (jamais
+lire les notifs d'un autre user — la RLS empêche, mais on filtre côté client
+pour économiser des events).
+
+```tsx
+'use client'
+
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Bell } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import type { Database } from '@/types/supabase'
+
+type Notification = Database['public']['Tables']['notifications']['Row']
+
+interface Props { userId: string }
+
+export function NotificationBell({ userId }: Props) {
+  const router = useRouter()
+  const supabase = createClient()
+  const [items, setItems] = useState<Notification[]>([])
+  const [open, setOpen] = useState(false)
+  const [animating, setAnimating] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  const unread = items.filter((n) => !n.read_at).length
+
+  // Fetch initial
+  const fetchNotifs = useCallback(async () => {
+    const { data } = await supabase
+      .from('notifications')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(20)
+    if (data) setItems(data)
+  }, [supabase])
+
+  useEffect(() => { fetchNotifs() }, [fetchNotifs])
+
+  // Realtime subscription — filtré par user_id
+  useEffect(() => {
+    const channel = supabase
+      .channel(`notifications:${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          const fresh = payload.new as Notification
+          setItems((prev) => [fresh, ...prev].slice(0, 20))
+          setAnimating(true)
+          setTimeout(() => setAnimating(false), 800)
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          const updated = payload.new as Notification
+          setItems((prev) => prev.map((n) => (n.id === updated.id ? updated : n)))
+        }
+      )
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [supabase, userId])
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-label={`Notifications${unread ? ` (${unread} non lues)` : ''}`}
+        className={animating ? 'animate-[wiggle_0.5s]' : ''}
+      >
+        <Bell size={18} />
+        {unread > 0 && (
+          <span className="absolute -top-1 -right-1 rounded-full bg-primary text-[10px] px-1">
+            {unread > 9 ? '9+' : unread}
+          </span>
+        )}
+      </button>
+      {open && <NotificationList items={items} onClose={() => setOpen(false)} />}
+    </div>
+  )
+}
+```
+
+Référence projet : `components/dashboard/NotificationBell.tsx` (Diamant Noir)
+pour un exemple complet avec dropdown stylé, icônes par type, et footer
+« Tout marquer comme lu ».
+
+---
+
+## 5. NotificationList + NotificationItem
+
+```tsx
+// components/notifications/NotificationItem.tsx
+'use client'
+
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import type { Database } from '@/types/supabase'
+
+type Notif = Database['public']['Tables']['notifications']['Row']
+
+export function NotificationItem({ notif }: { notif: Notif }) {
+  const router = useRouter()
+  const supabase = createClient()
+
+  async function handleClick() {
+    if (!notif.read_at) {
+      await supabase
+        .from('notifications')
+        .update({ read_at: new Date().toISOString() })
+        .eq('id', notif.id)
+    }
+    if (notif.link) router.push(notif.link)
+  }
+
+  return (
+    <button
+      onClick={handleClick}
+      className={`w-full text-left p-3 ${notif.read_at ? '' : 'bg-primary/5'}`}
+    >
+      <p className="text-sm font-semibold">{notif.title}</p>
+      <p className="text-xs text-muted-foreground line-clamp-2">{notif.body}</p>
+      <time className="text-[10px] text-muted-foreground">
+        {timeAgo(notif.created_at)}
+      </time>
+    </button>
+  )
+}
+```
+
+Groupage par jour (Aujourd'hui, Hier, Cette semaine) : trier puis
+`Object.groupBy(items, bucketByDay)`. Infinite scroll : IntersectionObserver
+sur le dernier item, `range(offset, offset + 19)` Supabase.
+
+---
+
+## 6. RLS — chaque user ne voit que ses notifs
+
+```sql
+alter table public.notifications enable row level security;
+
+-- SELECT : mes propres notifs
+create policy "own notifications - select"
+  on public.notifications for select
+  to authenticated
+  using (user_id = auth.uid());
+
+-- UPDATE : mes propres notifs, uniquement read_at
+create policy "own notifications - mark read"
+  on public.notifications for update
+  to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+-- INSERT/DELETE : INTERDITS côté client
+-- L'écriture passe exclusivement par supabaseAdmin()
+```
+
+Tester explicitement : un user A ne doit JAMAIS voir les notifs d'un user B,
+même avec une requête forgée. Script `tests/rls/notifications.test.ts`.
+
+---
+
+## 7. Types de notifications — enum stable
+
+```ts
+// lib/notifications/types.ts
+export type NotificationType =
+  | 'booking_created'
+  | 'booking_cancelled'
+  | 'booking_confirmed'
+  | 'order_paid'
+  | 'order_shipped'
+  | 'order_refunded'
+  | 'new_message'
+  | 'new_review'
+  | 'payment_failed'
+  | 'stripe_payout'
+  | 'system'
+
+export const NOTIFICATION_LABELS: Record<NotificationType, string> = {
+  booking_created:   'Nouvelle réservation',
+  booking_cancelled: 'Réservation annulée',
+  booking_confirmed: 'Réservation confirmée',
+  order_paid:        'Commande payée',
+  order_shipped:     'Commande expédiée',
+  order_refunded:    'Remboursement effectué',
+  new_message:       'Nouveau message',
+  new_review:        'Nouvel avis',
+  payment_failed:    'Paiement échoué',
+  stripe_payout:     'Virement Stripe',
+  system:            'Système',
+}
+```
+
+Ajouter un type = migration (ALTER TYPE ... ADD VALUE) + update de l'enum TS
++ mapping icône/couleur dans `NotificationItem`.
+
+---
+
+## 8. Resend — setup
+
+```bash
+pnpm add resend react-email @react-email/components
+```
+
+```env
+# .env.local
+RESEND_API_KEY=re_xxxxxxxxxxxx
+EMAIL_FROM="Nom Client <noreply@client-domain.com>"
+EMAIL_REPLY_TO=contact@client-domain.com
+```
+
+Dans le dashboard Resend :
+1. Vérifier le domaine `client-domain.com` (DNS : SPF, DKIM, DMARC)
+2. Sous-domaine dédié transactionnel : `mail.client-domain.com` ou
+   `send.client-domain.com` (isole la réputation du marketing)
+3. Adresse expéditeur : `noreply@mail.client-domain.com`
+4. Adresse de réponse : `contact@client-domain.com` (boîte réelle, pas une
+   poubelle)
+
+SPF exemple : `v=spf1 include:amazonses.com include:_spf.resend.com -all`
+DMARC : `v=DMARC1; p=quarantine; rua=mailto:dmarc@client-domain.com`
+
+---
+
+## 9. Templates React Email — `lib/email/templates/`
+
+```tsx
+// lib/email/templates/OrderPaid.tsx
+import { Body, Button, Container, Head, Heading, Html, Preview, Text } from '@react-email/components'
+
+interface Props {
+  customerName: string
+  orderId: string
+  amount: number
+  orderUrl: string
+}
+
+export function OrderPaidEmail({ customerName, orderId, amount, orderUrl }: Props) {
+  return (
+    <Html>
+      <Head />
+      <Preview>Votre commande #{orderId} est confirmée</Preview>
+      <Body style={{ fontFamily: 'system-ui, sans-serif', background: '#f6f6f6' }}>
+        <Container style={{ maxWidth: 560, background: '#fff', padding: 32 }}>
+          <Heading>Merci {customerName} !</Heading>
+          <Text>
+            Votre commande <strong>#{orderId}</strong> de {amount.toFixed(2)} €
+            a bien été confirmée.
+          </Text>
+          <Button href={orderUrl} style={{ background: '#000', color: '#fff', padding: '12px 24px' }}>
+            Voir ma commande
+          </Button>
+          <Text style={{ fontSize: 12, color: '#888', marginTop: 32 }}>
+            Pensez aussi à vérifier vos courriers indésirables (spam).
+          </Text>
+        </Container>
+      </Body>
+    </Html>
+  )
+}
+```
+
+Structure dossier :
+
+```
+lib/email/
+├── templates/
+│   ├── OrderPaid.tsx
+│   ├── OrderShipped.tsx
+│   ├── BookingCreated.tsx
+│   ├── PaymentFailed.tsx
+│   └── ResetPassword.tsx
+├── send.ts           ← helper sendEmail()
+├── log.ts            ← idempotence email_log
+└── types.ts
+```
+
+Règle : **1 template = 1 fichier = 1 type de notif**. Ne pas factoriser
+prématurément — chaque email a son propre ton, sa propre structure.
+
+---
+
+## 10. Helper `sendEmail()` — typé, serveur uniquement
+
+```ts
+// lib/email/send.ts
+import 'server-only'
+import { Resend } from 'resend'
+import { render } from '@react-email/components'
+import { OrderPaidEmail } from './templates/OrderPaid'
+import { OrderShippedEmail } from './templates/OrderShipped'
+import { BookingCreatedEmail } from './templates/BookingCreated'
+import { logEmail, wasSent } from './log'
+
+const resend = new Resend(process.env.RESEND_API_KEY!)
+
+type EmailPayload =
+  | { template: 'order_paid';      data: { customerName: string; orderId: string; amount: number; orderUrl: string } }
+  | { template: 'order_shipped';   data: { customerName: string; orderId: string; trackingUrl: string } }
+  | { template: 'booking_created'; data: { customerName: string; bookingId: string; checkIn: string; checkOut: string } }
+
+interface SendArgs {
+  to: string
+  subject: string
+  eventId: string            // ID unique (stripe_event_id, booking_id, etc.)
+  payload: EmailPayload
+}
+
+export async function sendEmail({ to, subject, eventId, payload }: SendArgs) {
+  // Idempotence : si déjà envoyé pour ce (eventId, template, to), skip
+  if (await wasSent({ eventId, template: payload.template, to })) {
+    console.log('[email] skipped (already sent)', { eventId, template: payload.template })
+    return { skipped: true }
+  }
+
+  const html = render(renderTemplate(payload))
+
+  const { data, error } = await resend.emails.send({
+    from: process.env.EMAIL_FROM!,
+    replyTo: process.env.EMAIL_REPLY_TO,
+    to,
+    subject,
+    html,
+  })
+
+  if (error) {
+    await logEmail({ eventId, template: payload.template, to, status: 'failed', error: error.message })
+    throw error
+  }
+
+  await logEmail({ eventId, template: payload.template, to, status: 'sent', providerId: data?.id })
+  return { skipped: false, id: data?.id }
+}
+
+function renderTemplate(p: EmailPayload) {
+  switch (p.template) {
+    case 'order_paid':      return OrderPaidEmail(p.data)
+    case 'order_shipped':   return OrderShippedEmail(p.data)
+    case 'booking_created': return BookingCreatedEmail(p.data)
+  }
+}
+```
+
+`import 'server-only'` garantit qu'un `sendEmail()` appelé depuis un client
+component jette à la compilation. La clé Resend n'atteint jamais le bundle
+navigateur.
+
+---
+
+## 11. Idempotence — table `email_log`
+
+Les webhooks Stripe sont livrés **plusieurs fois**. Sans idempotence, un user
+reçoit 3 fois le même reçu.
+
+```sql
+create table public.email_log (
+  id           uuid primary key default gen_random_uuid(),
+  event_id     text not null,          -- stripe_event_id, booking_id, etc.
+  template     text not null,          -- 'order_paid', etc.
+  recipient    text not null,          -- email destinataire
+  status       text not null,          -- 'sent' | 'failed'
+  provider_id  text,                   -- Resend message id
+  error        text,
+  sent_at      timestamptz not null default now(),
+  unique (event_id, template, recipient)
+);
+```
+
+```ts
+// lib/email/log.ts
+import 'server-only'
+import { supabaseAdmin } from '@/lib/supabase/admin'
+
+export async function wasSent(args: { eventId: string; template: string; to: string }) {
+  const db = supabaseAdmin()
+  const { data } = await db
+    .from('email_log')
+    .select('id')
+    .eq('event_id', args.eventId)
+    .eq('template', args.template)
+    .eq('recipient', args.to)
+    .eq('status', 'sent')
+    .maybeSingle()
+  return !!data
+}
+
+export async function logEmail(args: {
+  eventId: string
+  template: string
+  to: string
+  status: 'sent' | 'failed'
+  providerId?: string
+  error?: string
+}) {
+  const db = supabaseAdmin()
+  await db.from('email_log').insert({
+    event_id: args.eventId,
+    template: args.template,
+    recipient: args.to,
+    status: args.status,
+    provider_id: args.providerId,
+    error: args.error,
+  })
+}
+```
+
+La contrainte `unique (event_id, template, recipient)` est la ligne de
+défense ultime : même si deux workers envoient simultanément, l'INSERT du
+second fera un `duplicate key` — on catch et skip.
+
+---
+
+## 12. Event → Notif + Email combinés (Server Action)
+
+Pattern canonique : 1 event métier → 1 fonction qui fait les deux.
+
+```ts
+// app/(api)/stripe/webhook/route.ts (extrait)
+import { createNotification } from '@/lib/notifications/create'
+import { sendEmail } from '@/lib/email/send'
+
+async function handleOrderPaid(event: Stripe.Event) {
+  const session = event.data.object as Stripe.Checkout.Session
+  const userId = session.metadata?.user_id
+  const orderId = session.metadata?.order_id
+  const email = session.customer_details?.email
+  if (!userId || !orderId || !email) return
+
+  // 1. Notif in-app (RLS bypass via admin)
+  await createNotification({
+    user_id: userId,
+    type: 'order_paid',
+    title: 'Commande confirmée',
+    body: `Votre commande #${orderId} a été payée.`,
+    link: `/dashboard/orders/${orderId}`,
+    metadata: { order_id: orderId, amount: session.amount_total },
+  })
+
+  // 2. Email transactionnel (idempotent via event.id)
+  await sendEmail({
+    to: email,
+    subject: `Commande #${orderId} confirmée`,
+    eventId: event.id,              // Stripe garantit l'unicité
+    payload: {
+      template: 'order_paid',
+      data: {
+        customerName: session.customer_details?.name ?? 'Client',
+        orderId,
+        amount: (session.amount_total ?? 0) / 100,
+        orderUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/orders/${orderId}`,
+      },
+    },
+  })
+}
+```
+
+Le `eventId` utilisé pour l'idempotence de l'email est le même que celui
+utilisé pour l'idempotence du webhook (cf `kb-api-routes`). Cohérence totale.
+
+---
+
+## 13. Préférences utilisateur — `notification_preferences`
+
+```sql
+create table public.notification_preferences (
+  user_id         uuid not null references auth.users(id) on delete cascade,
+  type            notification_type not null,
+  email_enabled   boolean not null default true,
+  in_app_enabled  boolean not null default true,
+  primary key (user_id, type)
+);
+
+alter table public.notification_preferences enable row level security;
+
+create policy "own prefs" on public.notification_preferences
+  for all to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+```
+
+Wrapper qui respecte les prefs :
+
+```ts
+// lib/notifications/dispatch.ts
+import 'server-only'
+import { supabaseAdmin } from '@/lib/supabase/admin'
+import { createNotification } from './create'
+import { sendEmail } from '@/lib/email/send'
+
+export async function dispatch(args: {
+  userId: string
+  type: NotificationType
+  inApp?: Parameters<typeof createNotification>[0]
+  email?: Parameters<typeof sendEmail>[0]
+}) {
+  const db = supabaseAdmin()
+  const { data: pref } = await db
+    .from('notification_preferences')
+    .select('email_enabled, in_app_enabled')
+    .eq('user_id', args.userId)
+    .eq('type', args.type)
+    .maybeSingle()
+
+  const inAppOn = pref?.in_app_enabled ?? true
+  const emailOn = pref?.email_enabled ?? true
+
+  await Promise.all([
+    inAppOn && args.inApp ? createNotification(args.inApp) : null,
+    emailOn && args.email ? sendEmail(args.email) : null,
+  ])
+}
+```
+
+Exceptions non désactivables : `payment_failed`, `booking_cancelled`,
+`security_alert`. Ces types passent toujours, même si le user a tout coupé —
+ce sont des obligations opérationnelles.
+
+---
+
+## 14. Transactionnel vs marketing — séparation stricte
+
+| Critère | Transactionnel | Marketing |
+|---------|----------------|-----------|
+| Base légale RGPD | Exécution du contrat | Consentement (opt-in) |
+| Domaine | `mail.client-domain.com` | `news.client-domain.com` |
+| Déclencheur | Event métier (commande, booking) | Campagne manuelle / segmentation |
+| Désinscription | Pas de lien unsubscribe | Lien unsubscribe OBLIGATOIRE |
+| Cookie consent | Pas requis | Requis (voir `kb-cookie-consent`) |
+| Clé Resend | `RESEND_API_KEY` (prod) | `RESEND_MARKETING_API_KEY` (séparé) |
+
+Mélanger les deux = dégradation de la réputation du domaine transactionnel =
+reçus Stripe qui partent en spam. Interdit.
+
+Marketing → double opt-in (email de confirmation avant inscription), template
+dédié avec footer légal (adresse postale, unsubscribe), suivi ouverture OK
+(si consentement analytics accordé).
+
+---
+
+## 15. Anti-patterns
+
+- `❌` Envoyer un email depuis un client component (clé API exposée)
+- `✅` `sendEmail()` marqué `import 'server-only'`, appelé depuis Server Action / Route Handler
+- `❌` Insérer une notif avec le client browser Supabase (RLS bloque, mais même l'idée est fausse)
+- `✅` `createNotification()` via `supabaseAdmin()` côté serveur
+- `❌` Pas d'idempotence sur le webhook email — Stripe livre 2-3 fois, user reçoit 3 reçus
+- `✅` Table `email_log` avec unique `(event_id, template, recipient)` + check `wasSent()`
+- `❌` Pas de RLS sur `notifications` — un user peut lire les notifs des autres
+- `✅` Policy SELECT `user_id = auth.uid()`, INSERT/DELETE fermés côté client
+- `❌` Marketing et transactionnel sur le même domaine (`noreply@client.com` pour les deux)
+- `✅` Sous-domaines séparés : `mail.client.com` (transac) vs `news.client.com` (marketing)
+- `❌` `filter: 'user_id=eq.' + userId` mal échappé (injection possible si userId vient du client)
+- `✅` `userId` vient toujours d'un composant serveur parent qui a validé `auth.uid()`
+- `❌` Ignorer les préférences utilisateur — spam garanti
+- `✅` Wrapper `dispatch()` qui lit `notification_preferences` avant d'envoyer
+- `❌` Un seul template « générique » avec 12 branches `if`
+- `✅` 1 fichier `.tsx` par type d'email, variables typées
+- `❌` `subject` hardcodé en anglais sur un site FR
+- `✅` Subject localisé, préfixe optionnel `[Client]` pour tests
+
+---
+
+## 16. Checklist de mise en production
+
+- [ ] Domaine Resend vérifié (DNS propagé, statut « Verified »)
+- [ ] SPF, DKIM, DMARC configurés et testés (`mail-tester.com` score >= 9/10)
+- [ ] Sous-domaines séparés transactionnel / marketing
+- [ ] `RESEND_API_KEY` en secret Vercel (jamais dans le repo)
+- [ ] Tables `notifications`, `email_log`, `notification_preferences` migrées
+- [ ] RLS `notifications` testée (user A ne voit pas B)
+- [ ] Contrainte unique `email_log (event_id, template, recipient)` active
+- [ ] Webhook Stripe envoie `event.id` comme `eventId` d'idempotence
+- [ ] `NotificationBell` monté dans le layout dashboard (`kb-dashboard`)
+- [ ] Realtime activé sur la table `notifications` (Supabase → Publication)
+- [ ] Subscription filtrée par `user_id` (économie d'events)
+- [ ] Au moins 1 test E2E : event → notif apparaît + email reçu
+- [ ] Template preview testé sur Gmail, Outlook, Apple Mail (mobile + desktop)
+- [ ] Largeur max 600px, dark mode ok, images en absolute URL
+- [ ] Adresse `replyTo` pointe sur une boîte surveillée
+- [ ] Types non désactivables documentés (`payment_failed`, etc.)
+- [ ] Page `/dashboard/settings/notifications` pour gérer les préférences
+- [ ] Logs d'erreur Resend remontés à Sentry / logging
+- [ ] Rate limiting sur `sendEmail()` si appelé en boucle (batch > 100)
+
+---
+
+**Référence** : `components/dashboard/NotificationBell.tsx` (Diamant Noir)
+pour le pattern Realtime complet, dropdown et UX soignés.

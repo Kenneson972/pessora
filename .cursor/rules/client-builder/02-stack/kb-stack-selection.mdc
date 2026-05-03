@@ -1,0 +1,143 @@
+---
+description: Stack standard Karibloom - Next.js 15 App Router + Supabase + Stripe + TypeScript, aucune exception
+globs: "**/*"
+alwaysApply: true
+---
+
+# Stack Standard Karibloom
+
+Karibloom utilise **Next.js 15 App Router** pour tous les sites clients. Point.
+
+---
+
+## 1. Stack standard imposée
+
+| Couche | Choix unique |
+|--------|--------------|
+| Framework | **Next.js 15+ App Router** |
+| Runtime | **React 19**, **TypeScript 5.5+** (`strict: true`) |
+| DB / Auth / Storage / Realtime | **Supabase** (Postgres managé) |
+| Paiement | **Stripe 14.25+** (Checkout + Webhooks + Customer Portal) |
+| Styling | **Tailwind 3.4+** + **Chakra UI 3+** + **Radix Themes 3.3+** + **HeroUI 3+** |
+| Icônes / Anim | `lucide-react`, `gsap`, `framer-motion` (selon besoin) |
+| Data viz / Time | `recharts`, `fullcalendar`, `date-fns` |
+| Cartes | `leaflet` |
+| Hébergement | **Vercel** (sauf contrainte explicite client) |
+| Package manager | **npm** (lockfile committé, `package-lock.json`) |
+| Node | 20 LTS minimum |
+
+Cette table n'est **pas négociable** au démarrage d'un nouveau projet.
+
+---
+
+## 2. Pourquoi Next.js App Router
+
+- **RSC (React Server Components)** : moins de JS envoyé au client, meilleur TTI, meilleur CWV
+- **SEO natif** : API `metadata` / `generateMetadata`, Open Graph, sitemap, robots — gérés comme des objets TypeScript
+- **Server Actions** : backend intégré dans le repo front, pas d'API séparée à maintenir
+- **Route Handlers** : endpoints typés dans `app/api/**/route.ts` (webhooks Stripe, crons, etc.)
+- **Streaming, `cache()`, `revalidateTag()`, `revalidatePath()`** : patterns de perf intégrés
+- **Middleware Edge** : auth, RBAC, redirections, i18n sans backend dédié
+- **Vercel zero-config** : préviews par branche, edge functions, image optim, analytics
+- **Écosystème mature 2025** : Supabase SSR, Stripe, UI libs — tout a des guides Next App Router officiels
+
+Résultat : **un seul runtime mental** pour vitrine + dashboard + paiement + admin.
+
+---
+
+## 3. Ce qui est interdit
+
+| Techno | Pourquoi c'est interdit |
+|--------|--------------------------|
+| Create React App (CRA) | Obsolète, plus maintenu depuis 2023, pas de SSR, pas de RSC |
+| Vite + React Router seul | Pas de RSC, pas d'API `metadata`, pas de Server Actions, SEO à recoder à la main |
+| Backend PHP séparé | On a Server Actions + Route Handlers ; un PHP sépare l'auth, double les déploiements |
+| Backend Express / Nest custom | Sauf micro-service justifié (rare), ça casse le modèle monorepo Next |
+| MySQL / MongoDB en direct | Supabase = Postgres managé + RLS + auth + storage gratuits |
+| Gatsby / Remix / Astro (cas général) | Hors standard, on perd la mutualisation de code entre projets clients |
+| Firebase Auth / Clerk / Auth.js | Supabase Auth est la référence unique Karibloom |
+| `react-router-dom` dans un projet Next | On utilise le router Next, pas un router client par-dessus |
+
+### Règle `"use client"`
+
+- Par défaut, **tout est Server Component**
+- `"use client"` est ajouté **seulement si nécessaire** (état, event handler, hook browser)
+- Interdit de marquer un layout racine `"use client"` par réflexe
+
+---
+
+## 4. Exception autorisée (rare)
+
+Trois scénarios, et trois seulement, peuvent justifier un écart :
+
+1. **Astro** — uniquement pour un site vitrine ultra-léger 100% statique sans interactivité (ex : landing de campagne éphémère, page événement sans backend)
+2. **Next.js Pages Router** — uniquement pour la maintenance d'un projet legacy existant qui ne peut pas être migré
+3. **Backend Express/Nest dédié** — uniquement pour un micro-service isolé (ex : worker de traitement média, service realtime custom)
+
+**Pré-requis dans tous les cas :**
+
+- validation explicite avant démarrage (documentée dans le brief / `ACTIONS_LOG.md`)
+- justification technique écrite (pas "je préfère")
+- accord du lead Karibloom
+
+Sans ces trois éléments : **Next.js 15 App Router point final**.
+
+---
+
+## 5. Décision au démarrage d'un projet
+
+- Nouveau projet → `npx create-next-app@latest --typescript --tailwind --app` automatique
+- **Pas de questionnaire stack** ("SPA ou Next ?")
+- **Pas de fallback** "si une React SPA suffit"
+- **Pas de biais "c'est plus simple en Vite"**
+
+Le seul arbitrage au démarrage c'est :
+
+1. Type de projet (vitrine / conciergerie / e-commerce / resto / SaaS) → voir `karibloom-client-builder.mdc`
+2. Features activées (booking, cart, wishlist, i18n, etc.) → voir les `kb-*.mdc`
+3. Palette + design tokens → voir la skill `color-palette`
+
+La stack elle-même n'est **plus une variable**.
+
+---
+
+## 6. Migration projets legacy
+
+### CRA / Vite SPA existant
+
+- Option A — **Rewrite Next 15** si ROI positif (projet actif, roadmap longue, SEO mauvais)
+- Option B — **Migration progressive** feature par feature :
+  1. Nouveau repo Next à côté
+  2. Route par route migrée, proxy / redirects intermédiaires
+  3. Bascule DNS finale
+
+### Backend PHP existant
+
+- Migration des endpoints vers **Server Actions** (mutations) et **Route Handlers** (`app/api/**/route.ts`)
+- Auth PHP → **Supabase Auth + middleware**
+- DB MySQL → **Supabase Postgres** (script de migration ponctuel)
+- Le PHP n'est **jamais** laissé en place "parce que ça marche"
+
+### Projet avec `servicesData.js` comme source
+
+- Migrer vers **tables Supabase** avec RLS
+- `servicesData.js` redevient un fichier de **seed** / bootstrap initial, pas une source de vérité runtime
+
+---
+
+## 7. Références
+
+- **Détails Next.js** (structure `app/`, layouts, route groups, caching) → `stack-nextjs-app-router.mdc`
+- **Architecture globale et philosophie** → `karibloom-client-builder.mdc`
+- **Features** (auth, booking, cart, wishlist, forms, SEO, perf, sécu, i18n, PWA…) → toutes les `kb-*.mdc` dans `03-features/` et `04-quality/`
+- **Carte complète des règles** → `_INDEX.mdc`
+
+---
+
+## 8. Résumé
+
+Un projet Karibloom = **Next.js 15 App Router + Supabase + Stripe + TypeScript + Tailwind + Vercel**.
+
+Tout le reste est soit une feature par-dessus (couvertes par les `kb-*.mdc`), soit une exception à justifier.
+
+**Pas de débat stack au démarrage.** On livre.
