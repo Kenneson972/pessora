@@ -106,6 +106,7 @@ export interface Database {
           date: string
           heure: string
           disponible: boolean
+          created_at: string
         }
         Insert: Omit<Database['public']['Tables']['bilan_slots']['Row'], 'id'>
         Update: Partial<Omit<Database['public']['Tables']['bilan_slots']['Row'], 'id'>>

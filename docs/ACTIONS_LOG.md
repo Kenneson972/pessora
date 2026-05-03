@@ -7,6 +7,14 @@ Format : `ISO` · `type` · résumé · fichiers · vérif.
 
 ## 2026-05-03
 
+### 2026-05-03T · audit · Audit complet + correctifs P1/P2 (client, membre, admin)
+
+- **Contexte** : audit complet du site en se mettant à la place d'un visiteur, d'un membre connecté et d'un admin. 2 P1, 3 P2 corrigés, 1 P2 documenté (as any).
+- **Summary** : Voir `docs/logs/2026-05-03.md` — session "Correctifs audit complet".
+- **Files** : `src/components/dashboard/DashboardBottomNav.tsx`, `src/pages/Contact.tsx`, `supabase/migrations/20260503200001_ensure_event_registrations_fk.sql`, `src/types/database.ts`, `src/pages/admin/AdminOverview.tsx`
+- **Why** : fiabiliser l'expérience mobile membre, la soumission contact, la requête Supabase admin, et l'accessibilité clavier.
+- **Verify** : `npx tsc --noEmit` OK, `npm run build` OK (warnings CSS HeroUI uniquement)
+
 ### 2026-05-03T · ui · Accueil — restauration layout éditorial (Timeline Cursor) + persistance Git
 
 - **Contexte** : une version non commitée de `Home.tsx` avait été écrasée ; la **Timeline locale Cursor** contenait encore un snapshot (`~/Library/Application Support/Cursor/User/History/70e9343/5U7a.tsx`, voir `entries.json` du même dossier) avec hero vidéo, `HomeProductCarousel`, `OraPlusTeaserStrip`, `HomeGoogleReviews`, `publicAssetWithCache` pour la carte Communauté.

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { barInfo } from '../data/infoData';
 import { Mail, MapPin, Instagram, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useFadeUpWhenVisible, useStaggerReveal } from '../lib/motionReveal';
-import { Button, Card, Form, Input, Label, TextArea, TextField, cn } from '@heroui/react';
+import { Button, Card, Input, Label, TextArea, TextField, cn } from '@heroui/react';
 import { Segment } from '@heroui-pro/react';
 import { PageShell } from '../components/layout/PageShell';
 import { PageHero } from '../components/layout/PageHero';
@@ -177,7 +177,7 @@ const Contact = () => {
                 </Link>
                 .
               </p>
-              <Form
+              <form
                 className="space-y-6"
                 onSubmit={handleSubmit}
               >
@@ -303,7 +303,7 @@ const Contact = () => {
                     {sending ? 'Envoi…' : 'Envoyer'} <ArrowRight size={14} />
                   </Button>
                 )}
-              </Form>
+              </form>
             </Card>
             </motion.div>
           </div>

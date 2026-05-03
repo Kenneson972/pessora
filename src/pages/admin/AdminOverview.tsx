@@ -323,12 +323,12 @@ const AdminOverview = () => {
                           <span className="text-[11px] text-red-500">
                             expiré · {daysSince}j
                           </span>
-                          <a
-                            href={`/admin/membres/${sub.userId}`}
+                          <Link
+                            to={`/admin/membres/${sub.userId}`}
                             className="text-[10px] uppercase tracking-[0.1em] text-black/40 hover:text-noir transition-colors"
                           >
                             Voir →
-                          </a>
+                          </Link>
                         </div>
                       </div>
                     );

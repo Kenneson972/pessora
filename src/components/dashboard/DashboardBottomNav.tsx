@@ -2,18 +2,18 @@ import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   CalendarDays,
+  Heart,
   ShoppingBag,
   Star,
   User,
   Users,
   Package,
-  Heart,
   Megaphone,
   Store,
   MoreHorizontal,
 } from 'lucide-react';
 import { cn } from '@heroui/react';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 const itemClass = (active: boolean) =>
   cn(
@@ -37,6 +37,7 @@ export function MemberDashboardBottomNav({ prefix }: { prefix: string }) {
   const links = [
     { to: prefix, exact: true, label: 'Accueil', icon: LayoutDashboard },
     { to: `${prefix}/evenements`, label: 'Événements', icon: CalendarDays },
+    { to: `${prefix}/bilans`, label: 'Bilans', icon: Heart },
     { to: `${prefix}/historique`, label: 'Commandes', icon: ShoppingBag },
     { to: `${prefix}/abonnement`, label: 'Óra+', icon: Star },
     { to: `${prefix}/profil`, label: 'Profil', icon: User },
@@ -71,6 +72,9 @@ export function AdminDashboardBottomNav() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
+  const toggleOpen = useCallback(() => setOpen((o) => !o), []);
+  const close = useCallback(() => setOpen(false), []);
+
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
@@ -78,6 +82,15 @@ export function AdminDashboardBottomNav() {
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
 
   const is = (path: string, exact?: boolean) =>
     exact ? pathname === path : pathname === path || pathname.startsWith(`${path}/`);
@@ -120,7 +133,14 @@ export function AdminDashboardBottomNav() {
           <button
             type="button"
             className={itemClass(open || moreActive)}
-            onClick={() => setOpen((o) => !o)}
+            onClick={toggleOpen}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (!open) toggleOpen();
+              }
+              if (e.key === 'Escape') close();
+            }}
             aria-expanded={open}
             aria-haspopup="true"
             aria-label="Plus d’actions"
@@ -134,12 +154,16 @@ export function AdminDashboardBottomNav() {
             <div
               className="absolute bottom-full right-0 mb-2 w-52 rounded-[2px] border border-noir/[0.08] bg-white py-1 shadow-lg"
               role="menu"
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') close();
+              }}
             >
               {moreLinks.map(({ to, label, icon: Icon }) => (
                 <Link
                   key={to}
                   to={to}
                   role="menuitem"
+                  tabIndex={0}
                   className="flex items-center gap-2 px-3 py-2.5 text-[12px] text-black/70 hover:bg-noir/[0.04] hover:text-noir"
                   onClick={() => setOpen(false)}
                 >
