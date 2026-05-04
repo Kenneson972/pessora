@@ -15,6 +15,20 @@ Format : `ISO` · `type` · résumé · fichiers · vérif.
 - **Why** : fiabiliser l'expérience mobile membre, la soumission contact, la requête Supabase admin, et l'accessibilité clavier.
 - **Verify** : `npx tsc --noEmit` OK, `npm run build` OK (warnings CSS HeroUI uniquement)
 
+### 2026-05-03T · security · Correctifs Stripe P0/P1/P2 — prix serveur, idempotence, statut paid
+
+- **Contexte** : audit Stripe du 3 mai a révélé 2 vulnérabilités P0 (prix calculé côté client sans validation serveur, pas d'idempotence webhook), 2 P1 (statut orders, activation Ora+ en fallback), 2 P2 (PII metadata, affichage statuts).
+- **Summary** :
+  - **P0-1** : `create-checkout-session` — nouvelle fonction `fetchVerifiedPrice()` interroge `products`/`gamme_products` en base, ignore le prix client (anti-fraude)
+  - **P0-2** : `stripe-webhook` + migration `stripe_events_processed` — table d'idempotence (event.id PK), vérification avant traitement, marquage immédiat
+  - **P1-3** : `stripe-webhook` — statut `completed` → `paid` (intermédiaire pending→paid→completed manuellement)
+  - **P1-4** : `verify-subscription-session` — plus de fallback `activateOraPlus()`, retourne `pending` si webhook pas encore traité
+  - **P2-5** : métadonnées Stripe — suppression de `customer_name` (PII)
+  - **P2-6** : types DB + affichages — ajout `'paid'` aux types, badges et actions admin/membre
+- **Files** : `supabase/functions/create-checkout-session/index.ts`, `supabase/functions/stripe-webhook/index.ts`, `supabase/functions/verify-subscription-session/index.ts`, `supabase/migrations/20260503210000_stripe_events_idempotence.sql`, `src/types/database.ts`, `src/pages/admin/AdminOverview.tsx`, `src/pages/member/Dashboard.tsx`, `src/pages/AbonnementSucces.tsx`
+- **Why** : le prix était calculé côté client (fraudable), le webhook n'était pas idempotent (doublons potentiels), pas de statut intermédiaire pour les commandes payées.
+- **Verify** : `npx tsc --noEmit` OK
+
 ### 2026-05-03T · ui · Accueil — restauration layout éditorial (Timeline Cursor) + persistance Git
 
 - **Contexte** : une version non commitée de `Home.tsx` avait été écrasée ; la **Timeline locale Cursor** contenait encore un snapshot (`~/Library/Application Support/Cursor/User/History/70e9343/5U7a.tsx`, voir `entries.json` du même dossier) avec hero vidéo, `HomeProductCarousel`, `OraPlusTeaserStrip`, `HomeGoogleReviews`, `publicAssetWithCache` pour la carte Communauté.
