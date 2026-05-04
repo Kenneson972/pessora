@@ -164,7 +164,7 @@ export interface Database {
           id: string
           user_id: string | null
           total: number
-          status: 'pending' | 'preparing' | 'ready' | 'completed' | 'cancelled'
+          status: 'pending' | 'paid' | 'preparing' | 'ready' | 'completed' | 'cancelled'
           pickup_time: string | null
           picked_up_at: string | null
           stripe_payment_intent_id: string | null

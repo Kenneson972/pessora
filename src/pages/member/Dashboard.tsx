@@ -366,11 +366,13 @@ const Dashboard = () => {
                       : null;
                     const statusColor =
                       order.status === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                      order.status === 'paid' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
                       order.status === 'preparing' ? 'bg-sky-50 text-sky-700 border border-sky-200' :
                       order.status === 'ready' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
                       'bg-noir/[0.05] text-black/45';
                     const statusLabel =
                       order.status === 'pending' ? 'En attente' :
+                      order.status === 'paid' ? 'Payée' :
                       order.status === 'preparing' ? 'En préparation' :
                       order.status === 'ready' ? 'Prêt' :
                       order.status === 'completed' ? 'Retiré' :

@@ -19,7 +19,7 @@ const AbonnementSucces = () => {
       .invoke('verify-subscription-session', { body: { session_id: sessionId } })
       .then(({ data, error }) => {
         if (error || !data) { setStatus('pending'); return; }
-        setStatus(data.status === 'processed' ? 'processed' : 'pending');
+        setStatus(data.status === 'active' ? 'processed' : 'pending');
       })
       .catch(() => setStatus('pending'));
   }, [sessionId]);

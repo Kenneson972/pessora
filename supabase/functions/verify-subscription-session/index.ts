@@ -2,7 +2,6 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'npm:stripe@14'
-import { activateOraPlus } from '../_shared/activateOraPlus.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -60,11 +59,15 @@ serve(async (req) => {
       .maybeSingle()
 
     if (!existing) {
-      // Fallback : traiter maintenant (webhook pas encore arrivé)
-      await activateOraPlus(supabase, stripe, session)
+      // Le webhook n'a pas encore traité l'événement → le client doit
+      // réessayer dans quelques secondes. On n'active PAS en fallback
+      // pour éviter le double-traitement.
+      return new Response(JSON.stringify({ status: 'pending' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
-    return new Response(JSON.stringify({ status: 'processed' }), {
+    return new Response(JSON.stringify({ status: 'active' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (err) {

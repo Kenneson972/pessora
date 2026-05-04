@@ -27,6 +27,29 @@ serve(async (req) => {
     })
   }
 
+  // ── P0-2: Idempotence — ignorer les événements déjà traités ──
+  const { data: existing } = await supabase
+    .from('stripe_events_processed')
+    .select('id')
+    .eq('id', event.id)
+    .maybeSingle()
+
+  if (existing) {
+    console.log(`[stripe-webhook] already processed event ${event.id} (${event.type}) — skipping`)
+    return new Response(JSON.stringify({ received: true, skipped: true }), {
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
+  // Marquer l'événement comme traité (idempotent) avant d'agir
+  // pour éviter les doublons même en cas d'erreur partielle.
+  await supabase
+    .from('stripe_events_processed')
+    .insert({ id: event.id, type: event.type })
+    .catch((err: unknown) =>
+      console.error(`[stripe-webhook] failed to mark event ${event.id} as processed:`, err)
+    )
+
   try {
     switch (event.type) {
       case 'checkout.session.completed': {
@@ -34,12 +57,14 @@ serve(async (req) => {
         if (session.mode === 'subscription') {
           await activateOraPlus(supabase, stripe, session)
         } else if (session.mode === 'payment') {
-          // Commande classique : passer de pending → ready
+          // Commande classique : pending → paid (statut intermédiaire,
+          // le passage à completed sera fait manuellement quand la commande
+          // est préparée/remise au client)
           const orderId = session.metadata?.order_id
           if (orderId) {
             await supabase
               .from('orders')
-              .update({ status: 'completed', stripe_payment_intent_id: session.payment_intent as string })
+              .update({ status: 'paid', stripe_payment_intent_id: session.payment_intent as string })
               .eq('id', orderId)
           }
         }

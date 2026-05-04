@@ -30,6 +30,52 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+/**
+ * Récupère le vrai prix unitaire depuis la base de données en ignorant
+ * le unitPrice fourni par le client (fraud protection).
+ * Pour les produits bar → lookup par slug dans products.price
+ * Pour les produits gamme → lookup par id UUID dans gamme_products.price
+ */
+async function fetchVerifiedPrice(
+  supabase: ReturnType<typeof createClient>,
+  item: z.infer<typeof CartLineSchema>,
+): Promise<{ verifiedUnitPrice: number; productId: string | null }> {
+  if (item.source === 'gamme' && UUID_RE.test(item.productId)) {
+    // Produit gamme : chercher par UUID
+    const { data, error } = await supabase
+      .from('gamme_products')
+      .select('id, price, price_alt')
+      .eq('id', item.productId)
+      .eq('active', true)
+      .single();
+    if (error || !data) {
+      throw new Error(`Produit gamme introuvable ou inactif : ${item.productId}`);
+    }
+    // price_alt existe pour certains produits (ex: Gel Nettoyant 29€/39€) ;
+    // on prend price par défaut — si le client a un price_alt, le panier
+    // aura un productId différent (un autre UUID), donc price suffit ici.
+    return { verifiedUnitPrice: Number(data.price), productId: data.id };
+  }
+
+  // Produit bar : chercher par slug (productId = slug) ou par UUID
+  let query = supabase
+    .from('products')
+    .select('slug, price')
+    .eq('active', true);
+
+  if (UUID_RE.test(item.productId)) {
+    query = query.eq('id', item.productId);
+  } else {
+    query = query.eq('slug', item.productId);
+  }
+
+  const { data, error } = await query.single();
+  if (error || !data) {
+    throw new Error(`Produit bar introuvable ou inactif : ${item.productId}`);
+  }
+  return { verifiedUnitPrice: Number(data.price), productId: null };
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -82,7 +128,18 @@ serve(async (req) => {
       });
     }
 
-    const total = items.reduce((sum, i) => sum + i.unitPrice * i.quantity, 0);
+    // ── P0: Vérifier les prix côté serveur (ignorer unitPrice du client) ──
+    const verifiedLines = await Promise.all(
+      items.map(async (item) => {
+        const { verifiedUnitPrice, productId } = await fetchVerifiedPrice(supabase, item);
+        return { ...item, verifiedUnitPrice, dbProductId: productId };
+      }),
+    );
+
+    const total = verifiedLines.reduce(
+      (sum, i) => sum + i.verifiedUnitPrice * i.quantity,
+      0,
+    );
 
     // Construire le pickup_time ISO complet (date d'aujourd'hui + créneau choisi)
     const orderPickupTime = pickup_time
@@ -104,13 +161,12 @@ serve(async (req) => {
       throw new Error('Impossible de créer la commande : ' + orderError?.message);
     }
 
-    const orderItems = items.map((item) => ({
+    const orderItems = verifiedLines.map((item) => ({
       order_id: order.id,
-      // N'insérer un product_id que si c'est un vrai UUID Supabase (pas un slug statique)
-      product_id: UUID_RE.test(item.productId) ? item.productId : null,
+      product_id: item.dbProductId ?? (UUID_RE.test(item.productId) ? item.productId : null),
       product_name: item.name,
       quantity: item.quantity,
-      price_at_time: item.unitPrice,
+      price_at_time: item.verifiedUnitPrice,
     }));
     const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
     if (itemsError) {
@@ -130,7 +186,7 @@ serve(async (req) => {
       locale: 'fr',
       customer_email: profile?.email ?? user.email,
       phone_number_collection: { enabled: true },
-      line_items: items.map((item) => {
+      line_items: verifiedLines.map((item) => {
         const isImageUrl = typeof item.image === 'string' && item.image.startsWith('http');
         return {
           price_data: {
@@ -142,7 +198,7 @@ serve(async (req) => {
                 : undefined,
               images: isImageUrl ? [item.image] : undefined,
             },
-            unit_amount: Math.round(item.unitPrice * 100),
+            unit_amount: Math.round(item.verifiedUnitPrice * 100),
           },
           quantity: item.quantity,
         };
@@ -151,7 +207,6 @@ serve(async (req) => {
       cancel_url: `${siteUrl}/commande/annulee`,
       metadata: {
         order_id: order.id,
-        customer_name: [profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || '',
       },
     });
 

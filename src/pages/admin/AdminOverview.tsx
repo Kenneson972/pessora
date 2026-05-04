@@ -13,6 +13,7 @@ import type { OrderWithItems } from '../../hooks/useOrders';
 
 const STATUS_LABELS: Record<string, string> = {
   pending: 'En attente',
+  paid: 'Payée',
   preparing: 'En préparation',
   ready: 'Prêt',
   completed: 'Retiré',
@@ -21,6 +22,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 const STATUS_ACTIONS: Record<string, { label: string; next: string } | null> = {
   pending: { label: 'Préparer', next: 'preparing' },
+  paid: { label: 'Préparer', next: 'preparing' },
   preparing: { label: 'Marquer prêt', next: 'ready' },
   ready: { label: 'Retiré', next: 'completed' },
   completed: null,
@@ -376,6 +378,7 @@ const AdminOverview = () => {
                       <div className="flex items-center gap-3 shrink-0">
                         <span className={`text-[9px] font-medium uppercase tracking-[0.12em] px-2 py-1 rounded-[2px] ${
                           order.status === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                          order.status === 'paid' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
                           order.status === 'preparing' ? 'bg-sky-50 text-sky-700 border border-sky-200' :
                           order.status === 'ready' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
                           'bg-noir/[0.05] text-black/45'
