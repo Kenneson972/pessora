@@ -54,6 +54,7 @@ const AdminBilans = lazy(() => import('./pages/admin/AdminBilans'));
 const AdminCommunications = lazy(() => import('./pages/admin/AdminCommunications'));
 const AdminInfosBar = lazy(() => import('./pages/admin/AdminInfosBar'));
 const AdminCarousel = lazy(() => import('./pages/admin/AdminCarousel'));
+const AdminSplitGammes = lazy(() => import('./pages/admin/AdminSplitGammes'));
 const OraPlus = lazy(() => import('./pages/OraPlus'));
 const EvenementDetail = lazy(() => import('./pages/EvenementDetail'));
 const BilanBienEtre = lazy(() => import('./pages/BilanBienEtre'));
@@ -210,6 +211,11 @@ function App() {
             <Route path="/admin/carousel" element={
               <ProtectedAdminRoute>
                 <AdminLayout><AdminCarousel /></AdminLayout>
+              </ProtectedAdminRoute>
+            } />
+            <Route path="/admin/moments" element={
+              <ProtectedAdminRoute>
+                <AdminLayout><AdminSplitGammes /></AdminLayout>
               </ProtectedAdminRoute>
             } />
             <Route path="/menu/:drinkId" element={<DrinkDetail />} />
