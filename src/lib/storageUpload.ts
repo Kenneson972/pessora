@@ -12,7 +12,7 @@ function safeFileName(name: string): string {
  * Retourne l’URL publique du fichier.
  */
 export async function uploadPublicImage(
-  bucket: 'product-images' | 'event-images',
+  bucket: 'product-images' | 'event-images' | 'carousel-images' | 'split-gammes-images',
   file: File,
   pathPrefix: string
 ): Promise<string> {
