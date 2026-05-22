@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
-import { LayoutDashboard, Users, CalendarDays, Package, Heart, LogOut, Megaphone, ArrowLeft, Store, Layers } from 'lucide-react';
+import { LayoutDashboard, Users, CalendarDays, Package, Heart, LogOut, Megaphone, ArrowLeft, Store, Layers, Images } from 'lucide-react';
 import { cn } from '@heroui/react';
 import { useAuth } from '../../contexts/AuthContext';
 import { BrandLogo } from '../../components/common/BrandLogo';
@@ -21,6 +21,7 @@ const NAV: {
   { label: 'Bilans', shortLabel: 'Bilans', icon: Heart, path: '/admin/bilans' },
   { label: 'Communication', shortLabel: 'Comm.', icon: Megaphone, path: '/admin/communication' },
   { label: 'Infos bar', shortLabel: 'Infos', icon: Store, path: '/admin/infos' },
+  { label: 'Carrousel', shortLabel: 'Carousel', icon: Images, path: '/admin/carousel' },
 ];
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {

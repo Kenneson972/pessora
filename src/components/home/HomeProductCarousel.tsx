@@ -5,8 +5,6 @@ import { Button, Card, Chip, cn } from '@heroui/react';
 import { carouselBadgeLabel, type HomeCarouselBadge } from '../../data/homeProductCarousel';
 import { type MenuItem } from '../../data/menuData';
 import { useHomeCarouselRows } from '../../hooks/useHomeCarousel';
-import { formatEurFr } from '../../lib/oraPricing';
-import { useIsOraPlus } from '../../hooks/useIsOraPlus';
 import { DrinkOptionsModal } from '../cart/DrinkOptionsModal';
 
 function ProductBadge({ type }: { type: HomeCarouselBadge }) {
@@ -39,7 +37,6 @@ function ProductCard({
   badge?: HomeCarouselBadge;
   onAdd: (item: MenuItem) => void;
 }) {
-  const { effectiveUnitPrice } = useIsOraPlus();
   const line = [item.pitch, item.protein != null ? `${item.protein}g protéines` : null, item.calories != null ? `${item.calories} kcal` : null]
     .filter(Boolean)
     .join(' · ')
@@ -98,9 +95,6 @@ function ProductCard({
             <Card.Title className="text-editorial-product-name">{item.name}</Card.Title>
             <Card.Description className="line-clamp-2 text-editorial-product-meta">{line}</Card.Description>
             <p className="pt-0.5 text-editorial-price">{item.price.toFixed(2).replace('.', ',')} €</p>
-            <p className="text-[9px] font-light text-gold-dim">
-              Óra+ dès {formatEurFr(effectiveUnitPrice(item.price))}
-            </p>
           </Link>
         </Card.Content>
       </Card>
@@ -131,9 +125,6 @@ export function HomeProductCarousel() {
           <h2 id="home-carousel-title" className="text-editorial-section-title">
             Nos coups de cœur
           </h2>
-          <p className="max-w-[14rem] text-[9px] font-light uppercase leading-relaxed tracking-[0.26em] text-black/38 sm:text-right">
-            Sélection maison · recettes courantes
-          </p>
         </div>
 
         <div className="relative">

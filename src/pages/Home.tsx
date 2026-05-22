@@ -8,13 +8,17 @@ import { ImageCard } from '../components/ui/ImageCard';
 import { SectionTitle } from '../components/ui/SectionTitle';
 import { HomeProductCarousel } from '../components/home/HomeProductCarousel';
 import { HomeGoogleReviews } from '../components/home/HomeGoogleReviews';
+import { HomeFeaturedCarousel } from '../components/home/HomeFeaturedCarousel';
+import { HomeSplitGammes } from '../components/home/HomeSplitGammes';
+import { HomeGammesProductTiles } from '../components/home/HomeGammesProductTiles';
+import { HomeGammesProductCarousel } from '../components/home/HomeGammesProductCarousel';
 import { OraPlusTeaserStrip } from '../components/common/OraPlusTeaserStrip';
 import { publicAssetWithCache } from '../lib/publicAsset';
 
 const UNIVERS = [
   {
     id: 'nutrition',
-    eyebrow: 'Nutrition',
+    eyebrow: 'Shakes',
     title: 'Shakes',
     titleEm: '& gauffres',
     bgClass: 'bg-surface-product-well',
@@ -120,6 +124,9 @@ const Home = () => {
         </div>
       </section>
 
+      {/* ─── Carrousel éditorial photos ─── */}
+      <HomeFeaturedCarousel title="À la une" />
+
       {/* ─── Boissons — carrousel coups de cœur ─── */}
       <HomeProductCarousel />
 
@@ -128,6 +135,9 @@ const Home = () => {
           <OraPlusTeaserStrip variant="muted" />
         </div>
       </div>
+
+      {/* ─── Split modèle + tabs gammes boissons ─── */}
+      <HomeSplitGammes />
 
       {/* ─── Nos univers — navigation manuelle (flèches) ─── */}
       <section className="bg-white px-4 py-20 md:px-10 md:py-[88px] lg:px-[72px]">
@@ -219,10 +229,26 @@ const Home = () => {
         </div>
       </section>
 
+      {/* ─── Gammes produits — tuiles + carrousel ─── */}
+      <section className="bg-surface-muted px-4 py-16 md:px-10 md:py-20 lg:px-[72px]">
+        <div className="mx-auto max-w-[1400px]">
+          <div className="mb-8 flex items-end justify-between">
+            <h2 className="text-editorial-section-title">Nos gammes</h2>
+            <a href="/nos-produits" className="text-[9px] uppercase tracking-[0.2em] text-black/40 border-b border-black/20 pb-px">
+              Voir les produits
+            </a>
+          </div>
+          <HomeGammesProductTiles onTabChange={() => {}} />
+          <div className="mt-10">
+            <HomeGammesProductCarousel activeTab="wellness" />
+          </div>
+        </div>
+      </section>
+
       <HomeGoogleReviews />
 
       {/* ─── Événements — respiration typographique ─── */}
-      <section className="bg-white px-4 py-[104px] md:px-10 md:py-[132px] lg:px-[72px]">
+      <section className="bg-white px-4 py-[52px] md:px-10 md:py-[64px] lg:px-[72px]">
         <motion.div className="mx-auto max-w-[520px] text-center" {...fadeUpEvents}>
           <p className="mb-6 text-[9px] font-light uppercase tracking-[0.5em] text-black/45">
             Événements
