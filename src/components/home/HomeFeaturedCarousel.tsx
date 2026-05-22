@@ -2,9 +2,9 @@ import { useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@heroui/react';
-import { motion } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
 import { useFeaturedCarousel } from '../../hooks/useFeaturedCarousel';
-import { useFadeUpWhenVisible, STAGGER_CARDS, CARD_ITEM } from '../../lib/motionReveal';
+import { useFadeUpWhenVisible, SPRING_SMOOTH } from '../../lib/motionReveal';
 
 function PlaceholderCard({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
@@ -58,7 +58,11 @@ function CardItem({ card }: { card: { id: string; eyebrow: string; title: string
 export function HomeFeaturedCarousel({ title }: { title: string }) {
   const { cards, loading } = useFeaturedCarousel();
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
   const headerAnim = useFadeUpWhenVisible();
+
+  // Observer sur la section elle-même (sans overflow) pour éviter les problèmes IO
+  const isInView = useInView(sectionRef, { once: true, amount: 0 });
 
   const scrollBy = useCallback((dir: 1 | -1) => {
     scrollerRef.current?.scrollBy({ left: dir * 324, behavior: 'smooth' });
@@ -66,8 +70,12 @@ export function HomeFeaturedCarousel({ title }: { title: string }) {
 
   if (!loading && cards.length === 0) return null;
 
+  const items = loading
+    ? Array.from({ length: 4 }).map((_, i) => ({ id: `placeholder-${i}`, eyebrow: 'Chargement…', title: '—', image_url: null, link_to: null }))
+    : cards;
+
   return (
-    <section className="bg-white px-4 py-14 md:px-10 md:py-16 lg:px-[72px]">
+    <section ref={sectionRef} className="bg-white px-4 py-14 md:px-10 md:py-16 lg:px-[72px]">
       <div className="mx-auto max-w-[1400px]">
         <motion.div className="mb-8 flex items-end justify-between" {...headerAnim}>
           <h2 className="text-editorial-section-title">{title}</h2>
@@ -83,28 +91,26 @@ export function HomeFeaturedCarousel({ title }: { title: string }) {
           </div>
         </motion.div>
 
-        <motion.div
+        <div
           ref={scrollerRef}
           className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          variants={STAGGER_CARDS}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.15 }}
         >
-          {loading
-            ? Array.from({ length: 4 }).map((_, i) => (
-                <motion.div key={i} variants={CARD_ITEM} className="flex-shrink-0">
-                  <PlaceholderCard eyebrow="Chargement…" title="—" />
-                </motion.div>
-              ))
-            : cards.map((card) => (
-                <motion.div key={card.id} variants={CARD_ITEM} className="flex-shrink-0">
-                  <CardItem card={card} />
-                </motion.div>
-              ))
-          }
-        </motion.div>
+          {items.map((card, i) => (
+            <motion.div
+              key={card.id}
+              className="flex-shrink-0"
+              initial={{ opacity: 0, y: 14 }}
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
+              transition={{ ...SPRING_SMOOTH, delay: i * 0.07 }}
+            >
+              {loading
+                ? <PlaceholderCard eyebrow={card.eyebrow} title={card.title} />
+                : <CardItem card={card as typeof cards[number]} />
+              }
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   );
