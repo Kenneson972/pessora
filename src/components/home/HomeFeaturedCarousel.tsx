@@ -2,13 +2,14 @@ import { useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@heroui/react';
+import { motion } from 'framer-motion';
 import { useFeaturedCarousel } from '../../hooks/useFeaturedCarousel';
+import { useFadeUpWhenVisible, STAGGER_CARDS, CARD_ITEM } from '../../lib/motionReveal';
 
 function PlaceholderCard({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
     <div className="flex-shrink-0 w-[280px] min-[400px]:w-[310px] h-[400px] rounded-[10px] overflow-hidden bg-noir/[0.06] relative snap-start">
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-black/20">
-        <span className="text-[40px]">📸</span>
         <span className="text-[9px] uppercase tracking-[0.18em]">Photo à venir</span>
       </div>
       <div className="absolute inset-0 bg-gradient-to-t from-noir/70 via-noir/20 to-transparent flex flex-col justify-end p-5">
@@ -32,7 +33,6 @@ function CardItem({ card }: { card: { id: string; eyebrow: string; title: string
         />
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-noir/[0.06] text-black/20">
-          <span className="text-[40px]">📸</span>
           <span className="text-[9px] uppercase tracking-[0.18em]">Photo à venir</span>
         </div>
       )}
@@ -58,6 +58,7 @@ function CardItem({ card }: { card: { id: string; eyebrow: string; title: string
 export function HomeFeaturedCarousel({ title }: { title: string }) {
   const { cards, loading } = useFeaturedCarousel();
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const headerAnim = useFadeUpWhenVisible();
 
   const scrollBy = useCallback((dir: 1 | -1) => {
     scrollerRef.current?.scrollBy({ left: dir * 324, behavior: 'smooth' });
@@ -68,7 +69,7 @@ export function HomeFeaturedCarousel({ title }: { title: string }) {
   return (
     <section className="bg-white px-4 py-14 md:px-10 md:py-16 lg:px-[72px]">
       <div className="mx-auto max-w-[1400px]">
-        <div className="mb-8 flex items-end justify-between">
+        <motion.div className="mb-8 flex items-end justify-between" {...headerAnim}>
           <h2 className="text-editorial-section-title">{title}</h2>
           <div className="flex gap-2">
             <Button isIconOnly variant="ghost" onPress={() => scrollBy(-1)} aria-label="Précédent"
@@ -80,20 +81,30 @@ export function HomeFeaturedCarousel({ title }: { title: string }) {
               <ChevronRight size={18} strokeWidth={1.25} />
             </Button>
           </div>
-        </div>
+        </motion.div>
 
-        <div
+        <motion.div
           ref={scrollerRef}
           className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          variants={STAGGER_CARDS}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.15 }}
         >
           {loading
             ? Array.from({ length: 4 }).map((_, i) => (
-                <PlaceholderCard key={i} eyebrow="Chargement…" title="—" />
+                <motion.div key={i} variants={CARD_ITEM} className="flex-shrink-0">
+                  <PlaceholderCard eyebrow="Chargement…" title="—" />
+                </motion.div>
               ))
-            : cards.map((card) => <CardItem key={card.id} card={card} />)
+            : cards.map((card) => (
+                <motion.div key={card.id} variants={CARD_ITEM} className="flex-shrink-0">
+                  <CardItem card={card} />
+                </motion.div>
+              ))
           }
-        </div>
+        </motion.div>
       </div>
     </section>
   );

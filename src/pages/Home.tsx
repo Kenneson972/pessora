@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button, Tabs } from '@heroui/react';
-import { useFadeUpWhenVisible } from '../lib/motionReveal';
+import { useFadeUpWhenVisible, HERO_CONTAINER, HERO_ITEM } from '../lib/motionReveal';
 import { ImageCard } from '../components/ui/ImageCard';
 import { SectionTitle } from '../components/ui/SectionTitle';
 import { HomeProductCarousel } from '../components/home/HomeProductCarousel';
@@ -92,36 +92,43 @@ const Home = () => {
         />
         <div className="absolute top-0 left-4 md:left-10 lg:left-[72px] right-4 md:right-10 lg:right-[72px] h-px bg-gradient-to-r from-transparent via-gold/15 to-transparent" />
 
-        <div className="relative z-10 w-full max-w-lg px-4 pb-12 pt-8 md:px-10 md:pb-14 lg:px-[72px] lg:pb-16">
-          <p
+        <motion.div
+          className="relative z-10 w-full max-w-lg px-4 pb-12 pt-8 md:px-10 md:pb-14 lg:px-[72px] lg:pb-16"
+          variants={HERO_CONTAINER}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.p
+            variants={HERO_ITEM}
             className="mb-5 max-w-[24rem] font-light leading-[1.45] tracking-[0.02em] text-white/88 sm:max-w-md"
             style={{ fontSize: 'clamp(14px, 2.6vw, 18px)' }}
           >
             <span className="block">Plus qu&apos;une boisson</span>
             <span className="mt-1.5 block">un style de vie</span>
-          </p>
-          <p className="mb-8 max-w-md text-[8px] font-light uppercase leading-relaxed tracking-[0.22em] text-white/50 [text-wrap:balance] sm:text-[9px] sm:tracking-[0.28em]">
-            Performance{' '}
-            <span className="text-white/35" aria-hidden>
-              |
-            </span>{' '}
-            Protein bar{' '}
-            <span className="text-white/35" aria-hidden>
-              |
-            </span>{' '}
-            Nutricosmetics
-          </p>
-          <Button
-            variant="ghost"
-            size="lg"
-            onPress={() => navigate('/menu')}
-            aria-label="Voir le menu"
-            className="inline-flex items-center gap-2 !border-0 !bg-transparent !shadow-none text-white hover:!bg-white/[0.08] active:!bg-white/[0.12]"
+          </motion.p>
+          <motion.p
+            variants={HERO_ITEM}
+            className="mb-8 max-w-md text-[8px] font-light uppercase leading-relaxed tracking-[0.22em] text-white/50 [text-wrap:balance] sm:text-[9px] sm:tracking-[0.28em]"
           >
-            <span className="text-[9px] font-normal uppercase tracking-[0.22em]">Menu</span>
-            <ChevronRight size={18} strokeWidth={1.3} aria-hidden />
-          </Button>
-        </div>
+            Performance{' '}
+            <span className="text-white/35" aria-hidden>|</span>{' '}
+            Protein bar{' '}
+            <span className="text-white/35" aria-hidden>|</span>{' '}
+            Nutricosmetics
+          </motion.p>
+          <motion.div variants={HERO_ITEM}>
+            <Button
+              variant="ghost"
+              size="lg"
+              onPress={() => navigate('/menu')}
+              aria-label="Voir le menu"
+              className="inline-flex items-center gap-2 !border-0 !bg-transparent !shadow-none text-white hover:!bg-white/[0.08] active:!bg-white/[0.12]"
+            >
+              <span className="text-[9px] font-normal uppercase tracking-[0.22em]">Menu</span>
+              <ChevronRight size={18} strokeWidth={1.3} aria-hidden />
+            </Button>
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* ─── Carrousel éditorial photos ─── */}
