@@ -287,7 +287,7 @@ const EventEditor = ({ initial, existing, relanceFrom, onSave, onCancel, onDelet
                   placeholder="Ex. Pop-up Carbet — Fort-de-France"
                   onChange={(e) => {
                     set('title', e.target.value);
-                    if (!initial?.slug && !existing) set('slug', slugify(e.target.value));
+                    set('slug', slugify(e.target.value));
                   }}
                 />
               </div>
