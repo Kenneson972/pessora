@@ -315,7 +315,7 @@ const AdminGammes = () => {
     query.then(({ data, error }: { data: GammeProduct[] | null; error: { message: string } | null }) => {
       setLoading(false);
       if (error) {
-        setFetchError(formatSupabaseDataError(error.message, 'gamme_products'));
+        setFetchError(formatSupabaseDataError(error.message, 'products'));
         setProducts([]);
         return;
       }
