@@ -461,7 +461,10 @@ export function AdminProductEditorForm({
               id="prod-name"
               className={inputClass}
               value={form.name}
-              onChange={(e) => set('name', e.target.value)}
+              onChange={(e) => {
+                set('name', e.target.value);
+                set('slug', slugify(e.target.value));
+              }}
               placeholder="Ex. Pink Dragon"
             />
           </div>
@@ -788,13 +791,6 @@ export function AdminProductEditorForm({
                 onChange={(e) => set('slug', e.target.value)}
                 placeholder="pink-dragon"
               />
-              <button
-                type="button"
-                className="mt-2 text-[11px] font-normal text-black/45 underline underline-offset-2 hover:text-black"
-                onClick={() => set('slug', slugify(form.name))}
-              >
-                Générer automatiquement depuis le nom
-              </button>
             </div>
             <div>
               <label htmlFor="prod-emoji" className={labelClass}>
