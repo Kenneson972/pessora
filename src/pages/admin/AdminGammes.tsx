@@ -1,40 +1,31 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Plus, Pencil, Trash2, Archive, ArchiveRestore, ChevronDown } from 'lucide-react';
-import { Skeleton, cn } from '@heroui/react';
-import { EmptyState } from '@heroui-pro/react';
+// src/pages/admin/AdminGammes.tsx
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Plus, Pencil, Trash2, Archive, ArchiveRestore } from 'lucide-react';
+import { Card, Skeleton, Modal, useOverlayState } from '@heroui/react';
+import { ContextMenu, EmptyState, Segment } from '@heroui-pro/react';
 import { supabase } from '../../lib/supabaseClient';
 import { formatSupabaseDataError, formatMutationError } from '../../lib/userFacingError';
 import { AdminErrorAlert } from '../../components/dashboard/AdminErrorAlert';
 import { ConfirmDialog } from '../../components/dashboard/ConfirmDialog';
-import { DashPageHeader } from '../../components/dashboard/primitives';
+import { DashEyebrow, DashPageHeader } from '../../components/dashboard/primitives';
 import { DASH_MAIN_PAD } from '../../components/dashboard/layoutClasses';
 import type { GammeProduct } from '../../types/database';
 
-const SIDEBAR_NAV = [
-  {
-    gamme: 'sport' as const,
-    label: 'Gamme Sport',
-    subcategories: [
-      { key: 'sport', label: 'Sport' },
-      { key: 'encas', label: 'Encas' },
-    ],
-  },
-  {
-    gamme: 'skin' as const,
-    label: 'Gamme Skin',
-    subcategories: [
-      { key: 'nettoyage', label: 'Nettoyage' },
-      { key: 'korean', label: 'Korean Products' },
-      { key: 'contour', label: 'Contour des Yeux' },
-      { key: 'serum', label: 'Sérum / Anti-Âge' },
-    ],
-  },
-  {
-    gamme: 'wellness' as const,
-    label: 'Gamme Wellness',
-    subcategories: [],
-  },
+const GAMMES = [
+  { key: 'sport', label: 'Sport', subcategories: [
+    { key: 'sport', label: 'Sport' },
+    { key: 'encas', label: 'Encas' },
+  ]},
+  { key: 'skin', label: 'Skin', subcategories: [
+    { key: 'nettoyage', label: 'Nettoyage' },
+    { key: 'korean', label: 'Korean Products' },
+    { key: 'contour', label: 'Contour des Yeux' },
+    { key: 'serum', label: 'Sérum / Anti-Âge' },
+  ]},
+  { key: 'wellness', label: 'Wellness', subcategories: [] },
 ] as const;
+
+type GammeKey = (typeof GAMMES)[number]['key'];
 
 const EMPTY_FORM = {
   name: '',
@@ -44,9 +35,10 @@ const EMPTY_FORM = {
   image_url: '',
   sort_order: '',
 };
-type GammeFormState = typeof EMPTY_FORM;
 
-function productToGammeForm(p: GammeProduct): GammeFormState {
+type FormState = typeof EMPTY_FORM;
+
+function productToForm(p: GammeProduct): FormState {
   return {
     name: p.name,
     description: p.description ?? '',
@@ -60,20 +52,22 @@ function productToGammeForm(p: GammeProduct): GammeFormState {
 const inputClass =
   'w-full h-11 bg-surface-muted rounded-[2px] border border-noir/[0.08] px-3 text-base sm:text-[12px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-noir/20';
 
-const GammeProductForm = ({
+function GammeEditorForm({
+  mode,
   initial,
   onSave,
   onCancel,
 }: {
-  initial?: Partial<GammeFormState>;
-  onSave: (data: GammeFormState) => Promise<void>;
+  mode: 'create' | 'edit';
+  initial?: FormState;
+  onSave: (data: FormState) => Promise<void>;
   onCancel: () => void;
-}) => {
-  const [form, setForm] = useState<GammeFormState>({ ...EMPTY_FORM, ...initial });
+}) {
+  const [form, setForm] = useState<FormState>(initial ?? EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const set = (key: keyof GammeFormState, value: string) =>
+  const set = (key: keyof FormState, value: string) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
   const handleSave = async () => {
@@ -81,47 +75,43 @@ const GammeProductForm = ({
     if (!form.price) { setError('Prix requis.'); return; }
     setSaving(true);
     setError(null);
-    try {
-      await onSave(form);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erreur');
-    } finally {
-      setSaving(false);
-    }
+    try { await onSave(form); }
+    catch (e) { setError(e instanceof Error ? e.message : 'Erreur'); }
+    finally { setSaving(false); }
   };
 
   return (
-    <div className="mb-6 rounded-[2px] border border-noir/[0.06] bg-white p-6">
-      <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="md:col-span-2">
-          <label className="mb-1.5 block text-[9px] uppercase tracking-[0.2em] text-black/35">Nom *</label>
-          <input className={inputClass} value={form.name} onChange={(e) => set('name', e.target.value)} />
-        </div>
-        <div>
-          <label className="mb-1.5 block text-[9px] uppercase tracking-[0.2em] text-black/35">Prix (€) *</label>
+    <div className="flex flex-col gap-4">
+      <label className="flex flex-col gap-1">
+        <span className="text-[10px] uppercase tracking-[0.14em] text-black/50">Nom *</span>
+        <input className={inputClass} value={form.name} onChange={(e) => set('name', e.target.value)} />
+      </label>
+      <div className="grid grid-cols-2 gap-4">
+        <label className="flex flex-col gap-1">
+          <span className="text-[10px] uppercase tracking-[0.14em] text-black/50">Prix (€) *</span>
           <input type="number" step="0.01" className={inputClass} value={form.price} onChange={(e) => set('price', e.target.value)} placeholder="45" />
-        </div>
-        <div>
-          <label className="mb-1.5 block text-[9px] uppercase tracking-[0.2em] text-black/35">
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-[10px] uppercase tracking-[0.14em] text-black/50">
             Prix alternatif (€) <span className="normal-case text-black/25">— ex: grand format</span>
-          </label>
+          </span>
           <input type="number" step="0.01" className={inputClass} value={form.price_alt} onChange={(e) => set('price_alt', e.target.value)} placeholder="Laisser vide si un seul prix" />
-        </div>
-        <div className="md:col-span-2">
-          <label className="mb-1.5 block text-[9px] uppercase tracking-[0.2em] text-black/35">Description</label>
-          <input className={inputClass} value={form.description} onChange={(e) => set('description', e.target.value)} />
-        </div>
-        <div>
-          <label className="mb-1.5 block text-[9px] uppercase tracking-[0.2em] text-black/35">Image (URL)</label>
-          <input className={inputClass} value={form.image_url} onChange={(e) => set('image_url', e.target.value)} placeholder="https://…" />
-        </div>
-        <div>
-          <label className="mb-1.5 block text-[9px] uppercase tracking-[0.2em] text-black/35">Ordre d'affichage</label>
-          <input type="number" className={inputClass} value={form.sort_order} onChange={(e) => set('sort_order', e.target.value)} placeholder="1" />
-        </div>
+        </label>
       </div>
-      {error && <p className="mb-3 text-[11px] text-red-500/80">{error}</p>}
-      <div className="flex gap-3">
+      <label className="flex flex-col gap-1">
+        <span className="text-[10px] uppercase tracking-[0.14em] text-black/50">Description</span>
+        <input className={inputClass} value={form.description} onChange={(e) => set('description', e.target.value)} />
+      </label>
+      <label className="flex flex-col gap-1">
+        <span className="text-[10px] uppercase tracking-[0.14em] text-black/50">Image (URL)</span>
+        <input className={inputClass} value={form.image_url} onChange={(e) => set('image_url', e.target.value)} placeholder="https://…" />
+      </label>
+      <label className="flex flex-col gap-1">
+        <span className="text-[10px] uppercase tracking-[0.14em] text-black/50">Ordre d'affichage</span>
+        <input type="number" className={inputClass} value={form.sort_order} onChange={(e) => set('sort_order', e.target.value)} placeholder="1" />
+      </label>
+      {error && <p className="text-[11px] text-red-500/80">{error}</p>}
+      <div className="flex gap-3 pt-2">
         <button
           type="button"
           onClick={handleSave}
@@ -140,68 +130,213 @@ const GammeProductForm = ({
       </div>
     </div>
   );
+}
+
+function GammeVisual({ p }: { p: GammeProduct }) {
+  if (p.image_url) {
+    return (
+      <img
+        src={p.image_url}
+        alt={p.name ? `Visuel — ${p.name}` : 'Visuel produit'}
+        className="h-full w-full object-cover"
+        loading="lazy"
+        decoding="async"
+      />
+    );
+  }
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-noir/[0.04] text-[10px] font-light uppercase tracking-[0.2em] text-black/25">
+      Sans visuel
+    </div>
+  );
+}
+
+function GammeGridSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <Card key={i} className="overflow-hidden rounded-[2px] border border-noir/[0.06] bg-white">
+          <Skeleton className="aspect-[4/3] w-full rounded-none bg-noir/[0.06]" />
+          <Card.Content className="space-y-3 p-4">
+            <Skeleton className="h-4 w-[75%] max-w-[200px] rounded bg-noir/[0.06]" />
+            <Skeleton className="h-3 w-[45%] max-w-[120px] rounded bg-noir/[0.05]" />
+            <Skeleton className="h-8 rounded bg-noir/[0.04]" />
+          </Card.Content>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function GammeCard({
+  p,
+  onEdit,
+  onArchive,
+  onDelete,
+}: {
+  p: GammeProduct;
+  onEdit: () => void;
+  onArchive: () => void;
+  onDelete: () => void;
+}) {
+  const priceStr = `${p.price.toFixed(2).replace('.', ',')}\u00a0€`;
+  const altPriceStr = p.price_alt != null
+    ? ` / ${p.price_alt.toFixed(2).replace('.', ',')}\u00a0€`
+    : '';
+
+  return (
+    <ContextMenu>
+      <ContextMenu.Trigger
+        className="group flex flex-col overflow-hidden rounded-[2px] border border-noir/[0.08] bg-white shadow-[0_1px_0_rgba(0,0,0,0.04)] transition-[border-color,box-shadow] hover:border-noir/15 hover:shadow-[0_8px_28px_rgba(0,0,0,0.06)]"
+        role="article"
+      >
+        <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-surface-muted">
+          <GammeVisual p={p} />
+          <div className="pointer-events-none absolute left-2 top-2 flex max-w-[calc(100%-1rem)] flex-wrap gap-1">
+            <span
+              className={`rounded-[2px] px-2 py-0.5 text-[8px] font-normal uppercase tracking-[0.14em] ${
+                p.active
+                  ? 'bg-gold-dim/15 text-gold-dim'
+                  : 'bg-noir/[0.06] text-black/40'
+              }`}
+            >
+              {p.active ? 'Visible' : 'Masqué'}
+            </span>
+            <span className="rounded-[2px] bg-noir/[0.06] px-2 py-0.5 text-[8px] font-normal uppercase tracking-[0.12em] text-black/45">
+              Ordre #{p.sort_order}
+            </span>
+          </div>
+        </div>
+        <div className="flex flex-1 flex-col gap-3 p-4">
+          <div className="min-w-0 flex-1 space-y-1">
+            <p className="line-clamp-2 font-display text-[15px] font-normal leading-snug text-black">
+              {p.name}
+            </p>
+            {p.description && (
+              <p className="line-clamp-2 text-[11px] font-light text-black/45">
+                {p.description}
+              </p>
+            )}
+          </div>
+          <div className="flex items-end justify-between gap-3 border-t border-noir/[0.06] pt-3">
+            <div>
+              <p className="font-display text-[18px] font-normal tabular-nums text-black">
+                {priceStr}{altPriceStr}
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-1">
+              <button
+                type="button"
+                onClick={onEdit}
+                className="flex h-11 min-w-[44px] items-center justify-center rounded-[2px] border border-noir/12 bg-white text-black/55 transition-colors hover:border-noir/25 hover:text-black"
+                aria-label={`Modifier ${p.name}`}
+              >
+                <Pencil size={15} strokeWidth={1.5} />
+              </button>
+              <button
+                type="button"
+                onClick={onArchive}
+                className="flex h-11 min-w-[44px] items-center justify-center rounded-[2px] border border-transparent text-black/30 transition-colors hover:border-amber-200 hover:bg-amber-50 hover:text-amber-600"
+                aria-label={p.active ? `Archiver ${p.name}` : `Restaurer ${p.name}`}
+                title={p.active ? 'Archiver' : 'Restaurer'}
+              >
+                {p.active ? <Archive size={15} strokeWidth={1.5} /> : <ArchiveRestore size={15} strokeWidth={1.5} />}
+              </button>
+              <button
+                type="button"
+                onClick={onDelete}
+                className="flex h-11 min-w-[44px] items-center justify-center rounded-[2px] border border-transparent text-black/30 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                aria-label={`Supprimer ${p.name}`}
+              >
+                <Trash2 size={15} strokeWidth={1.5} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </ContextMenu.Trigger>
+      <ContextMenu.Popover>
+        <ContextMenu.Menu
+          aria-label={`Actions pour ${p.name}`}
+          onAction={(key) => {
+            if (key === 'edit') onEdit();
+            else if (key === 'delete') onDelete();
+          }}
+        >
+          <ContextMenu.Item id="edit" textValue="Modifier">
+            <Pencil size={13} strokeWidth={1.6} aria-hidden />
+            Modifier
+          </ContextMenu.Item>
+          <ContextMenu.Item id="delete" textValue="Supprimer" className="text-red-600">
+            <Trash2 size={13} strokeWidth={1.6} aria-hidden />
+            Supprimer
+          </ContextMenu.Item>
+        </ContextMenu.Menu>
+      </ContextMenu.Popover>
+    </ContextMenu>
+  );
+}
+
+const DEFAULT_FILTERS = {
+  gamme: 'all' as GammeKey | 'all',
+  subcategory: 'all' as string,
+  visibility: 'all' as 'all' | 'visible' | 'hidden',
 };
 
 const AdminGammes = () => {
   useEffect(() => { document.title = 'Gammes — Admin PessÓra'; }, []);
-  const [selectedGamme, setSelectedGamme] = useState<'sport' | 'skin' | 'wellness'>('sport');
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>('sport');
   const [products, setProducts] = useState<GammeProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const { gamme, subcategory, visibility } = filters;
   const [showForm, setShowForm] = useState(false);
   const [editProduct, setEditProduct] = useState<GammeProduct | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [showArchived, setShowArchived] = useState(false);
+
+  const editorOpen = showForm || editProduct !== null;
+  const editorOverlay = useOverlayState({
+    isOpen: editorOpen,
+    onOpenChange: (open) => {
+      if (!open) { setShowForm(false); setEditProduct(null); }
+    },
+  });
 
   const fetchProducts = useCallback(() => {
     setLoading(true);
     setFetchError(null);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (supabase as any)
+    let query = (supabase as any)
       .from('gamme_products')
-      .select('*')
-      .eq('gamme', selectedGamme)
-      .order('sort_order', { ascending: true })
-      .order('name', { ascending: true })
-      .then(({ data, error }: { data: GammeProduct[] | null; error: { message: string } | null }) => {
-        setLoading(false);
-        if (error) {
-          setFetchError(formatSupabaseDataError(error.message, 'products'));
-          setProducts([]);
-          return;
-        }
-        setProducts(data ?? []);
-      });
-  }, [selectedGamme]);
+      .select('*');
+    if (gamme !== 'all') query = query.eq('gamme', gamme);
+    query = query.order('sort_order', { ascending: true }).order('name', { ascending: true });
+    query.then(({ data, error }: { data: GammeProduct[] | null; error: { message: string } | null }) => {
+      setLoading(false);
+      if (error) {
+        setFetchError(formatSupabaseDataError(error.message, 'gamme_products'));
+        setProducts([]);
+        return;
+      }
+      setProducts(data ?? []);
+    });
+  }, [gamme]);
 
   useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
-  const handleSelectNav = (gamme: 'sport' | 'skin' | 'wellness', subcategory: string | null) => {
-    setSelectedGamme(gamme);
-    setSelectedSubcategory(subcategory);
-    setShowForm(false);
-    setEditProduct(null);
-  };
+  const filtered = useMemo(() => {
+    return products.filter((p) => {
+      const matchSub = subcategory === 'all' || p.subcategory === subcategory;
+      const matchVis =
+        visibility === 'all' ||
+        (visibility === 'visible' && p.active) ||
+        (visibility === 'hidden' && !p.active);
+      return matchSub && matchVis;
+    });
+  }, [products, subcategory, visibility]);
 
-  const visibleProducts = products.filter((p) => {
-    const matchSubcat = selectedSubcategory === null
-      ? p.subcategory === null
-      : p.subcategory === selectedSubcategory;
-    return matchSubcat && p.active;
-  });
-
-  const archivedProducts = products.filter((p) => {
-    const matchSubcat = selectedSubcategory === null
-      ? p.subcategory === null
-      : p.subcategory === selectedSubcategory;
-    return matchSubcat && !p.active;
-  });
-
-  const buildPayload = (form: GammeFormState) => ({
-    gamme: selectedGamme,
-    subcategory: selectedSubcategory,
+  const buildPayload = (form: FormState) => ({
+    gamme: gamme === 'all' ? 'sport' as const : gamme as GammeKey,
+    subcategory: subcategory === 'all' ? null : subcategory,
     name: form.name.trim(),
     description: form.description.trim() || null,
     price: Number(form.price),
@@ -211,26 +346,23 @@ const AdminGammes = () => {
     active: true,
   });
 
-  const handleCreate = async (form: GammeFormState) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleCreate = async (form: FormState) => {
     const { error } = await (supabase as any).from('gamme_products').insert(buildPayload(form));
     if (error) throw new Error(formatMutationError(error.message));
     setShowForm(false);
     fetchProducts();
   };
 
-  const handleUpdate = async (form: GammeFormState) => {
+  const handleUpdate = async (form: FormState) => {
     if (!editProduct) return;
-    const { active: _active, ...rest } = buildPayload(form);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase as any).from('gamme_products').update(rest).eq('id', editProduct.id);
+    const { active: _, ...payload } = buildPayload(form);
+    const { error } = await (supabase as any).from('gamme_products').update(payload).eq('id', editProduct.id);
     if (error) throw new Error(formatMutationError(error.message));
     setEditProduct(null);
     fetchProducts();
   };
 
   const handleArchive = async (p: GammeProduct) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
       .from('gamme_products')
       .update({ active: !p.active })
@@ -242,7 +374,6 @@ const AdminGammes = () => {
     if (!deleteId) return;
     setDeleteLoading(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (supabase as any).from('gamme_products').delete().eq('id', deleteId);
       fetchProducts();
       setDeleteId(null);
@@ -251,217 +382,162 @@ const AdminGammes = () => {
     }
   }, [deleteId, fetchProducts]);
 
-  const currentNavItem = SIDEBAR_NAV.find((n) => n.gamme === selectedGamme);
-  const currentSubLabel = selectedSubcategory
-    ? currentNavItem?.subcategories.find((s) => s.key === selectedSubcategory)?.label
-    : 'Wellness';
-  const sectionTitle = currentSubLabel
-    ? `${currentNavItem?.label} — ${currentSubLabel}`
-    : (currentNavItem?.label ?? '');
+  const currentGamme = GAMMES.find((g) => g.key === gamme);
+  const subItems = currentGamme?.subcategories ?? [];
+  const subOptions = subItems.length > 0
+    ? [{ key: 'all', label: `Toutes les sous-catégories` }, ...subItems.map((s) => ({ key: s.key, label: s.label }))]
+    : [{ key: 'all', label: 'Tous' }];
+
+  const editorMode = editProduct ? 'edit' : 'create';
+  const editorTitle = editorMode === 'edit' ? `Modifier · ${editProduct?.name ?? ''}` : 'Nouveau produit gamme';
 
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
-      <aside className="hidden w-52 shrink-0 border-r border-noir/[0.06] bg-white py-6 md:block">
-        <p className="mb-3 px-4 text-[9px] font-normal uppercase tracking-[0.2em] text-black/30">
-          Gammes produits
-        </p>
-        {SIDEBAR_NAV.map(({ gamme, label, subcategories }) => (
-          <div key={gamme} className="mb-1">
-            {subcategories.length === 0 ? (
-              <button
-                type="button"
-                onClick={() => handleSelectNav(gamme, null)}
-                className={cn(
-                  'w-full px-4 py-2.5 text-left text-[10px] font-medium uppercase tracking-[0.1em] transition-colors',
-                  selectedGamme === gamme && selectedSubcategory === null
-                    ? 'border-l-2 border-noir bg-noir/[0.04] text-noir'
-                    : 'text-black/50 hover:bg-noir/[0.02] hover:text-noir',
-                )}
-              >
-                {label}
-              </button>
-            ) : (
-              <>
-                <p className="px-4 pb-1 pt-2 text-[9px] font-normal uppercase tracking-[0.18em] text-black/35">
-                  {label}
-                </p>
-                {subcategories.map(({ key, label: subLabel }) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => handleSelectNav(gamme, key)}
-                    className={cn(
-                      'w-full px-6 py-2 text-left text-[10px] transition-colors',
-                      selectedGamme === gamme && selectedSubcategory === key
-                        ? 'border-l-2 border-noir bg-noir/[0.04] font-medium text-noir'
-                        : 'text-black/45 hover:bg-noir/[0.02] hover:text-noir',
-                    )}
-                  >
-                    ↳ {subLabel}
-                  </button>
-                ))}
-              </>
-            )}
+    <div>
+      <DashPageHeader
+        breadcrumb="Administration"
+        title="Gammes"
+        subtitle="Produits Sport, Skin et Wellness"
+        action={
+          <button
+            type="button"
+            onClick={() => { setEditProduct(null); setShowForm(true); }}
+            className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-noir text-white px-4 text-[13px] font-medium hover:bg-anthracite transition-colors"
+          >
+            <Plus size={14} strokeWidth={1.5} /> Nouveau produit
+          </button>
+        }
+      />
+      <div className={DASH_MAIN_PAD}>
+        {fetchError && <AdminErrorAlert message={fetchError} onRetry={fetchProducts} />}
+
+        {/* Filters */}
+        <div className="mb-8 rounded-[2px] border border-noir/[0.06] bg-white p-5 sm:p-6">
+          <div className="mb-4">
+            <DashEyebrow className="mb-2">Filtres</DashEyebrow>
           </div>
-        ))}
-      </aside>
-
-      {/* Main */}
-      <div className="min-w-0 flex-1">
-        <DashPageHeader
-          breadcrumb="Administration"
-          title="Gammes"
-          subtitle={sectionTitle}
-          action={
-            <button
-              type="button"
-              onClick={() => { setShowForm(true); setEditProduct(null); }}
-              className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-noir px-4 text-[13px] font-medium text-white transition-colors hover:bg-anthracite"
+          <div className="mb-3 flex flex-wrap items-center gap-3">
+            <span className="text-[9px] font-normal uppercase tracking-[0.18em] text-black/30">Gamme</span>
+            <Segment
+              size="sm"
+              selectedKey={gamme}
+              onSelectionChange={(k) => setFilters({ gamme: (k as GammeKey | 'all') ?? 'all', subcategory: 'all', visibility })}
+              aria-label="Filtrer par gamme"
             >
-              <Plus size={14} strokeWidth={1.5} /> Ajouter produit
-            </button>
-          }
-        />
-
-        <div className={DASH_MAIN_PAD}>
-          {fetchError && <AdminErrorAlert message={fetchError} onRetry={fetchProducts} />}
-
-          {showForm && !editProduct && (
-            <div className="mb-10">
-              <p className="mb-3 text-[9px] font-normal uppercase tracking-[0.2em] text-black/35">Nouveau produit</p>
-              <GammeProductForm onSave={handleCreate} onCancel={() => setShowForm(false)} />
-            </div>
-          )}
-
-          {editProduct && (
-            <div className="mb-10">
-              <p className="mb-3 text-[9px] font-normal uppercase tracking-[0.2em] text-black/35">
-                Modifier — {editProduct.name}
-              </p>
-              <GammeProductForm
-                initial={productToGammeForm(editProduct)}
-                onSave={handleUpdate}
-                onCancel={() => setEditProduct(null)}
-              />
-            </div>
-          )}
-
-          {loading ? (
-            <div className="space-y-3">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-14 w-full rounded-[2px] bg-noir/[0.05]" />
+              {([
+                { key: 'all', label: 'Toutes les gammes' },
+                ...GAMMES.map((g) => ({ key: g.key, label: g.label })),
+              ] as const).map(({ key, label }) => (
+                <Segment.Item key={key} id={key}>
+                  <Segment.Separator />
+                  {label}
+                </Segment.Item>
               ))}
-            </div>
-          ) : visibleProducts.length === 0 && !showForm ? (
-            <EmptyState className="rounded-[2px] border border-dashed border-noir/15 bg-white">
-              <EmptyState.Header>
-                <EmptyState.Title className="font-display text-[16px] font-normal text-black/75">
-                  Aucun produit
-                </EmptyState.Title>
-                <EmptyState.Description className="text-[12px] font-light text-black/45">
-                  Aucun produit dans cette sous-catégorie.
-                </EmptyState.Description>
-              </EmptyState.Header>
-            </EmptyState>
-          ) : (
-            <div className="overflow-hidden rounded-[2px] border border-noir/[0.06] bg-white">
-              {visibleProducts.map((p, i) => (
-                <div
-                  key={p.id}
-                  className={cn(
-                    'flex items-center justify-between gap-4 px-5 py-3.5',
-                    i < visibleProducts.length - 1 && 'border-b border-noir/[0.05]',
-                  )}
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-normal text-black">{p.name}</p>
-                    {p.description && (
-                      <p className="mt-0.5 truncate text-[11px] font-light text-black/40">{p.description}</p>
-                    )}
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <p className="text-[14px] font-normal text-black">
-                      {p.price}€{p.price_alt ? ` / ${p.price_alt}€` : ''}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => { setEditProduct(p); setShowForm(false); }}
-                      className="flex h-11 w-11 items-center justify-center rounded-[2px] border border-noir/12 text-black/55 transition-colors hover:border-noir/25 hover:text-black"
-                      aria-label={`Modifier ${p.name}`}
-                    >
-                      <Pencil size={14} strokeWidth={1.5} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleArchive(p)}
-                      className="flex h-11 w-11 items-center justify-center rounded-[2px] border border-transparent text-black/30 transition-colors hover:border-amber-200 hover:bg-amber-50 hover:text-amber-600"
-                      aria-label={`Archiver ${p.name}`}
-                      title="Archiver"
-                    >
-                      <Archive size={14} strokeWidth={1.5} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDeleteId(p.id)}
-                      className="flex h-11 w-11 items-center justify-center rounded-[2px] border border-transparent text-black/30 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-600"
-                      aria-label={`Supprimer ${p.name}`}
-                    >
-                      <Trash2 size={14} strokeWidth={1.5} />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Archives */}
-          {archivedProducts.length > 0 && (
-            <div className="mt-10">
-              <button
-                type="button"
-                onClick={() => setShowArchived((v) => !v)}
-                className="flex items-center gap-2 text-[10px] font-normal uppercase tracking-[0.14em] text-black/40 transition-colors hover:text-black"
+            </Segment>
+          </div>
+          {subItems.length > 0 && (
+            <div className="mb-3 flex flex-wrap items-center gap-3">
+              <span className="text-[9px] font-normal uppercase tracking-[0.18em] text-black/30">Sous-catégorie</span>
+              <Segment
+                size="sm"
+                selectedKey={subcategory}
+                onSelectionChange={(k) => setFilters({ gamme, subcategory: (k as string) ?? 'all', visibility })}
+                aria-label="Filtrer par sous-catégorie"
               >
-                <ChevronDown
-                  size={14}
-                  strokeWidth={1.5}
-                  className={cn('transition-transform', showArchived && 'rotate-180')}
-                />
-                {archivedProducts.length} produit{archivedProducts.length > 1 ? 's' : ''} archivé{archivedProducts.length > 1 ? 's' : ''}
-              </button>
-              {showArchived && (
-                <div className="mt-4 overflow-hidden rounded-[2px] border border-noir/[0.06] bg-noir/[0.01]">
-                  {archivedProducts.map((p, i) => (
-                    <div
-                      key={p.id}
-                      className={cn(
-                        'flex items-center justify-between gap-4 px-5 py-3.5 opacity-50',
-                        i < archivedProducts.length - 1 && 'border-b border-noir/[0.05]',
-                      )}
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-[13px] font-normal text-black">{p.name}</p>
-                      </div>
-                      <p className="shrink-0 text-[13px] text-black/60">{p.price}€</p>
-                      <button
-                        type="button"
-                        onClick={() => handleArchive(p)}
-                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[2px] border border-transparent text-black/30 transition-colors hover:border-green-200 hover:bg-green-50 hover:text-green-600"
-                        aria-label={`Restaurer ${p.name}`}
-                        title="Restaurer"
-                      >
-                        <ArchiveRestore size={14} strokeWidth={1.5} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+                {subOptions.map(({ key, label }) => (
+                  <Segment.Item key={key} id={key}>
+                    <Segment.Separator />
+                    {label}
+                  </Segment.Item>
+                ))}
+              </Segment>
             </div>
           )}
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-[9px] font-normal uppercase tracking-[0.18em] text-black/30">Affichage</span>
+            <Segment
+              size="sm"
+              selectedKey={visibility}
+              onSelectionChange={(k) =>
+                setFilters({
+                  gamme,
+                  subcategory,
+                  visibility: (k as 'all' | 'visible' | 'hidden') ?? 'all',
+                })
+              }
+              aria-label="Filtrer par visibilité"
+            >
+              {([
+                ['all', 'Tous'],
+                ['visible', 'Visibles'],
+                ['hidden', 'Masqués'],
+              ] as const).map(([key, label]) => (
+                <Segment.Item key={key} id={key}>
+                  <Segment.Separator />
+                  {label}
+                </Segment.Item>
+              ))}
+            </Segment>
+          </div>
         </div>
+
+        {/* Editor Modal */}
+        <Modal state={editorOverlay}>
+          <Modal.Backdrop variant="blur" isDismissable>
+            <Modal.Container scroll="inside" placement="center" size="full" className="mx-auto max-h-[92vh] w-[min(100vw-1rem,720px)] shadow-2xl">
+              <Modal.Dialog className="flex max-h-[92vh] flex-col overflow-hidden rounded-[2px] border border-noir/[0.08] bg-white shadow-xl">
+                <Modal.Header className="relative shrink-0 border-b border-noir/[0.06] px-5 py-4 sm:px-6">
+                  <Modal.Heading className="font-display text-[17px] font-normal tracking-[0.02em] text-black pr-10">
+                    {editorTitle}
+                  </Modal.Heading>
+                  <Modal.CloseTrigger className="absolute right-3 top-3 shrink-0 rounded-[2px] border border-transparent text-black/45 hover:bg-noir/[0.05] hover:text-black">
+                    Fermer
+                  </Modal.CloseTrigger>
+                </Modal.Header>
+                <Modal.Body className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+                  <GammeEditorForm
+                    key={editProduct?.id ?? 'create'}
+                    mode={editorMode}
+                    initial={editProduct ? productToForm(editProduct) : undefined}
+                    onSave={async (form) => {
+                      if (editProduct) await handleUpdate(form);
+                      else await handleCreate(form);
+                    }}
+                    onCancel={() => editorOverlay.close()}
+                  />
+                </Modal.Body>
+              </Modal.Dialog>
+            </Modal.Container>
+          </Modal.Backdrop>
+        </Modal>
+
+        {/* Product grid */}
+        {loading ? (
+          <GammeGridSkeleton />
+        ) : filtered.length === 0 ? (
+          <EmptyState className="rounded-[2px] border border-dashed border-noir/15 bg-white">
+            <EmptyState.Header>
+              <EmptyState.Title className="font-display text-[16px] font-normal text-black/75">
+                Aucun produit
+              </EmptyState.Title>
+              <EmptyState.Description className="text-[12px] font-light text-black/45">
+                Aucun produit dans cette catégorie. Ajoutez-en un nouveau.
+              </EmptyState.Description>
+            </EmptyState.Header>
+          </EmptyState>
+        ) : (
+          <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {filtered.map((p) => (
+              <li key={p.id}>
+                <GammeCard
+                  p={p}
+                  onEdit={() => { setShowForm(false); setEditProduct(p); }}
+                  onArchive={() => handleArchive(p)}
+                  onDelete={() => setDeleteId(p.id)}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <ConfirmDialog
