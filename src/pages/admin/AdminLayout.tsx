@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
-import { LayoutDashboard, Users, CalendarDays, Package, Heart, LogOut, Megaphone, ArrowLeft, Store, Layers, Images, LayoutList } from 'lucide-react';
+import { LayoutDashboard, Users, CalendarDays, Package, Heart, LogOut, Megaphone, ArrowLeft, Images } from 'lucide-react';
 import { cn } from '@heroui/react';
 import { useAuth } from '../../contexts/AuthContext';
 import { BrandLogo } from '../../components/common/BrandLogo';
@@ -16,13 +16,10 @@ const NAV: {
   { label: "Vue d'ensemble", shortLabel: 'Vue', icon: LayoutDashboard, path: '/admin', exact: true },
   { label: 'Membres', shortLabel: 'Membres', icon: Users, path: '/admin/membres' },
   { label: 'Événements', shortLabel: 'Évén.', icon: CalendarDays, path: '/admin/evenements' },
-  { label: 'Produits', shortLabel: 'Produits', icon: Package, path: '/admin/produits' },
-  { label: 'Gammes', shortLabel: 'Gammes', icon: Layers, path: '/admin/gammes' },
+  { label: 'Produits & Gammes', shortLabel: 'Prod.', icon: Package, path: '/admin/produits-gammes' },
   { label: 'Bilans', shortLabel: 'Bilans', icon: Heart, path: '/admin/bilans' },
   { label: 'Communication', shortLabel: 'Comm.', icon: Megaphone, path: '/admin/communication' },
-  { label: 'Infos bar', shortLabel: 'Infos', icon: Store, path: '/admin/infos' },
-  { label: 'Carrousel', shortLabel: 'Carousel', icon: Images, path: '/admin/carousel' },
-  { label: 'Moments', shortLabel: 'Moments', icon: LayoutList, path: '/admin/moments' },
+  { label: 'Contenu', shortLabel: 'Contenu', icon: Images, path: '/admin/contenu' },
 ];
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
