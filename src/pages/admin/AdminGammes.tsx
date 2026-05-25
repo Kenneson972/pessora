@@ -70,6 +70,8 @@ function GammeEditorForm({
   const set = (key: keyof FormState, value: string) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
+  const saveLabel = mode === 'create' ? 'Créer' : 'Enregistrer';
+
   const handleSave = async () => {
     if (!form.name.trim()) { setError('Nom requis.'); return; }
     if (!form.price) { setError('Prix requis.'); return; }
@@ -118,7 +120,7 @@ function GammeEditorForm({
           disabled={saving}
           className="h-11 rounded-[2px] bg-noir px-6 text-[10px] font-normal uppercase tracking-[0.12em] text-white transition-colors hover:bg-anthracite disabled:opacity-40"
         >
-          {saving ? 'Sauvegarde…' : 'Sauvegarder'}
+          {saving ? 'Sauvegarde…' : saveLabel}
         </button>
         <button
           type="button"
@@ -523,6 +525,15 @@ const AdminGammes = () => {
                 Aucun produit dans cette catégorie. Ajoutez-en un nouveau.
               </EmptyState.Description>
             </EmptyState.Header>
+            <EmptyState.Content>
+              <button
+                type="button"
+                onClick={() => setFilters(DEFAULT_FILTERS)}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-noir/15 px-4 text-[10px] font-normal uppercase tracking-[0.1em] text-black/60 transition-colors hover:border-noir/30 hover:text-noir"
+              >
+                Réinitialiser les filtres
+              </button>
+            </EmptyState.Content>
           </EmptyState>
         ) : (
           <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
