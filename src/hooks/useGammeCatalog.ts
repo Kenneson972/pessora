@@ -18,6 +18,7 @@ function getStaticProducts(gamme: 'sport' | 'skin' | 'wellness'): GammeProduct[]
       : null,
     active: true,
     image_url: null,
+    slug: null,
     sort_order: i,
     created_at: '',
   }));

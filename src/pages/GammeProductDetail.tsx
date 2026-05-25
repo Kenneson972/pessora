@@ -64,8 +64,8 @@ const GammeProductDetail = () => {
   const crossSell: CrossSellItem[] = useMemo(() => {
     if (!range) return [];
     return range.products
-      .filter((p) => (p.slug || toSlug(p.name)) !== slug)
-      .map((p) => ({ ...p, slug: p.slug || toSlug(p.name) }))
+      .filter((p) => toSlug(p.name) !== slug)
+      .map((p) => ({ ...p, slug: toSlug(p.name) }))
       .slice(0, 3);
   }, [range, slug]);
 
