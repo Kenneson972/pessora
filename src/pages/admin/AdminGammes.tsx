@@ -10,6 +10,7 @@ import { ConfirmDialog } from '../../components/dashboard/ConfirmDialog';
 import { DashEyebrow, DashPageHeader } from '../../components/dashboard/primitives';
 import { DASH_MAIN_PAD } from '../../components/dashboard/layoutClasses';
 import type { GammeProduct } from '../../types/database';
+import { slugify } from '../../components/admin/AdminProductEditorForm';
 
 const GAMMES = [
   { key: 'sport', label: 'Sport', subcategories: [
@@ -29,6 +30,7 @@ type GammeKey = (typeof GAMMES)[number]['key'];
 
 const EMPTY_FORM = {
   name: '',
+  slug: '',
   description: '',
   price: '',
   price_alt: '',
@@ -41,6 +43,7 @@ type FormState = typeof EMPTY_FORM;
 function productToForm(p: GammeProduct): FormState {
   return {
     name: p.name,
+    slug: p.slug ?? '',
     description: p.description ?? '',
     price: String(p.price),
     price_alt: p.price_alt != null ? String(p.price_alt) : '',
@@ -86,7 +89,14 @@ function GammeEditorForm({
     <div className="flex flex-col gap-4">
       <label className="flex flex-col gap-1">
         <span className="text-[10px] uppercase tracking-[0.14em] text-black/50">Nom *</span>
-        <input className={inputClass} value={form.name} onChange={(e) => set('name', e.target.value)} />
+        <input className={inputClass} value={form.name} onChange={(e) => {
+          set('name', e.target.value);
+          set('slug', slugify(e.target.value));
+        }} />
+      </label>
+      <label className="flex flex-col gap-1">
+        <span className="text-[10px] uppercase tracking-[0.14em] text-black/50">Slug (URL)</span>
+        <input className={inputClass} value={form.slug} onChange={(e) => set('slug', e.target.value)} placeholder="auto-généré depuis le nom" />
       </label>
       <div className="grid grid-cols-2 gap-4">
         <label className="flex flex-col gap-1">
@@ -340,6 +350,7 @@ const AdminGammes = () => {
     gamme: gamme === 'all' ? 'sport' as const : gamme as GammeKey,
     subcategory: subcategory === 'all' ? null : subcategory,
     name: form.name.trim(),
+    slug: form.slug.trim() || null,
     description: form.description.trim() || null,
     price: Number(form.price),
     price_alt: form.price_alt ? Number(form.price_alt) : null,

@@ -287,6 +287,7 @@ export interface Database {
           price_alt: number | null
           image_url: string | null
           sort_order: number
+          slug: string | null
           active: boolean
           created_at: string
         }

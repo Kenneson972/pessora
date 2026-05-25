@@ -176,7 +176,7 @@ const RangeDetail = () => {
                             )}
                             <div className="absolute bottom-0 left-0 right-0 p-5 opacity-80 transition-opacity duration-300 hover:opacity-100">
                               <Link
-                                to={`/nos-produits/${rangeId}/${toSlug(product.name)}`}
+                                to={`/nos-produits/${rangeId}/${product.slug || toSlug(product.name)}`}
                                 className="flex w-full items-center justify-center gap-2 rounded-full bg-noir py-3 text-[10px] font-normal uppercase tracking-[0.12em] text-white hover:bg-anthracite transition-colors"
                               >
                                 Renseignements <ShoppingBag size={14} strokeWidth={1.25} aria-hidden />
