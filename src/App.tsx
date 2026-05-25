@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { cn } from '@heroui/react';
 import { AuthProvider } from './contexts/AuthContext';
 import { CookieConsentProvider } from './contexts/CookieConsentContext';
@@ -56,6 +56,8 @@ const AdminCommunications = lazy(() => import('./pages/admin/AdminCommunications
 const AdminInfosBar = lazy(() => import('./pages/admin/AdminInfosBar'));
 const AdminCarousel = lazy(() => import('./pages/admin/AdminCarousel'));
 const AdminSplitGammes = lazy(() => import('./pages/admin/AdminSplitGammes'));
+const AdminProduitsGammes = lazy(() => import('./pages/admin/AdminProduitsGammes'));
+const AdminContenu = lazy(() => import('./pages/admin/AdminContenu'));
 const OraPlus = lazy(() => import('./pages/OraPlus'));
 const EvenementDetail = lazy(() => import('./pages/EvenementDetail'));
 const BilanBienEtre = lazy(() => import('./pages/BilanBienEtre'));
@@ -189,16 +191,8 @@ function App() {
                 <AdminLayout><AdminEvenements /></AdminLayout>
               </ProtectedAdminRoute>
             } />
-            <Route path="/admin/produits" element={
-              <ProtectedAdminRoute>
-                <AdminLayout><AdminProduits /></AdminLayout>
-              </ProtectedAdminRoute>
-            } />
-            <Route path="/admin/gammes" element={
-              <ProtectedAdminRoute>
-                <AdminLayout><AdminGammes /></AdminLayout>
-              </ProtectedAdminRoute>
-            } />
+            <Route path="/admin/produits" element={<Navigate to="/admin/produits-gammes?tab=produits" replace />} />
+            <Route path="/admin/gammes" element={<Navigate to="/admin/produits-gammes?tab=gammes" replace />} />
             <Route path="/admin/bilans" element={
               <ProtectedAdminRoute>
                 <AdminLayout><AdminBilans /></AdminLayout>
@@ -209,19 +203,17 @@ function App() {
                 <AdminLayout><AdminCommunications /></AdminLayout>
               </ProtectedAdminRoute>
             } />
-            <Route path="/admin/infos" element={
+            <Route path="/admin/infos" element={<Navigate to="/admin/contenu?tab=infos-bar" replace />} />
+            <Route path="/admin/carousel" element={<Navigate to="/admin/contenu?tab=carrousel" replace />} />
+            <Route path="/admin/moments" element={<Navigate to="/admin/contenu?tab=moments" replace />} />
+            <Route path="/admin/produits-gammes" element={
               <ProtectedAdminRoute>
-                <AdminLayout><AdminInfosBar /></AdminLayout>
+                <AdminLayout><AdminProduitsGammes /></AdminLayout>
               </ProtectedAdminRoute>
             } />
-            <Route path="/admin/carousel" element={
+            <Route path="/admin/contenu" element={
               <ProtectedAdminRoute>
-                <AdminLayout><AdminCarousel /></AdminLayout>
-              </ProtectedAdminRoute>
-            } />
-            <Route path="/admin/moments" element={
-              <ProtectedAdminRoute>
-                <AdminLayout><AdminSplitGammes /></AdminLayout>
+                <AdminLayout><AdminContenu /></AdminLayout>
               </ProtectedAdminRoute>
             } />
             <Route path="/menu/:drinkId" element={<DrinkDetail />} />
