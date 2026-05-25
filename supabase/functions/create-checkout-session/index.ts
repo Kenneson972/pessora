@@ -204,7 +204,7 @@ serve(async (req) => {
         };
       }),
       success_url: `${siteUrl}/commande/succes?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl}/commande/annulee`,
+      cancel_url: `${siteUrl}/commande/annulee?order_id=${order.id}`,
       metadata: {
         order_id: order.id,
       },

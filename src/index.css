@@ -52,6 +52,12 @@
   --color-gold-dim:    oklch(57% 0.065 68);
   --color-muted:       oklch(35% 0.004 55 / 0.38);
 
+  /* Textes sur footer sombre (bg-noir) — densité léger métier tout en gardant lisibilité */
+  --color-footer-text-muted: oklch(73% 0.01 55);
+  --color-footer-text-quiet: oklch(61% 0.012 55);
+  --color-footer-text-subtle: oklch(50% 0.012 55);
+  --color-footer-border-soft: oklch(100% 0 0 / 0.06);
+
   /*
    * Surfaces sémantiques (luxe épuré — majorité clair, noir réservé au hero / typo)
    * surface-page     : fond de page par défaut
@@ -238,6 +244,34 @@
 
 @utility surface-editorial-inset {
   box-shadow: var(--shadow-editorial-inset-frame);
+}
+
+/* ─────────────── Utilitaires section layout unifiés ─────────────── */
+/* section-wrapper : wrapper centré max-w avec les bons padding latéraux */
+@utility section-wrapper {
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  @media (width >= 48rem) {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+  @media (width >= 64rem) {
+    padding-left: 72px;
+    padding-right: 72px;
+  }
+}
+
+/* section-vertical-padding : padding vertical unifié via tokens section */
+@utility section-vertical-padding {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+  @media (width >= 48rem) {
+    padding-top: var(--space-section-y-md);
+    padding-bottom: var(--space-section-y-md);
+  }
 }
 
 /* Bloc citation / manifeste — serif, respiration */

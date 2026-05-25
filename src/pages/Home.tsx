@@ -137,114 +137,111 @@ const Home = () => {
       {/* ─── Boissons — carrousel coups de cœur ─── */}
       <HomeProductCarousel />
 
-      <div className="bg-white px-4 pb-14 md:px-10 md:pb-16 lg:px-[72px]">
-        <div className="mx-auto max-w-[1400px]">
+      <section className="bg-white section-vertical-padding">
+        <div className="section-wrapper">
           <OraPlusTeaserStrip variant="muted" />
         </div>
-      </div>
+      </section>
 
       {/* ─── Split modèle + tabs gammes boissons ─── */}
       <HomeSplitGammes />
 
       {/* ─── Nos univers — navigation manuelle (flèches) ─── */}
-      <section className="bg-white px-4 py-20 md:px-10 md:py-[88px] lg:px-[72px]">
-        <SectionTitle title="Nos univers" linkLabel="Tout explorer" linkTo="/menu" />
+      <section className="bg-white section-vertical-padding">
+        <div className="section-wrapper">
+          <SectionTitle title="Nos univers" linkLabel="Tout explorer" linkTo="/menu" />
 
-        <div
-          className="relative rounded-[2px] outline-none focus-visible:ring-2 focus-visible:ring-noir/15 focus-visible:ring-offset-2"
-          role="region"
-          aria-roledescription="carrousel"
-          aria-label="Nos univers"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'ArrowLeft') {
-              e.preventDefault();
-              goPrev();
-            } else if (e.key === 'ArrowRight') {
-              e.preventDefault();
-              goNext();
-            }
-          }}
-        >
-          <Button
-            isIconOnly
-            type="button"
-            variant="ghost"
-            onPress={goPrev}
-            aria-label="Univers précédent"
-            className="absolute left-0 top-[42%] z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-noir/[0.12] bg-white/90 text-black/55 shadow-sm backdrop-blur-sm transition-colors hover:border-noir/25 hover:text-black md:left-2 lg:left-4"
+          <div
+            className="relative rounded-[2px] outline-none focus-visible:ring-2 focus-visible:ring-noir/15 focus-visible:ring-offset-2"
+            role="region"
+            aria-roledescription="carrousel"
+            aria-label="Nos univers"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                goPrev();
+              } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                goNext();
+              }
+            }}
           >
-            <ChevronLeft size={22} strokeWidth={1.25} aria-hidden />
-          </Button>
-          <Button
-            isIconOnly
-            type="button"
-            variant="ghost"
-            onPress={goNext}
-            aria-label="Univers suivant"
-            className="absolute right-0 top-[42%] z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-noir/[0.12] bg-white/90 text-black/55 shadow-sm backdrop-blur-sm transition-colors hover:border-noir/25 hover:text-black md:right-2 lg:right-4"
-          >
-            <ChevronRight size={22} strokeWidth={1.25} aria-hidden />
-          </Button>
-
-          {/* Pas de fondu opacity sur le parent : WebKit assombrit ou masque la &lt;video&gt;. */}
-          <div key={activeIdx}>
-            <ImageCard
-              eyebrow={active.eyebrow}
-              title={active.title}
-              titleEm={active.titleEm}
-              bgClass={active.bgClass}
-              variant={active.variant}
-              bgVideoSrc={
-                active.eyebrow === 'Communauté'
-                  ? publicAssetWithCache('videos/evenements-communaute.mp4')
-                  : undefined
-              }
-              bgVideoSrcWebm={
-                active.eyebrow === 'Communauté'
-                  ? publicAssetWithCache('videos/evenements-communaute.webm')
-                  : undefined
-              }
-              bgVideoPosterSrc={
-                active.eyebrow === 'Communauté'
-                  ? publicAssetWithCache('videos/evenements-communaute-poster.jpg')
-                  : undefined
-              }
-              aspectRatio="aspect-[3/2] md:aspect-[21/8]"
-              onPress={() => navigate(active.path)}
-            />
-          </div>
-
-          <div className="mt-5">
-            <Tabs
-              selectedKey={active.id}
-              onSelectionChange={(key) => {
-                const idx = UNIVERS.findIndex((u) => u.id === String(key));
-                if (idx >= 0) setActiveIdx(idx);
-              }}
-              className="w-full"
+            <Button
+              isIconOnly
+              type="button"
+              variant="ghost"
+              onPress={goPrev}
+              aria-label="Univers précédent"
+              className="absolute left-0 top-[42%] z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-noir/[0.12] bg-white/90 text-black/55 shadow-sm backdrop-blur-sm transition-colors hover:border-noir/25 hover:text-black md:left-2 lg:left-4"
             >
-              <Tabs.List aria-label="Sélection univers">
-                {UNIVERS.map((u) => (
-                  <Tabs.Tab key={u.id} id={u.id}>
-                    {u.eyebrow}
-                  </Tabs.Tab>
-                ))}
-              </Tabs.List>
-            </Tabs>
+              <ChevronLeft size={22} strokeWidth={1.25} aria-hidden />
+            </Button>
+            <Button
+              isIconOnly
+              type="button"
+              variant="ghost"
+              onPress={goNext}
+              aria-label="Univers suivant"
+              className="absolute right-0 top-[42%] z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-noir/[0.12] bg-white/90 text-black/55 shadow-sm backdrop-blur-sm transition-colors hover:border-noir/25 hover:text-black md:right-2 lg:right-4"
+            >
+              <ChevronRight size={22} strokeWidth={1.25} aria-hidden />
+            </Button>
+
+            {/* Pas de fondu opacity sur le parent : WebKit assombrit ou masque la &lt;video&gt;. */}
+            <div key={activeIdx}>
+              <ImageCard
+                eyebrow={active.eyebrow}
+                title={active.title}
+                titleEm={active.titleEm}
+                bgClass={active.bgClass}
+                variant={active.variant}
+                bgVideoSrc={
+                  active.eyebrow === 'Communauté'
+                    ? publicAssetWithCache('videos/evenements-communaute.mp4')
+                    : undefined
+                }
+                bgVideoSrcWebm={
+                  active.eyebrow === 'Communauté'
+                    ? publicAssetWithCache('videos/evenements-communaute.webm')
+                    : undefined
+                }
+                bgVideoPosterSrc={
+                  active.eyebrow === 'Communauté'
+                    ? publicAssetWithCache('videos/evenements-communaute-poster.jpg')
+                    : undefined
+                }
+                aspectRatio="aspect-[3/2] md:aspect-[21/8]"
+                onPress={() => navigate(active.path)}
+              />
+            </div>
+
+            <div className="mt-5">
+              <Tabs
+                selectedKey={active.id}
+                onSelectionChange={(key) => {
+                  const idx = UNIVERS.findIndex((u) => u.id === String(key));
+                  if (idx >= 0) setActiveIdx(idx);
+                }}
+                className="w-full"
+              >
+                <Tabs.List aria-label="Sélection univers">
+                  {UNIVERS.map((u) => (
+                    <Tabs.Tab key={u.id} id={u.id}>
+                      {u.eyebrow}
+                    </Tabs.Tab>
+                  ))}
+                </Tabs.List>
+              </Tabs>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ─── Gammes produits — tuiles + carrousel ─── */}
-      <section className="bg-surface-muted px-4 py-16 md:px-10 md:py-20 lg:px-[72px]">
-        <div className="mx-auto max-w-[1400px]">
-          <div className="mb-8 flex items-end justify-between">
-            <h2 className="text-editorial-section-title">Nos gammes</h2>
-            <a href="/nos-produits" className="text-[9px] uppercase tracking-[0.2em] text-black/40 border-b border-black/20 pb-px">
-              Voir les produits
-            </a>
-          </div>
+      <section className="bg-surface-muted section-vertical-padding">
+        <div className="section-wrapper">
+          <SectionTitle title="Nos gammes" linkLabel="Voir les produits" linkTo="/nos-produits" />
           <HomeGammesProductTiles onTabChange={() => {}} />
           <div className="mt-10">
             <HomeGammesProductCarousel activeTab="wellness" />
@@ -254,28 +251,27 @@ const Home = () => {
 
       <HomeGoogleReviews />
 
-      {/* ─── Événements — respiration typographique ─── */}
-      <section className="bg-white px-4 py-[52px] md:px-10 md:py-[64px] lg:px-[72px]">
-        <motion.div className="mx-auto max-w-[520px] text-center" {...fadeUpEvents}>
-          <p className="mb-6 text-[9px] font-light uppercase tracking-[0.5em] text-black/45">
-            Événements
-          </p>
-          <h2
-            className="mb-10 font-display font-normal leading-[0.93] text-black"
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 'clamp(36px, 4.5vw, 56px)',
-            }}
-          >
-            Rejoins la<br /><em className="italic text-black/45">communauté Pessóra</em>
-          </h2>
-          <Link
-            to="/evenements"
-            className="inline-flex min-h-[44px] items-center border-b border-noir/30 pb-px text-[10px] font-light uppercase tracking-[0.26em] text-black/65 transition-colors duration-200 hover:border-noir hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-noir/20 rounded-[1px]"
-          >
-            Voir les événements
-          </Link>
-        </motion.div>
+      {/* ─── Événements ─── */}
+      <section className="bg-white section-vertical-padding">
+        <div className="section-wrapper">
+          <motion.div className="mx-auto max-w-[520px] text-center" {...fadeUpEvents}>
+            <h2
+              className="mb-8 font-display font-normal leading-[0.93] text-black"
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 'clamp(21px, 2.4vw, 30px)',
+              }}
+            >
+              Rejoins la <em className="italic text-black/45">communauté Pessóra</em>
+            </h2>
+            <Link
+              to="/evenements"
+              className="inline-flex min-h-[44px] items-center border-b border-noir/30 pb-px text-[10px] font-light uppercase tracking-[0.26em] text-black/65 transition-colors duration-200 hover:border-noir hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-noir/20 rounded-[1px]"
+            >
+              Événements
+            </Link>
+          </motion.div>
+        </div>
       </section>
 
     </div>

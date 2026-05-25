@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
-import { Star } from 'lucide-react';
 import { Button, Card } from '@heroui/react';
 import { SectionTitle } from '../ui/SectionTitle';
 import { googleReviewsData } from '../../data/googleReviews';
@@ -40,23 +39,17 @@ export function HomeGoogleReviews() {
   }, [activeIdx]);
 
   return (
-    <section className="bg-white px-4 py-20 md:px-10 md:py-[var(--space-section-y-md)] lg:px-[72px]">
-      <div className="mx-auto max-w-[1400px]">
-        <div className="mb-10 flex flex-col gap-4 border-b border-noir/[0.06] pb-7 md:flex-row md:items-end md:justify-between md:pb-8">
+    <section className="bg-white section-vertical-padding">
+      <div className="section-wrapper">
+        <div className="mb-8 flex items-end justify-between gap-4">
           <SectionTitle title="Avis clients" />
-          <div className="flex items-end gap-6">
-            <p className="text-[26px] font-light tracking-[-0.02em] text-black md:text-[32px]">
+          <div className="flex items-end gap-3">
+            <span className="text-[22px] font-light leading-none tracking-[-0.02em] text-black md:text-[26px]">
               {roundedRating}
-              <span className="ml-1 text-[16px] text-black/42">/5</span>
-            </p>
-            <div className="mb-1 flex items-center gap-1.5 text-gold-dim">
-              {[...Array(5)].map((_, idx) => (
-                <Star key={idx} size={15} className="fill-current" strokeWidth={1} aria-hidden />
-              ))}
-              <span className="ml-2 text-[8px] uppercase tracking-[0.18em] text-black/40">
-                {googleReviewsData.reviewCountLabel}
-              </span>
-            </div>
+            </span>
+            <span className="pb-[2px] text-[9px] font-light tracking-[0.12em] text-black/40">
+              {googleReviewsData.reviewCountLabel}
+            </span>
           </div>
         </div>
 
@@ -75,17 +68,13 @@ export function HomeGoogleReviews() {
             <Card
               key={`${review.author}-${idx}`}
               data-review-card
-              className="snap-start shrink-0 w-[min(88vw,560px)] rounded-[2px] border border-noir/[0.06] bg-surface-card py-6 pl-5 pr-5 shadow-editorial-sm md:w-[min(56vw,640px)] md:py-7 md:pl-7 md:pr-7 lg:w-[min(44vw,640px)]"
+              className="snap-start shrink-0 w-[min(80vw,400px)] rounded-[2px] border border-noir/[0.06] bg-surface-card py-5 pl-5 pr-5 shadow-editorial-sm md:w-[min(40vw,440px)] md:py-6 md:pl-6 md:pr-6"
             >
               <Card.Content className="p-0">
-                <p className="mb-5 line-clamp-6 text-[18px] font-light leading-[1.42] text-black/86 md:text-[21px]">
-                  “{review.quote}”
+                <p className="mb-4 text-[15px] font-light leading-[1.38] text-black/82 md:text-[17px]">
+                  "{review.quote}"
                 </p>
-                <div className="flex items-center gap-4">
-                <p className="text-[9px] font-normal uppercase tracking-[0.18em] text-black/56">{review.author}</p>
-                <span className="h-px w-6 bg-noir/[0.14]" aria-hidden />
-                <p className="text-[8px] font-light uppercase tracking-[0.12em] text-black/35">{review.ageLabel}</p>
-                </div>
+                <p className="text-[8px] font-normal uppercase tracking-[0.18em] text-black/56">{review.author}</p>
               </Card.Content>
             </Card>
           ))}

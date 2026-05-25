@@ -8,11 +8,11 @@ type Variant = 'default' | 'muted' | 'onDark';
 
 const shell: Record<Variant, string> = {
   default:
-    'border border-noir/[0.08] border-l-2 border-l-[var(--color-editorial-badge)] bg-surface-muted',
+    'border border-noir/[0.08] bg-surface-muted',
   muted:
-    'border border-noir/[0.06] border-l-2 border-l-[var(--color-editorial-badge)] bg-white',
+    'border border-noir/[0.06] bg-white',
   onDark:
-    'border border-white/[0.12] border-l-2 border-l-white/35 bg-white/[0.06]',
+    'border border-white/[0.12] bg-white/[0.06]',
 };
 
 const text: Record<Variant, string> = {
@@ -58,10 +58,10 @@ export function OraPlusTeaserStrip({
           <span className="font-medium">{heading}</span>
           {' — '}
           {oraPlusPricing.price}
-          {oraPlusPricing.period} · jusqu’à −50&nbsp;% sur les boissons au bar.
+          {oraPlusPricing.period} · jusqu’à −50&nbsp;% sur les boissons.
         </p>
         <p className={cn('mt-1 text-[10px] font-light leading-relaxed', sub[variant])}>
-          Bilan &amp; événements prioritaires, sans engagement.
+          Bilan &amp; événements prioritaires.
         </p>
       </div>
       <Link

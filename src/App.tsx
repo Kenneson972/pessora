@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { cn } from '@heroui/react';
 import { AuthProvider } from './contexts/AuthContext';
 import { CookieConsentProvider } from './contexts/CookieConsentContext';
 import { CookieConsentBanner } from './components/layout/CookieConsentBanner';
@@ -91,6 +92,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const isInternalMockup =
     location.pathname === '/mockup-luxe' || location.pathname === '/mockup-croquis-gerant';
   const isAdminArea = location.pathname.startsWith('/admin');
+  const isHomePage = location.pathname === '/';
 
   // Lazy loading pour les <img> rendus après coup (React) — 2 passes légères
   // (ne pas toucher aux images LCP : loading="eager", fetchPriority="high", data-skip-lazy)
@@ -129,7 +131,11 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
         <main
           id="main-content"
           tabIndex={-1}
-          className={isMemberArea || isAuthPage || isAdminArea ? 'flex min-h-0 flex-grow flex-col outline-none' : 'flex-grow outline-none'}
+          className={cn(
+            'flex-grow outline-none',
+            showPublicChrome && !isHomePage && 'pt-16 md:pt-20',
+            (isMemberArea || isAuthPage || isAdminArea) && 'flex min-h-0 flex-col pt-0',
+          )}
         >
           <Suspense fallback={<PageLoadingFallback />}>
             {children}

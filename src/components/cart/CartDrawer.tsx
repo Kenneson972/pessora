@@ -8,6 +8,8 @@ import { barInfo } from '../../data/infoData';
 import { categoryNames } from '../../data/menuData';
 import type { MenuItem } from '../../data/menuData';
 import { formatEurFr } from '../../lib/oraPricing';
+import { displayBarLineUnit } from '../../lib/cartDisplayPrice';
+import { useIsOraPlus } from '../../hooks/useIsOraPlus';
 import { useCheckout } from '../../hooks/useCheckout';
 import { PickupTimePicker } from './PickupTimePicker';
 
@@ -25,8 +27,12 @@ export function CartDrawer() {
   const [pickupTime, setPickupTime] = useState('');
 
   const { checkout, isLoading: isCheckingOut, error: checkoutError } = useCheckout(pickupTime);
+  const { isOraPlus } = useIsOraPlus();
 
-  const total = items.reduce((sum, x) => sum + x.unitPrice * x.quantity, 0);
+  const total = items.reduce(
+    (sum, x) => sum + displayBarLineUnit(x, isOraPlus) * x.quantity,
+    0,
+  );
   const hasStripe = items.length > 0;
   const telHref = `tel:${barInfo.contact.phone.replace(/\s/g, '').replace(/X/g, '')}`;
 
@@ -81,7 +87,9 @@ export function CartDrawer() {
                 </div>
               ) : (
                 <ul className="flex flex-col gap-5">
-                  {items.map((line) => (
+                  {items.map((line) => {
+                    const lineUnit = displayBarLineUnit(line, isOraPlus);
+                    return (
                     <li
                       key={`${line.productId}-${line.optionsKey}`}
                       className="border-b border-noir/[0.05] pb-5 last:border-0 last:pb-0"
@@ -152,7 +160,7 @@ export function CartDrawer() {
                             </div>
                             <div className="flex items-center gap-3">
                               <span className="text-[12px] font-normal tabular-nums text-black">
-                                {formatEurFr(line.unitPrice * line.quantity)}
+                                {formatEurFr(lineUnit * line.quantity)}
                               </span>
                               <Button
                                 type="button"
@@ -170,7 +178,8 @@ export function CartDrawer() {
                         </div>
                       </div>
                     </li>
-                  ))}
+                  );
+                  })}
                 </ul>
               )}
             </Sheet.Body>

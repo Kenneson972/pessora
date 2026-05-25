@@ -14,7 +14,7 @@ const TABS: { id: RangeId; label: string }[] = [
 function ProductCard({ product, index }: { product: { name: string; description: string; price: string }; index: number }) {
   return (
     <motion.div
-      className="flex-shrink-0 w-[180px] md:w-[200px] rounded-[8px] overflow-hidden border border-noir/[0.08] bg-white snap-start"
+      className="flex-shrink-0 w-[180px] md:w-[200px] rounded-[2px] overflow-hidden border border-noir/[0.08] bg-white snap-start"
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ ...SPRING_SMOOTH, delay: index * 0.04 }}
@@ -24,7 +24,6 @@ function ProductCard({ product, index }: { product: { name: string; description:
       </div>
       <div className="p-3">
         <p className="text-[10px] font-medium tracking-[0.05em] text-black mb-1 line-clamp-1">{product.name}</p>
-        <p className="text-[10px] font-light text-black/45 leading-snug line-clamp-2 mb-2">{product.description}</p>
         <p className="text-[11px] font-light text-black">{product.price}</p>
       </div>
     </motion.div>

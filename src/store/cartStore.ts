@@ -5,7 +5,10 @@ import { allowCartPersistence } from '../lib/cookieConsent';
 export interface CartLine {
   productId: string;
   name: string;
+  /** Tarif unitaire **public** (base boisson + 1€ × boosters). Jamais le prix Óra+ figé. */
   unitPrice: number;
+  /** Base boisson seule (public), sans boosters — pour appliquer −50 % sur la boisson uniquement quand Óra+. */
+  barBasePublic?: number;
   quantity: number;
   category: string;
   optionsKey: string;
@@ -88,7 +91,8 @@ export const useCart = create<CartState>()(
       toggleCart: () => set((s) => ({ isOpen: !s.isOpen })),
     }),
     {
-      name: 'pessora-cart',
+      /** v2 : `unitPrice` toujours public ; remise Óra+ à l'affichage uniquement (évite −50 % après déconnexion). */
+      name: 'pessora-cart-v2',
       storage: createJSONStorage(() => cartLocalStorage),
       partialize: (state) => ({ items: state.items }),
     }

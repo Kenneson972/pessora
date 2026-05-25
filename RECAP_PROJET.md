@@ -2,12 +2,12 @@
 
 ## 1. Présentation
 
-**PessÓra** est le site vitrine et espace client du **1er Bar Protéiné & Bien-Être de Martinique**.  
-Il présente le concept, le menu (boissons et boosters), les gammes de produits (Wellness, Sport, Skin), les événements et le contact, avec un espace membre pour la fidélité, l’abonnement et l’historique.
+**PessÓra** est le site vitrine et e-commerce du **1er Bar Protéiné & Bien-Être de Martinique**.  
+Il présente le concept, le menu (boissons et boosters), les gammes de produits (Wellness, Sport, Skin), les événements et le contact, avec un espace membre pour la fidélité, l'abonnement, l'historique et le suivi des commandes.
 
-- **Design** : Wellness Premium & Modern (inspiré Moon Juice, Form Nutrition, Pressed).
-- **Fond** : Beige/crème organique, titres Serif (Playfair Display), texte Sans-Serif (Inter), boutons vert forêt / noir doux.
-- **Fonctionnalités** : Hero vidéo, navigation avec mega-menus (Nos Produits, Menu), footer, chatbot, auth (connexion/inscription), espace membre (demo + protégé), pages légales.
+- **Design** : Wellness Premium & Modern — minimaliste, éditorial, photos lifestyle.
+- **Fond** : Beige/crème organique, police display (instrument serif / archivo), titres réduits `clamp(21px, 2.4vw, 30px)`.
+- **Fonctionnalités** : Hero vidéo, mega-menus, chatbot, auth (connexion/inscription), espace membre (demo + protégé), e-commerce (panier, checkout Stripe), admin intégré.
 
 ---
 
@@ -19,9 +19,11 @@ Il présente le concept, le menu (boissons et boosters), les gammes de produits 
 | **TypeScript** | Typage |
 | **Vite 5** | Build & dev server |
 | **React Router DOM 6** | Routing |
-| **Tailwind CSS 3** | Styles (utility-first) |
+| **Tailwind CSS v4** | Styles (utility-first, `@utility`, `@theme`) |
 | **Framer Motion 11** | Animations |
 | **Lucide React** | Icônes |
+| **Supabase** | Base de données, auth, storage |
+| **Stripe** | Paiement checkout |
 
 **Scripts** (`package.json`) :
 - `npm run dev` — serveur de développement
@@ -44,27 +46,52 @@ PESSORA/
 ├── public/
 │   ├── favicon.svg
 │   ├── hero-video.webm
-│   ├── hero-skin.png       # Hero gamme Skin
-│   ├── menu-header.png     # Bannière header page Menu
-│   ├── logo-o.png          # Logo header (O + feuille)
+│   ├── hero-video-poster.jpg
+│   ├── hero-skin.png
+│   ├── menu-header.png
+│   ├── logo-o.png
 │   ├── logo.jpeg
 │   └── logo.png
+├── supabase/
+│   ├── functions/
+│   │   └── create-checkout-session/
+│   └── migrations/
 └── src/
     ├── main.tsx
     ├── App.tsx
     ├── index.css
     ├── components/
-    │   ├── common/         # Chatbot, ScrollToTop
-    │   ├── layout/         # Header, Footer
+    │   ├── common/         # OraPlusTeaserStrip, Chatbot, ScrollToTop
+    │   ├── home/           # HomeFeaturedCarousel, HomeSplitGammes, HomeGammes*, HomeProductCarousel, HomeGoogleReviews
+    │   ├── layout/         # Header (fixed 3 états), Footer, NewsletterSignup
     │   ├── member/         # MemberLayout (sidebar espace client)
-    │   ├── DemoAuthWrapper.tsx
-    │   └── ProtectedRoute.tsx
+    │   ├── ui/             # SectionTitle, ImageCard, AdminMobileSidebar
+    │   └── cart/           # CartDrawer, DrinkOptionsModal
     ├── contexts/
     │   └── AuthContext.tsx
     ├── data/
-    │   ├── infoData.ts     # Infos bar, valeurs, partenaires
-    │   ├── menuData.ts     # Boissons, boosters, options lait
-    │   └── productsData.ts # Gammes Wellness / Sport / Skin
+    │   ├── infoData.ts
+    │   ├── menuData.ts
+    │   ├── productsData.ts
+    │   ├── googleReviews.ts
+    │   └── homeSplitGammes.ts (fallback TS)
+    ├── hooks/
+    │   ├── useFeaturedCarousel.ts
+    │   ├── useSplitGammes.ts
+    │   ├── useOrders.ts
+    │   ├── useAdminMembers.ts
+    │   └── useCart.ts
+    ├── lib/
+    │   ├── cartLine.ts
+    │   ├── cartDisplayPrice.ts
+    │   ├── storageUpload.ts
+    │   ├── motionReveal.ts
+    │   └── publicAsset.ts
+    ├── store/
+    │   └── cartStore.ts (Zustand)
+    ├── types/
+    │   ├── homeCarousel.ts
+    │   └── supabase.ts
     └── pages/
         ├── Home.tsx
         ├── Concept.tsx
@@ -73,47 +100,54 @@ PESSORA/
         ├── NosProduits.tsx
         ├── RangeDetail.tsx
         ├── Evenements.tsx
+        ├── OraPlus.tsx
         ├── Contact.tsx
         ├── MentionsLegales.tsx
         ├── CGV.tsx
-        ├── auth/
-        │   ├── Login.tsx
-        │   └── Register.tsx
-        └── member/
-            ├── Dashboard.tsx
-            ├── Loyalty.tsx
-            ├── Subscription.tsx
-            ├── History.tsx
-            └── Profile.tsx
+        ├── CommandeAnnulee.tsx
+        ├── auth/ (Login, Register)
+        ├── member/ (Dashboard, Loyalty, Subscription, History, Profile)
+        └── admin/ (AdminOverview, AdminMemberDetail, AdminCarousel, AdminSplitGammes, AdminLayout)
 ```
 
 ---
 
 ## 4. Design system
 
-### Palette (Tailwind + `index.css`)
+### Palette (Tailwind v4 `@theme` dans `index.css`)
 
-- **Primary** : `#1A1A1A` (Soft Black), `primary-forest` `#2D472C`, `primary-light` `#3A5F1A`
-- **Accent** : `accent-cream` `#EDE7DF` (beige chaud, fond principal), `accent-cream-light` `#F5F0E8`, `accent-cream-dark` `#E4DCD2`, `accent-leaf` `#6B9544`, `accent-wood` `#C19A6B`
-- **Neutral** : `neutral-cream`, `neutral-sand`, `neutral-warm` (dérivés du beige)
+- **Noir** : `#1A1A1A` (soft black)
+- **Or** : `#B8A076` (gold)
+- **Surfaces** : `surface-page` (beige clair), `surface-muted` (crème), `surface-hero` (gris foncé), `surface-product-well` (vert pâle)
+- **Editorial** : `editorial-title` (noir), `editorial-body` (gris), `editorial-badge` (or/vert)
+- Toutes les couleurs en OKLCH pour une perception uniforme
 
 ### Typographie
 
-- **Titres** : Playfair Display (serif)
-- **Corps** : Inter (sans-serif)
-- **Polices** chargées via Google Fonts dans `index.html`.
+- **Display** : Instrument Serif / Italic (titres éditoriaux)
+- **Corps** : Archivo (sans-serif, navigation, textes)
+- Pas de Playfair Display ni Inter — stack moderne et distinctive
+- Tailles réduites : `clamp(21px, 2.4vw, 30px)` pour les titres de section
 
-### Classes utilitaires (`index.css`)
+### Layout système (Tailwind v4 `@utility`)
 
-- `section-padding`, `container-custom`
-- `btn-premium`, `btn-premium-outline`
-- `card-floating`, `badge-nutrition`
+- `section-wrapper` : `max-width: 1400px`, padding `1rem / 2.5rem / 72px`
+- `section-vertical-padding` : `py-16` mobile → `var(--space-section-y-md)` desktop
+- Tokens : `--space-section-y-sm: 4.5rem`, `--space-section-y-md: 6.5rem`, `--space-section-y-lg: 8.5rem`
+- Header aligné sur `section-wrapper` — `lg:px-[72px]`
 
-### Layout conditionnel
+### Header (fixe Kayvilla-style, 3 états)
 
-- **Header / Footer / Chatbot** : masqués sur `/mon-espace`, `/demo-espace` et pages auth (`/connexion`, `/inscription`).
-- **Header** : logo uniquement (`logo-o.png`, pas de texte « PessÓra »). Mega-menus au survol : **Nos Produits** (gammes Wellness, Sport, Skin + CTA) et **Menu** (catégories boissons + CTA), style Form Nutrition, animation Framer Motion.
-- **Espace membre** : `MemberLayout` (sidebar noire style app, accent vert lime `#D9F99D`), contenu principal à droite avec fond clair et coins arrondis.
+1. **Transparent** — sur hero sombre (index), fond `bg-transparent`
+2. **Light-vitrage** — sur fond clair sans scroll, fond `bg-white/92`
+3. **Solid** — après scroll >24px, fond blanc + bordure + ombre
+- `fixed` (pas sticky), `h-16` mobile / `h-20` desktop
+- Grid `[1fr_auto_1fr]` pour centrage parfait de la nav
+- Logo 36px, nav `10px` uppercase tracking `0.16em`
+
+### Composants home — radius standardisé
+
+Tous les composants home : `rounded-[2px]` (conforme charte graphique).
 
 ---
 
@@ -123,16 +157,18 @@ PESSORA/
 
 | Route | Page |
 |-------|------|
-| `/` | Home |
+| `/` | Home (10 sections : Hero → À la une → Coups de cœur → Óra+ → Split gammes → Univers → Gammes → Avis → Événements → Footer) |
 | `/concept` | Concept |
 | `/menu` | Menu |
 | `/menu/:drinkId` | Détail boisson |
-| `/nos-produits` | Nos Produits (3 gammes) |
-| `/nos-produits/:rangeId` | Détail gamme (wellness, sport, skin) |
+| `/nos-produits` | Nos Produits (3 gammes + carrousels) |
+| `/nos-produits/:rangeId` | Détail gamme |
+| `/ora-plus` | Óra+ abonnement |
 | `/evenements` | Événements |
 | `/contact` | Contact |
 | `/mentions-legales` | Mentions légales |
 | `/cgv` | CGV |
+| `/commande-annulee` | Paiement annulé |
 
 ### Auth
 
@@ -141,156 +177,102 @@ PESSORA/
 | `/connexion` | Login |
 | `/inscription` | Register |
 
-### Espace membre (demo, sans login)
+### Espace membre
 
 | Route | Page |
 |-------|------|
-| `/demo-espace` | Dashboard |
-| `/demo-espace/fidelite` | Ma Carte / Fidélité |
-| `/demo-espace/abonnement` | Abonnement |
-| `/demo-espace/historique` | Historique |
-| `/demo-espace/profil` | Profil |
+| `/mon-espace` | Dashboard |
+| `/mon-espace/fidelite` | Fidélité |
+| `/mon-espace/abonnement` | Abonnement |
+| `/mon-espace/historique` | Historique |
+| `/mon-espace/profil` | Profil |
+| `/demo-espace/*` | Mêmes pages en mode démo |
 
-### Espace membre (protégé, après login)
+### Admin (protégé, rôle `admin`)
 
-Mêmes chemins en `/mon-espace/*`, protégés par `ProtectedRoute`.
-
----
-
-## 6. Données centralisées
-
-### `src/data/infoData.ts`
-
-- **barInfo** : nom, tagline, description, adresse, horaires, contact (téléphone, email, Instagram).
-- **values** : Équilibre, Plaisir, Motivation, Bien-être (titres, descriptions, icônes).
-- **partnerships** : partenaires (ex. GigaFit, EN BONS THERMES) pour la page Événements.
-- **events** : liste des événements à venir (id, title, date, location, description, type).
-- **socialLinks** : Instagram, Facebook, etc.
-
-### `src/data/menuData.ts`
-
-- **Types** : `MenuItem`, `Booster`, `MilkOption`.
-- **Catégories** : `wellness`, `energie`, `shakes`, `coffee`.
-- **wellnessItems**, **energieItems**, **shakesItems**, **coffeeItems**, **boosters**, **milkOptions**.
-- Chaque item : id, name, description, category, price, calories, protein, ingredients, benefits, pitch, badges (vegan, glutenfree, vitamins).
-
-### `src/data/productsData.ts`
-
-- **rangesData** : 3 gammes — `wellness`, `sport`, `skin`.
-- Par gamme : id, title, subtitle, description, icon (Lucide), color, bgColor, heroImage, products[] (name, description, price).
-- **Gamme Skin** : hero = `/hero-skin.png` (photo produit locale).
+| Route | Page |
+|-------|------|
+| `/admin` | Overview |
+| `/admin/membres/:id` | Détail membre |
+| `/admin/carousel` | Gestion carrousel "À la une" (CRUD + upload) |
+| `/admin/moments` | Gestion "Choisis ton moment" (CRUD + upload 3 photos) |
 
 ---
 
-## 7. Authentification & espace membre
+## 6. Homepage — sections
 
-### AuthContext
-
-- **État** : `user`, `subscription`, `isLoading`, `isAuthenticated`.
-- **Actions** : `login`, `register`, `logout`, `updateProfile`, `updateSubscription`.
-- Données mock (localStorage) : utilisateur et abonnement type “premium”.
-
-### Composants de protection
-
-- **ProtectedRoute** : redirige vers `/connexion` si non connecté (pour `/mon-espace/*`).
-- **DemoAuthWrapper** : fournit un utilisateur demo pour `/demo-espace/*` sans vraie connexion.
-
-### MemberLayout (sidebar)
-
-- Logo PessÓra (vert lime si actif).
-- Liens : Home, Ma Carte (fidélité), Abonnement, Historique.
-- Bas : Sécurité, Settings (profil), Logout.
-- Version mobile : menu hamburger, sidebar en drawer.
-- Style : fond noir, texte blanc, actif en `#D9F99D`.
-
-### Pages membre
-
-- **Dashboard** : Bento grid — accueil, jauge fidélité, points, activité récente, actions rapides, graphique points.
-- **Loyalty** : Carte fidélité type wallet (points, QR), paliers de récompenses.
-- **Subscription** : Comparatif plans (Start, Premium, Elite), badge “Actuel”.
-- **History** : Historique des commandes, export, stats et favoris en sidebar.
-- **Profile** : Carte identité, formulaire infos, préférences, sécurité, déconnexion.
+1. **Hero vidéo** — background video + overlay gradient, titres animés Framer Motion
+2. **À la une** — `HomeFeaturedCarousel` : carrousel horizontal snap depuis Supabase (`home_carousel_cards`)
+3. **Nos coups de cœur** — `HomeProductCarousel` : carrousel boissons
+4. **Óra+ teaser** — `OraPlusTeaserStrip` : bandeau abonnement (texte court, pas de border-l)
+5. **Choisis ton moment** — `HomeSplitGammes` : 4 onglets avec photos modèle, données Supabase (`home_split_gammes`)
+6. **Nos univers** — `ImageCard` : 3 cartes (Shakes & Gaufres, Événements, Bilan 30 min) avec navigation flèches + tabs
+7. **Nos gammes** — `HomeGammesProductTiles` + `HomeGammesProductCarousel` : tuiles + carrousel produits
+8. **Avis clients** — `HomeGoogleReviews` : citations 5-10 mots, cartes 400-440px, pas d'étoiles ni âge
+9. **Événements** — CTA minimal : "Rejoins la communauté Pessóra"
+10. **Footer**
 
 ---
 
-## 8. Pages principales (contenu)
+## 7. Supabase
 
-### Home
+### Base de données
 
-- Hero avec vidéo (`/hero-video.webm`) et titre Serif blanc.
-- Section “Nos Boissons” (cartes sans bordure, badges calories/protéines, bouton COMMANDER).
-- Section “Le Concept” en zig-zag (image / texte alternés), basée sur `barInfo.values` et images lifestyle.
-- Partenariats en bas de page.
+- Tables : `profiles`, `orders`, `order_items`, `home_carousel_cards`, `home_split_gammes`
+- Profiles : rôle `member` ou `admin`, infos utilisateur
+- Commandes : liées à Stripe checkout
 
-### Concept
+### Storage buckets
 
-- Hero + récit + blocs zig-zag (images Unsplash + valeurs).
-- CTA final.
+- `product-images` — photos produits
+- `event-images` — photos événements
+- `carousel-images` — photos carrousel "À la une"
+- `split-gammes-images` — photos "Choisis ton moment"
 
-### Menu
+### Compte admin
 
-- **Header visuel** : bannière plein largeur (`/menu-header.png`), hauteur ~40vh, cadrage `object-[center_38%]` (visages visibles), titre « La Carte » en overlay.
-- Filtres par catégorie (Wellness, Énergie, Shakes, Coffee).
-- Cartes boissons (style Moon Juice / Pressed), badges, bouton DÉTAILS & COMMANDE.
-- Section Boosters.
-
-### Nos Produits
-
-- Une section par gamme (Wellness, Sport, Skin) : fond alterné, panneau gauche (titre, description, lien “Découvrir la gamme”), grille produits à droite.
-- Liens vers `/nos-produits/wellness`, `/nos-produits/sport`, `/nos-produits/skin`.
-
-### RangeDetail
-
-- Hero plein écran (image de la gamme : `heroImage` ; pour Skin = `/hero-skin.png`).
-- Lien “Retour aux gammes”.
-- Description de la gamme.
-- Grille produits avec cartes (image placeholder, nom, description, prix, bouton Ajouter).
-
-### Événements
-
-- Fond beige `#EDE7DF`, hero type Contact/Concept (label, gros titre serif, italique vert forêt).
-- **Partenariats** : cartes `accent-cream-light`, badges par type (Fitness / Bien-être), données `partnerships` (infoData).
-- **Événements à venir** : liste depuis `events` (infoData), cartes avec date, lieu, badge Pop-up/Événement ; message + lien Instagram si vide.
-- **Nos Animations** : 3 cartes (Événements Fitness, Pop-up Stands, Ateliers Bien-être) avec icônes Lucide.
-- **CTA** : bandeau primary, lien Instagram (btn-premium blanc).
-
-### Auth (Login / Register)
-
-- Layout split : image lifestyle à gauche, formulaire à droite.
-- Boutons `btn-premium`, champs stylés, messages d’erreur.
+- Admin actif : `admin@pessora.mq` (UUID: fab6e477)
+- Pour ajouter un admin : `UPDATE public.profiles SET role = 'admin' WHERE id = '<uuid>';`
 
 ---
 
-## 9. Composants communs
+## 8. E-commerce
 
-- **Header** : logo seul (`/logo-o.png`, O vert forêt + feuille), nav (Accueil, Le Concept, **Nos Produits**, **Menu**, Événements, Contact) avec **mega-menus** au survol pour Nos Produits et Menu (Framer Motion), icônes User/LogIn, menu mobile.
-- **Footer** : liens, infos, horaires, contact, réseaux.
-- **ScrollToTop** : remonte en haut lors du changement de route.
-- **Chatbot** : widget fixe (Pessobot), non affiché en espace membre ni sur les pages auth.
-
----
-
-## 10. Assets & médias
-
-| Fichier | Usage |
-|---------|--------|
-| `public/hero-video.webm` | Vidéo hero page d’accueil |
-| `public/hero-skin.png` | Hero gamme Skin |
-| `public/menu-header.png` | Bannière header page Menu (personnes + boissons) |
-| `public/logo-o.png` | Logo header (O stylisé + feuille, vert forêt) |
-| `public/logo.jpeg`, `logo.png` | Anciens logos / branding |
-| `public/favicon.svg` | Favicon |
-
-Images externes : Unsplash pour Concept et héros Wellness/Sport dans `productsData.ts`. Gamme Skin : `/hero-skin.png` (locale).
+- **Panier** : Store Zustand (`cartStore.ts`), panier dans `CartDrawer`
+- **Options boissons** : `DrinkOptionsModal` (taille, lait, boosters)
+- **Checkout** : Stripe via Edge Function `create-checkout-session`
+- **Prix** : `cartDisplayPrice.ts` pour formatage
 
 ---
 
-## 11. Résumé technique
+## 9. Textes & minimalisme (2026-05-24)
 
-- **Build** : Vite + TypeScript, sortie dans `dist/`.
-- **Styles** : Tailwind + `index.css` (variables CSS, utilitaires).
-- **État global** : AuthContext (user, subscription).
-- **Routing** : React Router, pas de SSR.
-- **Données** : Fichiers TS dans `src/data/` (pas d’API pour l’instant).
+L'index a été allégé :
+- Avis clients : citations 5-10 mots, cartes réduites (400-440px), pas d'étoiles, pas d'âge
+- Titres section : `clamp(21px, 2.4vw, 30px)` au lieu de 44px max
+- Produits : nom + prix seulement (description supprimée des carrousels)
+- Événements : titre une ligne, pas de sous-titre
+- Sous-titres supprimés (Choisis ton moment, Óra+)
 
-Ce document sert de **référence unique** pour comprendre l’architecture, les routes, le design et les données du projet PessÓra.
+---
+
+## 10. Fichiers clés
+
+| Fichier | Rôle |
+|---------|------|
+| `src/index.css` | Tailwind v4 `@theme`, `@utility`, tokens couleurs OKLCH |
+| `src/lib/motionReveal.ts` | Constantes Framer Motion (spring, stagger, hero) |
+| `src/lib/storageUpload.ts` | Upload photos vers Supabase Storage |
+| `src/lib/cartLine.ts` | Logique lignes de panier |
+| `src/store/cartStore.ts` | Store Zustand panier |
+| `src/hooks/useFeaturedCarousel.ts` | Fetch carrousel Supabase |
+| `src/hooks/useSplitGammes.ts` | Fetch split gammes Supabase |
+
+---
+
+## 11. Animations Framer Motion
+
+- **Hero** : `motion.div variants={HERO_CONTAINER}` avec stagger enfants `HERO_ITEM`
+- **HomeSplitGammes** : `LayoutGroup` + `layoutId` pour sliding pill, `AnimatePresence` photo cross-fade
+- **Cartes** : `whileInView` avec `SPRING_CRISP`, `useInView` sur parent (bug : `whileInView` échoue sur `overflow-x: auto`)
+- **Header** : mega-menus animés

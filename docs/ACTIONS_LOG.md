@@ -5,6 +5,78 @@ Format : `ISO` · `type` · résumé · fichiers · vérif.
 
 ---
 
+## 2026-05-24
+
+### 2026-05-24T · ui · Refonte header fixe + unifi section layout + minimalisme index
+
+- **Contexte** : redesign complet du header (fixe 3 états Kayvilla-style), unification des wrappers section, réduction texte sur l'index.
+
+- **Header refonte** :
+  - Passage de `sticky` à `fixed` avec 3 états de transparence : transparent (hero sombre) → light-vitrage (défilement léger) → solid (bordure + ombre)
+  - Taille augmentée : `h-14`→`h-16` mobile, `h-16`→`h-20` desktop, logo 32→36px, nav 9→10px
+  - Scroll tracking RAF optimisé (`useState(() => window.scrollY > 24)`) pour éviter le flash initial
+  - Grille centrage nav : `grid-cols-[1fr_auto_1fr]` au lieu de `[auto_1fr_auto]` pour centrer parfaitement les liens
+  - Padding aligné sur `section-wrapper` : `lg:px-16`→`lg:px-[72px]`
+  - `App.tsx` : padding conditionnel `<main>` → `showPublicChrome && !isHomePage && 'pt-16 md:pt-20'` pour garder le hero edge-to-edge
+
+- **Layout unifié (CSS utilities)** :
+  - `index.css` : `@utility section-wrapper` (max-w-1400px, padding 1rem→2.5rem→72px) et `@utility section-vertical-padding` (py via `--space-section-y-sm/md`)
+  - 10 sections index passées en `section-wrapper` + `section-vertical-padding`
+  - Header, Footer, et Hero passés en `lg:px-[72px]` pour alignement horizontal
+
+- **Radius standardisé** :
+  - `rounded-[8px/10px/12px]`→`rounded-[2px]` dans 4 composants (HomeFeaturedCarousel, HomeSplitGammes, HomeGammesProductTiles, HomeGammesProductCarousel)
+  - OraPlusTeaserStrip : `border-l-2` (anti-pattern side-stripe) supprimé
+
+- **Minimalisme texte index** :
+  - Avis Google : citations 5-10 mots, cartes réduites (400-440px), étoiles supprimées, pas de label âge
+  - HomeSplitGammes : sous-titre "Chaque boisson..." supprimé
+  - Óra+ : texte raccourci ("sur les boissons." sans "au bar", "Bilan & événements prioritaires.")
+  - Nos gammes carrousel : descriptions produit retirées (nom + prix seulement)
+  - Événements : eyebrow supprimé, titre une ligne sans break
+  - Titres section : `clamp(28px, 3.5vw, 44px)`→`clamp(21px, 2.4vw, 30px)` dans SectionTitle et tous les titres sur mesure
+  - Heading "Nos gammes" : remplace `<h2>` manuel par `SectionTitle` standard
+
+- **Files** : `src/index.css`, `src/App.tsx`, `src/components/layout/Header.tsx`, `src/components/layout/Footer.tsx`, `src/components/common/OraPlusTeaserStrip.tsx`, `src/components/ui/SectionTitle.tsx`, `src/components/home/HomeGoogleReviews.tsx`, `src/components/home/HomeSplitGammes.tsx`, `src/components/home/HomeProductCarousel.tsx`, `src/components/home/HomeFeaturedCarousel.tsx`, `src/components/home/HomeGammesProductCarousel.tsx`, `src/data/googleReviews.ts`, `src/pages/Home.tsx`
+
+- **Verify** : `npx tsc --noEmit` OK, 0 erreur console navigateur
+
+### 2026-05-07T · fix · Commande : ne pas « valider » avant paiement Stripe
+
+- **Contexte** : `create-checkout-session` insère une ligne `orders` en `pending` avant redirection Stripe ; l’admin et le membre la voyaient comme commande à traiter.
+- **Summary** : file admin = statuts `paid` \| `preparing` \| `ready` seulement ; plus de bouton « Préparer » sur `pending` ; libellé `pending` = « En attente de paiement » ; `useOrders` exclut `pending` (brouillon checkout) ; annulation Stripe → `cancel_url` avec `order_id` + page `CommandeAnnulee` passe la commande en `cancelled` si encore `pending` ; migration RLS `Admins update all orders` + `Users cancel own pending orders`.
+- **Files** : `src/hooks/useOrders.ts`, `src/pages/admin/AdminOverview.tsx`, `src/pages/admin/AdminMemberDetail.tsx`, `src/pages/member/History.tsx`, `src/pages/CommandeAnnulee.tsx`, `supabase/functions/create-checkout-session/index.ts`, `supabase/migrations/20260507120000_orders_update_rls_cancel.sql`
+- **Verify** : `npx tsc --noEmit` OK — **à faire** : appliquer la migration Supabase + redéployer la Edge Function checkout.
+
+---
+
+## 2026-05-04
+
+### 2026-05-04T · fix · Panier : prix public stocké, remise Óra+ au runtime + shakes sans choix de lait
+
+- **Summary** : le modal carte enregistrait `unitPrice` déjà remisé → après déconnexion le panier restait à −50 %. Désormais **prix public** en stockage + `barBasePublic` pour la base boisson ; **affichage total** via `displayBarLineUnit` selon abonnement. **Shakes** : plus de segment lait / UI lait (coffee uniquement). `buildDrinkCartOptions` inclut `size` dans la clé quand pertinent.
+- **Files** : `src/store/cartStore.ts`, `src/lib/cartLine.ts`, `src/lib/cartDisplayPrice.ts`, `src/components/cart/CartDrawer.tsx`, `src/components/cart/DrinkOptionsModal.tsx`, `src/pages/DrinkDetail.tsx`, `src/pages/CGV.tsx`
+- **Note** : clé localStorage `pessora-cart` → `pessora-cart-v2` (panier local **réinitialisé une fois** au prochain chargement, évite anciennes lignes au tarif membre figé).
+- **Verify** : `npx tsc --noEmit` OK
+
+### 2026-05-04T · docs · Synthèse présentation direction (non technique + prompt PowerPoint)
+
+- **Summary** : document `docs/PRESENTATION_GERANT_PESSORA_2026-05.md` — version enrichie : chronologie fin avril→début mai, Stripe/commandes détaillés en langage métier, admin événements/produits, PessoBot, mobile/a11y, logs `2026-04-20` à `2026-05-03` ; prompt IA allongé pour 14–16 slides.
+- **Why** : restitution complète au gérant sans jargon excessif ; pas de secrets copiés depuis les logs.
+- **Verify** : relecture cohérence avec ACTIONS_LOG + journaux
+
+### 2026-05-04T · docs · Mémo présentateur (cheat sheet réunion gérant)
+
+- **Summary** : `docs/MEMO_PRESENTATEUR_PESSORA.md` — structure 10 min / 25–40 min, FAQ, checklist, liens vers présentation longue et audit Stripe.
+- **Why** : aide personnelle oral + prep sans relire tout le dossier.
+- **Verify** : fichier créé, cohérent avec `PRESENTATION_GERANT_PESSORA_2026-05.md`
+
+### 2026-05-04T · docs · Mémo présentateur réaligné sur PDF 15 slides
+
+- **Summary** : `MEMO_PRESENTATEUR_PESSORA.md` — table slide par slide d’après `pessora_presentation_gerant_2026_20260504151302.pdf` ; avis interne (structure, titres forts, placeholders « Slide Content » à corriger) ; parcours express 10 min.
+- **Why** : le deck exporté fait foi pour l’oral ; le mémo suit la numérotation réelle.
+- **Verify** : titres PDF extraits + contrôle visuel recommandé sur slides 3–4, 8, 12, 14–15
+
 ## 2026-05-03
 
 ### 2026-05-03T · audit · Audit complet + correctifs P1/P2 (client, membre, admin)
@@ -113,6 +185,18 @@ Format : `ISO` · `type` · résumé · fichiers · vérif.
 - **Why** : offrir une expérience réservation cohérente dans l'espace membre, sans avoir à quitter le dashboard
 - **Files** : `src/pages/member/MesBilans.tsx` (créé), `src/App.tsx`, `src/components/member/MemberLayout.tsx`, `src/pages/member/Dashboard.tsx`, `docs/superpowers/specs/2026-05-03-member-bilans-design.md`, `docs/superpowers/plans/2026-05-03-member-bilans.md`
 - **Verify** : `npm run build` → OK (0 erreur TS)
+
+### 2026-05-03T · review · Critique design complète (impeccable)
+
+- **Contexte** : demande utilisateur `/critique` — audit design complet du site PESSORA via le playbook impeccable.
+- **Summary** :
+  - Score heuristique Nielsen : **27/40 (Acceptable)**
+  - Anti-patterns AI : verdict **pas de AI slop** — direction éditoriale authentique
+  - 6 issues identifiées : P1 aide utilisateur + erreurs techniques, P2 dashboard/membre/admin, P3 footer
+  - Plans d'action présentés puis mis en suspens par l'utilisateur
+- **why** : photographie objective de la qualité design à un instant T, sans implémentation immédiate.
+- **Files** : `docs/logs/2026-05-03.md` (session "Critique design complète")
+- **Verify** : rapport livré, aucun code modifié
 
 ## 2026-04-26
 

@@ -38,7 +38,7 @@ const CGV = () => {
                 <li>Gamme Énergie (pré-workout & boost)</li>
                 <li>Shakes protéinés</li>
                 <li>Coffee bar (espresso, café long)</li>
-                <li>Personnalisation : laits végétaux, boosters et options sur demande</li>
+                <li>Personnalisation : laits végétaux (cafés), boosters et options sur demande</li>
               </ul>
               <p className="text-gray-700 leading-relaxed mt-4">
                 Les produits sont préparés sur place et peuvent être personnalisés selon les préférences

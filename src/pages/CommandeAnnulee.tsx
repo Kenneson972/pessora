@@ -1,11 +1,17 @@
-import { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { XCircle, ArrowLeft } from 'lucide-react';
 import { PageShell } from '../components/layout/PageShell';
+import { supabase } from '../lib/supabaseClient';
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default function CommandeAnnulee() {
   useEffect(() => { document.title = 'Paiement annulé — PessÓra'; }, []);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const orderIdRaw = searchParams.get('order_id');
+  const cancelledRef = useRef(false);
 
   useEffect(() => {
     // Si l'URL contient un double slash (ex: //commande/annulee), rediriger
@@ -13,6 +19,26 @@ export default function CommandeAnnulee() {
       navigate(window.location.pathname.replace(/\/+/g, '/'), { replace: true });
     }
   }, [navigate]);
+
+  useEffect(() => {
+    if (!orderIdRaw || !UUID_RE.test(orderIdRaw) || cancelledRef.current) return;
+    cancelledRef.current = true;
+
+    void (async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.user) return;
+        await supabase
+          .from('orders')
+          .update({ status: 'cancelled' })
+          .eq('id', orderIdRaw)
+          .eq('user_id', session.user.id)
+          .eq('status', 'pending');
+      } catch {
+        /* RLS ou réseau : la commande restera pending ; nettoyage manuel possible côté admin */
+      }
+    })();
+  }, [orderIdRaw]);
 
   return (
     <div className="min-h-screen bg-white">

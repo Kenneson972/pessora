@@ -17,7 +17,7 @@ export const SectionTitle = ({ title, eyebrow, subtitle, linkLabel, linkTo }: Se
         ) : null}
         <h2
           className="font-display font-normal leading-[0.95] tracking-[-0.01em]"
-          style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px, 3.5vw, 44px)' }}
+          style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(21px, 2.4vw, 30px)' }}
         >
           {title}
         </h2>

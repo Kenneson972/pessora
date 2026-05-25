@@ -34,8 +34,37 @@ const Header = () => {
   const accountFirstName =
     user?.firstName?.trim() || user?.email?.split('@')[0]?.trim() || 'Compte';
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(() => window.scrollY > 24);
 
-  const overlay = false;
+  useEffect(() => {
+    let rafId: number | undefined;
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      rafId = requestAnimationFrame(() => {
+        setScrolled(window.scrollY > 24);
+        ticking = false;
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  const isDarkHeroRoute = location.pathname === '/';
+  const isSolid = scrolled;
+  const useLightTransparentChrome = !isSolid && !isDarkHeroRoute;
+  const chromeDark = !isSolid && isDarkHeroRoute;
+
+  const headerSurfaceClass = isSolid
+    ? 'border-b border-noir/[0.06] bg-white shadow-[0_1px_0_rgba(0,0,0,0.04)]'
+    : useLightTransparentChrome
+      ? 'border-b border-noir/[0.06] bg-white/92 shadow-[0_1px_0_rgba(0,0,0,0.04)]'
+      : 'border-b border-transparent bg-transparent';
   const hasSubNav = getSubNavForPath(location.pathname) != null;
   const showSubNav = hasSubNav;
 
@@ -70,15 +99,13 @@ const Header = () => {
     <header
       style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
       className={cn(
-        'sticky top-0 z-50 transition-[background-color,border-color,box-shadow] duration-300',
-        overlay
-          ? 'border-b border-white/[0.12] bg-transparent shadow-none'
-          : 'border-b border-noir/[0.06] bg-white shadow-[0_1px_20px_rgba(0,0,0,0.05)]'
+        'fixed top-0 z-50 w-full transition-[background,border-color,box-shadow] duration-300',
+        headerSurfaceClass,
       )}
     >
       <div
         className={cn(
-          'grid h-14 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 md:h-16 md:gap-4 md:px-10 lg:px-16',
+          'grid h-16 grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 md:h-20 md:gap-4 md:px-10 lg:px-[72px]',
           showSubNav && 'shadow-none',
         )}
       >
@@ -86,11 +113,11 @@ const Header = () => {
         <Link
           to="/"
           className={cn(
-            overlay ? navFocusDark : navFocusLight,
+            chromeDark ? navFocusDark : navFocusLight,
             'flex shrink-0 items-center justify-self-start transition-opacity duration-200 hover:opacity-80',
           )}
         >
-          <BrandLogo variant={overlay ? 'onDark' : 'onLight'} height={overlay ? 32 : 38} />
+          <BrandLogo variant={chromeDark ? 'onDark' : 'onLight'} height={36} />
         </Link>
 
         {/* Centre : navigation desktop — centrée dans l’espace entre logo et actions */}
@@ -98,7 +125,7 @@ const Header = () => {
           aria-label="Navigation principale"
           className={cn(
             'hidden min-w-0 items-center justify-center gap-3 self-center justify-self-center lg:flex xl:gap-6',
-            overlay ? navFocusDark : navFocusLight,
+            chromeDark ? navFocusDark : navFocusLight,
           )}
         >
           {DESKTOP_NAV.map((item) => {
@@ -109,16 +136,16 @@ const Header = () => {
                 to={item.path}
                 aria-current={isActive ? 'page' : undefined}
                 className={cn(
-                  'relative whitespace-nowrap py-1.5 text-[9px] font-normal uppercase tracking-[0.18em] transition-colors duration-200 rounded-[1px]',
+                  'relative whitespace-nowrap py-1.5 text-[10px] font-normal uppercase tracking-[0.16em] transition-colors duration-200 rounded-[1px]',
                   isActive
-                    ? overlay
+                    ? chromeDark
                       ? 'text-white'
                       : 'text-black'
-                    : overlay
+                    : chromeDark
                       ? 'text-white/60 hover:text-white'
                       : 'text-black/72 hover:text-black',
                   isActive && 'after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:content-[""]',
-                  isActive && (overlay ? 'after:bg-white' : 'after:bg-noir'),
+                  isActive && (chromeDark ? 'after:bg-white' : 'after:bg-noir'),
                 )}
               >
                 {item.label}
@@ -131,7 +158,7 @@ const Header = () => {
         <div className="flex min-w-0 items-center justify-end justify-self-end gap-2 md:gap-3 lg:gap-4">
           <div className="hidden md:block">
             <HeaderSearch
-              surface={overlay ? 'dark' : 'light'}
+              surface={chromeDark ? 'dark' : 'light'}
               stackedBelowHeader={showSubNav}
             />
           </div>
@@ -139,9 +166,9 @@ const Header = () => {
           <Link
             to={accountHref}
             className={cn(
-              overlay ? navFocusDark : navFocusLight,
-              'inline-flex min-w-0 max-w-[min(100%,9rem)] items-center gap-1.5 py-1.5 text-[9px] font-normal uppercase tracking-[0.18em] transition-colors rounded-[1px] sm:max-w-[11rem] sm:gap-2',
-              overlay ? 'text-white/70 hover:text-white' : 'text-black/72 hover:text-black',
+              chromeDark ? navFocusDark : navFocusLight,
+              'inline-flex min-w-0 max-w-[min(100%,9rem)] items-center gap-1.5 py-1.5 text-[10px] font-normal uppercase tracking-[0.16em] transition-colors rounded-[1px] sm:max-w-[11rem] sm:gap-2',
+              chromeDark ? 'text-white/70 hover:text-white' : 'text-black/72 hover:text-black',
               isAuthenticated && 'normal-case tracking-wide',
             )}
             aria-label={
@@ -165,9 +192,9 @@ const Header = () => {
               size="sm"
               onPress={toggleCart}
               className={cn(
-                overlay ? navFocusDark : navFocusLight,
+                chromeDark ? navFocusDark : navFocusLight,
                 '!min-h-[44px] !min-w-[44px] border-none !bg-transparent !shadow-none px-2 py-2 hover:!bg-transparent',
-                overlay ? 'text-white/85 hover:text-white' : 'text-black/75 hover:text-black',
+                chromeDark ? 'text-white/85 hover:text-white' : 'text-black/75 hover:text-black',
                 cartPulse && 'origin-center scale-110 transition-transform duration-300 ease-out',
               )}
               aria-label={`Panier${itemCount > 0 ? `, ${itemCount} article${itemCount > 1 ? 's' : ''}` : ', vide'}`}
@@ -191,9 +218,9 @@ const Header = () => {
             variant="ghost"
             size="sm"
             className={cn(
-              overlay ? navFocusDark : navFocusLight,
+              chromeDark ? navFocusDark : navFocusLight,
               '!min-h-[44px] !min-w-[44px] border-none !bg-transparent !shadow-none p-2 hover:!bg-transparent lg:hidden',
-              overlay ? 'text-white hover:text-white/85' : 'text-black/80 hover:text-black',
+              chromeDark ? 'text-white hover:text-white/85' : 'text-black/80 hover:text-black',
             )}
             onPress={() => setMobileOpen(!mobileOpen)}
             aria-label={mobileOpen ? 'Fermer le menu' : 'Ouvrir le menu'}

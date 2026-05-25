@@ -89,7 +89,8 @@ const History = () => {
                   <div className="flex items-center gap-4 shrink-0">
                     {(() => {
                       const st = order.status;
-                      if (st === 'pending') return <span className="text-[8px] font-normal uppercase tracking-[0.15em] text-amber-700 border border-amber-200 bg-amber-50 px-2.5 py-1 rounded-[2px]">En attente</span>;
+                      if (st === 'pending') return <span className="text-[8px] font-normal uppercase tracking-[0.15em] text-amber-700 border border-amber-200 bg-amber-50 px-2.5 py-1 rounded-[2px]">Paiement en attente</span>;
+                      if (st === 'paid') return <span className="text-[8px] font-normal uppercase tracking-[0.15em] text-blue-700 border border-blue-200 bg-blue-50 px-2.5 py-1 rounded-[2px]">Payée</span>;
                       if (st === 'preparing') return <span className="text-[8px] font-normal uppercase tracking-[0.15em] text-sky-700 border border-sky-200 bg-sky-50 px-2.5 py-1 rounded-[2px]">En préparation</span>;
                       if (st === 'ready') return <span className="text-[8px] font-normal uppercase tracking-[0.15em] text-emerald-700 border border-emerald-200 bg-emerald-50 px-2.5 py-1 rounded-[2px]">Prêt</span>;
                       if (st === 'completed') return <span className="text-[8px] font-normal uppercase tracking-[0.15em] text-black/45 border border-black/10 bg-black/[0.04] px-2.5 py-1 rounded-[2px]">Retiré</span>;

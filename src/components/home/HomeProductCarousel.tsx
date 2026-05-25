@@ -117,10 +117,10 @@ export function HomeProductCarousel() {
 
   return (
     <section
-      className="bg-white px-4 py-16 md:px-10 md:py-[var(--space-section-y-md)] lg:px-[72px]"
+      className="bg-white section-vertical-padding"
       aria-labelledby="home-carousel-title"
     >
-      <div className="mx-auto max-w-[1400px]">
+      <div className="section-wrapper">
         <div className="mb-11 flex flex-col gap-4 border-b border-noir/[0.05] pb-8 sm:mb-12 sm:flex-row sm:items-end sm:justify-between sm:pb-9 md:mb-14">
           <h2 id="home-carousel-title" className="text-editorial-section-title">
             Nos coups de cœur

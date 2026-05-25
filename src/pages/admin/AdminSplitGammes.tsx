@@ -137,10 +137,10 @@ export default function AdminSplitGammes() {
   };
   const handleDragEnd = () => { setDraggingId(null); setDragOverId(null); };
 
-  const UPLOAD_ZONES: { field: UploadField; label: string; aspect: string }[] = [
-    { field: 'main_image_url',   label: 'Photo principale (gauche)', aspect: 'aspect-[3/2]' },
-    { field: 'side_image_1_url', label: 'Photo côté — haut',         aspect: 'aspect-square' },
-    { field: 'side_image_2_url', label: 'Photo côté — bas',          aspect: 'aspect-square' },
+  const UPLOAD_ZONES: { field: UploadField; label: string; aspect: string; hint: string }[] = [
+    { field: 'main_image_url',   label: 'Photo principale (gauche)', aspect: 'aspect-[3/2]', hint: 'Format 3:2 paysage — 1200×800px min. Modèle + boisson, fond coloré.' },
+    { field: 'side_image_1_url', label: 'Photo côté — haut',         aspect: 'aspect-square', hint: 'Format 2:1 paysage — 900×450px min. Close-up boisson ou ingrédient.' },
+    { field: 'side_image_2_url', label: 'Photo côté — bas',          aspect: 'aspect-square', hint: 'Format 2:1 paysage — 900×450px min. Close-up boisson ou ingrédient.' },
   ];
 
   return (
@@ -239,7 +239,7 @@ export default function AdminSplitGammes() {
                     </label>
                   ))}
 
-                  {UPLOAD_ZONES.map(({ field, label, aspect }) => (
+                  {UPLOAD_ZONES.map(({ field, label, aspect, hint }) => (
                     <div key={field} className="flex flex-col gap-1">
                       <span className="text-[10px] uppercase tracking-[0.14em] text-black/50">{label}</span>
                       {form[field] ? (
@@ -265,6 +265,7 @@ export default function AdminSplitGammes() {
                           {uploading === field ? 'Envoi…' : 'Choisir une photo'}
                         </button>
                       )}
+                      <p className="text-[10px] text-black/35">{hint} JPEG, PNG ou WebP — 5 Mo max.</p>
                     </div>
                   ))}
 

@@ -8,7 +8,7 @@ import { useFadeUpWhenVisible, SPRING_SMOOTH } from '../../lib/motionReveal';
 
 function PlaceholderCard({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
-    <div className="flex-shrink-0 w-[280px] min-[400px]:w-[310px] h-[400px] rounded-[10px] overflow-hidden bg-noir/[0.06] relative snap-start">
+    <div className="flex-shrink-0 w-[280px] min-[400px]:w-[310px] h-[400px] rounded-[2px] overflow-hidden bg-noir/[0.06] relative snap-start">
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-black/20">
         <span className="text-[9px] uppercase tracking-[0.18em]">Photo à venir</span>
       </div>
@@ -46,7 +46,7 @@ function CardItem({ card }: { card: { id: string; eyebrow: string; title: string
     </div>
   );
 
-  const cls = "group flex-shrink-0 w-[280px] min-[400px]:w-[310px] h-[400px] rounded-[10px] overflow-hidden relative snap-start cursor-pointer block";
+  const cls = "group flex-shrink-0 w-[280px] min-[400px]:w-[310px] h-[400px] rounded-[2px] overflow-hidden relative snap-start cursor-pointer block";
 
   return card.link_to ? (
     <Link to={card.link_to} className={cls}>{inner}</Link>
@@ -75,8 +75,8 @@ export function HomeFeaturedCarousel({ title }: { title: string }) {
     : cards;
 
   return (
-    <section ref={sectionRef} className="bg-white px-4 py-14 md:px-10 md:py-16 lg:px-[72px]">
-      <div className="mx-auto max-w-[1400px]">
+    <section ref={sectionRef} className="bg-white section-vertical-padding">
+      <div className="section-wrapper">
         <motion.div className="mb-8 flex items-end justify-between" {...headerAnim}>
           <h2 className="text-editorial-section-title">{title}</h2>
           <div className="flex gap-2">

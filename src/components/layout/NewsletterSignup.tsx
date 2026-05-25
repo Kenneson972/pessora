@@ -20,9 +20,18 @@ export type NewsletterSignupProps = {
   className?: string;
   /** Centré (bloc logo footer) ou aligné à gauche */
   align?: 'left' | 'center';
+  /** Footer / blocs compacts — marges internes réduites */
+  compact?: boolean;
+  /** Pied de page ultra-compact : pas de paragraphe d’intro + titre sr-only */
+  minimal?: boolean;
 };
 
-export function NewsletterSignup({ className, align = 'left' }: NewsletterSignupProps) {
+export function NewsletterSignup({
+  className,
+  align = 'left',
+  compact = false,
+  minimal = false,
+}: NewsletterSignupProps) {
   const honeypotRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'duplicate' | 'error'>('idle');
   const {
@@ -60,39 +69,76 @@ export function NewsletterSignup({ className, align = 'left' }: NewsletterSignup
   };
 
   const isCenter = align === 'center';
+  const showVisibleNewsletterHeading = !(compact && minimal);
 
   return (
     <div
-      className={cn('mt-8 max-w-sm', isCenter && 'mx-auto w-full text-center', className)}
+      className={cn(
+        compact ? 'max-w-sm' : 'mt-8 max-w-sm',
+        isCenter && 'mx-auto w-full text-center',
+        className,
+      )}
     >
-      <p className="mb-3 text-[9px] font-light uppercase tracking-[0.42em] text-white/42">Newsletter</p>
-      <p
-        className={cn(
-          'mb-4 text-[11px] font-light leading-relaxed tracking-[0.04em] text-white/45',
-          isCenter && 'mx-auto max-w-[280px]',
-        )}
-      >
-        Offres, nouveautés et événements — une fois de temps en temps, jamais spam.
-      </p>
+      {minimal && compact ? (
+        <h3 id="newsletter-footer-heading" className="sr-only">
+          Newsletter
+        </h3>
+      ) : null}
+      {showVisibleNewsletterHeading ? (
+        <p
+          className={cn(
+            'text-[9px] font-light uppercase tracking-[0.42em]',
+            compact ? 'mb-1.5 text-footer-text-quiet' : 'mb-3 text-white/42',
+          )}
+        >
+          Newsletter
+        </p>
+      ) : null}
+      {!minimal || !compact ? (
+        <p
+          className={cn(
+            'font-light tracking-[0.04em]',
+            compact ? 'mb-2.5 text-[10px] leading-snug text-footer-text-muted' : 'mb-4 text-[11px] leading-relaxed text-white/45',
+            isCenter && 'mx-auto max-w-[280px]',
+            compact && isCenter && !minimal && 'max-w-[220px]',
+          )}
+        >
+          {compact ? (
+            <>Nouveautés ponctuelles — jamais de spam.</>
+          ) : (
+            <>
+              Offres, nouveautés et événements — une fois de temps en temps, jamais spam.
+            </>
+          )}
+        </p>
+      ) : null}
       <Form
         onSubmit={handleSubmit(onSubmit)}
-        className={cn('flex flex-col gap-4', isCenter && 'items-stretch sm:items-center')}
+        className={cn(
+          'flex flex-col',
+          compact && minimal ? 'gap-2' : compact ? 'gap-2.5' : 'gap-4',
+          isCenter && 'items-stretch sm:items-center',
+        )}
+        aria-labelledby={minimal && compact ? 'newsletter-footer-heading' : undefined}
       >
         <div
           className={cn(
-            'flex flex-col gap-2 sm:flex-row sm:items-stretch',
+            'flex flex-col gap-1.5 sm:flex-row sm:items-stretch',
             isCenter && 'sm:justify-center',
           )}
         >
           <Label htmlFor="newsletter-email" className="sr-only">
-            Adresse e-mail
+            Adresse e-mail pour la newsletter
           </Label>
           <Input
             id="newsletter-email"
             type="email"
             autoComplete="email"
-            placeholder="votre@email.com"
-            className="min-h-[48px] min-w-0 flex-1 rounded-[2px] border border-white/[0.12] bg-white/[0.06] px-4 text-[12px] font-light text-white placeholder:text-white/30"
+            placeholder={compact && minimal ? 'Votre e-mail' : 'votre@email.com'}
+            className={cn(
+              'min-w-0 flex-1 rounded-[2px] border border-[color:var(--color-footer-border-soft)] bg-white/[0.06] py-2 font-light text-ivory placeholder:text-footer-text-subtle',
+              compact && minimal ? 'min-h-12 px-4 text-[13px]' : compact ? 'min-h-11 px-4 text-[12px]' : 'min-h-[48px] px-4 text-[12px]',
+            )}
             {...register('email')}
           />
           <input
@@ -107,13 +153,21 @@ export function NewsletterSignup({ className, align = 'left' }: NewsletterSignup
             type="submit"
             isIconOnly
             isDisabled={status === 'loading'}
-            className="min-h-[48px] min-w-[48px] shrink-0 rounded-[2px] bg-white text-noir transition-colors hover:bg-white/90 disabled:opacity-50"
+            className={cn(
+              'shrink-0 rounded-[2px] bg-ivory text-noir transition-colors hover:bg-ivory-warm disabled:opacity-50',
+              compact && minimal ? 'min-h-12 min-w-12' : compact ? 'min-h-11 min-w-11' : 'min-h-12 min-w-12',
+            )}
             aria-label="S’inscrire à la newsletter"
           >
             <Send size={16} strokeWidth={1.5} className={status === 'loading' ? 'animate-pulse' : ''} />
           </Button>
         </div>
-        <div className={cn('text-left', isCenter && 'sm:mx-auto sm:max-w-sm')}>
+        <div
+          className={cn(
+            'text-left',
+            isCenter && (compact && minimal ? 'mx-auto max-w-[min(100%,20rem)] sm:text-center' : 'sm:mx-auto sm:max-w-sm'),
+          )}
+        >
           <Controller
             control={control}
             name="acceptPrivacy"
@@ -124,11 +178,20 @@ export function NewsletterSignup({ className, align = 'left' }: NewsletterSignup
                 onChange={(isSelected) => field.onChange(Boolean(isSelected))}
                 className="items-start text-left"
               >
-                <span className="text-[11px] font-light leading-relaxed tracking-[0.04em] text-white/50">
+                <span
+                  className={cn(
+                    'font-light tracking-[0.04em]',
+                    compact && minimal
+                      ? 'text-[10px] leading-snug text-footer-text-muted sm:text-[11px]'
+                      : compact
+                        ? 'text-[10px] leading-snug text-white/50'
+                        : 'text-[11px] leading-relaxed text-white/50',
+                  )}
+                >
                   J’accepte de recevoir la newsletter et j’ai pris connaissance de la{' '}
                   <Link
                     to="/politique-confidentialite"
-                    className="text-white/70 underline decoration-white/30 underline-offset-2 hover:text-white/90"
+                    className="text-footer-text-muted underline decoration-[color:var(--color-footer-border-soft)] underline-offset-2 hover:text-ivory/90"
                   >
                     politique de confidentialité
                   </Link>
@@ -146,7 +209,7 @@ export function NewsletterSignup({ className, align = 'left' }: NewsletterSignup
         <p className="mt-2 text-[10px] font-light text-red-300/90">{errors.email.message}</p>
       )}
       {status === 'success' && (
-        <p className="mt-2 text-[11px] font-light tracking-wide text-gold">Merci — vous êtes inscrit·e.</p>
+        <p className="mt-2 text-[11px] font-light tracking-wide text-ivory/90">Merci — vous êtes inscrit·e.</p>
       )}
       {status === 'duplicate' && (
         <p className="mt-2 text-[11px] font-light text-white/50">Cette adresse est déjà inscrite.</p>

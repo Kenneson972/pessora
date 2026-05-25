@@ -120,16 +120,18 @@ const DrinkDetail = () => {
   ];
 
   const handleAddToCart = () => {
-    const { optionsKey, optionLabels, unitPrice } = buildDrinkCartOptions(
+    const { optionsKey, optionLabels, unitPrice, barBasePublic } = buildDrinkCartOptions(
       drink,
       selectedMilk,
       selectedBoosters,
       sizeBasePrice,
+      hasSizes ? selectedSize : undefined,
     );
     addLine({
       productId: drink.id,
       name: drink.name,
       unitPrice,
+      barBasePublic,
       quantity,
       category: drink.category,
       optionsKey,
@@ -369,8 +371,8 @@ const DrinkDetail = () => {
               </div>
             )}
 
-            {/* ── Customisation block ── */}
-            {(drink.category === 'shakes' || drink.category === 'coffee') && (
+            {/* ── Customisation lait : coffee uniquement (shakes : base standard sans choix) ── */}
+            {drink.category === 'coffee' && (
               <div className="mb-8">
                 <p className="mb-1 text-center text-[9px] font-normal uppercase tracking-[0.2em] text-black/45 sm:text-left">
                   Choix du lait végétal

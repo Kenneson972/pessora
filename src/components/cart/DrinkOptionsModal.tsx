@@ -5,6 +5,8 @@ import { Minus, Plus, Check } from 'lucide-react';
 import { boosters, milkOptions, type MenuItem } from '../../data/menuData';
 import { useCart } from '../../store/cartStore';
 import { useIsOraPlus } from '../../hooks/useIsOraPlus';
+import { buildDrinkCartOptions } from '../../lib/cartLine';
+import { oraMemberUnitPrice } from '../../lib/oraPricing';
 
 interface Props {
   item: MenuItem | null;
@@ -46,8 +48,12 @@ export function DrinkOptionsModal({ item, onClose }: Props) {
       : item.price
     : 0;
 
-  const unitPrice = effectiveUnitPrice(basePrice) + selectedBoosters.length;
-  const total = unitPrice * quantity;
+  const boosterAdd = selectedBoosters.length;
+  const publicUnitPrice = basePrice + boosterAdd;
+  /** Prix unitaire affiché (aperçu) : remise Óra+ sur la boisson seule, boosters au prix bar. */
+  const previewUnitPrice =
+    isOraPlus ? oraMemberUnitPrice(basePrice) + boosterAdd : publicUnitPrice;
+  const total = previewUnitPrice * quantity;
 
   const toggleBooster = useCallback((id: string) => {
     setSelectedBoosters((prev) =>
@@ -57,27 +63,19 @@ export function DrinkOptionsModal({ item, onClose }: Props) {
 
   const handleAdd = () => {
     if (!item) return;
-    const sortedBoosters = [...selectedBoosters].sort();
-    const optionsKey = [
-      `milk:${selectedMilk}`,
-      `boost:${sortedBoosters.join(',')}`,
-      hasSizes ? `size:${selectedSize}` : '',
-    ]
-      .filter(Boolean)
-      .join('|');
-
-    const optionLabels = [
-      `Lait : ${milkOptions.find((m) => m.id === selectedMilk)?.name ?? selectedMilk}`,
-      ...sortedBoosters.map((id) => `+ ${boosters.find((b) => b.id === id)?.name ?? id}`),
-      ...(hasSizes
-        ? [`Taille : ${selectedSize === 'small' ? 'Petit' : selectedSize === 'medium' ? 'Moyen' : 'Grand'}`]
-        : []),
-    ];
+    const { optionsKey, optionLabels, unitPrice, barBasePublic } = buildDrinkCartOptions(
+      item,
+      selectedMilk,
+      selectedBoosters,
+      basePrice,
+      hasSizes ? selectedSize : undefined,
+    );
 
     addLine({
       productId: item.id,
       name: item.name,
       unitPrice,
+      barBasePublic,
       quantity,
       category: item.category,
       optionsKey,
@@ -162,8 +160,8 @@ export function DrinkOptionsModal({ item, onClose }: Props) {
                 </div>
               )}
 
-              {/* Lait — uniquement pour shakes et coffee */}
-              {(item?.category === 'shakes' || item?.category === 'coffee') && (
+              {/* Lait — coffee uniquement (shakes : pas de choix de lait) */}
+              {item?.category === 'coffee' && (
               <div>
                 <p className="mb-2.5 text-[9px] font-normal uppercase tracking-[0.18em] text-black/40">
                   Base lait

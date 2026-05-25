@@ -18,7 +18,10 @@ const PLAN_LABEL: Record<string, string> = {
 };
 
 const ORDER_STATUS_LABEL: Record<string, string> = {
-  pending: 'En attente',
+  pending: 'En attente de paiement',
+  paid: 'Payée',
+  preparing: 'En préparation',
+  ready: 'Prêt',
   completed: 'Terminée',
   cancelled: 'Annulée',
 };
@@ -517,12 +520,7 @@ const AdminMemberDetail = () => {
           </div>
         </div>
         {subscription && (
-          <div className="mt-4 border-t border-noir/[0.06] pt-4 text-[10px] font-light text-black/40">
-            <p>
-              Stripe subscription ID :{' '}
-              <span className="font-mono text-[10px] text-black/55">{subscription.stripe_subscription_id ?? '—'}</span>
-            </p>
-          </div>
+          <div className="mt-4 border-t border-noir/[0.06] pt-4" />
         )}
         <button
           type="button"
@@ -610,10 +608,6 @@ const AdminMemberDetail = () => {
                   )}
                 </div>
               </div>
-
-              <p className="mb-4 font-mono text-[10px] text-black/40">
-                {subscription?.stripe_subscription_id ?? '—'}
-              </p>
 
               <div className="flex gap-2">
                 <button

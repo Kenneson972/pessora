@@ -26,6 +26,8 @@ export function useOrders() {
       .from('orders')
       .select('*, order_items(*)')
       .eq('user_id', user.id)
+      // Ne pas afficher les brouillons « checkout Stripe non finalisé » (status pending).
+      .neq('status', 'pending')
       .order('created_at', { ascending: false })
       .then(({ data, error: err }: { data: OrderWithItems[] | null; error: { message: string } | null }) => {
         if (cancelled) return;

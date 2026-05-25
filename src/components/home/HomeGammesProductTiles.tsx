@@ -28,7 +28,7 @@ export function HomeGammesProductTiles({ onTabChange }: { onTabChange: (id: stri
             onTabChange(r.id);
             navigate(`/nos-produits#collection-${r.id}`);
           }}
-          className="group relative aspect-[4/5] overflow-hidden rounded-[10px] text-left"
+          className="group relative aspect-[4/5] overflow-hidden rounded-[2px] text-left"
           aria-label={`Voir la gamme ${rangesData[r.id].title}`}
         >
           <img

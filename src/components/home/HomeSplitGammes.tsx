@@ -36,15 +36,15 @@ export function HomeSplitGammes() {
 
   if (loading) {
     return (
-      <section className="bg-surface-muted px-4 py-16 md:px-10 md:py-20 lg:px-[72px]">
-        <div className="mx-auto max-w-[1400px]">
+      <section className="bg-surface-muted section-vertical-padding">
+        <div className="section-wrapper">
           <div className="h-8 w-48 bg-noir/[0.06] rounded animate-pulse mb-6 mx-auto" />
           <div className="flex justify-center gap-2 mb-8">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="h-8 w-20 bg-noir/[0.06] rounded-full animate-pulse" />
             ))}
           </div>
-          <div className="grid grid-cols-[3fr_2fr] gap-1 rounded-[12px] overflow-hidden h-[420px] md:h-[520px]">
+          <div className="grid grid-cols-[3fr_2fr] gap-1 rounded-[2px] overflow-hidden h-[420px] md:h-[520px]">
             <div className="bg-noir/[0.05] animate-pulse" />
             <div className="flex flex-col gap-1">
               <div className="flex-1 bg-noir/[0.04] animate-pulse" />
@@ -59,18 +59,15 @@ export function HomeSplitGammes() {
   if (!active) return null;
 
   return (
-    <section className="bg-surface-muted px-4 py-16 md:px-10 md:py-20 lg:px-[72px]">
-      <div className="mx-auto max-w-[1400px]">
+    <section className="bg-surface-muted section-vertical-padding">
+      <div className="section-wrapper">
         <motion.div className="mb-8 text-center" {...headerAnim}>
           <h2
-            className="mb-3 font-display font-normal leading-[1.02] text-black"
-            style={{ fontSize: 'clamp(24px, 3vw, 36px)' }}
+            className="mb-8 font-display font-normal leading-[1.02] text-black"
+            style={{ fontSize: 'clamp(21px, 2.4vw, 30px)' }}
           >
             Choisis ton moment
           </h2>
-          <p className="mx-auto mb-6 max-w-[36ch] text-[13px] font-light leading-relaxed text-black/50">
-            Chaque boisson PessÓra est pensée pour un instant précis.
-          </p>
 
           <LayoutGroup id="split-gammes-tabs">
             <div className="flex justify-center gap-2 flex-wrap">
@@ -100,7 +97,7 @@ export function HomeSplitGammes() {
         </motion.div>
 
         <motion.div
-          className="grid grid-cols-[3fr_2fr] gap-1 rounded-[12px] overflow-hidden h-[420px] md:h-[520px]"
+          className="grid grid-cols-[3fr_2fr] gap-1 rounded-[2px] overflow-hidden h-[420px] md:h-[520px]"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.2 }}
