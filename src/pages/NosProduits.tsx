@@ -6,8 +6,6 @@ import { useFadeUpWhenVisible, useStaggerReveal } from '../lib/motionReveal';
 import { PageShell } from '../components/layout/PageShell';
 import { PageHero } from '../components/layout/PageHero';
 import { rangesData } from '../data/productsData';
-import { NosProduitsFeaturedCarousel } from '../components/nosproduits/NosProduitsFeaturedCarousel';
-import { NosProduitsTiles } from '../components/nosproduits/NosProduitsTiles';
 
 const ranges = Object.values(rangesData);
 
@@ -29,9 +27,6 @@ const NosProduits = () => {
         title="Les gammes PessÓra"
         subtitle="Nutrition, sport et soins — chaque gamme a été composée avec une exigence précise. Découvrez celle qui vous correspond."
       />
-
-      <NosProduitsFeaturedCarousel />
-      <NosProduitsTiles />
 
       <motion.div
         variants={container}
