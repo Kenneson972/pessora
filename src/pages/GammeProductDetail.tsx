@@ -1,5 +1,7 @@
 import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
 import { useState, useMemo } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { GammeProductDetailAdminEdit } from '../components/admin/GammeProductDetailAdminEdit';
 import { Button } from '@heroui/react';
 import {
   ArrowRight,
@@ -40,10 +42,17 @@ const GammeProductDetail = () => {
 
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
+  const [productOverride, setProductOverride] = useState<import('../lib/getGammeProduct').GammeProductStatic | null>(null);
+  const { isAdmin } = useAuth();
 
   if (!data) return <Navigate to="/nos-produits" replace />;
 
-  const { product } = data;
+  const { product: baseProduct } = data;
+  const product = productOverride ?? baseProduct;
+
+  const handleProductSaved = (updated: Partial<typeof baseProduct>) => {
+    setProductOverride((prev) => ({ ...(prev ?? baseProduct), ...updated }));
+  };
 
   // Parse price: "35€" => { simple: 35 } | "29€ / 39€" => { simple: 29, alt: 39 }
   const parsedPrice = useMemo(() => {
@@ -383,6 +392,13 @@ const GammeProductDetail = () => {
           </div>
         </PageShell>
       </section>
+      {isAdmin && (
+        <GammeProductDetailAdminEdit
+          slug={slug!}
+          product={product}
+          onSaved={handleProductSaved}
+        />
+      )}
     </div>
   );
 };

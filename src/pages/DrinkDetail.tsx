@@ -13,7 +13,8 @@ import { boosters, milkOptions, categoryNames, type MenuItem } from '../data/men
 import { useCart } from '../store/cartStore';
 import { buildDrinkCartOptions } from '../lib/cartLine';
 import { useMenuCatalog } from '../hooks/useMenuCatalog';
-import { barInfo } from '../data/infoData';
+import { useAuth } from '../contexts/AuthContext';
+import { DrinkDetailAdminEdit } from '../components/admin/DrinkDetailAdminEdit';
 import { formatEurFr, oraMemberUnitPrice, ORA_PLUS_MAX_DRINK_DISCOUNT } from '../lib/oraPricing';
 import { oraPlusPricing } from '../data/oraPlusData';
 
@@ -57,6 +58,7 @@ const DrinkDetail = () => {
   const [justAdded, setJustAdded] = useState(false);
   const [selectedSize, setSelectedSize] = useState<'small' | 'medium' | 'large'>('medium');
   const addLine = useCart((s) => s.addLine);
+  const { isAdmin } = useAuth();
 
   if (!drink) {
     return <Navigate to="/menu" replace />;
@@ -738,6 +740,7 @@ const DrinkDetail = () => {
         </section>
       )}
 
+      {isAdmin && <DrinkDetailAdminEdit drinkId={drinkId!} drink={drink} />}
     </div>
   );
 };
