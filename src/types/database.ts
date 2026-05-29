@@ -297,6 +297,75 @@ export interface Database {
         Update: Partial<Omit<Database['public']['Tables']['gamme_products']['Row'], 'id' | 'created_at'>>
         Relationships: []
       }
+      home_carousel_cards: {
+        Row: {
+          id: string
+          position: number
+          eyebrow: string
+          title: string
+          image_url: string | null
+          link_to: string | null
+          active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          position?: number
+          eyebrow?: string
+          title?: string
+          image_url?: string | null
+          link_to?: string | null
+          active?: boolean
+          created_at?: string
+        }
+        Update: Partial<{
+          position: number
+          eyebrow: string
+          title: string
+          image_url: string | null
+          link_to: string | null
+          active: boolean
+        }>
+        Relationships: []
+      }
+      home_split_gammes: {
+        Row: {
+          id: string
+          key: string
+          position: number
+          label: string
+          eyebrow: string
+          title: string
+          link_to: string
+          main_image_url: string | null
+          side_image_1_url: string | null
+          side_image_2_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          key: string
+          position: number
+          label: string
+          eyebrow: string
+          title: string
+          link_to: string
+          main_image_url?: string | null
+          side_image_1_url?: string | null
+          side_image_2_url?: string | null
+        }
+        Update: Partial<{
+          position: number
+          label: string
+          eyebrow: string
+          title: string
+          link_to: string
+          main_image_url: string | null
+          side_image_1_url: string | null
+          side_image_2_url: string | null
+        }>
+        Relationships: []
+      }
       bar_settings: {
         Row: {
           id: number
@@ -384,3 +453,5 @@ export type Notification = Database['public']['Tables']['notifications']['Row']
 export type SiteAnnouncement = Database['public']['Tables']['site_announcements']['Row']
 export type NewsletterSubscriber = Database['public']['Tables']['newsletter_subscribers']['Row']
 export type GammeProduct = Database['public']['Tables']['gamme_products']['Row']
+export type HomeCarouselCard = Database['public']['Tables']['home_carousel_cards']['Row']
+export type HomeSplitGamme = Database['public']['Tables']['home_split_gammes']['Row']

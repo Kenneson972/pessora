@@ -1,5 +1,6 @@
 // supabase/functions/create-subscription-session/index.ts
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
+import { createClient } from 'npm:@supabase/supabase-js@2'
 import Stripe from 'npm:stripe@14'
 import { z } from 'npm:zod@3'
 
@@ -19,6 +20,34 @@ serve(async (req) => {
   }
 
   try {
+    // 🔐 Auth — valide le JWT avant toute chose
+    const authHeader = req.headers.get('authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Authentification requise' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')
+    if (!supabaseUrl || !supabaseKey) {
+      return new Response(JSON.stringify({ error: 'Configuration Supabase manquante' }), {
+        status: 503,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      global: { headers: { Authorization: authHeader } },
+    })
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Token invalide ou expiré' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
     const siteUrl = (Deno.env.get('SITE_URL') ?? 'http://localhost:5173').replace(/\/+$/, '')
     const defaultPriceId = Deno.env.get('STRIPE_ORA_PLUS_PRICE_ID')
