@@ -50,6 +50,17 @@ const GammeProductDetail = () => {
 
   const { product: dbProduct, loading, error } = useGammeProduct(rangeId, slug);
 
+  // Cross-sell : données statiques (juste visuel, pas Stripe)
+  // Hoisted above early returns to comply with Rules of Hooks
+  const range = rangesData[rangeId as keyof typeof rangesData];
+  const crossSell: CrossSellItem[] = useMemo(() => {
+    if (!range) return [];
+    return range.products
+      .filter((p) => toSlug(p.name) !== slug)
+      .map((p) => ({ ...p, slug: toSlug(p.name) }))
+      .slice(0, 3);
+  }, [range, slug]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white">
@@ -99,16 +110,6 @@ const GammeProductDetail = () => {
     ? `${product.price}€ / ${product.price_alt}€`
     : `${product.price}€`;
   const totalPrice = product.price * quantity;
-
-  // Cross-sell : données statiques (juste visuel, pas Stripe)
-  const range = rangesData[rangeId as keyof typeof rangesData];
-  const crossSell: CrossSellItem[] = useMemo(() => {
-    if (!range) return [];
-    return range.products
-      .filter((p) => toSlug(p.name) !== slug)
-      .map((p) => ({ ...p, slug: toSlug(p.name) }))
-      .slice(0, 3);
-  }, [range, slug]);
 
   const RangeIcon = range ? RANGE_ICONS[rangeId!] ?? Sparkles : Sparkles;
 
