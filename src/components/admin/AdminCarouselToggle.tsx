@@ -12,7 +12,6 @@ interface Props {
   badge: string;
   onBadgeChange: (v: string) => void;
   busy: boolean;
-  existingPositions?: number[];
 }
 
 export function AdminCarouselToggle({
@@ -56,8 +55,9 @@ export function AdminCarouselToggle({
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className={labelClass}>Position dans le carrousel</label>
+          <label htmlFor="carousel-position" className={labelClass}>Position dans le carrousel</label>
           <input
+            id="carousel-position"
             type="number"
             inputMode="numeric"
             min={1}
@@ -72,8 +72,9 @@ export function AdminCarouselToggle({
           </p>
         </div>
         <div>
-          <label className={labelClass}>Pastille sur l'accueil</label>
+          <label htmlFor="carousel-badge" className={labelClass}>Pastille sur l'accueil</label>
           <select
+            id="carousel-badge"
             disabled={!included || busy}
             className={cn(inputClass, (!included || busy) && 'cursor-not-allowed opacity-45')}
             value={badge}
