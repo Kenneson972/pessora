@@ -153,6 +153,7 @@ export interface Database {
           badges: string[] | null
           carousel_sort: number | null
           carousel_badge: string | null
+          gallery: string[]
           created_at: string
         }
         Insert: Omit<Database['public']['Tables']['products']['Row'], 'id' | 'created_at'>
@@ -289,6 +290,7 @@ export interface Database {
           sort_order: number
           slug: string | null
           active: boolean
+          gallery: string[]
           created_at: string
         }
         Insert: Omit<Database['public']['Tables']['gamme_products']['Row'], 'id' | 'created_at'>

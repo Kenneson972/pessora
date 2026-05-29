@@ -20,6 +20,7 @@ function getStaticProducts(gamme: 'sport' | 'skin' | 'wellness'): GammeProduct[]
     image_url: null,
     slug: null,
     sort_order: i,
+    gallery: [],
     created_at: '',
   }));
 }
@@ -33,7 +34,6 @@ export function useGammeCatalog(gamme: 'sport' | 'skin' | 'wellness') {
     let cancelled = false;
     setLoading(true);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (supabase as any)
       .from('gamme_products')
       .select('*')
