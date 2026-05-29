@@ -1,3 +1,4 @@
+// src/pages/GammeProductDetail.tsx
 import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
 import { useState, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
@@ -10,13 +11,20 @@ import {
   MapPin,
 } from 'lucide-react';
 import { PageShell } from '../components/layout/PageShell';
-import { getGammeProduct, type GammeProductStatic } from '../lib/getGammeProduct';
+import { useGammeProduct } from '../hooks/useGammeProduct';
 import { toSlug } from '../lib/toSlug';
 import { rangesData } from '../data/productsData';
 import { barInfo } from '../data/infoData';
 import { useCart } from '../store/cartStore';
+import type { GammeProduct } from '../types/database';
 
-type CrossSellItem = GammeProductStatic & { slug: string };
+type CrossSellItem = {
+  name: string;
+  description: string;
+  price: string;
+  image?: string;
+  slug: string;
+};
 
 const RANGE_ICONS: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number; className?: string; 'aria-hidden'?: boolean | 'true' | 'false' }>> = {
   wellness: Sparkles,
@@ -34,41 +42,65 @@ const GammeProductDetail = () => {
   const { rangeId, slug } = useParams<{ rangeId: string; slug: string }>();
   const navigate = useNavigate();
   const addLine = useCart((s) => s.addLine);
-
-  const data = useMemo(() => {
-    if (!rangeId || !slug) return null;
-    return getGammeProduct(rangeId, slug);
-  }, [rangeId, slug]);
+  const { isAdmin } = useAuth();
 
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
-  const [productOverride, setProductOverride] = useState<import('../lib/getGammeProduct').GammeProductStatic | null>(null);
-  const { isAdmin } = useAuth();
+  const [productOverride, setProductOverride] = useState<GammeProduct | null>(null);
 
-  if (!data) return <Navigate to="/nos-produits" replace />;
+  const { product: dbProduct, loading, error } = useGammeProduct(rangeId, slug);
 
-  const { product: baseProduct } = data;
-  const product = productOverride ?? baseProduct;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <PageShell className="py-12 lg:py-20">
+          <div className="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-2">
+            <div className="aspect-[3/4] animate-pulse rounded-[2px] bg-gray-100" />
+            <div className="space-y-5 pt-4">
+              <div className="h-12 w-3/4 animate-pulse rounded-[2px] bg-gray-100" />
+              <div className="h-4 w-full animate-pulse rounded-[2px] bg-gray-100" />
+              <div className="h-4 w-5/6 animate-pulse rounded-[2px] bg-gray-100" />
+              <div className="h-10 w-1/3 animate-pulse rounded-[2px] bg-gray-100" />
+              <div className="h-12 w-full animate-pulse rounded-[2px] bg-gray-100" />
+            </div>
+          </div>
+        </PageShell>
+      </div>
+    );
+  }
 
-  const handleProductSaved = (updated: Partial<typeof baseProduct>) => {
-    setProductOverride((prev) => ({ ...(prev ?? baseProduct), ...updated }));
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <div className="text-center">
+          <p className="mb-6 text-[13px] text-black/50">Impossible de charger ce produit.</p>
+          <Button
+            variant="ghost"
+            onPress={() => navigate(`/nos-produits/${rangeId ?? ''}`)}
+            className="rounded-full border border-noir/15 px-6 py-3 text-[10px] uppercase tracking-[0.1em]"
+          >
+            Retour à la gamme
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!dbProduct) return <Navigate to={`/nos-produits/${rangeId ?? ''}`} replace />;
+
+  const product = productOverride ?? dbProduct;
+
+  const handleProductSaved = (updated: Partial<GammeProduct>) => {
+    setProductOverride((prev) => ({ ...(prev ?? dbProduct), ...updated }));
   };
 
-  // Parse price: "35€" => { simple: 35 } | "29€ / 39€" => { simple: 29, alt: 39 }
-  const parsedPrice = useMemo(() => {
-    const parts = product.price.replace('€', '').split('/');
-    const simple = parseFloat(parts[0]!.trim());
-    const alt = parts[1] ? parseFloat(parts[1].trim()) : null;
-    return { simple, alt };
-  }, [product.price]);
+  // Prix : déjà des numbers en DB
+  const displayPrice = product.price_alt !== null
+    ? `${product.price}€ / ${product.price_alt}€`
+    : `${product.price}€`;
+  const totalPrice = product.price * quantity;
 
-  const totalPrice = parsedPrice.simple * quantity;
-
-  const displayPrice = parsedPrice.alt
-    ? `${parsedPrice.simple}€ / ${parsedPrice.alt}€`
-    : `${parsedPrice.simple}€`;
-
-  // Cross-sell : les autres produits de la même gamme
+  // Cross-sell : données statiques (juste visuel, pas Stripe)
   const range = rangesData[rangeId as keyof typeof rangesData];
   const crossSell: CrossSellItem[] = useMemo(() => {
     if (!range) return [];
@@ -82,15 +114,15 @@ const GammeProductDetail = () => {
 
   const handleAddToCart = () => {
     addLine({
-      productId: `${rangeId}-${toSlug(product.name)}`,
+      productId: product.id,          // UUID ✓ — edge function accepte ça
       name: product.name,
-      unitPrice: parsedPrice.simple,
+      unitPrice: product.price,        // number ✓ — plus de parsing string
       quantity,
       category: rangeId!,
       source: 'gamme',
       optionsKey: 'default',
       optionLabels: [],
-      image: product.image || product.name.charAt(0),
+      image: product.image_url || product.name.charAt(0),
     });
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 2000);
@@ -130,9 +162,9 @@ const GammeProductDetail = () => {
             {/* LEFT — Image */}
             <div className="mx-auto w-full max-w-lg lg:mx-0 lg:max-w-none">
               <div className="relative mx-auto flex aspect-[3/4] w-full max-w-md items-center justify-center overflow-hidden rounded-[2px] bg-surface-product-well sm:max-w-lg lg:mx-0 lg:max-w-none">
-                {product.image ? (
+                {product.image_url ? (
                   <img
-                    src={product.image}
+                    src={product.image_url}
                     alt={product.name}
                     className="h-full w-full object-cover"
                     loading="eager"
@@ -161,9 +193,11 @@ const GammeProductDetail = () => {
                 {product.name}
               </h1>
 
-              <p className="mx-auto mb-4 max-w-xl text-center text-[13px] font-light leading-relaxed text-black/50 sm:mx-0 sm:text-left">
-                {product.description}
-              </p>
+              {product.description && (
+                <p className="mx-auto mb-4 max-w-xl text-center text-[13px] font-light leading-relaxed text-black/50 sm:mx-0 sm:text-left">
+                  {product.description}
+                </p>
+              )}
 
               {/* Prix */}
               <div className="mb-8">
@@ -216,6 +250,7 @@ const GammeProductDetail = () => {
                   variant="primary"
                   fullWidth
                   onPress={handleAddToCart}
+                  isDisabled={loading}
                   className="flex h-12 min-h-12 flex-1 items-center justify-center gap-3 rounded-full bg-noir text-[10px] font-normal uppercase tracking-[0.12em] text-white hover:bg-anthracite"
                 >
                   {justAdded ? (
@@ -241,55 +276,6 @@ const GammeProductDetail = () => {
           </div>
         </PageShell>
       </section>
-
-      {/* ─── Caractéristiques ─── */}
-      {(product.benefits || product.ingredients) && (
-        <section className="border-t border-noir/[0.05] bg-white" aria-label="Caractéristiques">
-          <PageShell className="py-16 lg:py-24">
-            <div className="mx-auto w-full max-w-6xl">
-              <p className="mb-10 text-center text-[9px] font-normal uppercase tracking-[0.2em] text-black/30 sm:text-left">
-                Caractéristiques
-              </p>
-              <div className="grid gap-12 md:grid-cols-2 md:gap-16">
-                {product.benefits && product.benefits.length > 0 && (
-                  <div>
-                    <p className="mb-6 text-[11px] font-normal uppercase tracking-[0.12em] text-black/50">
-                      Bénéfices
-                    </p>
-                    <div className="divide-y divide-black/[0.05]">
-                      {product.benefits.map((benefit, i) => (
-                        <div key={i} className="flex items-center gap-4 py-4">
-                          <span className="text-[10px] font-normal tabular-nums text-black/25">
-                            {String(i + 1).padStart(2, '0')}
-                          </span>
-                          <span className="text-[13px] font-normal leading-relaxed text-black">
-                            {benefit}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {product.ingredients && product.ingredients.length > 0 && (
-                  <div>
-                    <p className="mb-6 text-[11px] font-normal uppercase tracking-[0.12em] text-black/50">
-                      Ingrédients clés
-                    </p>
-                    <ul className="space-y-3">
-                      {product.ingredients.map((ing, i) => (
-                        <li key={i} className="flex items-start gap-3">
-                          <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-black/20" aria-hidden />
-                          <span className="text-[13px] font-light leading-relaxed text-black/60">{ing}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </div>
-          </PageShell>
-        </section>
-      )}
 
       {/* ─── Vous aimerez aussi ─── */}
       {crossSell.length > 0 && (
@@ -392,6 +378,7 @@ const GammeProductDetail = () => {
           </div>
         </PageShell>
       </section>
+
       {isAdmin && (
         <GammeProductDetailAdminEdit
           slug={slug!}
