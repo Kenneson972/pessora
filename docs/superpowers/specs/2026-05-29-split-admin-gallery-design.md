@@ -175,7 +175,7 @@ interface Props {
 - 3 colonnes, `aspect-square`, `rounded-[2px]`, cohérent avec le design admin existant
 - Si `images.length === 0` : zone vide avec texte "Aucune photo supplémentaire"
 
-**Pattern référence :** `EventGalleryManager.tsx` (galerie événements, même projet)
+**Pattern référence :** `src/components/admin/EventGalleryManager.tsx` (galerie événements, confirmé présent dans le projet)
 
 ---
 
