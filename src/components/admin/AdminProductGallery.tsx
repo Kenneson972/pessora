@@ -44,7 +44,7 @@ export function AdminProductGallery({ productId, table, images, onReorder, busy 
     if (err) throw new Error(err.message);
   }, [productId, table]);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file || !productId) return;
@@ -52,7 +52,7 @@ export function AdminProductGallery({ productId, table, images, onReorder, busy 
     setError(null);
     try {
       const url = await uploadPublicImage('product-images', file, prefix);
-      const next = [...images, url];
+      const next = [...localOrder, url];
       await dbUpdate(next);
       onReorder(next);
     } catch (err) {
@@ -60,21 +60,21 @@ export function AdminProductGallery({ productId, table, images, onReorder, busy 
     } finally {
       setUploading(false);
     }
-  };
+  }, [productId, prefix, localOrder, dbUpdate, onReorder]);
 
-  const handleDelete = async (url: string) => {
+  const handleDelete = useCallback(async (url: string) => {
     if (!productId) return;
     setError(null);
-    const next = images.filter((u) => u !== url);
+    const next = localOrder.filter((u) => u !== url);
     try {
       await dbUpdate(next);
       onReorder(next);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur suppression.');
     }
-  };
+  }, [productId, localOrder, dbUpdate, onReorder]);
 
-  const handleSaveOrder = async () => {
+  const handleSaveOrder = useCallback(async () => {
     if (!productId || !orderChanged) return;
     setSaving(true);
     setError(null);
@@ -86,7 +86,7 @@ export function AdminProductGallery({ productId, table, images, onReorder, busy 
     } finally {
       setSaving(false);
     }
-  };
+  }, [productId, orderChanged, localOrder, dbUpdate, onReorder]);
 
   const handleDragStart = (idx: number) => setDraggingIdx(idx);
 
@@ -145,6 +145,7 @@ export function AdminProductGallery({ productId, table, images, onReorder, busy 
               onDragStart={() => handleDragStart(idx)}
               onDragOver={(e) => handleDragOver(e, idx)}
               onDrop={handleDrop}
+              onDragEnd={() => setDraggingIdx(null)}
               className={`group relative aspect-square cursor-grab overflow-hidden rounded-[2px] border border-noir/[0.06] bg-surface-muted ${draggingIdx === idx ? 'opacity-50' : ''}`}
             >
               <img src={url} alt="" className="absolute inset-0 h-full w-full object-cover" />
