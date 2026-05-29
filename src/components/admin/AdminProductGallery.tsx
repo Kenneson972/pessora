@@ -41,7 +41,10 @@ export function AdminProductGallery({ productId, table, images, onReorder, busy 
       .from(table)
       .update({ gallery })
       .eq(col, productId);
-    if (err) throw new Error(err.message);
+    if (err) {
+      console.error('[AdminProductGallery] dbUpdate failed:', { table, col, productId, err });
+      throw new Error(err.message);
+    }
   }, [productId, table]);
 
   const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {

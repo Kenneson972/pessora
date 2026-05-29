@@ -350,7 +350,7 @@ const GammeProductDetail = () => {
       )}
 
       {/* ─── Photos ─── */}
-      {product.gallery && product.gallery.length > 0 && (
+      {Array.isArray(product.gallery) && product.gallery.length > 0 && (
         <section className="border-t border-noir/[0.05]">
           <PageShell className="py-12">
             <div className="mx-auto w-full max-w-6xl">

@@ -740,7 +740,7 @@ const DrinkDetail = () => {
         </section>
       )}
 
-      {drink.gallery && drink.gallery.length > 0 && (
+      {Array.isArray(drink.gallery) && drink.gallery.length > 0 && (
         <section className="border-t border-noir/[0.05]">
           <PageShell className="py-12">
             <div className="mx-auto w-full max-w-6xl">
