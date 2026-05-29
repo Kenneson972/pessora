@@ -83,7 +83,11 @@ const { isAdmin } = useAuth()
 
 ### Comportement
 
-Même logique que DrinkDetailAdminEdit, table cible : `gamme_products`, pas d'appel à `invalidateMenuCatalogCache()` (les gamme products ont leur propre fetch — pas de cache à invalider côté client).
+Même logique que DrinkDetailAdminEdit, table cible : `gamme_products`.
+
+**Pas de cache à invalider** — `GammeProductDetail` lit depuis `rangesData` (données statiques), jamais depuis Supabase directement. Un reload de page re-lirait quand même les données statiques.
+
+**Solution : mise à jour optimiste via callback.** Le composant accepte une prop `onSaved: (updated: Partial<GammeProductStatic>) => void`. Après save Supabase réussi, `GammeProductDetailAdminEdit` appelle `onSaved(formValues)` et la page hôte met à jour son state local pour refléter les nouvelles valeurs immédiatement sans reload.
 
 ---
 
