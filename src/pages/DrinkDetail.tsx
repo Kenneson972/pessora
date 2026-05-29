@@ -49,7 +49,7 @@ const MILK_TYPE_ICONS: Record<string, LucideIcon> = {
 const DrinkDetail = () => {
   const navigate = useNavigate();
   const { drinkId } = useParams<{ drinkId: string }>();
-  const { items: catalogItems } = useMenuCatalog();
+  const { items: catalogItems, loading: catalogLoading } = useMenuCatalog();
   const drink = catalogItems.find((item) => item.id === drinkId);
   const [quantity, setQuantity] = useState(1);
   const [selectedMilk, setSelectedMilk] = useState(milkOptions[0].id);
@@ -59,6 +59,25 @@ const DrinkDetail = () => {
   const [selectedSize, setSelectedSize] = useState<'small' | 'medium' | 'large'>('medium');
   const addLine = useCart((s) => s.addLine);
   const { isAdmin } = useAuth();
+
+  if (catalogLoading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <PageShell className="py-12 lg:py-20">
+          <div className="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-2">
+            <div className="aspect-[3/4] animate-pulse rounded-[2px] bg-gray-100" />
+            <div className="space-y-5 pt-4">
+              <div className="h-12 w-3/4 animate-pulse rounded-[2px] bg-gray-100" />
+              <div className="h-4 w-full animate-pulse rounded-[2px] bg-gray-100" />
+              <div className="h-4 w-5/6 animate-pulse rounded-[2px] bg-gray-100" />
+              <div className="h-10 w-1/3 animate-pulse rounded-[2px] bg-gray-100" />
+              <div className="h-12 w-full animate-pulse rounded-[2px] bg-gray-100" />
+            </div>
+          </div>
+        </PageShell>
+      </div>
+    );
+  }
 
   if (!drink) {
     return <Navigate to="/menu" replace />;
