@@ -156,7 +156,7 @@ export interface Database {
           gallery: string[]
           created_at: string
         }
-        Insert: Omit<Database['public']['Tables']['products']['Row'], 'id' | 'created_at'>
+        Insert: Omit<Database['public']['Tables']['products']['Row'], 'id' | 'created_at' | 'gallery'> & { gallery?: string[] }
         Update: Partial<Omit<Database['public']['Tables']['products']['Row'], 'id' | 'created_at'>>
         Relationships: []
       }
@@ -293,7 +293,7 @@ export interface Database {
           gallery: string[]
           created_at: string
         }
-        Insert: Omit<Database['public']['Tables']['gamme_products']['Row'], 'id' | 'created_at'>
+        Insert: Omit<Database['public']['Tables']['gamme_products']['Row'], 'id' | 'created_at' | 'gallery'> & { gallery?: string[] }
         Update: Partial<Omit<Database['public']['Tables']['gamme_products']['Row'], 'id' | 'created_at'>>
         Relationships: []
       }
