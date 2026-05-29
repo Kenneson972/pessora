@@ -172,8 +172,8 @@ export const shakesItems: MenuItem[] = [
     badges: ['vegan', 'glutenfree', 'vitamins'],
   },
   {
-    id: 'iced-caramel-latte',
-    name: 'ICE CARAMEL LATTE',
+    id: 'caramel-glace',
+    name: 'CARAMEL GLACÉ',
     description: 'Le coup de fouet gourmand',
     category: 'shakes',
     price: 14,

@@ -20,11 +20,9 @@ export const homeProductCarousel: HomeCarouselEntry[] = [
   { id: 'hydra-boost-litchi' },
   { id: 'cookie-cream', badge: 'coup-de-coeur' },
   { id: 'choco-prot' },
-  { id: 'iced-caramel-latte' },
-  { id: 'tiramisu-creamy' },
+  { id: 'caramel-glace' },
   { id: 'glam-matcha' },
   { id: 'glow-my-skin', imageSrc: '/home-showcase-glow-my-skin.png' },
-  { id: 'detox-my-body' },
 ];
 
 const BADGE_LABEL: Record<HomeCarouselBadge, string> = {

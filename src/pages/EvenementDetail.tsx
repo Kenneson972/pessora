@@ -282,6 +282,12 @@ const EvenementDetail = () => {
                   <span className="text-[13px]">{event.location}</span>
                 </div>
               )}
+              {event.meeting_point && (
+                <div className="flex items-center gap-3 text-black/55">
+                  <MapPin size={15} strokeWidth={1.5} aria-hidden="true" />
+                  <span className="text-[13px]">Point de RDV : {event.meeting_point}</span>
+                </div>
+              )}
               {event.places_max && (
                 <div className="flex items-center gap-3 text-black/55">
                   <Users size={15} strokeWidth={1.5} aria-hidden="true" />
@@ -469,13 +475,27 @@ const EvenementDetail = () => {
                   disabled={isSubmitting}
                   className="w-full bg-noir text-white py-4 rounded-full font-normal uppercase tracking-[0.1em] text-[11px] hover:bg-anthracite transition-colors disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Inscription en cours…' : "Je m'inscris gratuitement"}
+                  {isSubmitting ? 'Inscription en cours…' : (event.is_free ? "Je m'inscris gratuitement" : `Je m'inscris — ${event.price?.toLocaleString('fr-FR', {minimumFractionDigits: 2})}€`)}
                 </button>
               </form>
             )}
           </div>
         </div>
       </div>
+      {Array.isArray(event.gallery) && event.gallery.length > 0 && (
+        <section className="border-t border-noir/[0.05]">
+          <div className="mx-auto w-full max-w-6xl py-12">
+            <h2 className="mb-6 font-display text-[22px] font-normal text-black">Photos</h2>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+              {event.gallery.map((url: string) => (
+                <div key={url} className="aspect-square overflow-hidden rounded-[2px] bg-surface-product-well">
+                  <img src={url} alt={event.title} className="h-full w-full object-cover" loading="lazy" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 };

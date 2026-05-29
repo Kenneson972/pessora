@@ -38,6 +38,8 @@ const RANGE_LABELS: Record<string, string> = {
   skin: 'Skin',
 };
 
+const formatEur = (n: number) => n.toLocaleString('fr-FR', { minimumFractionDigits: 2 });
+
 const GammeProductDetail = () => {
   const { rangeId, slug } = useParams<{ rangeId: string; slug: string }>();
   const navigate = useNavigate();
@@ -107,8 +109,8 @@ const GammeProductDetail = () => {
 
   // Prix : déjà des numbers en DB
   const displayPrice = product.price_alt !== null
-    ? `${product.price}€ / ${product.price_alt}€`
-    : `${product.price}€`;
+    ? `${formatEur(product.price)}€ / ${formatEur(product.price_alt)}€`
+    : `${formatEur(product.price)}€`;
   const totalPrice = product.price * quantity;
 
   const RangeIcon = range ? RANGE_ICONS[rangeId!] ?? Sparkles : Sparkles;
@@ -261,7 +263,7 @@ const GammeProductDetail = () => {
                   ) : (
                     <>
                       <ShoppingBag size={16} strokeWidth={1.3} aria-hidden /> Ajouter au panier ·{' '}
-                      {totalPrice.toFixed(2)}€
+                      {formatEur(totalPrice)}€
                     </>
                   )}
                 </Button>

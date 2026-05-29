@@ -154,7 +154,7 @@ function EventRow({
             ) : ev.is_free ? (
               'Entrée libre'
             ) : (
-              'Sur inscription'
+              ev.price && ev.price > 0 ? `${ev.price.toLocaleString('fr-FR', {minimumFractionDigits: 2})}€` : 'Payant'
             )}
           </p>
           <span className="inline-flex items-center gap-2.5 text-[11px] font-light uppercase tracking-[0.22em] text-black transition-transform duration-300 group-hover:translate-x-1.5">
