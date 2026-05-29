@@ -16,7 +16,6 @@ import type { Product } from '../../types/database';
 import {
   AdminProductEditorForm,
   payloadFromForm,
-  productToForm,
   CAT_LABEL,
   CATEGORIES,
 } from '../../components/admin/AdminProductEditorForm';
@@ -482,7 +481,7 @@ const AdminProduits = () => {
                 <AdminProductEditorForm
                   key={editProduct?.id ?? 'create'}
                   mode={editorMode}
-                  initial={editProduct ? productToForm(editProduct) : undefined}
+                  initial={editProduct ?? undefined}
                   onSave={async (formState) => {
                     if (editProduct) await handleUpdate(formState);
                     else await handleCreate(formState);

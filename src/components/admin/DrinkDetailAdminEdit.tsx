@@ -4,6 +4,7 @@ import { Pencil } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { uploadPublicImage } from '../../lib/storageUpload';
 import { invalidateMenuCatalogCache } from '../../lib/menuCatalog';
+import { AdminProductGallery } from './AdminProductGallery';
 import type { MenuItem } from '../../data/menuData';
 
 interface Props {
@@ -23,6 +24,7 @@ export function DrinkDetailAdminEdit({ drinkId, drink }: Props) {
   const [protein, setProtein] = useState(String(drink.protein ?? ''));
   const [badges, setBadges] = useState((drink.badges ?? []).join(', '));
   const [imagePreview, setImagePreview] = useState('');
+  const [gallery, setGallery] = useState<string[]>(drink.gallery ?? []);
   const [status, setStatus] = useState<SaveStatus>('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
@@ -37,6 +39,7 @@ export function DrinkDetailAdminEdit({ drinkId, drink }: Props) {
       setProtein(String(drink.protein ?? ''));
       setBadges((drink.badges ?? []).join(', '));
       setImagePreview('');
+      setGallery(drink.gallery ?? []);
       setStatus('idle');
       setErrorMsg('');
     }
@@ -158,6 +161,20 @@ export function DrinkDetailAdminEdit({ drinkId, drink }: Props) {
                       <p className="mt-1 text-[9px] text-black/35">JPG, PNG, WebP · max 5 Mo</p>
                     </div>
                   </div>
+                </div>
+
+                {/* Gallery */}
+                <div>
+                  <p className="mb-2 text-[10px] font-normal uppercase tracking-[0.14em] text-black/40">
+                    Photos supplémentaires (max 3)
+                  </p>
+                  <AdminProductGallery
+                    productId={drinkId}
+                    table="products"
+                    images={gallery}
+                    onReorder={setGallery}
+                    busy={busy}
+                  />
                 </div>
 
                 {/* Nom + Emoji */}

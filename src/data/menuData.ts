@@ -14,6 +14,7 @@ export interface MenuItem {
   pitch: string;
   icon?: string;
   badges?: ('vegan' | 'glutenfree' | 'vitamins')[];
+  gallery?: string[];
 }
 
 export interface Booster {

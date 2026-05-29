@@ -349,6 +349,24 @@ const GammeProductDetail = () => {
         </section>
       )}
 
+      {/* ─── Photos ─── */}
+      {product.gallery && product.gallery.length > 0 && (
+        <section className="border-t border-noir/[0.05]">
+          <PageShell className="py-12">
+            <div className="mx-auto w-full max-w-6xl">
+              <h2 className="mb-6 font-display text-[22px] font-normal text-black">Photos</h2>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                {product.gallery.map((url) => (
+                  <div key={url} className="aspect-square overflow-hidden rounded-[2px] bg-surface-product-well">
+                    <img src={url} alt={product.name} className="h-full w-full object-cover" loading="lazy" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </PageShell>
+        </section>
+      )}
+
       {/* ─── CTA final ─── */}
       <section className="bg-noir">
         <PageShell className="py-20 text-center">

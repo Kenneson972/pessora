@@ -66,6 +66,7 @@ export function productRowToMenuItem(p: Product): MenuItem | null {
     pitch: p.pitch ?? '',
     icon: p.icon_emoji ?? undefined,
     badges: badges.length ? badges : undefined,
+    gallery: p.gallery ?? [],
   };
 }
 

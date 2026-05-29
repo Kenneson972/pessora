@@ -4,6 +4,7 @@ import { Button, Modal, useOverlayState, TextField, Input, Label, TextArea } fro
 import { Pencil } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { uploadPublicImage } from '../../lib/storageUpload';
+import { AdminProductGallery } from './AdminProductGallery';
 import type { GammeProduct } from '../../types/database';
 
 interface Props {
@@ -23,6 +24,7 @@ export function GammeProductDetailAdminEdit({ slug, product, onSaved }: Props) {
     product.price_alt !== null ? String(product.price_alt) : '',
   );
   const [imagePreview, setImagePreview] = useState('');
+  const [gallery, setGallery] = useState<string[]>(product.gallery ?? []);
   const [status, setStatus] = useState<SaveStatus>('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
@@ -34,6 +36,7 @@ export function GammeProductDetailAdminEdit({ slug, product, onSaved }: Props) {
       setPrice(String(product.price));
       setPriceAlt(product.price_alt !== null ? String(product.price_alt) : '');
       setImagePreview('');
+      setGallery(product.gallery ?? []);
       if (fileRef.current) fileRef.current.value = '';
       setStatus('idle');
       setErrorMsg('');
@@ -162,6 +165,20 @@ export function GammeProductDetailAdminEdit({ slug, product, onSaved }: Props) {
                       <p className="mt-1 text-[9px] text-black/35">JPG, PNG, WebP · max 5 Mo</p>
                     </div>
                   </div>
+                </div>
+
+                {/* Gallery */}
+                <div>
+                  <p className="mb-2 text-[10px] font-normal uppercase tracking-[0.14em] text-black/40">
+                    Photos supplémentaires (max 3)
+                  </p>
+                  <AdminProductGallery
+                    productId={product.id}
+                    table="gamme_products"
+                    images={gallery}
+                    onReorder={setGallery}
+                    busy={busy}
+                  />
                 </div>
 
                 {/* Nom */}
