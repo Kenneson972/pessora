@@ -34,6 +34,7 @@ export function GammeProductDetailAdminEdit({ slug, product, onSaved }: Props) {
       setPrice(String(product.price));
       setPriceAlt(product.price_alt !== null ? String(product.price_alt) : '');
       setImagePreview('');
+      if (fileRef.current) fileRef.current.value = '';
       setStatus('idle');
       setErrorMsg('');
     }
