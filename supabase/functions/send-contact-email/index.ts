@@ -1,9 +1,10 @@
 // supabase/functions/send-contact-email/index.ts
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { z } from 'npm:zod@3';
+import { checkRateLimit } from '../_shared/rate-limiter.ts';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': Deno.env.get("ALLOWED_ORIGIN") ?? "https://www.pessora.mq",
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
@@ -20,6 +21,14 @@ serve(async (req) => {
   }
 
   try {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown"
+    if (!checkRateLimit(ip)) {
+      return new Response(JSON.stringify({ error: "Too many requests" }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "60" },
+      })
+    }
+
     const body = await req.json();
     const parsed = ContactSchema.safeParse(body);
     if (!parsed.success) {
@@ -55,7 +64,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         from: 'PessÓra <noreply@pessora.mq>',
-        to: 'pessora.mq@gmail.com',
+        to: Deno.env.get("ADMIN_EMAIL") ?? "pessora.mq@gmail.com",
         reply_to: email,
         subject: `[PessÓra Contact] ${typeLabels[type] ?? 'Information'} — ${name}`,
         text: `Nouveau message depuis le formulaire de contact PessÓra

@@ -69,7 +69,7 @@ export async function activateOraPlus(
     current_period_end: currentPeriodEnd,
     end_date: currentPeriodEnd.split('T')[0],
     auto_renew: true,
-    price: 24.90,
+    price: parseInt(Deno.env.get("ORA_PLUS_PRICE_AMOUNT") ?? "2490") / 100,
   }
 
   if (existingSub) {

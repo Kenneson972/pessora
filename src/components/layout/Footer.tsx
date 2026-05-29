@@ -32,13 +32,13 @@ type FooterLink = { label: string; to: string; external?: boolean };
 
 const footerNavLinkClass = cn(
   'flex min-h-11 items-center text-[12px] font-light tracking-[0.04em]',
-  'text-footer-text-muted transition-colors duration-200 hover:text-ivory/90',
+  'text-white/80 transition-colors duration-200 hover:text-white',
   'lg:min-h-0 lg:py-1 lg:text-[13px] lg:leading-snug',
 );
 
 const footerLegalLinkClass = cn(
   'flex min-h-11 items-center text-[10px] font-light tracking-[0.12em]',
-  'text-footer-text-quiet transition-colors duration-200 hover:text-footer-text-muted',
+  'text-white/60 transition-colors duration-200 hover:text-white/90',
   'lg:min-h-0 lg:py-1.5',
 );
 
@@ -54,7 +54,7 @@ function FooterGroupLabel({
   return (
     <p
       className={cn(
-        'mb-2 text-[8px] font-light uppercase tracking-[0.34em] text-footer-text-subtle sm:text-[9px]',
+        'mb-2 text-[8px] font-light uppercase tracking-[0.34em] text-white/45 sm:text-[9px]',
         align === 'end' ? 'text-right' : 'text-left',
         className,
       )}
@@ -75,7 +75,7 @@ function FooterLogoCenter({ context }: { context: 'mobile' | 'desktop' }) {
         ) : (
           <BrandLogo variant="onDark" height={96} className="max-w-[min(100%,260px)]" />
         )}
-        <p className="max-w-[18rem] text-[10px] font-light uppercase leading-snug tracking-[0.14em] text-footer-text-quiet sm:normal-case sm:text-[11px] sm:tracking-[0.08em] lg:max-w-[14rem] lg:normal-case lg:text-[12px] lg:leading-relaxed lg:tracking-[0.05em]">
+        <p className="max-w-[18rem] text-[10px] font-light uppercase leading-snug tracking-[0.14em] text-white/60 sm:normal-case sm:text-[11px] sm:tracking-[0.08em] lg:max-w-[14rem] lg:normal-case lg:text-[12px] lg:leading-relaxed lg:tracking-[0.05em]">
           Bar&nbsp;protéiné · Fort-de-France, Martinique
         </p>
       </div>
@@ -85,7 +85,7 @@ function FooterLogoCenter({ context }: { context: 'mobile' | 'desktop' }) {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Pessóra sur Instagram (ouvre un nouvel onglet)"
-          className="flex min-h-11 min-w-11 items-center justify-center rounded-[2px] text-footer-text-quiet transition-colors duration-200 hover:text-ivory/88"
+          className="flex min-h-11 min-w-11 items-center justify-center rounded-[2px] text-white/60 transition-colors duration-200 hover:text-white"
         >
           <Instagram size={desktop ? 19 : 17} strokeWidth={1.35} aria-hidden />
         </a>
@@ -94,7 +94,7 @@ function FooterLogoCenter({ context }: { context: 'mobile' | 'desktop' }) {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Contacter Pessóra sur WhatsApp (ouvre un nouvel onglet)"
-          className="flex min-h-11 min-w-11 items-center justify-center rounded-[2px] text-footer-text-quiet transition-colors duration-200 hover:text-ivory/88"
+          className="flex min-h-11 min-w-11 items-center justify-center rounded-[2px] text-white/60 transition-colors duration-200 hover:text-white"
         >
           <MessageCircle size={desktop ? 19 : 17} strokeWidth={1.35} aria-hidden />
         </a>
@@ -117,7 +117,7 @@ const FooterCol = ({
     <div className={cn('min-w-0', end ? 'text-right' : 'text-left')}>
       <p
         className={cn(
-          'mb-2 text-[8px] font-light uppercase tracking-[0.32em] text-footer-text-subtle sm:text-[9px]',
+          'mb-2 text-[8px] font-light uppercase tracking-[0.32em] text-white/45 sm:text-[9px]',
           end ? 'text-right' : 'text-left',
         )}
       >
@@ -158,7 +158,7 @@ const FooterContactNav = ({
         {CONTACT_LINKS.map((l, i) => (
           <span key={l.label} className="inline-flex items-center">
             {i > 0 ? (
-              <span className="mx-2 text-[10px] text-footer-text-subtle select-none sm:mx-2.5" aria-hidden>
+              <span className="mx-2 text-[10px] text-white/30 select-none sm:mx-2.5" aria-hidden>
                 ·
               </span>
             ) : null}
@@ -223,7 +223,7 @@ const Footer = () => {
         aria-hidden
       />
 
-      <div className={cn('bg-noir pt-8 pb-6 lg:pt-10 lg:pb-8', FOOTER_GUTTER_X)}>
+      <div className={cn('bg-[#1E3529] pt-8 pb-6 lg:pt-10 lg:pb-8', FOOTER_GUTTER_X)}>
         {/* Mobile / tablette : logo centré, puis deux ailés gauche | droite */}
         <div className="flex w-full flex-col gap-12 lg:hidden">
           <section aria-label="Marque Pessóra" className="flex w-full justify-center">
@@ -251,9 +251,9 @@ const Footer = () => {
         </div>
       </div>
 
-      <div className={cn('border-t', BORDER_SOFT, 'bg-noir py-3.5', FOOTER_GUTTER_X)}>
+      <div className={cn('border-t', BORDER_SOFT, 'bg-[#1E3529] py-3.5', FOOTER_GUTTER_X)}>
         <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-center text-[9px] font-light tracking-[0.12em] text-footer-text-quiet sm:text-left sm:text-[10px]">
+          <span className="text-center text-[9px] font-light tracking-[0.12em] text-white/50 sm:text-left sm:text-[10px]">
             © {new Date().getFullYear()} Pessóra · Fort-de-France
           </span>
           <div className="flex flex-wrap justify-center gap-x-5 gap-y-0.5 sm:justify-end">

@@ -3,7 +3,7 @@ import { Button, Card } from '@heroui/react';
 import type { LucideIcon } from 'lucide-react';
 import {
   Plus, Minus, Check, Leaf, Wheat, Pill,
-  ShoppingBag, MapPin, ArrowRight,
+  ShoppingBag, ArrowRight,
   Sparkles, Dumbbell, Milk, Zap, Leaf as LeafIcon, Droplets,
   Coffee, Nut, Sprout,
 } from 'lucide-react';
@@ -738,36 +738,6 @@ const DrinkDetail = () => {
         </section>
       )}
 
-      {/* ─── CTA — Envie de goûter ? ─── */}
-      <section className="bg-noir">
-        <PageShell className="py-20 text-center">
-          <h2
-            className="font-display font-normal text-white mb-6"
-            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(36px, 4vw, 52px)' }}
-          >
-            Envie de goûter ?
-          </h2>
-          <p className="text-white/50 font-light mb-2 text-[13px]">Retrouvez-nous au :</p>
-          <div className="flex items-center justify-center gap-2 text-white/80 mb-10">
-            <MapPin size={16} strokeWidth={1.3} className="text-white/50" />
-            <span className="font-light text-[13px]">{barInfo.address.fullAddress}</span>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/contact"
-              className="inline-block bg-white text-black px-10 py-4 rounded-full font-normal uppercase tracking-[0.1em] text-[10px] hover:bg-noir/[0.06] transition-colors duration-200"
-            >
-              Nous trouver
-            </Link>
-            <Link
-              to="/menu"
-              className="inline-block border border-white/25 text-white px-10 py-4 rounded-full font-normal uppercase tracking-[0.1em] text-[10px] hover:bg-white/10 transition-colors duration-200"
-            >
-              Retour au menu
-            </Link>
-          </div>
-        </PageShell>
-      </section>
     </div>
   );
 };

@@ -9,7 +9,7 @@ const BodySchema = z.object({
 })
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': Deno.env.get("ALLOWED_ORIGIN") ?? "https://www.pessora.mq",
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 

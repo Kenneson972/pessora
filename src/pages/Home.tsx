@@ -10,6 +10,7 @@ import { HomeProductCarousel } from '../components/home/HomeProductCarousel';
 import { HomeGoogleReviews } from '../components/home/HomeGoogleReviews';
 import { HomeFeaturedCarousel } from '../components/home/HomeFeaturedCarousel';
 import { HomeSplitGammes } from '../components/home/HomeSplitGammes';
+import { HomeGammeBanner } from '../components/home/HomeGammeBanner';
 import { HomeGammesProductTiles } from '../components/home/HomeGammesProductTiles';
 import { HomeGammesProductCarousel } from '../components/home/HomeGammesProductCarousel';
 import { OraPlusTeaserStrip } from '../components/common/OraPlusTeaserStrip';
@@ -133,6 +134,9 @@ const Home = () => {
 
       {/* ─── Carrousel éditorial photos ─── */}
       <HomeFeaturedCarousel title="À la une" />
+
+      {/* ─── Bannière gamme style Starbucks ─── */}
+      <HomeGammeBanner />
 
       {/* ─── Boissons — carrousel coups de cœur ─── */}
       <HomeProductCarousel />
