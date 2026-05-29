@@ -1,33 +1,27 @@
+// src/components/admin/GammeProductDetailAdminEdit.tsx
 import { useState, useRef, useEffect } from 'react';
 import { Button, Modal, useOverlayState, TextField, Input, Label, TextArea } from '@heroui/react';
 import { Pencil } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { uploadPublicImage } from '../../lib/storageUpload';
-import type { GammeProductStatic } from '../../lib/getGammeProduct';
+import type { GammeProduct } from '../../types/database';
 
 interface Props {
   slug: string;
-  product: GammeProductStatic;
-  onSaved: (updated: Partial<GammeProductStatic>) => void;
+  product: GammeProduct;
+  onSaved: (updated: Partial<GammeProduct>) => void;
 }
 
 type SaveStatus = 'idle' | 'uploading' | 'saving' | 'error';
-
-function parseStaticPrice(raw: string): { price: number; priceAlt: number | null } {
-  const parts = raw.replace(/€/g, '').split('/').map((s) => parseFloat(s.trim()));
-  return {
-    price: parts[0] ?? 0,
-    priceAlt: parts.length > 1 ? (parts[1] ?? null) : null,
-  };
-}
 
 export function GammeProductDetailAdminEdit({ slug, product, onSaved }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState(product.name);
   const [description, setDescription] = useState(product.description ?? '');
-  const parsed = parseStaticPrice(product.price);
-  const [price, setPrice] = useState(String(parsed.price));
-  const [priceAlt, setPriceAlt] = useState(parsed.priceAlt !== null ? String(parsed.priceAlt) : '');
+  const [price, setPrice] = useState(String(product.price));
+  const [priceAlt, setPriceAlt] = useState(
+    product.price_alt !== null ? String(product.price_alt) : '',
+  );
   const [imagePreview, setImagePreview] = useState('');
   const [status, setStatus] = useState<SaveStatus>('idle');
   const [errorMsg, setErrorMsg] = useState('');
@@ -37,9 +31,8 @@ export function GammeProductDetailAdminEdit({ slug, product, onSaved }: Props) {
     if (isOpen) {
       setName(product.name);
       setDescription(product.description ?? '');
-      const p = parseStaticPrice(product.price);
-      setPrice(String(p.price));
-      setPriceAlt(p.priceAlt !== null ? String(p.priceAlt) : '');
+      setPrice(String(product.price));
+      setPriceAlt(product.price_alt !== null ? String(product.price_alt) : '');
       setImagePreview('');
       setStatus('idle');
       setErrorMsg('');
@@ -88,16 +81,14 @@ export function GammeProductDetailAdminEdit({ slug, product, onSaved }: Props) {
 
       if (error) throw new Error(error.message);
 
-      const newPriceStr = priceAltNum !== null
-        ? `${priceNum}€ / ${priceAltNum}€`
-        : `${priceNum}€`;
-
-      onSaved({
+      const update: Partial<GammeProduct> = {
         name: name.trim(),
-        description: description.trim() || undefined,
-        price: newPriceStr,
-        image: finalImageUrl ?? product.image,
-      });
+        description: description.trim() || null,
+        price: priceNum,
+        price_alt: priceAltNum,
+      };
+      if (finalImageUrl) update.image_url = finalImageUrl;
+      onSaved(update);
 
       setIsOpen(false);
     } catch (err: unknown) {
@@ -142,9 +133,9 @@ export function GammeProductDetailAdminEdit({ slug, product, onSaved }: Props) {
                 <div>
                   <p className="mb-2 text-[10px] font-normal uppercase tracking-[0.14em] text-black/40">Image</p>
                   <div className="flex items-center gap-4 rounded-[2px] border border-dashed border-noir/20 p-3">
-                    {imagePreview || product.image ? (
+                    {imagePreview || product.image_url ? (
                       <img
-                        src={imagePreview || product.image}
+                        src={imagePreview || product.image_url!}
                         alt="preview"
                         className="h-14 w-14 rounded-[2px] object-cover"
                       />
