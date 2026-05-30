@@ -24,5 +24,5 @@ CREATE POLICY "home_banner_select_public"
 DROP POLICY IF EXISTS "home_banner_update_admin" ON public.home_banner;
 CREATE POLICY "home_banner_update_admin"
   ON public.home_banner FOR UPDATE
-  USING ((SELECT role FROM profiles WHERE id = auth.uid()) = 'admin')
-  WITH CHECK ((SELECT role FROM profiles WHERE id = auth.uid()) = 'admin');
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
