@@ -176,6 +176,7 @@ const Menu = () => {
           price={`${effectivePrice}€`}
           oraMemberHint={formatEurFr(effectiveUnitPrice(effectivePrice))}
           icon={menuItem.icon}
+          image={menuItem.image_url}
           linkTo={`/menu/${menuItem.id}`}
           density="compact"
           footer={cardFooter}

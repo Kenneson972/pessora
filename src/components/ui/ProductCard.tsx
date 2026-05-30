@@ -14,6 +14,8 @@ interface ProductCardProps {
   featured?: boolean;
   /** Emoji / picto menu — centré dans le puits si fourni */
   icon?: string;
+  /** Image produit (URL publique Supabase) — prioritaire sur l'emoji */
+  image?: string | null;
   /** Prix indicatif membre Óra+ (ex. « 5,00 € »), affiché sous le prix public */
   oraMemberHint?: string;
   /** Grille dense (ex. page Menu) : puits moins haut, picto plus petit */
@@ -34,6 +36,7 @@ export const ProductCard = ({
   linkTo,
   featured = false,
   icon,
+  image,
   oraMemberHint,
   density = 'default',
   footer,
@@ -50,7 +53,14 @@ export const ProductCard = ({
       )}
       style={{ aspectRatio: featured ? '3 / 4' : compact ? '4 / 3' : '3 / 4' }}
     >
-      {icon ? (
+      {image ? (
+        <img
+          src={image}
+          alt={name}
+          className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+          loading="lazy"
+        />
+      ) : icon ? (
         <span
           className={cn(
             'leading-none opacity-[0.88] transition-transform duration-500 ease-out group-hover:scale-[1.04]',

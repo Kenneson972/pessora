@@ -13,6 +13,7 @@ export interface MenuItem {
   benefits: string[];
   pitch: string;
   icon?: string;
+  image_url?: string | null;
   badges?: ('vegan' | 'glutenfree' | 'vitamins')[];
   gallery?: string[];
 }

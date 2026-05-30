@@ -157,7 +157,7 @@ const DrinkDetail = () => {
       category: drink.category,
       optionsKey,
       optionLabels,
-      image: drink.icon,
+      image: drink.image_url ?? drink.icon,
       source: 'bar',
     });
     setJustAdded(true);
@@ -201,11 +201,19 @@ const DrinkDetail = () => {
           {/* LEFT — Product Visual */}
           <div className="mx-auto w-full max-w-lg space-y-6 lg:mx-0 lg:max-w-none">
             <div className="relative mx-auto flex aspect-square w-full max-w-md items-center justify-center overflow-hidden rounded-[2px] bg-surface-product-well sm:max-w-lg lg:mx-0 lg:max-w-none">
-              <CategoryHeroIcon
-                className="pointer-events-none h-[min(42vw,11rem)] w-[min(42vw,11rem)] shrink-0 text-black/[0.09] sm:h-[min(36vw,13rem)] sm:w-[min(36vw,13rem)] md:h-[min(32vw,14rem)] md:w-[min(32vw,14rem)]"
-                strokeWidth={0.85}
-                aria-hidden
-              />
+              {drink.image_url ? (
+                <img
+                  src={drink.image_url}
+                  alt={drink.name}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <CategoryHeroIcon
+                  className="pointer-events-none h-[min(42vw,11rem)] w-[min(42vw,11rem)] shrink-0 text-black/[0.09] sm:h-[min(36vw,13rem)] sm:w-[min(36vw,13rem)] md:h-[min(32vw,14rem)] md:w-[min(32vw,14rem)]"
+                  strokeWidth={0.85}
+                  aria-hidden
+                />
+              )}
               <div className="absolute top-6 left-6">
                 <span className="inline-flex items-center gap-2 bg-white/95 px-4 py-2 rounded-[2px] text-[10px] font-normal uppercase tracking-[0.08em] text-black/70">
                   <CategoryHeroIcon size={14} strokeWidth={1.35} className="text-black/40" aria-hidden />
@@ -711,11 +719,20 @@ const DrinkDetail = () => {
                 return (
                 <Link key={item.id} to={`/menu/${item.id}`} className="group block">
                   <div className="bg-surface-muted rounded-[2px] aspect-[3/4] flex items-center justify-center mb-5 overflow-hidden relative">
-                    <CrossIcon
-                      className="h-20 w-20 text-black/[0.08] transition-transform duration-500 group-hover:scale-[1.06] sm:h-24 sm:w-24"
-                      strokeWidth={0.85}
-                      aria-hidden
-                    />
+                    {item.image_url ? (
+                      <img
+                        src={item.image_url}
+                        alt={item.name}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <CrossIcon
+                        className="h-20 w-20 text-black/[0.08] transition-transform duration-500 group-hover:scale-[1.06] sm:h-24 sm:w-24"
+                        strokeWidth={0.85}
+                        aria-hidden
+                      />
+                    )}
                     <div className="absolute bottom-4 left-4 flex gap-2">
                       {item.calories && (
                         <span className="bg-white/90 px-2.5 py-1 rounded-[2px] text-[10px] font-normal text-black/70">
