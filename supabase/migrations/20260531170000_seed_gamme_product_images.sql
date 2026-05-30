@@ -31,6 +31,12 @@ UPDATE public.gamme_products SET image_url = 'https://www.herbalife.com/dmassets
 UPDATE public.gamme_products SET image_url = 'https://www.herbalife.com/dmassets/market-reusable-assets/emea/france/images/canister/pc-3152-fr.png'
   WHERE gamme = 'sport' AND name ILIKE '%liftoff%citron%';
 
+UPDATE public.gamme_products SET image_url = 'https://www.herbalife.com/dmassets/market-reusable-assets/emea/france/images/canister/pc-192k-fr.png'
+  WHERE gamme = 'sport' AND name ILIKE '%liftoff%pamplemousse%';
+
+UPDATE public.gamme_products SET image_url = 'https://www.herbalife.com/dmassets/market-reusable-assets/emea/france/images/canister/pc-1424-fr.png'
+  WHERE gamme = 'sport' AND name ILIKE '%gel%prolong%';
+
 -- ══════════════════════ SKIN ══════════════════════
 UPDATE public.gamme_products SET image_url = 'https://www.herbalife.com/dmassets/market-reusable-assets/emea/france/images/canister/pc-511k-fr.png'
   WHERE gamme = 'skin' AND name ILIKE '%gel%nettoyant%';
@@ -40,3 +46,9 @@ UPDATE public.gamme_products SET image_url = 'https://www.herbalife.com/dmassets
 
 UPDATE public.gamme_products SET image_url = 'https://www.herbalife.com/dmassets/market-reusable-assets/emea/france/images/canister/pc-515k-fr.png'
   WHERE gamme = 'skin' AND name ILIKE '%contour%yeux%';
+
+UPDATE public.gamme_products SET image_url = 'https://www.herbalife.com/dmassets/market-reusable-assets/emea/france/images/canister/pc-508k-fr.png'
+  WHERE gamme = 'skin' AND name ILIKE '%gommage%';
+
+UPDATE public.gamme_products SET image_url = 'https://www.herbalife.com/dmassets/market-reusable-assets/emea/france/images/canister/pc-539k-fr.png'
+  WHERE gamme = 'skin' AND name ILIKE '%lotion%tonique%';
