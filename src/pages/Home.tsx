@@ -66,6 +66,7 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-surface-page">
+      <h1 className="sr-only">PessÓra — Bar Protéiné & Bien-Être à Fort-de-France, Martinique</h1>
       {/* ─── Hero — fond vidéo ─── */}
       <section
         className="relative flex items-end overflow-hidden bg-noir"

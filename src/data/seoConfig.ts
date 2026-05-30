@@ -5,6 +5,10 @@
 export interface PageSEOEntry {
   title: string;
   description: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string;
+  ogType?: string;
 }
 
 /** Chemin exact ou préfixe -> { title, description }. Les routes plus spécifiques doivent être avant les préfixes. */
@@ -13,19 +17,33 @@ export const seoConfig: Record<string, PageSEOEntry> = {
     title: 'PessÓra - Le 1er Bar Protéiné & Bien-Être de Martinique',
     description:
       'Shakes protéinés, wellness, énergie et coffee bar à Fort-de-France. Le 1er bar protéiné & bien-être de Martinique.',
+    ogTitle: 'PessÓra — Bar Protéiné & Bien-Être en Martinique',
+    ogDescription: 'Shakes protéinés, wellness, énergie et coffee bar à Fort-de-France. Découvrez le 1er bar protéiné & bien-être de Martinique.',
+    ogImage: '/logo-pessora.png',
+    ogType: 'website',
   },
   '/concept': {
     title: 'Notre Concept | PessÓra - Équilibre & Bien-être',
     description: 'Découvrez la philosophie PessÓra : équilibre, plaisir et motivation. Le 1er bar protéiné de Martinique.',
+    ogTitle: 'Le Concept — PessÓra',
+    ogDescription: 'Découvrez la philosophie PessÓra : équilibre, plaisir et motivation. Le 1er bar protéiné de Martinique.',
+    ogType: 'website',
   },
   '/menu': {
     title: 'Menu | PessÓra - Boissons Wellness, Énergie & Shakes',
     description: 'Consultez notre menu : gamme Wellness, Énergie Drink, Shakes protéinés et Coffee. Prix et ingrédients.',
+    ogTitle: 'La Carte — PessÓra',
+    ogDescription: 'Découvrez nos boissons protéinées, wellness, énergie et coffee. Prix, ingrédients et bienfaits.',
+    ogImage: '/menu-header.png',
+    ogType: 'website',
   },
   '/nos-produits': {
     title: 'Nos Produits | PessÓra - Gammes & Boissons',
     description:
       'Gammes complémentaires Wellness, Sport et Skin : nutrition et soins avec PessÓra à Fort-de-France.',
+    ogTitle: 'Nos Produits — PessÓra',
+    ogDescription: 'Gammes complémentaires Wellness, Sport et Skin : nutrition et soins avec PessÓra à Fort-de-France.',
+    ogType: 'website',
   },
   '/contact-partenariat': {
     title: 'Partenariats | PessÓra - Propositions marques & événements',
@@ -39,6 +57,9 @@ export const seoConfig: Record<string, PageSEOEntry> = {
   '/evenements': {
     title: 'Événements & Pop-ups | PessÓra',
     description: 'Retrouvez PessÓra en pop-up et lors d\'événements. Partenariats GigaFit, En Bons Thermes.',
+    ogTitle: 'Événements — PessÓra',
+    ogDescription: 'Retrouvez PessÓra en pop-up et lors d\'événements. Run Club, ateliers, partenariats.',
+    ogType: 'website',
   },
   '/pessobot': {
     title: 'PessoBot | Expert Nutrition PessÓra',
@@ -48,6 +69,9 @@ export const seoConfig: Record<string, PageSEOEntry> = {
     title: 'Óra+ | Abonnement PessÓra',
     description:
       'Abonnement premium PessÓra : remises sur les boissons, bilan bien-être, événements prioritaires. Sans engagement.',
+    ogTitle: 'Óra+ — L\'abonnement bien-être',
+    ogDescription: 'Abonnement premium PessÓra : -50% sur les boissons, bilan bien-être offert, événements prioritaires. Sans engagement.',
+    ogType: 'website',
   },
   '/connexion': {
     title: 'Connexion | Club PessÓra',

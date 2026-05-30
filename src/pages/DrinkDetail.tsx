@@ -206,6 +206,7 @@ const DrinkDetail = () => {
                   src={drink.image_url}
                   alt={drink.name}
                   className="h-full w-full object-cover"
+                  loading="lazy"
                 />
               ) : (
                 <CategoryHeroIcon

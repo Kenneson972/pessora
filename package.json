@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "generate:sitemap": "tsx scripts/generate-sitemap.ts",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "generate:product-seed": "tsx scripts/generate-product-seed.ts > supabase/migrations/20260420111000_seed_products_from_menu.sql"

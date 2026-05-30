@@ -234,7 +234,7 @@ const EvenementDetail = () => {
       {/* Hero image */}
       <div className="relative h-[55vh] min-h-[380px] overflow-hidden">
         {event.image_url ? (
-          <img src={event.image_url} alt={event.title} className="w-full h-full object-cover" />
+          <img src={event.image_url} alt={event.title} className="w-full h-full object-cover" loading="lazy" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-anthracite to-noir" aria-hidden="true" />
         )}

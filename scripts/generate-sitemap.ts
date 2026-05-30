@@ -28,6 +28,8 @@ async function main() {
   const eventSlugs = (eventsRes.data || []) as SlugRow[];
   const gammeProducts = (gammeProductsRes.data || []) as GammeSlugRow[];
 
+  const today = new Date().toISOString().split('T')[0];
+
   const staticPages = [
     { loc: '/', priority: '1', changefreq: 'weekly' },
     { loc: '/concept', priority: '0.8', changefreq: 'monthly' },
@@ -60,11 +62,17 @@ async function main() {
     urls.push({ loc: `/nos-produits/${gamme}/${slug}`, priority: '0.65', changefreq: 'weekly' });
   }
 
+  // Pages gamme (sans slug produit)
+  const rangeKeys = [...new Set(gammeProducts.map((g) => g.gamme).filter(Boolean))];
+  for (const r of rangeKeys) {
+    urls.push({ loc: `/nos-produits/${r}`, priority: '0.75', changefreq: 'weekly' });
+  }
+
   const xml = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     ...urls.map(u =>
-      `  <url><loc>${BASE}${u.loc}</loc><changefreq>${u.changefreq}</changefreq><priority>${u.priority}</priority></url>`
+      `  <url><loc>${BASE}${u.loc}</loc><lastmod>${today}</lastmod><changefreq>${u.changefreq}</changefreq><priority>${u.priority}</priority></url>`
     ),
     '</urlset>',
     '',

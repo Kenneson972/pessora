@@ -75,7 +75,7 @@ function EventRow({
         {ev.image_url ? (
           <img
             src={ev.image_url}
-            alt=""
+            alt={ev.title}
             width={1200}
             height={900}
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
@@ -180,7 +180,7 @@ function EventCardCompact({ ev }: { ev: EventWithCount }) {
         {ev.image_url ? (
           <img
             src={ev.image_url}
-            alt=""
+            alt={ev.title ?? ''}
             className="absolute inset-0 h-full w-full object-cover"
             loading="lazy"
           />

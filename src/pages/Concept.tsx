@@ -62,7 +62,7 @@ const Concept = () => {
                 <div className="aspect-[16/10] w-full overflow-hidden md:w-3/5">
                   <img
                     src={conceptImages[index]}
-                    alt=""
+                    alt={`Intérieur lumineux du bar PessÓra à Fort-de-France — ${index + 1}`}
                     width={1200}
                     height={750}
                     className="h-full w-full object-cover grayscale transition-all duration-700 hover:grayscale-0"
