@@ -12,6 +12,7 @@ import { displayBarLineUnit } from '../../lib/cartDisplayPrice';
 import { useIsOraPlus } from '../../hooks/useIsOraPlus';
 import { useCheckout } from '../../hooks/useCheckout';
 import { PickupTimePicker } from './PickupTimePicker';
+import { useBarStatus } from '../../providers/BarStatusProvider';
 
 const focusRing =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sapin/30 focus-visible:ring-offset-2';
@@ -27,6 +28,7 @@ export function CartDrawer() {
   const [pickupTime, setPickupTime] = useState('');
 
   const { checkout, isLoading: isCheckingOut, error: checkoutError } = useCheckout(pickupTime);
+  const barStatus = useBarStatus();
   const { isOraPlus } = useIsOraPlus();
 
   const total = items.reduce(
@@ -201,6 +203,13 @@ export function CartDrawer() {
                   </span>
                 </div>
 
+                {!barStatus.loading && (
+                  <p className="mb-2 text-center text-[10px] font-light text-black/35">
+                    {barStatus.isOpen
+                      ? `⏱ ~${barStatus.estimatedWaitMinutes} min d'attente estimée`
+                      : '🔴 Bar fermé — commande différée'}
+                  </p>
+                )}
                 {checkoutError && (
                   <p className="mb-3 text-[10px] text-red-500">{checkoutError}</p>
                 )}
