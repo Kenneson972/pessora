@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button, Card, Skeleton, cn } from '@heroui/react';
 import { EmptyState, Segment } from '@heroui-pro/react';
-import { ShoppingBag, Sparkles, Zap, Milk, Coffee } from 'lucide-react';
+import { ShoppingBag } from 'lucide-react';
 import { SectionTitle } from '../components/ui/SectionTitle';
 import { ItemListJsonLd } from '../components/seo/ProductJsonLd';
 import { ProductCard } from '../components/ui/ProductCard';
@@ -45,13 +45,6 @@ const CATEGORY_GROUPS = [
   { label: 'Shakes Protéinés', key: 'shakes' as const },
   { label: 'Coffee', key: 'coffee' as const },
 ];
-const CATEGORY_CHIPS = [
-  { label: 'Wellness', key: 'wellness', Icon: Sparkles },
-  { label: 'Énergie', key: 'energie', Icon: Zap },
-  { label: 'Shakes', key: 'shakes', Icon: Milk },
-  { label: 'Coffee', key: 'coffee', Icon: Coffee },
-];
-
 const PRODUCT_GRID_CLASS =
   'grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-4 lg:gap-y-8';
 
@@ -222,18 +215,6 @@ const Menu = () => {
         <p className="mx-auto mt-5 max-w-lg text-[16px] font-light leading-relaxed text-white/55">
           Boissons protéinées, shakes & coffee — préparés minute à Fort-de-France
         </p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          {CATEGORY_CHIPS.map(({ label, key, Icon }) => (
-            <Link
-              key={key}
-              to={`/menu?gamme=${key}`}
-              className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3 text-[12px] font-normal text-white/80 hover:bg-white/10 hover:border-white/40 hover:text-white transition-colors duration-200"
-            >
-              <Icon size={15} strokeWidth={1.5} aria-hidden />
-              {label}
-            </Link>
-          ))}
-        </div>
       </section>
 
       {isSearchMode && (
