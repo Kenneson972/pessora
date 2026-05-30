@@ -8,6 +8,7 @@ export function useAdminOrders(filterStatus: OrderFilterStatus = 'all') {
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [loading, setLoading] = useState(true);
   const [newOrderAlert, setNewOrderAlert] = useState<OrderWithItems | null>(null);
+  const [paidAlert, setPaidAlert] = useState<OrderWithItems | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   useEffect(() => {
@@ -52,9 +53,20 @@ export function useAdminOrders(filterStatus: OrderFilterStatus = 'all') {
         { event: 'INSERT', schema: 'public', table: 'orders' },
         (payload) => {
           const newOrder = payload.new as OrderWithItems;
-          if (newOrder.status !== 'pending') {
+          if (newOrder.status === 'paid') {
+            setPaidAlert(newOrder);
+          } else {
             setNewOrderAlert(newOrder);
-            setOrders((prev) => [newOrder, ...prev]);
+          }
+          setOrders((prev) => [newOrder, ...prev]);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'orders', filter: 'status=eq.paid' },
+        (payload) => {
+          if (payload.old.status === 'pending' && payload.new.status === 'paid') {
+            setPaidAlert(payload.new as OrderWithItems);
           }
         }
       )
@@ -68,6 +80,7 @@ export function useAdminOrders(filterStatus: OrderFilterStatus = 'all') {
   }, []);
 
   const clearAlert = () => setNewOrderAlert(null);
+  const clearPaidAlert = () => setPaidAlert(null);
 
   const kpis = {
     paid: orders.filter((o) => o.status === 'paid').length,
@@ -90,5 +103,5 @@ export function useAdminOrders(filterStatus: OrderFilterStatus = 'all') {
     activeCount: orders.filter((o) => ['paid', 'preparing', 'ready'].includes(o.status)).length,
   };
 
-  return { orders, loading, kpis, newOrderAlert, clearAlert };
+  return { orders, loading, kpis, newOrderAlert, clearAlert, paidAlert, clearPaidAlert };
 }

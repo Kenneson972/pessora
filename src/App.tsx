@@ -51,6 +51,7 @@ const AdminMemberDetail = lazy(() => import('./pages/admin/AdminMemberDetail'));
 const AdminEvenements = lazy(() => import('./pages/admin/AdminEvenements'));
 const AdminBilans = lazy(() => import('./pages/admin/AdminBilans'));
 const AdminCommandes = lazy(() => import('./pages/admin/AdminCommandes'));
+const SuiviCommande = lazy(() => import('./pages/SuiviCommande'));
 const AdminCommunications = lazy(() => import('./pages/admin/AdminCommunications'));
 const AdminProduitsGammes = lazy(() => import('./pages/admin/AdminProduitsGammes'));
 const AdminContenu = lazy(() => import('./pages/admin/AdminContenu'));
@@ -230,6 +231,7 @@ function App() {
             <Route path="/mockup-croquis-gerant" element={<ManagerSketchMockup />} />
             <Route path="/commande/succes" element={<CommandeSucces />} />
             <Route path="/commande/annulee" element={<CommandeAnnulee />} />
+          <Route path="/suivi-commande" element={<SuiviCommande />} />
             <Route path="/abonnement/succes" element={<AbonnementSucces />} />
 
             {/* Auth Routes */}

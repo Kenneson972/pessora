@@ -5,7 +5,7 @@ import { DASH_MAIN_PAD } from '../../components/dashboard/layoutClasses';
 import { AdminOrdersFilter } from '../../components/admin/AdminOrdersFilter';
 import { AdminOrdersList } from '../../components/admin/AdminOrdersList';
 import { useAdminOrders, type OrderFilterStatus } from '../../hooks/useAdminOrders';
-import { playNewOrderSound, setMuted, isMuted } from '../../lib/notificationSound';
+import { playNewOrderSound, playPaidSound, setMuted, isMuted } from '../../lib/notificationSound';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { supabase } from '../../lib/supabaseClient';
 
@@ -13,7 +13,7 @@ const AdminCommandes = () => {
   const [filterStatus, setFilterStatus] = useState<OrderFilterStatus>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [soundMuted, setSoundMuted] = useState(isMuted());
-  const { orders, loading, kpis, newOrderAlert, clearAlert } = useAdminOrders(filterStatus);
+  const { orders, loading, kpis, newOrderAlert, clearAlert, paidAlert, clearPaidAlert } = useAdminOrders(filterStatus);
 
   const toggleSound = () => {
     const next = !soundMuted;
@@ -32,6 +32,14 @@ const AdminCommandes = () => {
       return () => clearTimeout(timer);
     }
   }, [newOrderAlert, clearAlert]);
+
+  useEffect(() => {
+    if (paidAlert) {
+      playPaidSound();
+      const timer = setTimeout(() => clearPaidAlert(), 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [paidAlert, clearPaidAlert]);
 
   const handleStatusUpdate = async (orderId: string, nextStatus: string) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
