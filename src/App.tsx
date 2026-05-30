@@ -50,6 +50,7 @@ const AdminMembers = lazy(() => import('./pages/admin/AdminMembers'));
 const AdminMemberDetail = lazy(() => import('./pages/admin/AdminMemberDetail'));
 const AdminEvenements = lazy(() => import('./pages/admin/AdminEvenements'));
 const AdminBilans = lazy(() => import('./pages/admin/AdminBilans'));
+const AdminCommandes = lazy(() => import('./pages/admin/AdminCommandes'));
 const AdminCommunications = lazy(() => import('./pages/admin/AdminCommunications'));
 const AdminProduitsGammes = lazy(() => import('./pages/admin/AdminProduitsGammes'));
 const AdminContenu = lazy(() => import('./pages/admin/AdminContenu'));
@@ -191,6 +192,11 @@ function App() {
             <Route path="/admin/bilans" element={
               <ProtectedAdminRoute>
                 <AdminLayout><AdminBilans /></AdminLayout>
+              </ProtectedAdminRoute>
+            } />
+            <Route path="/admin/commandes" element={
+              <ProtectedAdminRoute>
+                <AdminLayout><AdminCommandes /></AdminLayout>
               </ProtectedAdminRoute>
             } />
             <Route path="/admin/communication" element={
