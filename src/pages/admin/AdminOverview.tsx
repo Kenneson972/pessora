@@ -8,6 +8,7 @@ import {
   DashBtn, DashRule, DashStatusBadge,
 } from '../../components/dashboard/primitives';
 import { DASH_MAIN_PAD } from '../../components/dashboard/layoutClasses';
+import { AnalyticsDashboard } from '../../components/admin/AnalyticsDashboard';
 import type { OrderWithItems } from '../../hooks/useOrders';
 
 const STATUS_LABELS: Record<string, string> = {
@@ -576,6 +577,18 @@ const AdminOverview = () => {
           </div>
 
         </div>
+
+        {/* ── Analytics (6) ──────────────────────────── */}
+        {!L && (
+          <div className="col-span-1 md:col-span-12 mt-8">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-display text-[22px]">
+                Analytics <em className="italic">7 jours</em>
+              </h3>
+            </div>
+            <AnalyticsDashboard />
+          </div>
+        )}
       </div>
     </div>
   );

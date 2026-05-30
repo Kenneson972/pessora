@@ -5,6 +5,7 @@ import { cn } from '@heroui/react';
 import { useAuth } from '../../contexts/AuthContext';
 import { BrandLogo } from '../../components/common/BrandLogo';
 import { AdminDashboardBottomNav } from '../../components/dashboard/DashboardBottomNav';
+import { AdminToastProvider } from '../../components/admin/AdminToast';
 
 const NAV: {
   label: string;
@@ -144,7 +145,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         </header>
 
         <main className="flex-1 min-w-0 overflow-x-hidden overflow-y-auto pb-[calc(5.25rem+env(safe-area-inset-bottom,0px))] md:pb-0">
-          {children}
+          <AdminToastProvider>{children}</AdminToastProvider>
         </main>
       </div>
 
