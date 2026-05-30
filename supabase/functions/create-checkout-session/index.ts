@@ -25,6 +25,8 @@ const CheckoutRequestSchema = z.object({
   items: z.array(CartLineSchema).min(1),
   user_id: z.string().uuid().nullable(),
   pickup_time: z.string().nullable().optional(),
+  client_name: z.string().nullable().optional(),
+  client_phone: z.string().nullable().optional(),
 });
 
 const corsHeaders = {
@@ -137,7 +139,7 @@ serve(async (req) => {
       });
     }
 
-    const { items, user_id, pickup_time } = parsed.data;
+    const { items, user_id, pickup_time, client_name, client_phone } = parsed.data;
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -187,8 +189,16 @@ serve(async (req) => {
         })()
       : null;
 
-    const orderPayload: Record<string, unknown> = { total, status: 'pending', pickup_time: orderPickupTime };
+    const accessToken = crypto.randomUUID().replace(/-/g, '');
+    const orderPayload: Record<string, unknown> = {
+      total,
+      status: 'pending',
+      pickup_time: orderPickupTime,
+      access_token: accessToken,
+    };
     if (user_id) orderPayload.user_id = user_id;
+    if (client_name) orderPayload.client_name = client_name;
+    if (client_phone) orderPayload.client_phone = client_phone;
 
     const { data: order, error: orderError } = await supabase
       .from('orders')
@@ -242,7 +252,7 @@ serve(async (req) => {
           quantity: item.quantity,
         };
       }),
-      success_url: `${siteUrl}/commande/succes?session_id={CHECKOUT_SESSION_ID}&order_id=${order.id}`,
+      success_url: `${siteUrl}/commande/succes?session_id={CHECKOUT_SESSION_ID}&token=${accessToken}`,
       cancel_url: `${siteUrl}/commande/annulee?order_id=${order.id}`,
       metadata: {
         order_id: order.id,

@@ -11,6 +11,7 @@ export default function CommandeSucces() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
   const orderId = searchParams.get('order_id');
 
   useEffect(() => {
@@ -55,25 +56,25 @@ export default function CommandeSucces() {
               <br />
               votre commande
             </h1>
-            {orderId && (
+            {token && (
               <p className="mx-auto mb-3 max-w-sm font-mono text-[11px] text-black/35">
-                N° {orderId.slice(0, 8)}
+                N° {token.slice(0, 8)}
               </p>
             )}
             <p className="mx-auto mb-10 max-w-sm text-[13px] font-light leading-relaxed text-black/50">
               Votre paiement a été validé. Votre commande est en cours de préparation.
             </p>
             <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-              {orderId && (
+              {(token || orderId) && (
                 <Link
-                  to={`/suivi-commande?order=${orderId}`}
+                  to={`/suivi-commande?${token ? `token=${token}` : `order=${orderId}`}`}
                   className="inline-flex h-12 min-h-12 items-center justify-center gap-2 rounded-full bg-sapin px-8 text-[10px] font-normal uppercase tracking-[0.12em] text-white transition-colors hover:bg-sapin/85"
                 >
                   <Clock size={14} strokeWidth={1.5} />
                   Suivre ma commande
                 </Link>
               )}
-              {!orderId && isAuthenticated && (
+              {!token && !orderId && isAuthenticated && (
                 <Link
                   to="/mon-espace/historique"
                   className="inline-flex h-12 min-h-12 items-center justify-center rounded-full bg-sapin px-8 text-[10px] font-normal uppercase tracking-[0.12em] text-white transition-colors hover:bg-sapin/85"

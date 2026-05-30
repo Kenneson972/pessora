@@ -17,6 +17,7 @@ const STEPS = [
 export default function SuiviCommande() {
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get('order');
+  const token = searchParams.get('token');
   const [order, setOrder] = useState<OrderWithItems | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +27,7 @@ export default function SuiviCommande() {
   }, []);
 
   useEffect(() => {
-    if (!orderId) {
+    if (!orderId && !token) {
       setError('Aucune commande spécifiée.');
       setLoading(false);
       return;
@@ -37,10 +38,13 @@ export default function SuiviCommande() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = supabase as any;
 
-    db.from('orders')
-      .select('*, order_items(*)')
-      .eq('id', orderId)
-      .single()
+    let query = db.from('orders').select('*, order_items(*)');
+    if (token) {
+      query = query.eq('access_token', token);
+    } else {
+      query = query.eq('id', orderId);
+    }
+    query.single()
       .then(({ data, error: err }: { data: OrderWithItems | null; error: { message: string } | null }) => {
         if (cancelled) return;
         if (err || !data) {
@@ -51,11 +55,13 @@ export default function SuiviCommande() {
         setLoading(false);
       });
 
+    const trackId = token ?? orderId!;
+    const filterCol = token ? 'access_token' : 'id';
     const channel = supabase
-      .channel(`order-${orderId}`)
+      .channel(`order-${trackId}`)
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'orders', filter: `id=eq.${orderId}` },
+        { event: 'UPDATE', schema: 'public', table: 'orders', filter: `${filterCol}=eq.${trackId}` },
         (payload: { new: Record<string, unknown> }) => {
           setOrder((prev) => (prev ? { ...prev, ...payload.new } as OrderWithItems : prev));
         }
@@ -66,7 +72,7 @@ export default function SuiviCommande() {
       cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [orderId]);
+  }, [orderId, token]);
 
   if (loading) {
     return (
