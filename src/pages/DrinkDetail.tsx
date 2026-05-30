@@ -15,6 +15,7 @@ import { buildDrinkCartOptions } from '../lib/cartLine';
 import { useMenuCatalog } from '../hooks/useMenuCatalog';
 import { useAuth } from '../contexts/AuthContext';
 import { DrinkDetailAdminEdit } from '../components/admin/DrinkDetailAdminEdit';
+import { ProductJsonLd } from '../components/seo/ProductJsonLd';
 import { formatEurFr, oraMemberUnitPrice, ORA_PLUS_MAX_DRINK_DISCOUNT } from '../lib/oraPricing';
 import { oraPlusPricing } from '../data/oraPlusData';
 
@@ -177,6 +178,14 @@ const DrinkDetail = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      <ProductJsonLd
+        name={drink.name}
+        description={drink.description}
+        image={drink.image_url}
+        price={drink.price}
+        category={drink.category}
+        url={window.location.href}
+      />
 
       {/* ─── Breadcrumb ─── */}
       <div>

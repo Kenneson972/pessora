@@ -12,8 +12,8 @@ import {
 } from 'lucide-react';
 import { PageShell } from '../components/layout/PageShell';
 import { useGammeProduct } from '../hooks/useGammeProduct';
+import { useGammeCatalog } from '../hooks/useGammeCatalog';
 import { toSlug } from '../lib/toSlug';
-import { rangesData } from '../data/productsData';
 import { barInfo } from '../data/infoData';
 import { useCart } from '../store/cartStore';
 import type { GammeProduct } from '../types/database';
@@ -52,16 +52,21 @@ const GammeProductDetail = () => {
 
   const { product: dbProduct, loading, error } = useGammeProduct(rangeId, slug);
 
-  // Cross-sell : données statiques (juste visuel, pas Stripe)
-  // Hoisted above early returns to comply with Rules of Hooks
-  const range = rangesData[rangeId as keyof typeof rangesData];
+  // Cross-sell : données DB (useGammeCatalog)
+  const { products: allRangeProducts } = useGammeCatalog(rangeId as 'sport' | 'skin' | 'wellness');
   const crossSell: CrossSellItem[] = useMemo(() => {
-    if (!range) return [];
-    return range.products
+    if (!allRangeProducts.length) return [];
+    return allRangeProducts
       .filter((p) => toSlug(p.name) !== slug)
-      .map((p) => ({ ...p, slug: toSlug(p.name) }))
-      .slice(0, 3);
-  }, [range, slug]);
+      .slice(0, 3)
+      .map((p) => ({
+        name: p.name,
+        description: p.description ?? '',
+        price: p.price_alt ? `${p.price}€ / ${p.price_alt}€` : `${p.price}€`,
+        image: p.image_url ?? undefined,
+        slug: p.slug ?? toSlug(p.name),
+      }));
+  }, [allRangeProducts, slug]);
 
   if (loading) {
     return (
@@ -113,7 +118,7 @@ const GammeProductDetail = () => {
     : `${formatEur(product.price)}€`;
   const totalPrice = product.price * quantity;
 
-  const RangeIcon = range ? RANGE_ICONS[rangeId!] ?? Sparkles : Sparkles;
+  const RangeIcon = RANGE_ICONS[rangeId!] ?? Sparkles;
 
   const handleAddToCart = () => {
     addLine({

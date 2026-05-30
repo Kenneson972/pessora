@@ -3,8 +3,9 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button, Card, Skeleton, cn } from '@heroui/react';
 import { EmptyState, Segment } from '@heroui-pro/react';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, Sparkles, Zap, Milk, Coffee } from 'lucide-react';
 import { SectionTitle } from '../components/ui/SectionTitle';
+import { ItemListJsonLd } from '../components/seo/ProductJsonLd';
 import { ProductCard } from '../components/ui/ProductCard';
 import { categoryNames, type MenuItem } from '../data/menuData';
 import { useMenuCatalog } from '../hooks/useMenuCatalog';
@@ -44,6 +45,13 @@ const CATEGORY_GROUPS = [
   { label: 'Shakes Protéinés', key: 'shakes' as const },
   { label: 'Coffee', key: 'coffee' as const },
 ];
+const CATEGORY_CHIPS = [
+  { label: 'Wellness', key: 'wellness', Icon: Sparkles },
+  { label: 'Énergie', key: 'energie', Icon: Zap },
+  { label: 'Shakes', key: 'shakes', Icon: Milk },
+  { label: 'Coffee', key: 'coffee', Icon: Coffee },
+];
+
 const PRODUCT_GRID_CLASS =
   'grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-4 lg:gap-y-8';
 
@@ -194,8 +202,39 @@ const Menu = () => {
   const singleItems = activeCategory ? catalogItems.filter((i) => i.category === activeCategory) : [];
 
   return (
-    <div className="min-h-screen bg-ivory">
-      <h1 className="sr-only">La carte</h1>
+    <div className="min-h-screen bg-white">
+      <ItemListJsonLd
+        items={catalogItems.map((item, index) => ({
+          name: item.name,
+          url: `${window.location.origin}/menu/${item.id}`,
+          position: index + 1,
+        }))}
+      />
+
+      {/* ─── Hero typographique ─── */}
+      <section className="bg-sapin px-4 py-20 md:py-28 text-center">
+        <h1
+          className="font-display font-normal leading-[0.9] text-white"
+          style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(48px, 7vw, 80px)' }}
+        >
+          La Carte
+        </h1>
+        <p className="mx-auto mt-5 max-w-lg text-[16px] font-light leading-relaxed text-white/55">
+          Boissons protéinées, shakes & coffee — préparés minute à Fort-de-France
+        </p>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          {CATEGORY_CHIPS.map(({ label, key, Icon }) => (
+            <Link
+              key={key}
+              to={`/menu?gamme=${key}`}
+              className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3 text-[12px] font-normal text-white/80 hover:bg-white/10 hover:border-white/40 hover:text-white transition-colors duration-200"
+            >
+              <Icon size={15} strokeWidth={1.5} aria-hidden />
+              {label}
+            </Link>
+          ))}
+        </div>
+      </section>
 
       {isSearchMode && (
         <div className="border-b border-noir/[0.06] bg-surface-muted px-4 md:px-10 lg:px-[72px]">
@@ -229,7 +268,7 @@ const Menu = () => {
 
       {/* Filtre par gamme — Segment HeroUI Pro */}
       {!isSearchMode && (
-        <div className="border-b border-noir/[0.06] bg-ivory px-4 md:px-10 lg:px-[72px]">
+        <div className="border-b border-noir/[0.06] bg-white px-4 md:px-10 lg:px-[72px]">
           <div className="mx-auto flex max-w-7xl justify-center py-4 md:py-5">
             <Segment
               size="sm"
