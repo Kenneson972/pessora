@@ -11,6 +11,8 @@ import { DashEyebrow, DashPageHeader } from '../../components/dashboard/primitiv
 import { DASH_MAIN_PAD } from '../../components/dashboard/layoutClasses';
 import type { GammeProduct } from '../../types/database';
 import { slugify } from '../../components/admin/AdminProductEditorForm';
+import { ProductImageDropzone } from '../../components/admin/ProductImageDropzone';
+import { uploadPublicImage } from '../../lib/storageUpload';
 
 const GAMMES = [
   { key: 'sport', label: 'Sport', subcategories: [
@@ -69,9 +71,26 @@ function GammeEditorForm({
   const [form, setForm] = useState<FormState>(initial ?? EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const set = (key: keyof FormState, value: string) =>
     setForm((prev) => ({ ...prev, [key]: value }));
+
+  const uploadFolder = form.slug.trim() || slugify(form.name) || 'nouveau';
+
+  const handleImageFile = async (file: File) => {
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const url = await uploadPublicImage('product-images', file, uploadFolder);
+      set('image_url', url);
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Upload impossible');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const saveLabel = mode === 'create' ? 'Créer' : 'Enregistrer';
 
@@ -114,10 +133,20 @@ function GammeEditorForm({
         <span className="text-[10px] uppercase tracking-[0.14em] text-black/50">Description</span>
         <input className={inputClass} value={form.description} onChange={(e) => set('description', e.target.value)} />
       </label>
-      <label className="flex flex-col gap-1">
-        <span className="text-[10px] uppercase tracking-[0.14em] text-black/50">Image (URL)</span>
-        <input className={inputClass} value={form.image_url} onChange={(e) => set('image_url', e.target.value)} placeholder="https://…" />
-      </label>
+      <div className="space-y-3">
+        <span className="text-[10px] uppercase tracking-[0.14em] text-black/50">Image</span>
+        <ProductImageDropzone
+          imageUrl={form.image_url}
+          uploading={uploading}
+          disabled={saving}
+          onFile={handleImageFile}
+        />
+        {uploadError && <p className="text-[11px] text-red-500/80">{uploadError}</p>}
+        <label className="flex flex-col gap-1">
+          <span className="text-[10px] uppercase tracking-[0.14em] text-black/50">Ou coller une URL</span>
+          <input className={inputClass} value={form.image_url} onChange={(e) => set('image_url', e.target.value)} placeholder="https://…" />
+        </label>
+      </div>
       <label className="flex flex-col gap-1">
         <span className="text-[10px] uppercase tracking-[0.14em] text-black/50">Ordre d'affichage</span>
         <input type="number" className={inputClass} value={form.sort_order} onChange={(e) => set('sort_order', e.target.value)} placeholder="1" />
