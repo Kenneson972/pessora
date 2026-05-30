@@ -69,7 +69,7 @@ const Concept = () => {
                   />
                 </div>
                 <div className="w-full space-y-5 md:w-2/5">
-                  <span className="text-[10px] font-normal uppercase tracking-[0.22em] text-[#1E3529]/40">
+                  <span className="text-[10px] font-normal uppercase tracking-[0.22em] text-sapin/40">
                     Chapitre {String(index + 1).padStart(2, '0')}
                   </span>
                   <h2

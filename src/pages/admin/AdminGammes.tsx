@@ -208,7 +208,7 @@ function GammeCard({
             <span
               className={`rounded-[2px] px-2 py-0.5 text-[8px] font-normal uppercase tracking-[0.14em] ${
                 p.active
-                  ? 'bg-gold-dim/15 text-gold-dim'
+                  ? 'bg-sapin-subtle text-sapin'
                   : 'bg-noir/[0.06] text-black/40'
               }`}
             >

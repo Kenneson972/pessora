@@ -70,7 +70,7 @@ export const ProductCard = ({
 
   const content = (
     <Card.Content className={cn('space-y-2', compact ? 'px-3 pb-3 pt-2.5' : 'px-3.5 pb-4 pt-3')}>
-      <span className="block text-[8px] font-normal uppercase tracking-[0.18em] text-[#1E3529]/45">
+      <span className="block text-[8px] font-normal uppercase tracking-[0.18em] text-sapin/45">
         {tag}
       </span>
       <div className="flex items-baseline justify-between gap-2 sm:gap-3">

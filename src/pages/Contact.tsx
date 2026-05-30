@@ -95,7 +95,7 @@ const Contact = () => {
             >
               <div className="space-y-10">
                 <motion.div variants={item} className="group flex items-start gap-6">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-noir/[0.08] bg-white text-black transition-colors group-hover:bg-noir group-hover:text-white">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-noir/[0.08] bg-white text-black transition-colors group-hover:bg-sapin group-hover:text-white">
                     <MapPin size={18} strokeWidth={1.5} />
                   </div>
                   <div className="space-y-2">
@@ -113,7 +113,7 @@ const Contact = () => {
                 </motion.div>
 
                 <motion.div variants={item} className="group flex items-start gap-6">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-noir/[0.08] bg-white text-black transition-colors group-hover:bg-noir group-hover:text-white">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-noir/[0.08] bg-white text-black transition-colors group-hover:bg-sapin group-hover:text-white">
                     <Mail size={18} strokeWidth={1.5} />
                   </div>
                   <div className="space-y-2">
@@ -123,7 +123,7 @@ const Contact = () => {
                 </motion.div>
 
                 <motion.div variants={item} className="group flex items-start gap-6">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-noir/[0.08] bg-white text-black transition-colors group-hover:bg-noir group-hover:text-white">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-noir/[0.08] bg-white text-black transition-colors group-hover:bg-sapin group-hover:text-white">
                     <Instagram size={18} strokeWidth={1.5} />
                   </div>
                   <div className="space-y-2">
@@ -211,7 +211,7 @@ const Contact = () => {
                     className={cn(
                       'w-full border-0 border-b border-noir/10 bg-transparent py-3 text-[15px] font-light text-black',
                       fieldErrors.name && 'border-b-red-400',
-                      'focus-visible:border-[#1E3529]'
+                      'focus-visible:border-sapin'
                     )}
                   />
                   {fieldErrors.name && (
@@ -230,7 +230,7 @@ const Contact = () => {
                     className={cn(
                       'w-full border-0 border-b border-noir/10 bg-transparent py-3 text-[15px] font-light text-black',
                       fieldErrors.email && 'border-b-red-400',
-                      'focus-visible:border-[#1E3529]'
+                      'focus-visible:border-sapin'
                     )}
                   />
                   {fieldErrors.email && (
@@ -249,7 +249,7 @@ const Contact = () => {
                     className={cn(
                       'w-full resize-none border-0 border-b border-noir/10 bg-transparent py-3 text-[15px] font-light text-black',
                       fieldErrors.message && 'border-b-red-400',
-                      'focus-visible:border-[#1E3529]'
+                      'focus-visible:border-sapin'
                     )}
                   />
                   {fieldErrors.message && (
@@ -269,7 +269,7 @@ const Contact = () => {
                         setPrivacyAccepted(e.target.checked);
                         if (e.target.checked) setPrivacyError(false);
                       }}
-                      className="mt-1 h-4 w-4 shrink-0 rounded-[2px] border border-noir/15 accent-[#1E3529]"
+                      className="mt-1 h-4 w-4 shrink-0 rounded-[2px] border border-noir/15 accent-sapin"
                     />
                     <span className="text-[11px] font-light leading-relaxed text-black/55">
                       J’accepte que mes informations soient utilisées pour répondre à ma demande, conformément à la{' '}
@@ -289,7 +289,7 @@ const Contact = () => {
                   )}
                 </div>
                 {sent ? (
-                  <div className="flex items-center gap-3 mt-4 rounded-full bg-emerald-50 border border-emerald-200 px-6 py-4 text-[12px] text-emerald-700">
+                  <div className="flex items-center gap-3 mt-4 rounded-full bg-sapin-subtle border border-sapin-muted px-6 py-4 text-[12px] text-sapin">
                     <CheckCircle2 size={16} />
                     Message envoyé ! Nous vous répondrons dans les plus brefs délais.
                   </div>

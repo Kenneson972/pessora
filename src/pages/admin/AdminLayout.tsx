@@ -44,8 +44,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       'md:w-11 md:h-11 md:justify-center',
       'lg:h-auto lg:min-h-[44px] lg:w-full lg:justify-start lg:gap-3 lg:px-3 lg:py-2.5',
       active
-        ? 'bg-noir text-white'
-        : 'bg-transparent text-black/40 hover:text-noir hover:bg-noir/[0.05]',
+        ? 'bg-sapin text-white'
+        : 'bg-transparent text-black/40 hover:text-sapin hover:bg-sapin-subtle',
     );
 
   return (

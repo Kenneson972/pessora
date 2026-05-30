@@ -18,13 +18,13 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 const itemClass = (active: boolean) =>
   cn(
     'flex min-h-[52px] min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-[2px] px-1 py-2 text-[9px] font-medium uppercase tracking-[0.08em] transition-colors',
-    active ? 'text-noir' : 'text-black/40 hover:text-black/70',
+    active ? 'text-sapin' : 'text-black/40 hover:text-sapin/70',
   );
 
 const iconWrap = (active: boolean) =>
   cn(
     'flex h-10 w-10 items-center justify-center rounded-[12px] transition-colors',
-    active ? 'bg-noir text-white' : 'bg-transparent text-current',
+    active ? 'bg-sapin text-white' : 'bg-transparent text-current',
   );
 
 /** Navigation mobile espace membre (sidebar absente sous md) */

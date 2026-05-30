@@ -59,7 +59,7 @@ const ReinitialisationMotDePasse = () => {
 
       {done ? (
         <div className="flex flex-col items-center gap-4">
-          <CheckCircle2 size={40} className="text-emerald-500" strokeWidth={1.3} />
+          <CheckCircle2 size={40} className="text-sapin" strokeWidth={1.3} />
           <button
             type="button"
             onClick={() => navigate('/connexion')}

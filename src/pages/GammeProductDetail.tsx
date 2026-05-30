@@ -143,14 +143,14 @@ const GammeProductDetail = () => {
             <Link to="/nos-produits" className="transition-colors duration-200 hover:text-black">
               Gammes
             </Link>
-            <span aria-hidden="true" className="text-[#1E3529]/35">/</span>
+            <span aria-hidden="true" className="text-sapin/35">/</span>
             <Link
               to={`/nos-produits/${rangeId}`}
               className="transition-colors duration-200 hover:text-black"
             >
               {RANGE_LABELS[rangeId!] ?? rangeId}
             </Link>
-            <span aria-hidden="true" className="text-[#1E3529]/35">/</span>
+            <span aria-hidden="true" className="text-sapin/35">/</span>
             <span className="text-black/70" aria-current="page">
               {product.name}
             </span>

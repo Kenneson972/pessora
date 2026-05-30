@@ -290,7 +290,7 @@ const Dashboard = () => {
                               .filter(Boolean).join(' · ')}
                           </p>
                         </div>
-                        <span className="col-span-2 inline-flex w-fit items-center rounded-full border border-[#1E3529]/20 bg-[#1E3529]/8 px-[10px] py-[5px] text-[9px] font-medium uppercase tracking-[0.14em] text-[#1E3529] sm:col-span-1 sm:col-start-3 sm:row-start-1 sm:w-auto sm:justify-self-end">
+                        <span className="col-span-2 inline-flex w-fit items-center rounded-full border border-sapin/20 bg-sapin/8 px-[10px] py-[5px] text-[9px] font-medium uppercase tracking-[0.14em] text-sapin sm:col-span-1 sm:col-start-3 sm:row-start-1 sm:w-auto sm:justify-self-end">
                           Confirmé
                         </span>
                       </div>
@@ -320,7 +320,7 @@ const Dashboard = () => {
                     key={perk.label}
                     className={`flex items-center gap-[10px] text-[12px] ${perk.on ? 'text-black/70' : 'text-black/20'}`}
                   >
-                    <Check size={11} strokeWidth={2} className={perk.on ? 'text-[#1E3529]/50' : 'text-black/15'} />
+                    <Check size={11} strokeWidth={2} className={perk.on ? 'text-sapin/50' : 'text-black/15'} />
                     {perk.label}
                   </div>
                 ))}
@@ -368,7 +368,7 @@ const Dashboard = () => {
                       order.status === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
                       order.status === 'paid' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
                       order.status === 'preparing' ? 'bg-sky-50 text-sky-700 border border-sky-200' :
-                      order.status === 'ready' ? 'bg-[#1E3529]/8 text-[#1E3529] border border-[#1E3529]/20' :
+                      order.status === 'ready' ? 'bg-sapin/8 text-sapin border border-sapin/20' :
                       'bg-noir/[0.05] text-black/45';
                     const statusLabel =
                       order.status === 'pending' ? 'En attente' :

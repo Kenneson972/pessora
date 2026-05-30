@@ -70,9 +70,9 @@ const Register = () => {
       <p className="mb-8 text-editorial-product-meta">Rejoignez la communauté Pessóra</p>
       {registered ? (
         <div className="flex flex-col items-center gap-4 py-4">
-          <div className="rounded-full bg-emerald-50 border border-emerald-200 px-6 py-4 text-[13px] text-emerald-700 text-center">
+          <div className="rounded-full bg-sapin-subtle border border-sapin-muted px-6 py-4 text-[13px] text-sapin text-center">
             <p className="font-medium mb-1">Compte créé avec succès !</p>
-            <p className="text-[12px] text-emerald-600">
+            <p className="text-[12px] text-sapin">
               Vérifiez votre boîte e-mail pour confirmer votre adresse, puis connectez-vous.
             </p>
           </div>

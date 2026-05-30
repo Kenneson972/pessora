@@ -107,7 +107,7 @@ export function GammeProductDetailAdminEdit({ slug, product, onSaved }: Props) {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full bg-[#1E3529] px-4 py-3 text-[10px] font-normal uppercase tracking-[0.14em] text-white shadow-lg transition-opacity hover:opacity-90"
+        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full bg-sapin px-4 py-3 text-[10px] font-normal uppercase tracking-[0.14em] text-white shadow-lg transition-opacity hover:opacity-90"
         aria-label="Modifier ce produit"
       >
         <Pencil size={13} strokeWidth={1.5} aria-hidden />
@@ -243,7 +243,7 @@ export function GammeProductDetailAdminEdit({ slug, product, onSaved }: Props) {
                   <Button
                     onPress={handleSave}
                     isDisabled={busy}
-                    className="h-10 min-h-10 flex-1 rounded-full bg-[#1E3529] text-[10px] uppercase tracking-[0.14em] text-white"
+                    className="h-10 min-h-10 flex-1 rounded-full bg-sapin text-[10px] uppercase tracking-[0.14em] text-white"
                   >
                     {status === 'uploading' ? 'Upload image…' : status === 'saving' ? 'Enregistrement…' : '💾 Enregistrer'}
                   </Button>

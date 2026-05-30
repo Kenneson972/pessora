@@ -195,7 +195,7 @@ export default function AdminCarousel() {
                 <p className="text-[13px] font-light text-black truncate">{card.title}</p>
                 {card.link_to && <p className="text-[10px] text-black/35 truncate">{card.link_to}</p>}
               </div>
-              <span className={`text-[9px] uppercase tracking-[0.14em] px-2 py-1 rounded-full flex-shrink-0 ${card.active ? 'bg-green-50 text-green-700' : 'bg-noir/[0.05] text-black/40'}`}>
+              <span className={`text-[9px] uppercase tracking-[0.14em] px-2 py-1 rounded-full flex-shrink-0 ${card.active ? 'bg-sapin-subtle text-sapin' : 'bg-noir/[0.05] text-black/40'}`}>
                 {card.active ? 'Actif' : 'Masqué'}
               </span>
               <div className="flex gap-1 flex-shrink-0">

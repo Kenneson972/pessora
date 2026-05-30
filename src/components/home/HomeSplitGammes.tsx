@@ -85,7 +85,7 @@ export function HomeSplitGammes() {
                   {activeKey === g.key && (
                     <motion.span
                       layoutId="split-tab-bg"
-                      className="absolute inset-0 bg-[#1E3529]"
+                      className="absolute inset-0 bg-sapin"
                       transition={SPRING_TAB}
                     />
                   )}

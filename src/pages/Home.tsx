@@ -91,7 +91,7 @@ const Home = () => {
             ].join(', '),
           }}
         />
-        <div className="absolute top-0 left-4 md:left-10 lg:left-[72px] right-4 md:right-10 lg:right-[72px] h-px bg-gradient-to-r from-transparent via-[#1E3529]/20 to-transparent" />
+        <div className="absolute top-0 left-4 md:left-10 lg:left-[72px] right-4 md:right-10 lg:right-[72px] h-px bg-gradient-to-r from-transparent via-sapin/20 to-transparent" />
 
         <motion.div
           className="relative z-10 w-full max-w-lg px-4 pb-12 pt-8 md:px-10 md:pb-14 lg:px-[72px] lg:pb-16"

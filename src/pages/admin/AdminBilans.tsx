@@ -46,7 +46,7 @@ const STATUT_LABELS = {
 
 const STATUT_STYLES = {
   en_attente: 'bg-amber-50 text-amber-700',
-  confirme: 'bg-gold-dim/10 text-gold-dim',
+  confirme: 'bg-sapin-subtle text-sapin',
   annule: 'bg-noir/5 text-black/30',
 };
 
@@ -601,8 +601,8 @@ const AdminBilans = () => {
                               onClick={() => toggleSlotDisponible(slot)}
                               className={`flex-1 text-center text-[8px] uppercase tracking-[0.12em] h-11 rounded-[2px] transition-colors ${
                                 slot.disponible
-                                  ? 'bg-gold-dim/10 text-gold-dim hover:bg-noir/5 hover:text-black/40'
-                                  : 'bg-noir/5 text-black/30 hover:bg-gold-dim/10 hover:text-gold-dim'
+                                  ? 'bg-sapin-subtle text-sapin hover:bg-noir/5 hover:text-black/40'
+                                  : 'bg-noir/5 text-black/30 hover:bg-sapin-subtle hover:text-sapin'
                               }`}
                             >
                               {slot.disponible ? 'Disponible' : 'Indisponible'}

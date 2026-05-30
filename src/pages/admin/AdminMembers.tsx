@@ -102,7 +102,7 @@ function MemberCard({ m }: { m: MemberWithSub }) {
           </span>
           <span
             className={`rounded-[2px] px-2 py-0.5 text-[9px] font-normal uppercase tracking-[0.1em] ${
-              active ? 'bg-gold-dim/12 text-gold-dim' : 'bg-noir/[0.05] text-black/40'
+              active ? 'bg-sapin-subtle text-sapin' : 'bg-noir/[0.05] text-black/40'
             }`}
           >
             {statusLabel(sub?.status)}

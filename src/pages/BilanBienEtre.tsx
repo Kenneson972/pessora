@@ -112,7 +112,7 @@ const CalendarPicker = ({ availableDates, selectedDate, onSelect, minDateStr }: 
             >
               {day}
               {isAvailable && !isPast && !isSelected && (
-                <span className="w-1 h-1 rounded-full bg-[#1E3529] mt-0.5 block" />
+                <span className="w-1 h-1 rounded-full bg-sapin mt-0.5 block" />
               )}
             </button>
           );

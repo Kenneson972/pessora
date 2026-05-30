@@ -85,7 +85,7 @@ const AdminOverview = () => {
       db.from('subscriptions').select('id', { count: 'exact' }).eq('status', 'active'),
       db.from('profiles').select('id', { count: 'exact' }).gte('created_at', monthStart).neq('role', 'admin'),
       db.from('events')
-        .select('id, title, date, heure, places_max, active, event_registrations(count)')
+        .select('id, title, date, heure, places_max, active, event_registrations!event_registrations_event_id_fkey(count)')
         .eq('active', true)
         .gte('date', today)
         .order('date', { ascending: true })
@@ -340,7 +340,7 @@ const AdminOverview = () => {
                             <span className={`text-[9px] font-medium uppercase tracking-[0.12em] px-2 py-1 rounded-[2px] ${
                               order.status === 'paid' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
                               order.status === 'preparing' ? 'bg-sky-50 text-sky-700 border border-sky-200' :
-                              order.status === 'ready' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                              order.status === 'ready' ? 'bg-sapin-subtle text-sapin border border-sapin-muted' :
                               'bg-noir/[0.05] text-black/45'
                             }`}>
                               {STATUS_LABELS[order.status] ?? order.status}

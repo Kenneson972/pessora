@@ -92,7 +92,7 @@ export function HomeGoogleReviews() {
                 aria-pressed={idx === activeIdx}
                 onClick={() => setActiveIdx(idx)}
                 className={`!h-1.5 !min-h-1.5 !min-w-3 rounded-full px-0 transition-all ${
-                  idx === activeIdx ? 'w-7 bg-[#1E3529]/70' : 'w-3 bg-noir/16 hover:bg-noir/30'
+                  idx === activeIdx ? 'w-7 bg-sapin/70' : 'w-3 bg-noir/16 hover:bg-noir/30'
                 }`}
               />
             ))}

@@ -224,7 +224,7 @@ const Evenements = () => {
     let cancelled = false;
     supabase
       .from('events')
-      .select('*, event_registrations(count)')
+      .select('*, event_registrations!event_registrations_event_id_fkey(count)')
       .eq('active', true)
       .order('date', { ascending: true })
       .then(({ data, error: queryError }) => {
@@ -368,7 +368,7 @@ const Evenements = () => {
             <EmptyState.Content className="flex-row flex-wrap items-center justify-center gap-3">
               <Link
                 to="/contact"
-                className="inline-flex h-11 items-center rounded-full bg-[#1E3529] px-6 text-[11px] font-light uppercase tracking-[0.18em] text-white transition-colors duration-200 hover:bg-[#1E3529]/80"
+                className="inline-flex h-11 items-center rounded-full bg-sapin px-6 text-[11px] font-light uppercase tracking-[0.18em] text-white transition-colors duration-200 hover:bg-sapin/80"
               >
                 Nous contacter
               </Link>

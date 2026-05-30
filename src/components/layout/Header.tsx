@@ -61,7 +61,7 @@ const Header = () => {
   const chromeDark = isSolid || (!isSolid && isDarkHeroRoute);
 
   const headerSurfaceClass = isSolid
-    ? 'border-b border-white/[0.08] bg-[#1E3529] shadow-[0_1px_0_rgba(0,0,0,0.12)]'
+    ? 'border-b border-white/[0.08] bg-sapin shadow-[0_1px_0_rgba(0,0,0,0.12)]'
     : useLightTransparentChrome
       ? 'border-b border-noir/[0.06] bg-white/92 shadow-[0_1px_0_rgba(0,0,0,0.04)]'
       : 'border-b border-transparent bg-transparent';
@@ -145,7 +145,7 @@ const Header = () => {
                       ? 'text-white/60 hover:text-white'
                       : 'text-black/72 hover:text-black',
                   isActive && 'after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:content-[""]',
-                  isActive && (chromeDark ? 'after:bg-white' : 'after:bg-noir'),
+                  isActive && (chromeDark ? 'after:bg-white' : 'after:bg-sapin'),
                 )}
               >
                 {item.label}
@@ -203,7 +203,7 @@ const Header = () => {
             </Button>
             {itemCount > 0 && (
               <Chip
-                className="pointer-events-none absolute -right-1 -top-1 h-4 min-h-4 min-w-4 px-1 text-[8px] !bg-[#1E3529] !text-white"
+                className="pointer-events-none absolute -right-1 -top-1 h-4 min-h-4 min-w-4 px-1 text-[8px] !bg-sapin !text-white"
                 size="sm"
               >
                 {itemCount > 99 ? '99+' : itemCount}

@@ -5,14 +5,9 @@
 DO $$
 BEGIN
   IF NOT EXISTS (
-    SELECT 1
-    FROM information_schema.table_constraints tc
-    JOIN information_schema.referential_constraints rc
-      ON tc.constraint_name = rc.constraint_name
-      AND tc.constraint_schema = rc.constraint_schema
-    WHERE tc.constraint_type = 'FOREIGN KEY'
-      AND tc.table_name = 'event_registrations'
-      AND rc.referenced_table_name = 'events'
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'fk_event_registrations_event'
+      AND conrelid = 'event_registrations'::regclass
   ) THEN
     ALTER TABLE public.event_registrations
       ADD CONSTRAINT fk_event_registrations_event

@@ -149,7 +149,7 @@ const AdminInfosBar = () => {
         {error && <AdminErrorAlert message={error} />}
         {saveError && <AdminErrorAlert message={saveError} />}
         {savedAt && (
-          <div className="mb-6 inline-flex items-center gap-2 rounded-[2px] border border-green-700/20 bg-green-50 px-3 py-2 text-[11px] text-green-800">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-[2px] border border-sapin-muted bg-sapin-subtle px-3 py-2 text-[11px] text-sapin">
             <Check size={14} /> Infos enregistrées.
           </div>
         )}

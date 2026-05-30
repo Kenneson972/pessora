@@ -544,7 +544,7 @@ const AdminMemberDetail = () => {
                   stripeData.cancel_at_period_end
                     ? 'border-orange-200 bg-orange-50 text-orange-700'
                     : stripeData.status === 'active'
-                      ? 'border-green-200 bg-green-50 text-green-700'
+                      ? 'border-sapin-muted bg-sapin-subtle text-sapin'
                       : 'border-noir/10 bg-noir/[0.03] text-black/45'
                 }`}
               >

@@ -88,7 +88,7 @@ export default function OrderDetail() {
             <p className="mt-1 flex items-center gap-1.5 text-[11px] text-black/40">
               <Calendar size={12} strokeWidth={1.3} aria-hidden />
               {order.status === 'completed' ? (
-                <span className="text-[#1E3529]">Terminée</span>
+                <span className="text-sapin">Terminée</span>
               ) : order.status === 'pending' ? (
                 <span className="text-amber-700">En attente</span>
               ) : order.status === 'cancelled' ? (

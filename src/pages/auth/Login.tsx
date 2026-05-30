@@ -130,7 +130,7 @@ const Login = () => {
           )}
         </div>
         {resetSent && (
-          <p className="text-[11px] text-emerald-600" role="status">
+          <p className="text-[11px] text-sapin" role="status">
             Lien de réinitialisation envoyé. Vérifiez votre boîte de réception.
           </p>
         )}

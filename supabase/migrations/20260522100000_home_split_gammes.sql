@@ -15,10 +15,12 @@ CREATE TABLE IF NOT EXISTS home_split_gammes (
 
 ALTER TABLE home_split_gammes ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "split_gammes_public_read" ON home_split_gammes;
 CREATE POLICY "split_gammes_public_read"
   ON home_split_gammes FOR SELECT
   USING (true);
 
+DROP POLICY IF EXISTS "split_gammes_admin_update" ON home_split_gammes;
 CREATE POLICY "split_gammes_admin_update"
   ON home_split_gammes FOR UPDATE
   USING (
@@ -48,10 +50,12 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
+DROP POLICY IF EXISTS "split_gammes_images_public_read" ON storage.objects;
 CREATE POLICY "split_gammes_images_public_read"
   ON storage.objects FOR SELECT
   USING (bucket_id = 'split-gammes-images');
 
+DROP POLICY IF EXISTS "split_gammes_images_admin_insert" ON storage.objects;
 CREATE POLICY "split_gammes_images_admin_insert"
   ON storage.objects FOR INSERT
   WITH CHECK (
@@ -62,6 +66,7 @@ CREATE POLICY "split_gammes_images_admin_insert"
     )
   );
 
+DROP POLICY IF EXISTS "split_gammes_images_admin_delete" ON storage.objects;
 CREATE POLICY "split_gammes_images_admin_delete"
   ON storage.objects FOR DELETE
   USING (

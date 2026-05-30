@@ -14,7 +14,7 @@ import { useCheckout } from '../../hooks/useCheckout';
 import { PickupTimePicker } from './PickupTimePicker';
 
 const focusRing =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E3529]/30 focus-visible:ring-offset-2';
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sapin/30 focus-visible:ring-offset-2';
 
 export function CartDrawer() {
   const items = useCart((s) => s.items);
@@ -216,7 +216,7 @@ export function CartDrawer() {
                       onPress={checkout}
                       className={cn(
                         focusRing,
-                        'flex h-12 min-h-12 w-full items-center justify-center rounded-full bg-[#1E3529] text-[10px] font-normal uppercase tracking-[0.12em] text-white transition-colors hover:bg-[#1E3529]/85',
+                        'flex h-12 min-h-12 w-full items-center justify-center rounded-full bg-sapin text-[10px] font-normal uppercase tracking-[0.12em] text-white transition-colors hover:bg-sapin/85',
                       )}
                     >
                       {isCheckingOut ? 'Redirection…' : 'Payer ma commande'}

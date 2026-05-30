@@ -99,7 +99,7 @@ const EvenementDetail = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data, error } = await (supabase as any)
         .from('events')
-        .select('*, event_registrations(count)')
+        .select('*, event_registrations!event_registrations_event_id_fkey(count)')
         .eq('slug', slug)
         .eq('active', true)
         .single() as { data: (Event & { event_registrations: { count: number | string }[] }) | null; error: { code?: string } | null };
@@ -429,7 +429,7 @@ const EvenementDetail = () => {
                             value={o.value}
                             checked={field.value === o.value}
                             onChange={() => field.onChange(o.value)}
-                            className="accent-[#1E3529]"
+                            className="accent-sapin"
                           />
                           <span className="text-[13px] text-black/60 group-hover:text-noir transition-colors">{o.label}</span>
                         </label>
@@ -449,7 +449,7 @@ const EvenementDetail = () => {
                           type="checkbox"
                           checked={field.value}
                           onChange={(e) => field.onChange(e.target.checked)}
-                          className="mt-1 h-4 w-4 shrink-0 rounded-[2px] border border-noir/15 accent-[#1E3529]"
+                          className="mt-1 h-4 w-4 shrink-0 rounded-[2px] border border-noir/15 accent-sapin"
                         />
                         <span className="text-[11px] font-light leading-relaxed text-black/55">
                           J’accepte que mes données (nom, prénom, téléphone) soient utilisées pour gérer mon inscription

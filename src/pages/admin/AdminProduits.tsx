@@ -113,7 +113,7 @@ function ProductCard({
         <div className="pointer-events-none absolute left-2 top-2 flex max-w-[calc(100%-1rem)] flex-wrap gap-1">
           <span
             className={`rounded-[2px] px-2 py-0.5 text-[8px] font-normal uppercase tracking-[0.14em] ${
-              p.active ? 'bg-gold-dim/15 text-gold-dim' : 'bg-noir/[0.06] text-black/40'
+              p.active ? 'bg-sapin-subtle text-sapin' : 'bg-noir/[0.06] text-black/40'
             }`}
           >
             {p.active ? 'Visible' : 'Masqué'}

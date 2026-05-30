@@ -29,21 +29,21 @@ const AbonnementSucces = () => {
     <PageShell className="flex min-h-[60vh] items-center justify-center py-20">
       <div className="mx-auto max-w-md text-center">
         {status === 'loading' && (
-          <p className="text-[13px] text-[#1E3529]/60 animate-pulse">Activation en cours…</p>
+          <p className="text-[13px] text-sapin/60 animate-pulse">Activation en cours…</p>
         )}
 
         {status === 'processed' && (
           <>
             <CheckCircle
-              className="mx-auto mb-8 h-12 w-12 text-[#1E3529]/70"
+              className="mx-auto mb-8 h-12 w-12 text-sapin/70"
               strokeWidth={1}
               aria-hidden
             />
-            <p className="mb-3 text-[9px] font-normal uppercase tracking-[0.22em] text-[#1E3529]/60">
+            <p className="mb-3 text-[9px] font-normal uppercase tracking-[0.22em] text-sapin/60">
               Bienvenue dans
             </p>
             <h1
-              className="font-display font-normal leading-none text-[#1E3529]"
+              className="font-display font-normal leading-none text-sapin"
               style={{ fontSize: 'clamp(40px, 5vw, 64px)' }}
             >
               Óra+
@@ -63,7 +63,7 @@ const AbonnementSucces = () => {
 
         {(status === 'pending' || status === 'error') && (
           <>
-            <h1 className="font-display text-[32px] font-normal leading-none text-[#1E3529]">
+            <h1 className="font-display text-[32px] font-normal leading-none text-sapin">
               Merci !
             </h1>
             <p className="mt-4 text-[13px] font-light leading-relaxed text-black/55">

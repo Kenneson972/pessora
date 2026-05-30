@@ -112,7 +112,7 @@ const Subscription = () => {
                 </div>
                 <span className="text-[8px] font-normal uppercase tracking-[0.28em] text-black/35">Meilleur rapport qualité-prix</span>
               </div>
-              <span className="text-[8px] font-normal uppercase tracking-[0.2em] text-[#1E3529] border border-[#1E3529]/20 bg-[#1E3529]/8 px-3 py-1.5 rounded-[2px]">
+              <span className="text-[8px] font-normal uppercase tracking-[0.2em] text-sapin border border-sapin/20 bg-sapin/8 px-3 py-1.5 rounded-[2px]">
                 {subscription?.status === 'active' ? 'Actif' : subscription?.status ?? 'Actif'}
               </span>
             </div>
@@ -163,7 +163,7 @@ const Subscription = () => {
             <div className="flex flex-col divide-y divide-black/[0.05]">
               {features.map((feature, i) => (
                 <div key={i} className="flex items-start gap-4 py-4">
-                  <Check size={13} strokeWidth={1.5} className="text-[#1E3529]/60 shrink-0 mt-0.5" />
+                  <Check size={13} strokeWidth={1.5} className="text-sapin/60 shrink-0 mt-0.5" />
                   <span className="text-[13px] font-light text-black/70 leading-relaxed">{feature}</span>
                 </div>
               ))}

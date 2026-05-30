@@ -223,7 +223,7 @@ const Footer = () => {
         aria-hidden
       />
 
-      <div className={cn('bg-[#1E3529] pt-8 pb-6 lg:pt-10 lg:pb-8', FOOTER_GUTTER_X)}>
+      <div className={cn('bg-sapin pt-8 pb-6 lg:pt-10 lg:pb-8', FOOTER_GUTTER_X)}>
         {/* Mobile / tablette : logo centré, puis deux ailés gauche | droite */}
         <div className="flex w-full flex-col gap-12 lg:hidden">
           <section aria-label="Marque Pessóra" className="flex w-full justify-center">
@@ -251,7 +251,7 @@ const Footer = () => {
         </div>
       </div>
 
-      <div className={cn('border-t', BORDER_SOFT, 'bg-[#1E3529] py-3.5', FOOTER_GUTTER_X)}>
+      <div className={cn('border-t', BORDER_SOFT, 'bg-sapin py-3.5', FOOTER_GUTTER_X)}>
         <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <span className="text-center text-[9px] font-light tracking-[0.12em] text-white/50 sm:text-left sm:text-[10px]">
             © {new Date().getFullYear()} Pessóra · Fort-de-France

@@ -14,7 +14,7 @@ interface Props {
 }
 
 const focusRing =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E3529]/30 focus-visible:ring-offset-2';
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sapin/30 focus-visible:ring-offset-2';
 
 export function DrinkOptionsModal({ item, onClose }: Props) {
   const addLine = useCart((s) => s.addLine);
@@ -261,13 +261,13 @@ export function DrinkOptionsModal({ item, onClose }: Props) {
                 onPress={handleAdd}
                 className={cn(
                   focusRing,
-                  'flex h-12 min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[#1E3529] text-[10px] font-normal uppercase tracking-[0.12em] text-white transition-colors hover:bg-[#1E3529]/85',
+                  'flex h-12 min-h-12 w-full items-center justify-center gap-2 rounded-full bg-sapin text-[10px] font-normal uppercase tracking-[0.12em] text-white transition-colors hover:bg-sapin/85',
                 )}
               >
                 {justAdded ? (
                   <>
-                    <Check className="h-4 w-4 text-[#1E3529]" strokeWidth={2} aria-hidden />{' '}
-                    <span className="text-[#1E3529]">Ajouté</span>
+                    <Check className="h-4 w-4 text-sapin" strokeWidth={2} aria-hidden />{' '}
+                    <span className="text-sapin">Ajouté</span>
                   </>
                 ) : (
                   `Ajouter · ${total.toFixed(2).replace('.', ',')} €`
