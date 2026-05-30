@@ -211,7 +211,7 @@ const Profile = () => {
                   value={field.value}
                   onChange={e => field.onChange(e.target.value)}
                   autoComplete="given-name"
-                  className="w-full h-11 bg-noir/[0.03] rounded-[2px] px-4 text-base font-normal text-black border border-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-noir/20 transition-colors duration-200"
+                  className="w-full h-11 bg-noir/[0.03] rounded-[2px] px-4 text-base font-normal text-black border border-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E3529]/25 transition-colors duration-200"
                 />
               </div>
             ))}
@@ -237,7 +237,7 @@ const Profile = () => {
                 onChange={e => setPhone(e.target.value)}
                 placeholder="+596 696 00 00 00"
                 autoComplete="tel"
-                className="w-full h-11 bg-noir/[0.03] rounded-[2px] px-4 text-base font-normal text-black border border-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-noir/20 transition-colors duration-200"
+                className="w-full h-11 bg-noir/[0.03] rounded-[2px] px-4 text-base font-normal text-black border border-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E3529]/25 transition-colors duration-200"
               />
             </div>
           </div>
@@ -272,7 +272,7 @@ const Profile = () => {
                 value={newPassword}
                 onChange={e => setNewPassword(e.target.value)}
                 autoComplete="new-password"
-                className="w-full h-11 bg-noir/[0.03] rounded-[2px] px-4 text-base font-normal text-black border border-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-noir/20 transition-colors duration-200"
+                className="w-full h-11 bg-noir/[0.03] rounded-[2px] px-4 text-base font-normal text-black border border-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E3529]/25 transition-colors duration-200"
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -285,7 +285,7 @@ const Profile = () => {
                 value={confirmPassword}
                 onChange={e => setConfirmPassword(e.target.value)}
                 autoComplete="new-password"
-                className="w-full h-11 bg-noir/[0.03] rounded-[2px] px-4 text-base font-normal text-black border border-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-noir/20 transition-colors duration-200"
+                className="w-full h-11 bg-noir/[0.03] rounded-[2px] px-4 text-base font-normal text-black border border-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E3529]/25 transition-colors duration-200"
               />
             </div>
             <div className="md:col-span-2 flex justify-end">

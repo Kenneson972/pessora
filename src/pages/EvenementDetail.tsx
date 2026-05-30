@@ -429,7 +429,7 @@ const EvenementDetail = () => {
                             value={o.value}
                             checked={field.value === o.value}
                             onChange={() => field.onChange(o.value)}
-                            className="accent-gold-dim"
+                            className="accent-[#1E3529]"
                           />
                           <span className="text-[13px] text-black/60 group-hover:text-noir transition-colors">{o.label}</span>
                         </label>
@@ -449,7 +449,7 @@ const EvenementDetail = () => {
                           type="checkbox"
                           checked={field.value}
                           onChange={(e) => field.onChange(e.target.checked)}
-                          className="mt-1 h-4 w-4 shrink-0 rounded-[2px] border border-noir/15 accent-gold-dim"
+                          className="mt-1 h-4 w-4 shrink-0 rounded-[2px] border border-noir/15 accent-[#1E3529]"
                         />
                         <span className="text-[11px] font-light leading-relaxed text-black/55">
                           J’accepte que mes données (nom, prénom, téléphone) soient utilisées pour gérer mon inscription

@@ -144,7 +144,7 @@ const Menu = () => {
                     className={cn(
                       'flex-1 rounded-[2px] border py-1 text-[7px] font-normal uppercase tracking-[0.08em] transition-colors',
                       isSelected
-                        ? 'border-noir bg-noir text-white'
+                        ? 'border-[#1E3529] bg-[#1E3529] text-white'
                         : 'border-noir/12 text-black/40 hover:border-noir/25 hover:text-black',
                     )}
                     aria-pressed={isSelected}

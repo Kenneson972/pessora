@@ -28,11 +28,11 @@ export function NosProduitsFeaturedCarousel() {
           <h2 className="text-editorial-section-title">La collection</h2>
           <div className="flex gap-2">
             <Button isIconOnly variant="ghost" onPress={() => scrollBy(-1)} aria-label="Précédent"
-              className="h-10 w-10 rounded-full border border-noir/[0.12] bg-white text-black/55 hover:border-noir/25">
+              className="h-10 w-10 rounded-full border border-noir/[0.12] bg-white text-black/55 hover:border-[#1E3529]/35 hover:text-[#1E3529]">
               <ChevronLeft size={18} strokeWidth={1.25} />
             </Button>
             <Button isIconOnly variant="ghost" onPress={() => scrollBy(1)} aria-label="Suivant"
-              className="h-10 w-10 rounded-full border border-noir/[0.12] bg-white text-black/55 hover:border-noir/25">
+              className="h-10 w-10 rounded-full border border-noir/[0.12] bg-white text-black/55 hover:border-[#1E3529]/35 hover:text-[#1E3529]">
               <ChevronRight size={18} strokeWidth={1.25} />
             </Button>
           </div>

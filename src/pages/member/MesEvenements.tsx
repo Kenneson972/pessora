@@ -143,7 +143,7 @@ const MesEvenements = () => {
           </div>
           <span
             className={`shrink-0 rounded-[2px] px-2.5 py-1 text-[8px] font-normal uppercase tracking-[0.15em] ${
-              isPast ? 'bg-noir/5 text-black/30' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+              isPast ? 'bg-noir/5 text-black/30' : 'bg-[#1E3529]/8 text-[#1E3529] border border-[#1E3529]/20'
             }`}
           >
             {isPast ? 'Passé' : 'Confirmé'}

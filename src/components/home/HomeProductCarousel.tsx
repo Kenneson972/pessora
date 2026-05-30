@@ -143,7 +143,7 @@ export function HomeProductCarousel() {
             type="button"
             variant="ghost"
             onClick={scrollNext}
-            className="absolute right-0 top-[min(40%,120px)] z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-noir/[0.12] bg-white text-black/70 shadow-[0_4px_24px_rgba(0,0,0,0.06)] transition-colors hover:border-noir/25 hover:text-black md:flex"
+            className="absolute right-0 top-[min(40%,120px)] z-10 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-noir/[0.12] bg-white text-black/70 shadow-[0_4px_24px_rgba(0,0,0,0.06)] transition-colors hover:border-[#1E3529]/30 hover:text-[#1E3529] md:flex"
             aria-label="Faire défiler vers la droite"
           >
             <ChevronRight size={20} strokeWidth={1.25} aria-hidden />

@@ -61,7 +61,7 @@ export function HomeGammesProductCarousel({ activeTab }: { activeTab: string }) 
               {tab === t.id && (
                 <motion.span
                   layoutId="gamme-tab-bg"
-                  className="absolute inset-0 bg-noir"
+                  className="absolute inset-0 bg-[#1E3529]"
                   transition={SPRING_TAB}
                 />
               )}

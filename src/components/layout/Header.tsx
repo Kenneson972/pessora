@@ -58,10 +58,10 @@ const Header = () => {
   const isDarkHeroRoute = location.pathname === '/';
   const isSolid = scrolled;
   const useLightTransparentChrome = !isSolid && !isDarkHeroRoute;
-  const chromeDark = !isSolid && isDarkHeroRoute;
+  const chromeDark = isSolid || (!isSolid && isDarkHeroRoute);
 
   const headerSurfaceClass = isSolid
-    ? 'border-b border-noir/[0.06] bg-white shadow-[0_1px_0_rgba(0,0,0,0.04)]'
+    ? 'border-b border-white/[0.08] bg-[#1E3529] shadow-[0_1px_0_rgba(0,0,0,0.12)]'
     : useLightTransparentChrome
       ? 'border-b border-noir/[0.06] bg-white/92 shadow-[0_1px_0_rgba(0,0,0,0.04)]'
       : 'border-b border-transparent bg-transparent';
@@ -203,10 +203,8 @@ const Header = () => {
             </Button>
             {itemCount > 0 && (
               <Chip
-                className="pointer-events-none absolute -right-1 -top-1 h-4 min-h-4 min-w-4 px-1 text-[8px]"
+                className="pointer-events-none absolute -right-1 -top-1 h-4 min-h-4 min-w-4 px-1 text-[8px] !bg-[#1E3529] !text-white"
                 size="sm"
-                variant="primary"
-                color="default"
               >
                 {itemCount > 99 ? '99+' : itemCount}
               </Chip>

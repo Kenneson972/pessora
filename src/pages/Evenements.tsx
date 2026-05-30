@@ -368,7 +368,7 @@ const Evenements = () => {
             <EmptyState.Content className="flex-row flex-wrap items-center justify-center gap-3">
               <Link
                 to="/contact"
-                className="inline-flex h-11 items-center rounded-full bg-noir px-6 text-[11px] font-light uppercase tracking-[0.18em] text-white transition-colors duration-200 hover:bg-anthracite"
+                className="inline-flex h-11 items-center rounded-full bg-[#1E3529] px-6 text-[11px] font-light uppercase tracking-[0.18em] text-white transition-colors duration-200 hover:bg-[#1E3529]/80"
               >
                 Nous contacter
               </Link>

@@ -147,7 +147,7 @@ const Dashboard = () => {
                 {/* Right: chart panel — hidden on mobile */}
                 <div className="hidden md:flex p-7 flex-col justify-center border-l border-noir/[0.06] bg-surface-muted">
                   <DashEyebrow className="mb-3">Commandes · 12 mois</DashEyebrow>
-                  <AreaChart data={heroOrdersChartData} h={130} stroke="var(--color-noir, #0A0A0A)" />
+                  <AreaChart data={heroOrdersChartData} h={130} stroke="#1E3529" />
                   <div className="flex justify-between mt-3">
                     <div>
                       {statsLoading ? (
@@ -205,7 +205,7 @@ const Dashboard = () => {
                   {eventsTrend.label}
                 </KPI.Trend>
               </KPI.Content>
-              <KPI.Chart color="var(--color-noir)" data={toChartData(stats.eventsSparkline)} height={42} />
+              <KPI.Chart color="#1E3529" data={toChartData(stats.eventsSparkline)} height={42} />
             </KPI>
           </div>
           <div className="col-span-1 md:col-span-3">
@@ -219,7 +219,7 @@ const Dashboard = () => {
                   {bilansTrend.label}
                 </KPI.Trend>
               </KPI.Content>
-              <KPI.Chart color="var(--color-noir)" data={toChartData(stats.bilansSparkline)} height={42} />
+              <KPI.Chart color="#1E3529" data={toChartData(stats.bilansSparkline)} height={42} />
             </KPI>
           </div>
           <div className="col-span-1 md:col-span-3">
@@ -233,7 +233,7 @@ const Dashboard = () => {
                   {ordersTrend.label}
                 </KPI.Trend>
               </KPI.Content>
-              <KPI.Chart color="var(--color-noir)" data={toChartData(ordersMonthly)} height={42} />
+              <KPI.Chart color="#1E3529" data={toChartData(ordersMonthly)} height={42} />
             </KPI>
           </div>
           <div className="col-span-1 md:col-span-3">

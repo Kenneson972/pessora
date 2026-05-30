@@ -211,7 +211,7 @@ const Contact = () => {
                     className={cn(
                       'w-full border-0 border-b border-noir/10 bg-transparent py-3 text-[15px] font-light text-black',
                       fieldErrors.name && 'border-b-red-400',
-                      'focus-visible:border-noir'
+                      'focus-visible:border-[#1E3529]'
                     )}
                   />
                   {fieldErrors.name && (
@@ -230,7 +230,7 @@ const Contact = () => {
                     className={cn(
                       'w-full border-0 border-b border-noir/10 bg-transparent py-3 text-[15px] font-light text-black',
                       fieldErrors.email && 'border-b-red-400',
-                      'focus-visible:border-noir'
+                      'focus-visible:border-[#1E3529]'
                     )}
                   />
                   {fieldErrors.email && (
@@ -249,7 +249,7 @@ const Contact = () => {
                     className={cn(
                       'w-full resize-none border-0 border-b border-noir/10 bg-transparent py-3 text-[15px] font-light text-black',
                       fieldErrors.message && 'border-b-red-400',
-                      'focus-visible:border-noir'
+                      'focus-visible:border-[#1E3529]'
                     )}
                   />
                   {fieldErrors.message && (
@@ -269,7 +269,7 @@ const Contact = () => {
                         setPrivacyAccepted(e.target.checked);
                         if (e.target.checked) setPrivacyError(false);
                       }}
-                      className="mt-1 h-4 w-4 shrink-0 rounded-[2px] border border-noir/15 accent-noir"
+                      className="mt-1 h-4 w-4 shrink-0 rounded-[2px] border border-noir/15 accent-[#1E3529]"
                     />
                     <span className="text-[11px] font-light leading-relaxed text-black/55">
                       J’accepte que mes informations soient utilisées pour répondre à ma demande, conformément à la{' '}

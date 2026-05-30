@@ -163,7 +163,7 @@ const Subscription = () => {
             <div className="flex flex-col divide-y divide-black/[0.05]">
               {features.map((feature, i) => (
                 <div key={i} className="flex items-start gap-4 py-4">
-                  <Check size={13} strokeWidth={1.5} className="text-black/50 shrink-0 mt-0.5" />
+                  <Check size={13} strokeWidth={1.5} className="text-[#1E3529]/60 shrink-0 mt-0.5" />
                   <span className="text-[13px] font-light text-black/70 leading-relaxed">{feature}</span>
                 </div>
               ))}

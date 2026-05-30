@@ -183,11 +183,11 @@ const DrinkDetail = () => {
         <PageShell className="py-5">
           <nav aria-label="Fil d'Ariane" className={`flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-[10px] uppercase tracking-[0.08em] text-black/40 sm:justify-start sm:text-left ${DRINK_LAYOUT}`}>
             <Link to="/menu" className="hover:text-black transition-colors duration-200">Menu</Link>
-            <span aria-hidden="true">/</span>
+            <span aria-hidden="true" className="text-[#1E3529]/35">/</span>
             <Link to={`/menu?gamme=${drink.category}`} className="hover:text-black transition-colors duration-200">
               {categoryNames[drink.category]}
             </Link>
-            <span aria-hidden="true">/</span>
+            <span aria-hidden="true" className="text-[#1E3529]/35">/</span>
             <span className="text-black/70" aria-current="page">{drink.name}</span>
           </nav>
         </PageShell>
@@ -378,7 +378,7 @@ const DrinkDetail = () => {
                         className={
                           `flex flex-1 items-center justify-center gap-1.5 rounded-[2px] border py-3 min-h-[44px] text-[9px] font-normal uppercase leading-tight tracking-[0.1em] transition-colors ` +
                           (isSelected
-                            ? 'border-noir bg-noir text-white'
+                            ? 'border-[#1E3529] bg-[#1E3529] text-white'
                             : 'border-noir/15 text-black/45 hover:border-noir/30 hover:text-black')
                         }
                         aria-pressed={isSelected}
@@ -532,7 +532,7 @@ const DrinkDetail = () => {
                 variant="primary"
                 fullWidth
                 onPress={handleAddToCart}
-                className="flex h-12 min-h-12 flex-1 items-center justify-center gap-3 rounded-full bg-noir text-[10px] font-normal uppercase tracking-[0.12em] text-white hover:bg-anthracite"
+                className="flex h-12 min-h-12 flex-1 items-center justify-center gap-3 rounded-full bg-[#1E3529] text-[10px] font-normal uppercase tracking-[0.12em] text-white hover:bg-[#1E3529]/80"
               >
                 {justAdded ? (
                   <Check size={16} strokeWidth={1.3} aria-hidden />
@@ -575,7 +575,7 @@ const DrinkDetail = () => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`h-9 min-h-9 shrink-0 cursor-pointer whitespace-nowrap rounded-full px-6 text-[10px] font-normal uppercase tracking-[0.1em] transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-noir ${
                   activeTab === tab.id
-                    ? 'bg-noir text-white'
+                    ? 'bg-[#1E3529] text-white'
                     : 'border border-noir/[0.1] bg-white text-black/45 hover:border-noir/25 hover:text-black'
                 }`}
               >

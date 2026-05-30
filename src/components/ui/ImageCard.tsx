@@ -62,11 +62,11 @@ export const ImageCard = ({
         'relative overflow-hidden cursor-pointer group',
         isDark
           ? 'motion-safe:group-hover:ring-1 motion-safe:group-hover:ring-inset motion-safe:group-hover:ring-white/12'
-          : 'motion-safe:group-hover:ring-1 motion-safe:group-hover:ring-inset motion-safe:group-hover:ring-noir/10',
+          : 'motion-safe:group-hover:ring-1 motion-safe:group-hover:ring-inset motion-safe:group-hover:ring-[#1E3529]/10',
         aspectRatio,
         isDark
           ? 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-inset'
-          : 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-noir/20 focus-visible:ring-inset',
+          : 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E3529]/20 focus-visible:ring-inset',
       )}
       onClick={onPress}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onPress?.(); }}

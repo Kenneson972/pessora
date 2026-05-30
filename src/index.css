@@ -71,8 +71,12 @@
   /* Puits carré produit (carrousel accueil, grille menu) — neutre pur */
   --color-surface-product-well: oklch(97% 0 0);
   --color-surface-hero:    oklch(11% 0.006 55);
-  /* Badge / accent chaud (prix barré, pastilles éditoriales) — WCAG AA 4.5:1 on white */
-  --color-editorial-badge: oklch(32% 0.05 55);
+  /* Vert sapin — identité bien-être / nature PessÓra */
+  --color-sapin:        #1E3529;
+  --color-sapin-muted:  oklch(19% 0.028 155 / 0.15);
+  --color-sapin-subtle: oklch(19% 0.028 155 / 0.06);
+  /* Badge / accent éditorial — vert sapin profond, WCAG AA 4.5:1 on white */
+  --color-editorial-badge: oklch(19% 0.028 155);
 
   /* Typography — Akkurat Pro + Berthold Baskerville */
   --font-display: 'Berthold Baskerville Book', Georgia, serif;

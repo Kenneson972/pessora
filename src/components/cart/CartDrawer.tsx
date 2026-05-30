@@ -14,7 +14,7 @@ import { useCheckout } from '../../hooks/useCheckout';
 import { PickupTimePicker } from './PickupTimePicker';
 
 const focusRing =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-noir/25 focus-visible:ring-offset-2';
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E3529]/30 focus-visible:ring-offset-2';
 
 export function CartDrawer() {
   const items = useCart((s) => s.items);
