@@ -23,7 +23,7 @@ const CartLineSchema = z.object({
 
 const CheckoutRequestSchema = z.object({
   items: z.array(CartLineSchema).min(1),
-  user_id: z.string().uuid(),
+  user_id: z.string().uuid().nullable(),
   pickup_time: z.string().nullable().optional(),
 });
 
@@ -128,23 +128,6 @@ serve(async (req) => {
       });
     }
 
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Non authentifié' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Token invalide' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     const body = await req.json();
     const parsed = CheckoutRequestSchema.safeParse(body);
     if (!parsed.success) {
@@ -155,11 +138,30 @@ serve(async (req) => {
     }
 
     const { items, user_id, pickup_time } = parsed.data;
-    if (user_id !== user.id) {
-      return new Response(JSON.stringify({ error: 'user_id ne correspond pas' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    if (user_id) {
+      const authHeader = req.headers.get('Authorization');
+      if (!authHeader) {
+        return new Response(JSON.stringify({ error: 'Authentification requise' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
+      if (authError || !user) {
+        return new Response(JSON.stringify({ error: 'Token invalide' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (user_id !== user.id) {
+        return new Response(JSON.stringify({ error: 'user_id ne correspond pas' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     // ── P0: Vérifier les prix côté serveur (ignorer unitPrice du client) ──
@@ -185,9 +187,12 @@ serve(async (req) => {
         })()
       : null;
 
+    const orderPayload: Record<string, unknown> = { total, status: 'pending', pickup_time: orderPickupTime };
+    if (user_id) orderPayload.user_id = user_id;
+
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .insert({ user_id, total, status: 'pending', pickup_time: orderPickupTime })
+      .insert(orderPayload)
       .select('id')
       .single();
 
@@ -237,7 +242,7 @@ serve(async (req) => {
           quantity: item.quantity,
         };
       }),
-      success_url: `${siteUrl}/commande/succes?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${siteUrl}/commande/succes?session_id={CHECKOUT_SESSION_ID}&order_id=${order.id}`,
       cancel_url: `${siteUrl}/commande/annulee?order_id=${order.id}`,
       metadata: {
         order_id: order.id,

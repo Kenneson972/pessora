@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { CheckCircle } from 'lucide-react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { CheckCircle, Clock } from 'lucide-react';
 import { PageShell } from '../components/layout/PageShell';
 import { useCart } from '../store/cartStore';
 import { useAuth } from '../contexts/AuthContext';
@@ -10,10 +10,11 @@ export default function CommandeSucces() {
   const clearCart = useCart((s) => s.clearCart);
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const orderId = searchParams.get('order_id');
 
   useEffect(() => {
     clearCart();
-    // Si l'URL contient un double slash (ex: //commande/succes), rediriger
     if (window.location.pathname.startsWith('//')) {
       navigate(window.location.pathname.replace(/\/+/g, '/'), { replace: true });
     }
@@ -54,11 +55,25 @@ export default function CommandeSucces() {
               <br />
               votre commande
             </h1>
+            {orderId && (
+              <p className="mx-auto mb-3 max-w-sm font-mono text-[11px] text-black/35">
+                N° {orderId.slice(0, 8)}
+              </p>
+            )}
             <p className="mx-auto mb-10 max-w-sm text-[13px] font-light leading-relaxed text-black/50">
-              Votre paiement a été validé. Vous recevrez une confirmation par e-mail sous peu.
+              Votre paiement a été validé. Votre commande est en cours de préparation.
             </p>
             <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-              {isAuthenticated && (
+              {orderId && (
+                <Link
+                  to={`/suivi-commande?order=${orderId}`}
+                  className="inline-flex h-12 min-h-12 items-center justify-center gap-2 rounded-full bg-sapin px-8 text-[10px] font-normal uppercase tracking-[0.12em] text-white transition-colors hover:bg-sapin/85"
+                >
+                  <Clock size={14} strokeWidth={1.5} />
+                  Suivre ma commande
+                </Link>
+              )}
+              {!orderId && isAuthenticated && (
                 <Link
                   to="/mon-espace/historique"
                   className="inline-flex h-12 min-h-12 items-center justify-center rounded-full bg-sapin px-8 text-[10px] font-normal uppercase tracking-[0.12em] text-white transition-colors hover:bg-sapin/85"

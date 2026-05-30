@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { useCart } from '../store/cartStore';
 
@@ -7,7 +6,6 @@ export function useCheckout(pickupTime: string) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const items = useCart((s) => s.items);
-  const navigate = useNavigate();
 
   const checkout = async () => {
     setError(null);
@@ -15,15 +13,11 @@ export function useCheckout(pickupTime: string) {
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
-
-      if (!session) {
-        navigate('/connexion?next=panier');
-        return;
-      }
+      const userId = session?.user?.id ?? null;
 
       const { data, error: fnError } = await supabase.functions.invoke(
         'create-checkout-session',
-        { body: { items, user_id: session.user.id, pickup_time: pickupTime || null } },
+        { body: { items, user_id: userId, pickup_time: pickupTime || null } },
       );
 
       if (fnError) {
