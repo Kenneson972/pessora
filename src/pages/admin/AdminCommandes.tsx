@@ -6,6 +6,7 @@ import { AdminOrdersFilter } from '../../components/admin/AdminOrdersFilter';
 import { AdminOrdersList } from '../../components/admin/AdminOrdersList';
 import { useAdminOrders, type OrderFilterStatus } from '../../hooks/useAdminOrders';
 import { playNewOrderSound, playPaidSound, setMuted, isMuted } from '../../lib/notificationSound';
+import { auditLog } from '../../lib/auditLog';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { supabase } from '../../lib/supabaseClient';
 
@@ -50,6 +51,13 @@ const AdminCommandes = () => {
         ...(nextStatus === 'completed' ? { picked_up_at: new Date().toISOString() } : {}),
       })
       .eq('id', orderId);
+
+    auditLog({
+      action: 'order.status_change',
+      entity_type: 'order',
+      entity_id: orderId,
+      details: { new_status: nextStatus },
+    });
   };
 
   const filteredOrders = orders.filter((o) => {
