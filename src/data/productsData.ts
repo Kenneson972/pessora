@@ -11,7 +11,7 @@ export const rangesData = {
     color: 'text-[oklch(57%_0.065_68)]',
     bgColor: 'bg-noir/[0.03]',
     heroImage:
-      'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&q=80&w=1200',
+      'https://www.herbalife.com/dmassets/market-reusable-assets/emea/france/images/canister/pc-1065-fr.png',
     products: [
       { name: 'Aloe Vera',        description: "Concentré d'aloé vera pour l'hydratation.",           price: '60€' },
       { name: 'Collagène',        description: 'Collagène marin pour peau, ongles, articulations.',   price: '85€' },
@@ -31,7 +31,7 @@ export const rangesData = {
     color: 'text-[oklch(57%_0.065_68)]',
     bgColor: 'bg-noir/[0.03]',
     heroImage:
-      'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&q=80&w=1200',
+      'https://www.herbalife.com/dmassets/market-reusable-assets/emea/france/images/canister/pc-048k-fr.png',
     products: [
       { name: 'Formula 1 950g',          description: 'Repas nutritionnel complet en shake.',               price: '65€' },
       { name: 'Créatine',                description: 'Améliore la force et la puissance musculaire.',     price: '45€' },
@@ -55,7 +55,8 @@ export const rangesData = {
     icon: Droplet,
     color: 'text-[oklch(57%_0.065_68)]',
     bgColor: 'bg-white',
-    heroImage: '/hero-skin.png',
+    heroImage:
+      'https://www.herbalife.com/dmassets/market-reusable-assets/emea/france/images/canister/pc-513k-fr.png',
     products: [
       { name: 'Gel Nettoyant Resurface',    description: 'Nettoyage en profondeur sans dessécher.',        price: '29€ / 39€' },
       { name: 'Gommage',                    description: 'Exfoliant doux pour peau lumineuse.',            price: '29€' },
