@@ -112,7 +112,7 @@ const Subscription = () => {
                 </div>
                 <span className="text-[8px] font-normal uppercase tracking-[0.28em] text-black/35">Meilleur rapport qualité-prix</span>
               </div>
-              <span className="text-[8px] font-normal uppercase tracking-[0.2em] text-black/30 border border-black/[0.1] px-3 py-1.5 rounded-[2px]">
+              <span className="text-[8px] font-normal uppercase tracking-[0.2em] text-[#1E3529] border border-[#1E3529]/20 bg-[#1E3529]/8 px-3 py-1.5 rounded-[2px]">
                 {subscription?.status === 'active' ? 'Actif' : subscription?.status ?? 'Actif'}
               </span>
             </div>

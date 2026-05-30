@@ -1,6 +1,7 @@
 // src/pages/AbonnementSucces.tsx
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import { CheckCircle } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { PageShell } from '../components/layout/PageShell';
 
@@ -28,16 +29,21 @@ const AbonnementSucces = () => {
     <PageShell className="flex min-h-[60vh] items-center justify-center py-20">
       <div className="mx-auto max-w-md text-center">
         {status === 'loading' && (
-          <p className="text-[13px] text-black/40">Activation en cours…</p>
+          <p className="text-[13px] text-[#1E3529]/60 animate-pulse">Activation en cours…</p>
         )}
 
         {status === 'processed' && (
           <>
-            <p className="mb-3 text-[9px] font-normal uppercase tracking-[0.22em] text-black/35">
+            <CheckCircle
+              className="mx-auto mb-8 h-12 w-12 text-[#1E3529]/70"
+              strokeWidth={1}
+              aria-hidden
+            />
+            <p className="mb-3 text-[9px] font-normal uppercase tracking-[0.22em] text-[#1E3529]/60">
               Bienvenue dans
             </p>
             <h1
-              className="font-display font-normal leading-none text-noir"
+              className="font-display font-normal leading-none text-[#1E3529]"
               style={{ fontSize: 'clamp(40px, 5vw, 64px)' }}
             >
               Óra+
@@ -57,7 +63,7 @@ const AbonnementSucces = () => {
 
         {(status === 'pending' || status === 'error') && (
           <>
-            <h1 className="font-display text-[32px] font-normal leading-none text-noir">
+            <h1 className="font-display text-[32px] font-normal leading-none text-[#1E3529]">
               Merci !
             </h1>
             <p className="mt-4 text-[13px] font-light leading-relaxed text-black/55">

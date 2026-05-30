@@ -42,7 +42,7 @@ function formatTime(h: string): string {
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
   en_attente: { label: 'En attente', color: 'text-amber-600 bg-amber-50 border border-amber-200' },
-  confirme: { label: 'Confirmé', color: 'text-emerald-600 bg-emerald-50 border border-emerald-200' },
+  confirme: { label: 'Confirmé', color: 'text-[#1E3529] bg-[#1E3529]/8 border border-[#1E3529]/20' },
   annule: { label: 'Annulé', color: 'text-gray-500 bg-gray-50 border border-gray-200' },
 };
 
@@ -388,7 +388,7 @@ const MesBilans = () => {
 
         {submitStatus === 'success' ? (
           <DashCard className="text-center py-12" aria-live="polite">
-            <CheckCircle size={44} strokeWidth={1} className="text-emerald-500 mx-auto mb-5" aria-hidden="true" />
+            <CheckCircle size={44} strokeWidth={1} className="text-[#1E3529] mx-auto mb-5" aria-hidden="true" />
             <p className="font-display text-[24px] text-noir mb-3">Réservation confirmée !</p>
             <p className="text-[12px] text-black/50 leading-relaxed max-w-sm mx-auto">
               L&apos;équipe PessÓra te confirme ton rendez-vous par WhatsApp sous 24h.

@@ -258,7 +258,7 @@ const Profile = () => {
               <p className="md:col-span-2 text-[11px] text-red-500/80" role="alert">{passwordError}</p>
             )}
             {passwordSuccess && (
-              <p className="md:col-span-2 text-[11px] text-emerald-700/90" role="status">
+              <p className="md:col-span-2 text-[11px] text-[#1E3529] font-medium" role="status">
                 Mot de passe mis à jour.
               </p>
             )}

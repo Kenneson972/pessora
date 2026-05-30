@@ -50,7 +50,7 @@ export default function CommandeAnnulee() {
             className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-[10px] uppercase tracking-[0.08em] text-black/40 sm:justify-start sm:text-left"
           >
             <Link to="/" className="transition-colors duration-200 hover:text-black">Accueil</Link>
-            <span aria-hidden="true">/</span>
+            <span aria-hidden="true" className="text-[#1E3529]/35">/</span>
             <span className="text-black/70" aria-current="page">Paiement annulé</span>
           </nav>
         </PageShell>
@@ -89,7 +89,7 @@ export default function CommandeAnnulee() {
               </button>
               <Link
                 to="/menu"
-                className="inline-flex h-12 min-h-12 items-center justify-center rounded-full bg-noir px-8 text-[10px] font-normal uppercase tracking-[0.12em] text-white transition-colors hover:bg-anthracite"
+                className="inline-flex h-12 min-h-12 items-center justify-center rounded-full bg-[#1E3529] px-8 text-[10px] font-normal uppercase tracking-[0.12em] text-white transition-colors hover:bg-[#1E3529]/85"
               >
                 Voir la carte
               </Link>

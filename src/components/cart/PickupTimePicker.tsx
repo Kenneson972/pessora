@@ -69,7 +69,7 @@ export function PickupTimePicker({ businessHours, value, onChange }: PickupTimeP
     return (
       <div className="px-5 py-4 md:px-6 border-t border-noir/[0.06]">
         <div className="flex items-center gap-2 mb-3">
-          <Clock size={13} strokeWidth={1.3} className="text-black/40" />
+          <Clock size={13} strokeWidth={1.3} className="text-[#1E3529]/45" />
           <span className="text-[9px] font-normal uppercase tracking-[0.2em] text-black/45">
             Créneau de retrait
           </span>
@@ -86,7 +86,7 @@ export function PickupTimePicker({ businessHours, value, onChange }: PickupTimeP
   return (
     <div className="px-5 py-4 md:px-6 border-t border-noir/[0.06]">
       <div className="flex items-center gap-2 mb-3">
-        <Clock size={13} strokeWidth={1.3} className="text-black/40" />
+        <Clock size={13} strokeWidth={1.3} className="text-[#1E3529]/45" />
         <span className="text-[9px] font-normal uppercase tracking-[0.2em] text-black/45">
           Créneau de retrait
         </span>
@@ -102,10 +102,10 @@ export function PickupTimePicker({ businessHours, value, onChange }: PickupTimeP
               onClick={() => onChange(slot.value)}
               className={`min-h-[36px] px-3 py-1.5 rounded-[2px] text-[11px] font-normal transition-colors ${
                 selected
-                  ? 'bg-noir text-white'
+                  ? 'bg-[#1E3529] text-white'
                   : slot.disabled
                     ? 'text-black/15 cursor-not-allowed'
-                    : 'border border-noir/15 text-black/55 hover:border-noir/30 hover:text-noir'
+                    : 'border border-noir/15 text-black/55 hover:border-[#1E3529]/40 hover:text-[#1E3529]'
               }`}
               aria-pressed={selected}
               aria-label={`Retrait à ${slot.label}`}

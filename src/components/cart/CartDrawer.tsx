@@ -216,7 +216,7 @@ export function CartDrawer() {
                       onPress={checkout}
                       className={cn(
                         focusRing,
-                        'flex h-12 min-h-12 w-full items-center justify-center rounded-full bg-noir text-[10px] font-normal uppercase tracking-[0.12em] text-white transition-colors hover:bg-anthracite',
+                        'flex h-12 min-h-12 w-full items-center justify-center rounded-full bg-[#1E3529] text-[10px] font-normal uppercase tracking-[0.12em] text-white transition-colors hover:bg-[#1E3529]/85',
                       )}
                     >
                       {isCheckingOut ? 'Redirection…' : 'Payer ma commande'}

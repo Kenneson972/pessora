@@ -29,7 +29,7 @@ export default function CommandeSucces() {
             className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-[10px] uppercase tracking-[0.08em] text-black/40 sm:justify-start sm:text-left"
           >
             <Link to="/" className="transition-colors duration-200 hover:text-black">Accueil</Link>
-            <span aria-hidden="true">/</span>
+            <span aria-hidden="true" className="text-[#1E3529]/35">/</span>
             <span className="text-black/70" aria-current="page">Paiement confirmé</span>
           </nav>
         </PageShell>
@@ -39,11 +39,11 @@ export default function CommandeSucces() {
         <PageShell className="py-16 lg:py-24">
           <div className="mx-auto max-w-lg text-center">
             <CheckCircle
-              className="mx-auto mb-8 h-12 w-12 text-black/30"
+              className="mx-auto mb-8 h-12 w-12 text-[#1E3529]/70"
               strokeWidth={1}
               aria-hidden
             />
-            <p className="mb-3 text-[9px] font-normal uppercase tracking-[0.2em] text-black/35">
+            <p className="mb-3 text-[9px] font-normal uppercase tracking-[0.2em] text-[#1E3529]/60">
               Paiement confirmé
             </p>
             <h1
@@ -61,7 +61,7 @@ export default function CommandeSucces() {
               {isAuthenticated && (
                 <Link
                   to="/mon-espace/historique"
-                  className="inline-flex h-12 min-h-12 items-center justify-center rounded-full bg-noir px-8 text-[10px] font-normal uppercase tracking-[0.12em] text-white transition-colors hover:bg-anthracite"
+                  className="inline-flex h-12 min-h-12 items-center justify-center rounded-full bg-[#1E3529] px-8 text-[10px] font-normal uppercase tracking-[0.12em] text-white transition-colors hover:bg-[#1E3529]/85"
                 >
                   Voir mes commandes
                 </Link>
