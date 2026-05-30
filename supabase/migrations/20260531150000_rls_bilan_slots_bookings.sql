@@ -64,7 +64,7 @@ ALTER TABLE public.bilan_slots ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Anyone can view available slots" ON public.bilan_slots;
 CREATE POLICY "Anyone can view available slots" ON public.bilan_slots
   FOR SELECT
-  USING (is_available = true AND slot_date >= CURRENT_DATE);
+  USING (disponible = true AND date >= CURRENT_DATE);
 
 -- Admin peut tout voir
 DROP POLICY IF EXISTS "Admins can view all slots" ON public.bilan_slots;
