@@ -8,7 +8,7 @@ import { useFadeUpWhenVisible, SPRING_SMOOTH } from '../../lib/motionReveal';
 
 function PlaceholderCard({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
-    <div className="flex-shrink-0 w-[280px] min-[400px]:w-[310px] h-[400px] rounded-[2px] overflow-hidden bg-noir/[0.06] relative snap-start">
+    <div className="flex-shrink-0 w-[min(280px,85vw)] min-[400px]:w-[310px] h-[400px] rounded-[2px] overflow-hidden bg-noir/[0.06] relative snap-start">
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-black/20">
         <span className="text-[9px] uppercase tracking-[0.18em]">Photo à venir</span>
       </div>
@@ -46,7 +46,7 @@ function CardItem({ card }: { card: { id: string; eyebrow: string; title: string
     </div>
   );
 
-  const cls = "group flex-shrink-0 w-[280px] min-[400px]:w-[310px] h-[400px] rounded-[2px] overflow-hidden relative snap-start cursor-pointer block";
+  const cls = "group flex-shrink-0 w-[min(280px,85vw)] min-[400px]:w-[310px] h-[400px] rounded-[2px] overflow-hidden relative snap-start cursor-pointer block";
 
   return card.link_to ? (
     <Link to={card.link_to} className={cls}>{inner}</Link>
@@ -81,11 +81,11 @@ export function HomeFeaturedCarousel({ title }: { title: string }) {
           <h2 className="text-editorial-section-title">{title}</h2>
           <div className="flex gap-2">
             <Button isIconOnly variant="ghost" onPress={() => scrollBy(-1)} aria-label="Précédent"
-              className="h-10 w-10 rounded-full border border-noir/[0.12] bg-white text-black/55 hover:border-sapin/40 hover:text-sapin">
+              className="h-11 w-11 rounded-full border border-noir/[0.12] bg-white text-black/55 hover:border-sapin/40 hover:text-sapin">
               <ChevronLeft size={18} strokeWidth={1.25} />
             </Button>
             <Button isIconOnly variant="ghost" onPress={() => scrollBy(1)} aria-label="Suivant"
-              className="h-10 w-10 rounded-full border border-noir/[0.12] bg-white text-black/55 hover:border-sapin/40 hover:text-sapin">
+              className="h-11 w-11 rounded-full border border-noir/[0.12] bg-white text-black/55 hover:border-sapin/40 hover:text-sapin">
               <ChevronRight size={18} strokeWidth={1.25} />
             </Button>
           </div>

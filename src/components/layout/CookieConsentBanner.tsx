@@ -57,21 +57,21 @@ export function CookieConsentBanner() {
               <button
                 type="button"
                 onClick={() => setShowCustomize(true)}
-                className="h-10 min-h-10 rounded-full border border-noir/15 px-4 text-[10px] font-normal uppercase tracking-[0.12em] text-black/55 transition-colors hover:border-noir/30 hover:text-black"
+                className="h-11 min-h-[44px] rounded-full border border-noir/15 px-4 text-[10px] font-normal uppercase tracking-[0.12em] text-black/55 transition-colors hover:border-noir/30 hover:text-black"
               >
                 Personnaliser
               </button>
               <button
                 type="button"
                 onClick={rejectOptional}
-                className="h-10 min-h-10 rounded-full border border-noir/15 px-4 text-[10px] font-normal uppercase tracking-[0.12em] text-black/55 transition-colors hover:border-noir/30 hover:text-black"
+                className="h-11 min-h-[44px] rounded-full border border-noir/15 px-4 text-[10px] font-normal uppercase tracking-[0.12em] text-black/55 transition-colors hover:border-noir/30 hover:text-black"
               >
                 Nécessaires uniquement
               </button>
               <button
                 type="button"
                 onClick={acceptAll}
-                className="h-10 min-h-10 rounded-full bg-noir px-5 text-[10px] font-normal uppercase tracking-[0.12em] text-white transition-colors hover:bg-anthracite"
+                className="h-11 min-h-[44px] rounded-full bg-noir px-5 text-[10px] font-normal uppercase tracking-[0.12em] text-white transition-colors hover:bg-anthracite"
               >
                 Tout accepter
               </button>
@@ -151,14 +151,14 @@ export function CookieConsentBanner() {
               <button
                 type="button"
                 onClick={() => setShowCustomize(false)}
-                className="h-10 min-h-10 rounded-full border border-noir/12 px-4 text-[10px] font-normal uppercase tracking-[0.12em] text-black/50 hover:border-noir/25"
+                className="h-11 min-h-[44px] rounded-full border border-noir/12 px-4 text-[10px] font-normal uppercase tracking-[0.12em] text-black/50 hover:border-noir/25"
               >
                 Annuler
               </button>
               <button
                 type="button"
                 onClick={persistSave}
-                className="h-10 min-h-10 rounded-full bg-noir px-5 text-[10px] font-normal uppercase tracking-[0.12em] text-white hover:bg-anthracite"
+                className="h-11 min-h-[44px] rounded-full bg-noir px-5 text-[10px] font-normal uppercase tracking-[0.12em] text-white hover:bg-anthracite"
               >
                 Enregistrer
               </button>

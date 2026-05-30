@@ -573,7 +573,7 @@ const DrinkDetail = () => {
                 aria-selected={activeTab === tab.id}
                 aria-controls={`${TAB_PANEL_PREFIX}-${tab.id}`}
                 onClick={() => setActiveTab(tab.id)}
-                className={`h-9 min-h-9 shrink-0 cursor-pointer whitespace-nowrap rounded-full px-6 text-[10px] font-normal uppercase tracking-[0.1em] transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-noir ${
+                className={`h-11 min-h-11 shrink-0 cursor-pointer whitespace-nowrap rounded-full px-6 text-[10px] font-normal uppercase tracking-[0.1em] transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-noir ${
                   activeTab === tab.id
                     ? 'bg-sapin text-white'
                     : 'border border-noir/[0.1] bg-white text-black/45 hover:border-noir/25 hover:text-black'
@@ -621,7 +621,7 @@ const DrinkDetail = () => {
             >
               <div className="mx-auto w-full max-w-md">
                 {(drink.calories || drink.protein) ? (
-                  <Card className="overflow-hidden rounded-[2px] border border-noir/[0.05] bg-white shadow-none">
+                  <Card className="overflow-x-auto rounded-[2px] border border-noir/[0.05] bg-white shadow-none">
                     <div className="bg-noir px-8 py-4 text-white">
                       <h3 className="text-[10px] font-normal uppercase tracking-[0.12em]">Valeurs nutritionnelles par portion</h3>
                     </div>

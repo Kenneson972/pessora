@@ -54,7 +54,7 @@ export function HomeGammeBanner() {
               variant="ghost"
               size="sm"
               onPress={() => navigate(featured.link_to)}
-              className="self-start h-10 min-h-10 rounded-full border border-white/35 text-white text-[9px] uppercase tracking-[0.16em] hover:border-white hover:bg-white/10 px-5 transition-colors duration-200"
+              className="self-start h-11 min-h-[44px] rounded-full border border-white/35 text-white text-[9px] uppercase tracking-[0.16em] hover:border-white hover:bg-white/10 px-5 transition-colors duration-200"
             >
               Voir la gamme
             </Button>

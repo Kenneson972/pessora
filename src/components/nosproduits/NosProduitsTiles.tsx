@@ -14,7 +14,7 @@ export function NosProduitsTiles() {
     <section className="bg-white px-4 pb-10 md:px-10 lg:px-[72px]">
       <div className="mx-auto max-w-[1400px]">
         <p className="mb-5 text-[9px] uppercase tracking-[0.26em] text-black/35">Explorer par gamme</p>
-        <div className="grid grid-cols-3 gap-3 md:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
           {RANGES.map((r) => (
             <button
               key={r.id}

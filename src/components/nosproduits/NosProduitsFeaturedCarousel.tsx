@@ -28,11 +28,11 @@ export function NosProduitsFeaturedCarousel() {
           <h2 className="text-editorial-section-title">La collection</h2>
           <div className="flex gap-2">
             <Button isIconOnly variant="ghost" onPress={() => scrollBy(-1)} aria-label="Précédent"
-              className="h-10 w-10 rounded-full border border-noir/[0.12] bg-white text-black/55 hover:border-sapin/35 hover:text-sapin">
+              className="h-11 w-11 rounded-full border border-noir/[0.12] bg-white text-black/55 hover:border-sapin/35 hover:text-sapin">
               <ChevronLeft size={18} strokeWidth={1.25} />
             </Button>
             <Button isIconOnly variant="ghost" onPress={() => scrollBy(1)} aria-label="Suivant"
-              className="h-10 w-10 rounded-full border border-noir/[0.12] bg-white text-black/55 hover:border-sapin/35 hover:text-sapin">
+              className="h-11 w-11 rounded-full border border-noir/[0.12] bg-white text-black/55 hover:border-sapin/35 hover:text-sapin">
               <ChevronRight size={18} strokeWidth={1.25} />
             </Button>
           </div>
@@ -54,7 +54,7 @@ export function NosProduitsFeaturedCarousel() {
               <button
                 key={card.id}
                 onClick={() => navigate(target)}
-                className="group flex-shrink-0 w-[260px] h-[360px] rounded-[10px] overflow-hidden relative snap-start text-left"
+                className="group flex-shrink-0 w-[min(260px,80vw)] h-[360px] rounded-[10px] overflow-hidden relative snap-start text-left"
               >
                 {image ? (
                   <img

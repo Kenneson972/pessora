@@ -102,7 +102,7 @@ const NosProduits = () => {
                       size="sm"
                       onPress={() => navigate(`/nos-produits/${range.id}`)}
                       className={cn(
-                        'inline-flex h-10 min-h-10 items-center gap-2.5 rounded-full border border-noir/15 px-5',
+                        'inline-flex h-11 min-h-[44px] items-center gap-2.5 rounded-full border border-noir/15 px-5',
                         'text-[10px] font-normal uppercase tracking-[0.14em] text-black',
                         'transition-[transform,border-color,background-color] duration-300',
                         'hover:-translate-y-0.5 hover:border-noir/30 hover:bg-noir/[0.02] shadow-sm',
@@ -140,7 +140,7 @@ const NosProduits = () => {
               size="sm"
               onPress={() => navigate('/menu')}
               className={cn(
-                'inline-flex h-10 min-h-10 items-center gap-2.5 rounded-full border border-noir/15 px-5',
+                'inline-flex h-11 min-h-[44px] items-center gap-2.5 rounded-full border border-noir/15 px-5',
                 'text-[10px] font-normal uppercase tracking-[0.14em] text-black',
                 'transition-[transform,border-color,background-color] duration-300',
                 'hover:-translate-y-0.5 hover:border-noir/30 hover:bg-noir/[0.02] shadow-sm',

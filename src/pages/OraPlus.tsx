@@ -286,7 +286,7 @@ const OraPlus = () => {
       <div className="border-b border-noir/[0.06] bg-surface-muted">
         <PageShell className="py-8 md:py-9">
           <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-[1fr_auto_auto_auto] md:gap-12">
-            <span className="max-w-[260px] font-display text-[14px] font-light italic leading-snug text-noir/55">
+            <span className="max-w-[260px] sm:max-w-none font-display text-[14px] font-light italic leading-snug text-noir/55">
               {oraPlusStats.label}
             </span>
             <div className="grid grid-cols-2 gap-6 md:flex md:gap-12">
@@ -331,7 +331,7 @@ const OraPlus = () => {
               </h2>
             </div>
             <p
-              className="m-0 max-w-[460px] font-display font-light italic text-noir/65"
+              className="m-0 max-w-[460px] sm:max-w-none font-display font-light italic text-noir/65"
               style={{ fontSize: 'clamp(15px, 1.2vw, 18px)', lineHeight: 1.55 }}
             >
               −50 % sur les boissons, bilan offert, événements prioritaires — sans engagement.
@@ -432,7 +432,7 @@ const OraPlus = () => {
                 <em className="font-light italic text-editorial-badge">avant et après.</em>
               </h2>
             </div>
-            <p className="m-0 max-w-[420px] font-display font-light italic text-noir/65 lg:justify-self-end lg:text-right" style={{ fontSize: 'clamp(14px, 1.1vw, 17px)', lineHeight: 1.5 }}>
+            <p className="m-0 max-w-[420px] sm:max-w-none font-display font-light italic text-noir/65 lg:justify-self-end lg:text-right" style={{ fontSize: 'clamp(14px, 1.1vw, 17px)', lineHeight: 1.5 }}>
               Exemples sur la carte + simulateur personnalisé ci-dessous.
             </p>
           </motion.header>
@@ -527,12 +527,12 @@ const OraPlus = () => {
       <section className="relative overflow-hidden bg-noir py-24 text-center md:py-32">
         <div className="absolute inset-0 bg-gradient-to-b from-white/[0.04] to-transparent" aria-hidden />
         <PageShell className="relative">
-          <motion.div {...fadeBlock} className="mx-auto max-w-[720px]">
+          <motion.div {...fadeBlock} className="mx-auto max-w-[720px] sm:max-w-none">
             <h2 className="m-0 font-display font-normal text-white" style={{ fontSize: 'clamp(40px, 5.5vw, 72px)', lineHeight: 1, letterSpacing: '-0.025em' }}>
               {oraPlusFinalCta.titleHead}
               <em className="font-light italic text-white/65">{oraPlusFinalCta.titleEmphasis}</em>
             </h2>
-            <p className="mx-auto my-8 max-w-[520px] font-display font-light italic text-white/60" style={{ fontSize: 'clamp(15px, 1.2vw, 18px)', lineHeight: 1.55 }}>
+            <p className="mx-auto my-8 max-w-[520px] sm:max-w-none font-display font-light italic text-white/60" style={{ fontSize: 'clamp(15px, 1.2vw, 18px)', lineHeight: 1.55 }}>
               {isOraPlusActive ? 'Vous êtes déjà membre Óra+. Retrouvez votre espace.' : oraPlusFinalCta.body}
             </p>
             <Button

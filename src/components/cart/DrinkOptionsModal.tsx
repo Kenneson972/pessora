@@ -230,7 +230,7 @@ export function DrinkOptionsModal({ item, onClose }: Props) {
                     isIconOnly
                     size="sm"
                     aria-label="Diminuer"
-                    className="h-10 w-10 min-w-10"
+                    className="h-11 w-11 min-w-10"
                     isDisabled={quantity <= 1}
                     onPress={() => setQuantity((q) => Math.max(1, q - 1))}
                   >
@@ -245,7 +245,7 @@ export function DrinkOptionsModal({ item, onClose }: Props) {
                     isIconOnly
                     size="sm"
                     aria-label="Augmenter"
-                    className="h-10 w-10 min-w-10"
+                    className="h-11 w-11 min-w-10"
                     onPress={() => setQuantity((q) => q + 1)}
                   >
                     <Plus className="h-3 w-3" strokeWidth={1.35} />

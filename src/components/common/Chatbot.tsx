@@ -636,7 +636,7 @@ const Chatbot = ({ embedded = false }: ChatbotProps) => {
                   onPress={() => setIsProfileOpen(false)}
                   className={cn(
                     focusLink,
-                    'absolute right-2 top-2 z-20 flex h-9 w-9 items-center justify-center rounded-[2px] border border-white/30 bg-black/40 text-white backdrop-blur-md transition-colors hover:bg-black/55 sm:right-3 sm:top-3 sm:h-10 sm:w-10'
+                    'absolute right-2 top-2 z-20 flex h-11 w-11 items-center justify-center rounded-[2px] border border-white/30 bg-black/40 text-white backdrop-blur-md transition-colors hover:bg-black/55 sm:right-3 sm:top-3'
                   )}
                 >
                   <X size={18} strokeWidth={1.5} />

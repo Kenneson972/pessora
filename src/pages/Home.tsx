@@ -10,7 +10,7 @@ import { HomeProductCarousel } from '../components/home/HomeProductCarousel';
 import { HomeGoogleReviews } from '../components/home/HomeGoogleReviews';
 import { HomeFeaturedCarousel } from '../components/home/HomeFeaturedCarousel';
 import { HomeSplitGammes } from '../components/home/HomeSplitGammes';
-import { HomeGammeBanner } from '../components/home/HomeGammeBanner';
+import { HomeBanner } from '../components/home/HomeBanner';
 import { HomeGammesProductTiles } from '../components/home/HomeGammesProductTiles';
 import { HomeGammesProductCarousel } from '../components/home/HomeGammesProductCarousel';
 import { OraPlusTeaserStrip } from '../components/common/OraPlusTeaserStrip';
@@ -136,7 +136,7 @@ const Home = () => {
       <HomeFeaturedCarousel title="À la une" />
 
       {/* ─── Bannière gamme style Starbucks ─── */}
-      <HomeGammeBanner />
+      <HomeBanner />
 
       {/* ─── Boissons — carrousel coups de cœur ─── */}
       <HomeProductCarousel />
@@ -258,7 +258,7 @@ const Home = () => {
       {/* ─── Événements ─── */}
       <section className="bg-white section-vertical-padding">
         <div className="section-wrapper">
-          <motion.div className="mx-auto max-w-[520px] text-center" {...fadeUpEvents}>
+          <motion.div className="mx-auto max-w-[520px] sm:max-w-none text-center" {...fadeUpEvents}>
             <h2
               className="mb-8 font-display font-normal leading-[0.93] text-black"
               style={{

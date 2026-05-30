@@ -142,7 +142,7 @@ const LuxeMockup = () => {
               <User size={15} strokeWidth={1.25} aria-hidden />
               Mon espace
             </span>
-            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-noir/[0.12] bg-white md:h-11 md:w-11">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full border border-noir/[0.12] bg-white md:h-11 md:w-11">
               <ShoppingBag size={17} strokeWidth={1.25} aria-hidden />
             </span>
           </div>
@@ -360,7 +360,7 @@ const LuxeMockup = () => {
                 key={f}
                 type="button"
                 className={cn(
-                  'h-8 rounded-full border px-4 text-[10px] font-light transition-colors',
+                  'h-11 rounded-full border px-4 text-[10px] font-light transition-colors',
                   i === 0 ? 'border-noir bg-noir text-white' : 'border-noir/12 text-black/45 hover:border-noir/25 hover:text-black'
                 )}
               >

@@ -7,10 +7,6 @@ function safeFileName(name: string): string {
   return name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 120) || 'image';
 }
 
-/**
- * Upload public dans un bucket Storage (policies admin côté Supabase).
- * Retourne l’URL publique du fichier.
- */
 export async function uploadPublicImage(
   bucket: 'product-images' | 'event-images' | 'carousel-images' | 'split-gammes-images',
   file: File,
@@ -32,4 +28,8 @@ export async function uploadPublicImage(
   if (error) throw new Error(error.message);
   const { data: pub } = db.storage.from(bucket).getPublicUrl(data.path);
   return pub.publicUrl as string;
+}
+
+export async function uploadHomeBannerImage(file: File): Promise<string> {
+  return uploadPublicImage('carousel-images', file, 'home-banner');
 }

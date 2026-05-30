@@ -6,11 +6,13 @@ import { DashPageHeader } from '../../components/dashboard/primitives';
 import AdminInfosBar from './AdminInfosBar';
 import AdminCarousel from './AdminCarousel';
 import AdminSplitGammes from './AdminSplitGammes';
+import AdminHomeBanner from './AdminHomeBanner';
 
 const TABS = [
   { id: 'infos-bar', label: 'Infos bar' },
   { id: 'carrousel', label: 'Carrousel' },
   { id: 'moments', label: 'Moments' },
+  { id: 'banner', label: 'Bannière' },
 ] as const;
 
 type TabId = (typeof TABS)[number]['id'];
@@ -26,7 +28,7 @@ const AdminContenu = () => {
       <DashPageHeader
         breadcrumb="Administration"
         title="Contenu"
-        subtitle="Infos bar, carrousel éditorial et sections moments"
+        subtitle="Infos bar, carrousel, moments et bannière"
       />
       <Tabs
         selectedKey={activeTab}
@@ -49,6 +51,9 @@ const AdminContenu = () => {
         </Tabs.Panel>
         <Tabs.Panel id="moments">
           <AdminSplitGammes />
+        </Tabs.Panel>
+        <Tabs.Panel id="banner">
+          <AdminHomeBanner />
         </Tabs.Panel>
       </Tabs>
     </div>

@@ -79,7 +79,7 @@ export function CartDrawer() {
                     onClick={closeCart}
                     className={cn(
                       focusRing,
-                      'inline-flex h-10 min-h-10 items-center justify-center rounded-full border border-noir/[0.12] px-6 text-[10px] font-normal uppercase tracking-[0.14em] text-black transition-colors hover:bg-noir/[0.03]',
+                      'inline-flex h-11 min-h-[44px] items-center justify-center rounded-full border border-noir/[0.12] px-6 text-[10px] font-normal uppercase tracking-[0.14em] text-black transition-colors hover:bg-noir/[0.03]',
                     )}
                   >
                     La carte

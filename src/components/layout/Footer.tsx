@@ -224,15 +224,27 @@ const Footer = () => {
       />
 
       <div className={cn('bg-sapin pt-8 pb-6 lg:pt-10 lg:pb-8', FOOTER_GUTTER_X)}>
-        {/* Mobile / tablette : logo centré, puis deux ailés gauche | droite */}
-        <div className="flex w-full flex-col gap-12 lg:hidden">
+        {/* Mobile / tablette : logo centré, sections empilées */}
+        <div className="flex w-full flex-col gap-10 lg:hidden">
           <section aria-label="Marque Pessóra" className="flex w-full justify-center">
             <FooterLogoCenter context="mobile" />
           </section>
-          <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:gap-x-10">
-            <FooterLeftRail />
-            <FooterRightRail />
+
+          {/* Navigation : Menu + Espace côte à côte */}
+          <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+            <FooterCol title="Menu" links={MENU_LINKS} />
+            <FooterCol title="Espace" links={ESPACE_LINKS} align="end" />
           </div>
+
+          {/* Contact : ligne inline */}
+          <section aria-label="Contact et réseaux">
+            <FooterContactNav showGroupLabel />
+          </section>
+
+          {/* Newsletter pleine largeur */}
+          <section aria-label="Newsletter" className="border-t border-[color:var(--color-footer-border-soft)] pt-8">
+            <NewsletterSignup align="left" compact minimal className="mt-0 w-full" />
+          </section>
         </div>
 
         {/* Desktop : grille 1fr · auto · 1fr pour pousser les rails aux extrémités et le logo au centre réel */}

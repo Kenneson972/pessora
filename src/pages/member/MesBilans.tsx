@@ -440,7 +440,7 @@ const MesBilans = () => {
                             type="button"
                             onClick={() => setSelectedSlot(slot)}
                             aria-pressed={selectedSlot?.id === slot.id}
-                            className={`h-10 min-h-10 rounded-[2px] text-[12px] font-normal tracking-wide transition-colors duration-200 ${
+                            className={`h-11 min-h-[44px] rounded-[2px] text-[12px] font-normal tracking-wide transition-colors duration-200 ${
                               selectedSlot?.id === slot.id
                                 ? 'bg-noir text-white'
                                 : 'bg-white border border-noir/[0.1] text-black hover:border-noir/30'

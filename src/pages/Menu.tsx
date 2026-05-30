@@ -218,7 +218,7 @@ const Menu = () => {
               type="button"
               variant="ghost"
               onPress={clearSearch}
-              className="h-10 min-h-10 rounded-full border border-noir/12 px-4 text-[10px] font-light uppercase tracking-[0.14em] text-black/50 hover:text-black"
+              className="h-11 min-h-[44px] rounded-full border border-noir/12 px-4 text-[10px] font-light uppercase tracking-[0.14em] text-black/50 hover:text-black"
             >
               Effacer
             </Button>

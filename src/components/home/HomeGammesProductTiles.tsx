@@ -14,7 +14,7 @@ export function HomeGammesProductTiles({ onTabChange }: { onTabChange: (id: stri
   const navigate = useNavigate();
 
   return (
-    <div className="grid grid-cols-3 gap-3 md:gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
       {RANGES.map((r, i) => (
         <motion.button
           key={r.id}
