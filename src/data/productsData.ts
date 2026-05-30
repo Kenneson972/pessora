@@ -59,8 +59,8 @@ export const rangesData = {
       'https://www.herbalife.com/dmassets/market-reusable-assets/emea/france/images/canister/pc-513k-fr.png',
     products: [
       { name: 'Gel Nettoyant Resurface',    description: 'Nettoyage en profondeur sans dessécher.',        price: '29€ / 39€', image: 'https://www.herbalife.com/dmassets/market-reusable-assets/emea/france/images/canister/pc-511k-fr.png' },
-      { name: 'Gommage',                    description: 'Exfoliant doux pour peau lumineuse.',            price: '29€', image: 'https://www.herbalife.com/dmassets/market-reusable-assets/emea/france/images/canister/pc-508k-fr.png' },
-      { name: 'Lotion Tonique Revitalisant',description: 'Tonifie et revitalise le teint.',               price: '22€', image: 'https://www.herbalife.com/dmassets/market-reusable-assets/emea/france/images/canister/pc-539k-fr.png' },
+      { name: 'Gommage',                    description: 'Exfoliant doux pour peau lumineuse.',            price: '29€' },
+      { name: 'Lotion Tonique Revitalisant',description: 'Tonifie et revitalise le teint.',               price: '22€' },
       { name: 'Crème Hydratante FPS 30',    description: 'Protection solaire + hydratation intense.',     price: '55€' },
       { name: 'Sérum Rides',                description: 'Concentré anti-rides haute efficacité.',        price: '75€' },
       { name: 'Crème Tension Ultime',       description: 'Raffermissement et densité cutanée.',           price: '89€', image: 'https://www.herbalife.com/dmassets/market-reusable-assets/emea/france/images/canister/pc-513k-fr.png' },

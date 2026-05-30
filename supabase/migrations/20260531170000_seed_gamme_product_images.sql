@@ -47,8 +47,5 @@ UPDATE public.gamme_products SET image_url = 'https://www.herbalife.com/dmassets
 UPDATE public.gamme_products SET image_url = 'https://www.herbalife.com/dmassets/market-reusable-assets/emea/france/images/canister/pc-515k-fr.png'
   WHERE gamme = 'skin' AND name ILIKE '%contour%yeux%';
 
-UPDATE public.gamme_products SET image_url = 'https://www.herbalife.com/dmassets/market-reusable-assets/emea/france/images/canister/pc-508k-fr.png'
-  WHERE gamme = 'skin' AND name ILIKE '%gommage%';
-
-UPDATE public.gamme_products SET image_url = 'https://www.herbalife.com/dmassets/market-reusable-assets/emea/france/images/canister/pc-539k-fr.png'
-  WHERE gamme = 'skin' AND name ILIKE '%lotion%tonique%';
+-- Gommage → PAS pc-508k (c'est Sérum Niacinamide). Image réelle à trouver.
+-- Lotion Tonique → PAS pc-539k (c'est Crème de Nuit). Image réelle à trouver.
