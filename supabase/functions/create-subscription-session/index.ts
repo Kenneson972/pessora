@@ -3,6 +3,7 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import Stripe from 'npm:stripe@14'
 import { z } from 'npm:zod@3'
+import { checkRateLimit } from '../_shared/rate-limiter.ts'
 
 const BodySchema = z.object({
   price_id: z.string().optional(),
@@ -20,6 +21,14 @@ serve(async (req) => {
   }
 
   try {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown"
+    if (!checkRateLimit(ip)) {
+      return new Response(JSON.stringify({ error: "Too many requests" }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "60" },
+      })
+    }
+
     // 🔐 Auth — valide le JWT avant toute chose
     const authHeader = req.headers.get('authorization')
     if (!authHeader?.startsWith('Bearer ')) {

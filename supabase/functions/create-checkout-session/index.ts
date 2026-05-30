@@ -16,6 +16,7 @@ const CartLineSchema = z.object({
   optionsKey: z.string(),
   optionLabels: z.array(z.string()),
   image: z.string().optional(),
+  barBasePublic: z.number().positive().optional(),
   // default 'gamme' : compatibilité panier localStorage antérieur au champ source
   source: z.enum(['bar', 'gamme']).optional().default('gamme'),
 });
@@ -59,9 +60,21 @@ async function fetchVerifiedPrice(
   }
 
   // Produit bar : chercher par slug (productId = slug) ou par UUID
+  // Extraire la taille depuis optionsKey
+  const sizeFromKey = item.optionsKey?.match(/(?:^|\|)size:(small|medium|large)(?:\||$)/)?.[1] ?? null;
+
+  // Extraire le nombre de boosters depuis optionsKey
+  const boostMatch = item.optionsKey?.match(/(?:^|\|)boost:([^|]*)/);
+  const boosterCount = boostMatch?.[1] ? boostMatch[1].split(',').filter(Boolean).length : 0;
+
+  // Colonne de prix selon la taille (fallback → price par défaut)
+  const priceCol = sizeFromKey === 'small' ? 'price_small'
+    : sizeFromKey === 'large' ? 'price_large'
+    : 'price';
+
   let query = supabase
     .from('products')
-    .select('slug, price')
+    .select(`slug, price, price_small, price_large`)
     .eq('active', true);
 
   if (UUID_RE.test(item.productId)) {
@@ -74,7 +87,19 @@ async function fetchVerifiedPrice(
   if (error || !data) {
     throw new Error(`Produit bar introuvable ou inactif : ${item.productId}`);
   }
-  return { verifiedUnitPrice: Number(data.price), productId: null };
+
+  const baseProductPrice = Number(data[priceCol] ?? data.price);
+
+  // Vérification anti-fraude : client base estimate vs serveur
+  const clientBaseEstimate = item.barBasePublic ?? (item.unitPrice - boosterCount);
+  if (Math.abs(clientBaseEstimate - baseProductPrice) > 0.02) {
+    throw new Error(
+      `Écart prix suspect : client=${clientBaseEstimate}€, serveur=${baseProductPrice}€ pour ${item.productId}`
+    );
+  }
+
+  const verifiedUnitPrice = baseProductPrice + boosterCount;
+  return { verifiedUnitPrice, productId: null };
 }
 
 serve(async (req) => {

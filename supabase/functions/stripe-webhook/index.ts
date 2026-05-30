@@ -106,6 +106,26 @@ serve(async (req) => {
           .eq('stripe_subscription_id', sub.id)
         break
       }
+
+      case 'checkout.session.async_payment_succeeded': {
+        const session = event.data.object as Stripe.Checkout.Session
+        if (session.mode === 'payment') {
+          const orderId = session.metadata?.order_id
+          if (orderId) {
+            await supabase
+              .from('orders')
+              .update({ status: 'paid', stripe_payment_intent_id: session.payment_intent as string })
+              .eq('id', orderId)
+          }
+        }
+        break
+      }
+
+      case 'checkout.session.async_payment_failed': {
+        const session = event.data.object as Stripe.Checkout.Session
+        console.error('[stripe-webhook] async payment failed for session', session.id)
+        break
+      }
     }
   } catch (err) {
     console.error('[stripe-webhook] handler error:', event.type, err)
