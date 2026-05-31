@@ -98,10 +98,14 @@ export function CartDrawer() {
                     >
                       <div className="flex gap-4">
                         <div
-                          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border border-noir/[0.08] bg-surface-product-well text-[22px]"
+                          className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-noir/[0.08] bg-surface-product-well text-[22px]"
                           aria-hidden
                         >
-                          {line.image ?? '◆'}
+                          {line.image && (line.image.startsWith('http') || line.image.startsWith('/')) ? (
+                            <img src={line.image} alt={line.name} className="h-full w-full object-cover" />
+                          ) : (
+                            line.image ?? '◆'
+                          )}
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-[11px] font-normal uppercase tracking-[0.12em] text-black">

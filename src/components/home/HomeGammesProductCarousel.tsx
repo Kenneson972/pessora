@@ -1,7 +1,10 @@
 import { useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
-import { rangesData } from '../../data/productsData';
+import { useGammeCatalog } from '../../hooks/useGammeCatalog';
+import { toSlug } from '../../lib/toSlug';
 import { SPRING_TAB, SPRING_SMOOTH, EDITORIAL_EASE } from '../../lib/motionReveal';
+import type { GammeProduct } from '../../types/database';
 
 type RangeId = 'wellness' | 'sport' | 'skin';
 
@@ -11,7 +14,14 @@ const TABS: { id: RangeId; label: string }[] = [
   { id: 'skin', label: 'Skin' },
 ];
 
-function ProductCard({ product, index }: { product: { name: string; description: string; price: string }; index: number }) {
+const formatEur = (n: number) => n.toLocaleString('fr-FR', { minimumFractionDigits: 2 });
+
+function ProductCard({ product, index, rangeId }: { product: GammeProduct; index: number; rangeId: RangeId }) {
+  const displayPrice = product.price_alt !== null
+    ? `${formatEur(product.price)}€ / ${formatEur(product.price_alt)}€`
+    : `${formatEur(product.price)}€`;
+  const slug = product.slug ?? toSlug(product.name);
+
   return (
     <motion.div
       className="flex-shrink-0 w-[180px] md:w-[200px] rounded-[2px] overflow-hidden border border-noir/[0.08] bg-white snap-start"
@@ -19,13 +29,24 @@ function ProductCard({ product, index }: { product: { name: string; description:
       animate={{ opacity: 1, y: 0 }}
       transition={{ ...SPRING_SMOOTH, delay: index * 0.04 }}
     >
-      <div className="aspect-square bg-surface-product-well flex items-center justify-center">
-        <span className="text-[9px] uppercase tracking-[0.18em] text-black/25">Photo à venir</span>
-      </div>
-      <div className="p-3">
-        <p className="text-[10px] font-medium tracking-[0.05em] text-black mb-1 line-clamp-1">{product.name}</p>
-        <p className="text-[11px] font-light text-black">{product.price}</p>
-      </div>
+      <Link to={`/nos-produits/${rangeId}/${slug}`} className="block">
+        <div className="aspect-square bg-surface-product-well flex items-center justify-center overflow-hidden">
+          {product.image_url ? (
+            <img
+              src={product.image_url}
+              alt={product.name}
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <span className="text-[9px] uppercase tracking-[0.18em] text-black/25">Photo à venir</span>
+          )}
+        </div>
+        <div className="p-3">
+          <p className="text-[10px] font-medium tracking-[0.05em] text-black mb-1 line-clamp-1">{product.name}</p>
+          <p className="text-[11px] font-light text-black">{displayPrice}</p>
+        </div>
+      </Link>
     </motion.div>
   );
 }
@@ -35,7 +56,7 @@ export function HomeGammesProductCarousel({ activeTab }: { activeTab: string }) 
     TABS.some((t) => t.id === activeTab) ? (activeTab as RangeId) : 'wellness'
   );
   const scrollerRef = useRef<HTMLDivElement>(null);
-  const products = rangesData[tab].products;
+  const { products, loading } = useGammeCatalog(tab);
 
   const handleTabChange = (id: RangeId) => {
     setTab(id);
@@ -44,7 +65,6 @@ export function HomeGammesProductCarousel({ activeTab }: { activeTab: string }) 
 
   return (
     <div>
-      {/* Tabs with layoutId sliding indicator */}
       <LayoutGroup id="gamme-carousel-tabs">
         <div className="flex gap-2 mb-6 flex-wrap">
           {TABS.map((t) => (
@@ -71,7 +91,6 @@ export function HomeGammesProductCarousel({ activeTab }: { activeTab: string }) 
         </div>
       </LayoutGroup>
 
-      {/* Products with AnimatePresence cross-fade */}
       <div className="overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
@@ -84,9 +103,19 @@ export function HomeGammesProductCarousel({ activeTab }: { activeTab: string }) 
             exit={{ opacity: 0, x: -8 }}
             transition={{ duration: 0.22, ease: EDITORIAL_EASE }}
           >
-            {products.map((p, i) => (
-              <ProductCard key={p.name} product={p} index={i} />
-            ))}
+            {loading
+              ? Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="flex-shrink-0 w-[180px] md:w-[200px] rounded-[2px] border border-noir/[0.06] bg-white">
+                    <div className="aspect-square bg-surface-product-well animate-pulse" />
+                    <div className="p-3 space-y-2">
+                      <div className="h-3 w-3/4 bg-noir/[0.06] animate-pulse rounded" />
+                      <div className="h-3 w-1/3 bg-noir/[0.06] animate-pulse rounded" />
+                    </div>
+                  </div>
+                ))
+              : products.map((p, i) => (
+                  <ProductCard key={p.id} product={p} index={i} rangeId={tab} />
+                ))}
           </motion.div>
         </AnimatePresence>
       </div>
