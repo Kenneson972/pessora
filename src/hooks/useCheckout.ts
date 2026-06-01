@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useCart } from '../store/cartStore';
 
-export function useCheckout(pickupTime: string) {
+export function useCheckout(pickupTime: string, clientName: string, clientPhone: string) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const items = useCart((s) => s.items);
@@ -17,7 +17,7 @@ export function useCheckout(pickupTime: string) {
 
       const { data, error: fnError } = await supabase.functions.invoke(
         'create-checkout-session',
-        { body: { items, user_id: userId, pickup_time: pickupTime || null } },
+        { body: { items, user_id: userId, pickup_time: pickupTime || null, client_name: clientName || null, client_phone: clientPhone || null } },
       );
 
       if (fnError) {
