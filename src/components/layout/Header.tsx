@@ -105,7 +105,7 @@ const Header = () => {
     >
       <div
         className={cn(
-          'grid h-16 grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 md:h-20 md:gap-4 md:px-10 lg:px-[72px]',
+          'flex h-16 items-center justify-between gap-3 px-4 md:grid md:h-20 md:grid-cols-[1fr_auto_1fr] md:gap-4 md:px-10 lg:px-[72px]',
           showSubNav && 'shadow-none',
         )}
       >
@@ -154,31 +154,6 @@ const Header = () => {
           })}
         </nav>
 
-        {/* Navigation mobile — visible entre le logo et les actions */}
-        <nav
-          aria-label="Navigation rapide"
-          className="hidden max-[1023px]:flex items-center justify-end gap-1.5 sm:gap-3 self-center"
-        >
-          {DESKTOP_NAV.slice(0, 3).map((item) => {
-            const isActive = isPrimaryNavActive(location.pathname, item.path, item.matchExact);
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                aria-current={isActive ? 'page' : undefined}
-                className={cn(
-                  'whitespace-nowrap py-1 text-[9px] font-normal uppercase tracking-[0.14em] transition-colors rounded-[1px]',
-                  isActive
-                    ? chromeDark ? 'text-white' : 'text-black'
-                    : chromeDark ? 'text-white/55 hover:text-white' : 'text-black/55 hover:text-black',
-                  isActive && 'underline underline-offset-4',
-                )}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
         {/* Droite : recherche (desktop) + compte + panier + menu mobile */}
         <div className="flex min-w-0 items-center justify-end justify-self-end gap-2 md:gap-3 lg:gap-4">
           <div className="hidden md:block">
