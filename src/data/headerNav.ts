@@ -60,6 +60,6 @@ export const SUBNAV_PRODUITS: SubNavItem[] = [
 ];
 
 export function getSubNavForPath(pathname: string): SubNavItem[] | null {
-  if (pathname.startsWith('/nos-produits')) return SUBNAV_PRODUITS;
+  if (pathname.startsWith('/nos-produits/')) return SUBNAV_PRODUITS;
   return null;
 }
