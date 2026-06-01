@@ -111,9 +111,9 @@ const Home = () => {
             className="mb-8 max-w-md text-[8px] font-light uppercase leading-relaxed tracking-[0.22em] text-white/50 [text-wrap:balance] sm:text-[9px] sm:tracking-[0.28em]"
           >
             Performance{' '}
-            <span className="text-white/35" aria-hidden>|</span>{' '}
+            <span className="text-white/55" aria-hidden>|</span>{' '}
             Protein bar{' '}
-            <span className="text-white/35" aria-hidden>|</span>{' '}
+            <span className="text-white/55" aria-hidden>|</span>{' '}
             Nutricosmetics
           </motion.p>
           <motion.div variants={HERO_ITEM}>
@@ -176,7 +176,7 @@ const Home = () => {
               variant="ghost"
               onPress={goPrev}
               aria-label="Univers précédent"
-              className="absolute left-0 top-[42%] z-20 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-noir/[0.08] bg-white/70 text-black/35 transition-colors hover:border-noir/20 hover:text-black md:left-2 lg:left-4"
+              className="absolute left-0 top-[42%] z-20 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-noir/[0.08] bg-white/70 text-black/55 transition-colors hover:border-noir/20 hover:text-black md:left-2 lg:left-4"
             >
               <ChevronLeft size={14} strokeWidth={1} aria-hidden />
             </Button>
@@ -186,7 +186,7 @@ const Home = () => {
               variant="ghost"
               onPress={goNext}
               aria-label="Univers suivant"
-              className="absolute right-0 top-[42%] z-20 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-noir/[0.08] bg-white/70 text-black/35 transition-colors hover:border-noir/20 hover:text-black md:right-2 lg:right-4"
+              className="absolute right-0 top-[42%] z-20 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-noir/[0.08] bg-white/70 text-black/55 transition-colors hover:border-noir/20 hover:text-black md:right-2 lg:right-4"
             >
               <ChevronRight size={14} strokeWidth={1} aria-hidden />
             </Button>
@@ -266,7 +266,7 @@ const Home = () => {
                 fontSize: 'clamp(21px, 2.4vw, 30px)',
               }}
             >
-              Rejoins la <em className="italic text-black/45">communauté Pessóra</em>
+              Rejoins la <em className="italic text-black/65">communauté Pessóra</em>
             </h2>
             <Link
               to="/evenements"

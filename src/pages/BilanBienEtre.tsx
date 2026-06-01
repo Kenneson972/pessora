@@ -79,7 +79,7 @@ const CalendarPicker = ({ availableDates, selectedDate, onSelect, minDateStr }: 
       {/* Jours de la semaine */}
       <div className="grid grid-cols-7 mb-2">
         {JOURS.map((j, i) => (
-          <div key={i} className="text-center text-[9px] font-normal uppercase tracking-[0.15em] text-black/25 py-1">
+          <div key={i} className="text-center text-[9px] font-normal uppercase tracking-[0.15em] text-black/40 py-1">
             {j}
           </div>
         ))}
@@ -383,7 +383,7 @@ const BilanBienEtre = () => {
                   </div>
                 ) : !fetchError && slots.length === 0 ? (
                   <div className="p-10 text-center bg-white rounded-[2px] border border-noir/[0.06]">
-                    <Clock size={32} strokeWidth={1} className="mx-auto text-black/25 mb-4" aria-hidden="true" />
+                    <Clock size={32} strokeWidth={1} className="mx-auto text-black/40 mb-4" aria-hidden="true" />
                     <p className="text-[12px] text-black/40">
                       Aucun créneau disponible pour le moment. Contacte-nous sur Instagram.
                     </p>
@@ -401,7 +401,7 @@ const BilanBienEtre = () => {
 
                     {selectedDate && timeSlotsForDate.length > 0 && (
                       <div>
-                        <p className="text-[9px] font-normal uppercase tracking-[0.2em] text-black/35 mb-4">
+                        <p className="text-[9px] font-normal uppercase tracking-[0.2em] text-black/55 mb-4">
                           Créneaux disponibles
                         </p>
                         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3" role="group" aria-label="Créneaux horaires disponibles">
@@ -462,7 +462,7 @@ const BilanBienEtre = () => {
                   <Controller name="telephone" control={control} render={({ field }) => (
                     <div className="space-y-1">
                       <label htmlFor="telephone" className="text-[9px] font-normal uppercase tracking-[0.2em] text-black/40 block">
-                        Téléphone * <span className="normal-case text-black/25">(WhatsApp)</span>
+                        Téléphone * <span className="normal-case text-black/40">(WhatsApp)</span>
                       </label>
                       <input id="telephone" {...field} type="tel" autoComplete="tel" inputMode="tel" placeholder="0696 XX XX XX" className={inputClass} />
                       {errors.telephone?.message && <p className="text-[11px] text-red-600">{errors.telephone.message}</p>}
@@ -472,7 +472,7 @@ const BilanBienEtre = () => {
                   <Controller name="email" control={control} render={({ field }) => (
                     <div className="space-y-1">
                       <label htmlFor="email" className="text-[9px] font-normal uppercase tracking-[0.2em] text-black/40 block">
-                        Email <span className="normal-case text-black/25">(optionnel)</span>
+                        Email <span className="normal-case text-black/40">(optionnel)</span>
                       </label>
                       <input id="email" {...field} type="email" autoComplete="email" inputMode="email" placeholder="votre@email.com" className={inputClass} />
                       {errors.email?.message && <p className="text-[11px] text-red-600">{errors.email.message}</p>}
@@ -482,7 +482,7 @@ const BilanBienEtre = () => {
                   <Controller name="notes" control={control} render={({ field }) => (
                     <div className="space-y-1">
                       <label htmlFor="notes" className="text-[9px] font-normal uppercase tracking-[0.2em] text-black/40 block">
-                        Message <span className="normal-case text-black/25">(optionnel)</span>
+                        Message <span className="normal-case text-black/40">(optionnel)</span>
                       </label>
                       <textarea
                         id="notes"

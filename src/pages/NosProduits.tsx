@@ -177,7 +177,7 @@ const NosProduits = () => {
         >
           Nos Produits
         </h1>
-        <p className="mx-auto mt-5 max-w-lg text-[16px] font-light leading-relaxed text-white/55">
+        <p className="mx-auto mt-5 max-w-lg text-[16px] font-light leading-relaxed text-white/75">
           Nutrition, sport et soins — chaque gamme a été composée avec une exigence précise
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -218,7 +218,7 @@ const NosProduits = () => {
               style={{ fontSize: 'clamp(28px, 3vw, 38px)' }}
             >
               Conseils personnalisés<br />
-              <span className="italic text-black/45">sur place</span>
+              <span className="italic text-black/65">sur place</span>
             </h3>
             <p className="mx-auto mb-8 max-w-sm text-[13px] font-light leading-relaxed text-black/50">
               Disponibilité des produits et recommandations adaptées à vos besoins. La carte complète des boissons est sur le menu.

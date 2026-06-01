@@ -158,7 +158,7 @@ const Menu = () => {
           <button
             type="button"
             onClick={() => setOptionsItem(menuItem)}
-            className="flex shrink-0 items-center justify-center gap-1 rounded-[2px] border border-noir/[0.1] px-2.5 py-1 text-[7px] font-normal uppercase tracking-[0.12em] text-black/45 transition-colors hover:border-noir/25 hover:text-noir"
+            className="flex shrink-0 items-center justify-center gap-1 rounded-[2px] border border-noir/[0.1] px-2.5 py-1 text-[7px] font-normal uppercase tracking-[0.12em] text-black/65 transition-colors hover:border-noir/25 hover:text-noir"
           >
             <ShoppingBag className="h-2.5 w-2.5" strokeWidth={1.4} aria-hidden />
             Ajouter
@@ -211,7 +211,7 @@ const Menu = () => {
         >
           La Carte
         </h1>
-        <p className="mx-auto mt-5 max-w-lg text-[16px] font-light leading-relaxed text-white/55">
+        <p className="mx-auto mt-5 max-w-lg text-[16px] font-light leading-relaxed text-white/75">
           Boissons protéinées, shakes & coffee — préparés minute à Fort-de-France
         </p>
       </section>
@@ -222,14 +222,14 @@ const Menu = () => {
             <p className="text-[11px] font-light tracking-[0.03em] text-black/55">
               {searchTotalCount > 0 ? (
                 <>
-                  <span className="text-black/35">
+                  <span className="text-black/55">
                     {searchTotalCount} résultat{searchTotalCount !== 1 ? 's' : ''} pour{' '}
                   </span>
                   <span className="font-normal text-black">« {searchQuery} »</span>
                 </>
               ) : (
                 <>
-                  <span className="text-black/35">Aucun résultat pour </span>
+                  <span className="text-black/55">Aucun résultat pour </span>
                   <span className="font-normal text-black">« {searchQuery} »</span>
                 </>
               )}
@@ -320,7 +320,7 @@ const Menu = () => {
                 <EmptyState.Title className="font-display text-[16px] font-normal text-black/75">
                   Aucun résultat
                 </EmptyState.Title>
-                <EmptyState.Description className="text-[12px] font-light text-black/45">
+                <EmptyState.Description className="text-[12px] font-light text-black/65">
                   Essayez un autre mot-clé ou effacez la recherche.
                 </EmptyState.Description>
               </EmptyState.Header>
@@ -362,7 +362,7 @@ const Menu = () => {
                   <EmptyState.Title className="font-display text-[16px] font-normal text-black/75">
                     Aucun produit
                   </EmptyState.Title>
-                  <EmptyState.Description className="text-[12px] font-light text-black/45">
+                  <EmptyState.Description className="text-[12px] font-light text-black/65">
                     Cette gamme n'affiche aucun produit pour le moment.
                   </EmptyState.Description>
                 </EmptyState.Header>
@@ -391,7 +391,7 @@ const Menu = () => {
                   fontSize: 'clamp(28px, 3vw, 38px)',
                 }}
               >
-                30 minutes<br /><em className="italic text-black/45">offertes</em>
+                30 minutes<br /><em className="italic text-black/65">offertes</em>
               </h3>
             </div>
             <Link to="/bilan-bien-etre" className="text-editorial-link-underline mt-8 inline-block md:mt-0 md:flex-shrink-0">

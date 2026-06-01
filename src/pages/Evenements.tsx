@@ -127,7 +127,7 @@ function EventRow({
           reverse ? 'md:col-start-1 md:row-start-1 md:pr-4' : 'md:col-start-8 md:pl-4'
         }`}
       >
-        <p className="mb-4 text-[11px] font-light uppercase tracking-[0.24em] text-black/45">
+        <p className="mb-4 text-[11px] font-light uppercase tracking-[0.24em] text-black/65">
           {formatDate(ev.date)}
           {ev.heure ? ` · ${ev.heure.slice(0, 5)}` : ''}
         </p>
@@ -205,7 +205,7 @@ function EventCardCompact({ ev }: { ev: EventWithCount }) {
           {ev.title}
         </h3>
         {ev.location && (
-          <p className="mt-1.5 text-[11px] font-light text-black/45">{ev.location}</p>
+          <p className="mt-1.5 text-[11px] font-light text-black/65">{ev.location}</p>
         )}
       </div>
     </Link>
@@ -310,7 +310,7 @@ const Evenements = () => {
       <section className="px-4 py-12 md:px-10 md:py-14 lg:px-[72px]">
         <div className="mb-8 flex items-end justify-between gap-6">
           <div>
-            <p className="mb-2 text-[10px] font-light uppercase tracking-[0.22em] text-black/35">
+            <p className="mb-2 text-[10px] font-light uppercase tracking-[0.22em] text-black/55">
               À venir
             </p>
             <h2
@@ -356,7 +356,7 @@ const Evenements = () => {
             className="rounded-[2px] border border-noir/[0.08] bg-neutral-50 px-6 py-12 md:px-10 md:py-16"
           >
             <EmptyState.Header>
-              <p className="text-[11px] font-light uppercase tracking-[0.22em] text-black/35">
+              <p className="text-[11px] font-light uppercase tracking-[0.22em] text-black/55">
                 Prochainement
               </p>
               <EmptyState.Title
@@ -415,7 +415,7 @@ const Evenements = () => {
         <section className="border-t border-noir/[0.06] bg-neutral-50/60 px-4 py-12 md:px-10 md:py-14 lg:px-[72px]">
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="mb-2 text-[10px] font-light uppercase tracking-[0.22em] text-black/35">
+              <p className="mb-2 text-[10px] font-light uppercase tracking-[0.22em] text-black/55">
                 Archives
               </p>
               <h2

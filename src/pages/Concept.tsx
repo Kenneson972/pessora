@@ -35,7 +35,7 @@ const Concept = () => {
               <span className="italic text-black/65">ralentir</span> pour mieux{' '}
               <span className="italic text-black/65">repartir</span>.
             </p>
-            <p className="text-[14px] font-light italic leading-relaxed text-black/45">
+            <p className="text-[14px] font-light italic leading-relaxed text-black/65">
               « En Martinique, nous avons tout ce qu’il faut pour briller. Nous avons simplement créé le lieu
               pour nourrir cette lumière intérieure. »
             </p>
