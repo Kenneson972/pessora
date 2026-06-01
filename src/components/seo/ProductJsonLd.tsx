@@ -1,3 +1,12 @@
+const CATEGORY_TAXONOMY: Record<string, string> = {
+  wellness: 'Health & Beauty > Health Care > Nutrition',
+  sport: 'Health & Beauty > Health Care > Sports Nutrition',
+  skin: 'Health & Beauty > Personal Care > Cosmetics > Skin Care',
+  coffee: 'Food & Beverages > Beverages > Coffee',
+  shakes: 'Food & Beverages > Beverages',
+  energy: 'Food & Beverages > Beverages',
+};
+
 interface ProductJsonLdProps {
   name: string;
   description: string;
@@ -22,7 +31,7 @@ export function ProductJsonLd({ name, description, image, price, category, url }
       availability: 'https://schema.org/InStock',
       url,
     },
-    category,
+    category: CATEGORY_TAXONOMY[category] ?? category,
   };
 
   return (
