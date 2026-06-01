@@ -9,6 +9,7 @@ import { AdminErrorAlert } from '../../components/dashboard/AdminErrorAlert';
 import { ConfirmDialog } from '../../components/dashboard/ConfirmDialog';
 import { DashEyebrow, DashPageHeader } from '../../components/dashboard/primitives';
 import { DASH_MAIN_PAD } from '../../components/dashboard/layoutClasses';
+import { usePersistentAdminState } from '../../hooks/usePersistentAdminState';
 import type { GammeProduct } from '../../types/database';
 import { slugify } from '../../components/admin/AdminProductEditorForm';
 import { ProductImageDropzone } from '../../components/admin/ProductImageDropzone';
@@ -330,7 +331,7 @@ const AdminGammes = () => {
   const [products, setProducts] = useState<GammeProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [filters, setFilters] = usePersistentAdminState('admin_gammes_filters_v1', DEFAULT_FILTERS);
   const { gamme, subcategory, visibility } = filters;
   const [showForm, setShowForm] = useState(false);
   const [editProduct, setEditProduct] = useState<GammeProduct | null>(null);
