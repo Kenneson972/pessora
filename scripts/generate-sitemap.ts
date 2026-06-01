@@ -81,6 +81,8 @@ async function main() {
 
   const outPath = path.resolve(import.meta.dirname!, '..', 'public', 'sitemap.xml');
   fs.writeFileSync(outPath, xml, 'utf-8');
+  // Note: quand le site dépasse 50 000 URLs, générer un sitemap_index.xml
+  // avec des sous-sitemaps par type : sitemap-pages.xml, sitemap-produits.xml, etc.
   console.log(`sitemap.xml généré : ${urls.length} URLs → ${outPath}`);
 }
 
