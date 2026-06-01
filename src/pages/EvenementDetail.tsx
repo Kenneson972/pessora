@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 import type { Event } from '../types/database';
 import { PostRegistrationWizard } from '../components/events/PostRegistrationWizard';
+import { EventJsonLd } from '../components/seo/EventJsonLd';
 
 const schema = z.object({
   nom: z.string().min(2, 'Nom requis'),
@@ -230,6 +231,16 @@ const EvenementDetail = () => {
 
   return (
     <div className="min-h-screen bg-white">
+      {event && (
+        <EventJsonLd
+          name={event.title}
+          description={event.description}
+          startDate={event.date}
+          location={event.location}
+          image={event.image_url}
+          url={window.location.href}
+        />
+      )}
 
       {/* Hero image */}
       <div className="relative h-[55vh] min-h-[380px] overflow-hidden">

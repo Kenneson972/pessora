@@ -8,11 +8,12 @@ import { useFadeUpWhenVisible, useStaggerReveal } from '../lib/motionReveal';
 const Concept = () => {
   const fadeUp = useFadeUpWhenVisible();
   const { container, item, isReducedMotion } = useStaggerReveal();
+  // TODO: remplacer par de vraies photos du bar PessÓra (uploader dans Supabase Storage ou /public)
   const conceptImages = [
-    'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1556761175-4b46a572b186?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&q=80&w=1200',
-    'https://images.unsplash.com/photo-1545201070-84682a36f181?auto=format&fit=crop&q=80&w=1200',
+    '/logo-pessora.png',
+    '/logo-pessora.png',
+    '/logo-pessora.png',
+    '/logo-pessora.png',
   ];
 
   return (

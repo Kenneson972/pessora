@@ -41,6 +41,7 @@ const Profile = () => {
 
   const [prefs, setPrefs] = useState<PrefsShape>(defaultPrefs);
 
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordSaving, setPasswordSaving] = useState(false);
@@ -95,6 +96,10 @@ const Profile = () => {
     e.preventDefault();
     setPasswordError(null);
     setPasswordSuccess(false);
+    if (!currentPassword) {
+      setPasswordError('Veuillez saisir votre mot de passe actuel.');
+      return;
+    }
     if (newPassword.length < 8) {
       setPasswordError('Le mot de passe doit contenir au moins 8 caractères.');
       return;
@@ -105,6 +110,13 @@ const Profile = () => {
     }
     setPasswordSaving(true);
     try {
+      // Vérifier le mot de passe actuel avant de changer
+      const { error: signInErr } = await supabase.auth.signInWithPassword({ email: user!.email, password: currentPassword });
+      if (signInErr) {
+        setPasswordError('Mot de passe actuel incorrect.');
+        setPasswordSaving(false);
+        return;
+      }
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw new Error(error.message);
       setNewPassword('');
@@ -263,7 +275,18 @@ const Profile = () => {
               </p>
             )}
             <div className="flex flex-col gap-2">
-              <label htmlFor="profile-new-password" className="text-[9px] font-normal uppercase tracking-[0.2em] text-black/50">
+              <label htmlFor="profile-current-password" className="text-[9px] font-normal uppercase tracking-[0.2em] text-black/50">
+                Mot de passe actuel
+              </label>
+              <input
+                id="profile-current-password"
+                type="password"
+                value={currentPassword}
+                onChange={e => setCurrentPassword(e.target.value)}
+                autoComplete="current-password"
+                className="h-10 rounded-[2px] border border-noir/[0.15] bg-white px-3 text-[13px] outline-none focus:border-noir/40"
+              />
+              <label htmlFor="profile-new-password" className="text-[9px] font-normal uppercase tracking-[0.2em] text-black/50  mt-3">
                 Nouveau mot de passe
               </label>
               <input
