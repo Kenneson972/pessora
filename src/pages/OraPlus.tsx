@@ -1,19 +1,15 @@
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import { Button, cn, Avatar } from '@heroui/react';
-import { CellSlider } from '@heroui-pro/react';
+import { Button, cn } from '@heroui/react';
 import { useFadeUpWhenVisible, useStaggerReveal } from '../lib/motionReveal';
 import { PageShell } from '../components/layout/PageShell';
 import {
   oraPlusHero,
   oraPlusStats,
-  oraPlusCompare,
-  oraPlusCalculator,
-  oraPlusQuote,
   oraPlusFinalCta,
   oraPlusPrivilegeCards,
   type OraPlusMetric,
@@ -35,158 +31,6 @@ const renderMetricTemplate = (m: OraPlusMetric, emphasisClass: string) => {
   );
 };
 
-const fmtEur0 = (n: number) =>
-  `${Math.round(n).toLocaleString('fr-FR')} €`;
-
-const fmtEur2 = (n: number) =>
-  `${n.toLocaleString('fr-FR', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 })} €`;
-
-type CalcSliderProps = {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  step?: number;
-  displayValue: string;
-  hint?: string;
-  onChange: (v: number) => void;
-};
-
-function CalcSlider({ label, value, min, max, step = 1, displayValue, hint, onChange }: CalcSliderProps) {
-  const hintId = useId();
-  const hintText = hint?.trim() ?? '';
-  return (
-    <div className="mb-8 last:mb-0">
-      <div className="mb-3 flex items-baseline justify-between gap-3">
-        <span className="text-[10px] font-medium uppercase tracking-[0.26em] text-noir/65">
-          {label}
-        </span>
-        <span
-          className="font-display font-normal leading-none text-noir"
-          style={{ fontSize: 'clamp(22px, 2vw, 28px)', letterSpacing: '-0.01em' }}
-          aria-hidden="true"
-        >
-          {displayValue}
-        </span>
-      </div>
-      <CellSlider
-        aria-label={label}
-        {...(hintText ? { 'aria-describedby': hintId } : {})}
-        minValue={min}
-        maxValue={max}
-        step={step}
-        value={value}
-        onChange={(v) => onChange(Array.isArray(v) ? (v[0] ?? min) : (v as number))}
-        variant="secondary"
-        className="ora-cell-slider w-full"
-      >
-        <CellSlider.Track>
-          <CellSlider.Fill />
-          <CellSlider.Thumb />
-          <CellSlider.Label className="sr-only">{label}</CellSlider.Label>
-          <CellSlider.Output className="sr-only" />
-        </CellSlider.Track>
-      </CellSlider>
-      {hintText ? (
-        <p
-          id={hintId}
-          className="mt-4 max-w-[42ch] text-[12px] font-light italic leading-[1.55] text-noir/60"
-        >
-          {hintText}
-        </p>
-      ) : null}
-    </div>
-  );
-}
-
-function CalcRow({ label, value, total }: { label: string; value: string; total?: boolean }) {
-  return (
-    <div
-      className={cn(
-        'flex items-baseline justify-between gap-4 py-2.5 text-[12px]',
-        total
-          ? 'mt-3 border-t border-noir/12 pt-5 font-medium text-noir'
-          : 'text-noir/55'
-      )}
-    >
-      <span className="min-w-0 flex-1 leading-snug">{label}</span>
-      <span className="shrink-0 text-right tabular-nums">{value}</span>
-    </div>
-  );
-}
-
-type CalcBlockProps = {
-  data: typeof oraPlusCalculator;
-};
-
-function OraPlusCalculatorBlock({ data }: CalcBlockProps) {
-  const [drinks, setDrinks] = useState<number>(data.sliders.drinks.default);
-  const [avgPrice, setAvgPrice] = useState<number>(data.sliders.avgPrice.default);
-  const weeks = data.weeksPerYear;
-
-  const calc = useMemo(() => {
-    const SUB = data.subscriptionPrice;
-    const DISCOUNT = data.memberDiscount;
-    const yearWithout = drinks * avgPrice * weeks;
-    const yearWithOra = drinks * (avgPrice * (1 - DISCOUNT)) * weeks + SUB * 12;
-    const savings = Math.max(0, yearWithout - yearWithOra);
-    return { savings };
-  }, [drinks, avgPrice, weeks, data]);
-
-  const R = data.result;
-
-  return (
-    <div className="grid overflow-hidden rounded-[2px] border border-noir/[0.12] bg-white lg:grid-cols-2">
-      <div className="flex flex-col border-b border-noir/[0.08] p-8 md:p-10 lg:border-b-0 lg:border-r">
-        <CalcSlider
-          label="Boissons par semaine"
-          value={drinks}
-          min={data.sliders.drinks.min}
-          max={data.sliders.drinks.max}
-          step={data.sliders.drinks.step}
-          displayValue={String(drinks)}
-          hint={data.sliders.drinks.hint}
-          onChange={setDrinks}
-        />
-        <CalcSlider
-          label="Prix moyen · plein tarif"
-          value={avgPrice}
-          min={data.sliders.avgPrice.min}
-          max={data.sliders.avgPrice.max}
-          step={data.sliders.avgPrice.step}
-          displayValue={fmtEur2(avgPrice)}
-          hint={data.sliders.avgPrice.hint}
-          onChange={setAvgPrice}
-        />
-      </div>
-
-      <div className="relative overflow-hidden bg-surface-muted p-8 md:p-10 lg:border-l lg:border-noir/[0.08]">
-        <div className="relative">
-          <div className="mb-2 text-[10px] font-medium uppercase tracking-[0.28em] text-noir/55">
-            {R.headline}
-          </div>
-          <div
-            className="mb-8 font-display font-normal leading-none text-noir"
-            style={{
-              fontSize: 'clamp(54px, 6.5vw, 80px)',
-              letterSpacing: '-0.025em',
-            }}
-          >
-            <em className="font-light italic text-noir">
-              {Math.round(calc.savings).toLocaleString('fr-FR')}
-            </em>
-            <span aria-hidden>{'\u202f'}</span>
-            €
-          </div>
-
-          <div>
-            <CalcRow label={R.rowTotal} value={fmtEur0(calc.savings)} total />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 const OraPlus = () => {
   useEffect(() => { document.title = 'Óra+ — PessÓra'; }, []);
@@ -409,116 +253,9 @@ const OraPlus = () => {
               {isOraPlusActive ? 'Accéder à mon abonnement' : 'Rejoindre Óra+'}
               <ArrowRight size={13} strokeWidth={1.5} className="transition-transform group-hover:translate-x-0.5" aria-hidden />
             </Button>
-            {!isOraPlusActive && (
-            <p className="mt-3 text-[11px] font-light text-noir/45">
-              30 jours satisfait ou remboursé · Sans engagement
-            </p>
-            )}
             {subError && (
               <p className="mt-3 text-[11px] text-red-500">{subError}</p>
             )}
-          </motion.div>
-        </PageShell>
-      </section>
-
-      {/* ───────────────────────────── 4 · ÉCONOMIES (Comparator + Calculator réunis) ───────────────────────────── */}
-      <section className="bg-surface-muted py-20 md:py-28" aria-labelledby="ora-plus-eco-title">
-        <PageShell>
-          <motion.header {...fadeBlock} className="mb-14 grid items-end gap-10 lg:grid-cols-2 lg:gap-20">
-            <div>
-              <span className="mb-4 block text-[10px] font-normal uppercase tracking-[0.28em] text-noir/60">Votre économie</span>
-              <h2 id="ora-plus-eco-title" className="m-0 font-display font-normal text-noir" style={{ fontSize: 'clamp(32px, 4vw, 56px)', lineHeight: 1, letterSpacing: '-0.02em' }}>
-                Le prix,<br />
-                <em className="font-light italic text-editorial-badge">avant et après.</em>
-              </h2>
-            </div>
-            <p className="m-0 max-w-[420px] sm:max-w-none font-display font-light italic text-noir/65 lg:justify-self-end lg:text-right" style={{ fontSize: 'clamp(14px, 1.1vw, 17px)', lineHeight: 1.5 }}>
-              Exemples sur la carte + simulateur personnalisé ci-dessous.
-            </p>
-          </motion.header>
-
-          {/* Comparateur visuel compact */}
-          <motion.div {...fadeBlock} className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 md:gap-4">
-            {oraPlusCompare.rows.map((r) => (
-              <div key={r.name} className="rounded-[2px] border border-noir/[0.08] bg-white p-5 md:p-6">
-                <span className="mb-0.5 text-[9px] font-normal uppercase tracking-[0.22em] text-noir/50">{r.category}</span>
-                <h3 className="m-0 mb-3 font-display text-[17px] font-normal leading-snug text-noir md:text-[19px]">{r.name}</h3>
-                <div className="flex items-end justify-between gap-2">
-                  <div>
-                    <span className="text-[10px] font-normal uppercase tracking-[0.2em] text-noir/45">Public</span>
-                    <p className="m-0 mt-0.5 font-display text-[16px] leading-none text-noir/40 line-through md:text-[18px]">{r.priceRetail}</p>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[10px] font-normal uppercase tracking-[0.2em] text-noir/60">Óra+</span>
-                    <p className="m-0 mt-0.5 font-display text-[22px] italic font-light leading-none text-noir md:text-[26px]">{r.priceOraPlus}</p>
-                  </div>
-                </div>
-                <div className="mt-3 border-t border-noir/[0.06] pt-2.5 text-right">
-                  <span className="font-display text-[13px] italic text-editorial-badge md:text-[14px]">Économie {r.savings}</span>
-                </div>
-              </div>
-            ))}
-          </motion.div>
-
-          {/* Simulateur interactif */}
-          <motion.div {...fadeBlock}>
-            <OraPlusCalculatorBlock data={oraPlusCalculator} />
-          </motion.div>
-
-          <p className="mt-6 text-center font-display text-[11px] italic leading-relaxed text-noir/50">Simulation indicative — consommation réelle variable. * Tarifs indicatifs carte 2026.</p>
-        </PageShell>
-      </section>
-
-      {/* ───────────────────────────── 5 · QUOTE RENFORCÉE ───────────────────────────── */}
-      <section className="bg-surface-muted py-20 md:py-28">
-        <PageShell>
-          <motion.div {...fadeBlock} className="mx-auto flex max-w-[880px] flex-col items-center gap-10 text-center md:flex-row md:gap-14 md:text-left">
-            <div className="shrink-0">
-              {oraPlusQuote.avatar ? (
-                <Avatar className="h-28 w-28 border-2 border-noir/10 md:h-32 md:w-32">
-                  <Avatar.Image
-                    alt={oraPlusQuote.author}
-                    src={oraPlusQuote.avatar}
-                  />
-                  <Avatar.Fallback className="text-[14px] font-medium uppercase tracking-[0.2em]">
-                    {oraPlusQuote.author.charAt(0)}
-                  </Avatar.Fallback>
-                </Avatar>
-              ) : (
-                <div className="flex h-28 w-28 items-center justify-center rounded-full bg-surface-card text-[14px] font-medium uppercase tracking-[0.2em] text-noir/40 md:h-32 md:w-32">
-                  {oraPlusQuote.author.charAt(0)}
-                </div>
-              )}
-            </div>
-
-            <div>
-              <div
-                aria-hidden
-                className="mb-2 font-display text-[80px] italic leading-[0.5] text-editorial-badge/15 md:text-[120px]"
-              >
-                „
-              </div>
-              <blockquote
-                className="m-0 font-display font-normal text-noir"
-                style={{
-                  fontSize: 'clamp(24px, 3vw, 38px)',
-                  lineHeight: 1.25,
-                  letterSpacing: '-0.01em',
-                }}
-              >
-                {oraPlusQuote.quoteHead}
-                <em className="font-light italic text-editorial-badge">{oraPlusQuote.quoteEmphasis}</em>
-                {oraPlusQuote.quoteTail}
-              </blockquote>
-              <div className="mt-6 text-[10px] font-normal uppercase tracking-[0.28em] text-noir/45">
-                {oraPlusQuote.author}
-                {oraPlusQuote.memberSince && (
-                  <><em className="mx-2.5 font-display text-[13px] normal-case tracking-normal italic text-noir/60">·</em>{oraPlusQuote.memberSince}</>
-                )}
-                <em className="mx-2.5 font-display text-[13px] normal-case tracking-normal italic text-noir/60">·</em>
-                {oraPlusQuote.location}
-              </div>
-            </div>
           </motion.div>
         </PageShell>
       </section>
