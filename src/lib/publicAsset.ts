@@ -9,7 +9,7 @@ export function publicAsset(rel: string): string {
  * Incrémenter quand on remplace les binaires sous `public/videos/evenements-communaute*`
  * pour forcer le rechargement (cache HTTP / cache média du navigateur).
  */
-export const EVENEMENTS_COMMUNAUTE_ASSET_V = '10';
+export const EVENEMENTS_COMMUNAUTE_ASSET_V = '11';
 
 export function publicAssetWithCache(rel: string, v = EVENEMENTS_COMMUNAUTE_ASSET_V): string {
   return `${publicAsset(rel)}?v=${v}`;
