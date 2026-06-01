@@ -1,6 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
 import {
-  BookOpen,
   CalendarDays,
   Heart,
   Home,
@@ -19,7 +18,6 @@ export const PRIMARY_NAV: {
   matchExact?: boolean;
 }[] = [
   { label: 'Accueil', path: '/', icon: Home, matchExact: true },
-  { label: 'Concept', path: '/concept', icon: BookOpen },
   { label: 'La carte', path: '/menu', icon: UtensilsCrossed },
   { label: 'Produits', path: '/nos-produits', icon: Package },
   { label: 'Óra+', path: '/ora-plus', icon: Sparkles },
