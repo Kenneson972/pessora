@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button, Card, Skeleton, cn } from '@heroui/react';
@@ -67,7 +67,6 @@ function MenuGridSkeleton() {
 }
 
 const Menu = () => {
-  useEffect(() => { document.title = 'Carte — PessÓra'; }, []);
   const { items: catalogItems, loading } = useMenuCatalog();
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedSizes, setSelectedSizes] = useState<Record<string, 'small' | 'medium' | 'large'>>({});

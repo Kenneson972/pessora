@@ -212,7 +212,6 @@ function EventCardCompact({ ev }: { ev: EventWithCount }) {
 }
 
 const Evenements = () => {
-  useEffect(() => { document.title = 'Événements — PessÓra'; }, []);
   const { container, item, isReducedMotion } = useStaggerReveal();
   const [searchParams, setSearchParams] = useSearchParams();
   const [events, setEvents] = useState<EventWithCount[]>([]);

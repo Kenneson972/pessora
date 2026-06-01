@@ -61,6 +61,7 @@ const PageSEO = () => {
     setMetaTag('og:type', ogType);
     setMetaTag('og:url', window.location.origin + location.pathname);
     setMetaTag('og:site_name', 'PessÓra');
+    setMetaTag('og:locale', 'fr_FR');
 
     // Twitter
     setMetaName('twitter:card', 'summary_large_image');

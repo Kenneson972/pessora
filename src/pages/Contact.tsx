@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { barInfo } from '../data/infoData';
@@ -13,7 +13,6 @@ import { supabase } from '../lib/supabaseClient';
 type RequestType = 'info' | 'reservation' | 'partenariat' | 'autre';
 
 const Contact = () => {
-  useEffect(() => { document.title = 'Contact — PessÓra'; }, []);
   const fadeForm = useFadeUpWhenVisible();
   const { container, item, isReducedMotion } = useStaggerReveal();
   const [privacyAccepted, setPrivacyAccepted] = useState(false);

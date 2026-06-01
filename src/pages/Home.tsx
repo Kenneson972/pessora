@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -50,10 +50,6 @@ const Home = () => {
   const navigate = useNavigate();
   const fadeUpEvents = useFadeUpWhenVisible();
   const [activeIdx, setActiveIdx] = useState(0);
-
-  useEffect(() => {
-    document.title = 'PessÓra — Bar Protéiné & Bien-Être, Martinique';
-  }, []);
 
   const goPrev = useCallback(() => {
     setActiveIdx((i) => (i - 1 + UNIVERS.length) % UNIVERS.length);
