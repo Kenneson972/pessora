@@ -39,6 +39,10 @@ export async function uploadPublicImage(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any;
   const { data, error } = await db.storage.from(bucket).upload(path, file, {
+    // upsert: true — si le même nom de fichier existe déjà, il sera écrasé.
+    // Le timestamp dans le nom (Date.now()) rend les collisions très improbables.
+    // Risque : un fichier uploadé exactement à la même milliseconde avec le même nom
+    // sera remplacé silencieusement.
     upsert: true,
     contentType: file.type,
   });

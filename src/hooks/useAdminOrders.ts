@@ -70,7 +70,15 @@ export function useAdminOrders(filterStatus: OrderFilterStatus = 'all') {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          console.warn('[useAdminOrders] Realtime déconnecté, reconnexion…');
+          setTimeout(() => {
+            supabase.removeChannel(channel);
+            channel.subscribe();
+          }, 3000);
+        }
+      });
 
     channelRef.current = channel;
 
