@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { CupSoda, ChevronDown, ChevronUp, Phone } from 'lucide-react';
 import { cn } from '@heroui/react';
 import type { OrderWithItems } from '../../hooks/useOrders';
+import { ConfirmDialog } from '../dashboard/ConfirmDialog';
 
 const STATUS_LABELS: Record<string, string> = {
   pending: 'En attente de paiement',
@@ -38,6 +39,7 @@ interface AdminOrderCardProps {
 
 export function AdminOrderCard({ order, onStatusUpdate }: AdminOrderCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const [confirmCompleted, setConfirmCompleted] = useState(false);
   const items = order.order_items ?? [];
   const itemNames = items.map((it) => `${it.quantity}× ${it.product_name}`).join(', ');
   const pickupLabel = order.pickup_time
@@ -107,12 +109,21 @@ export function AdminOrderCard({ order, onStatusUpdate }: AdminOrderCardProps) {
             {action && (
               <button
                 type="button"
-                onClick={() => onStatusUpdate(order.id, action.next)}
+                onClick={() => action.next === 'completed' ? setConfirmCompleted(true) : onStatusUpdate(order.id, action.next)}
                 className="min-h-[36px] rounded-[2px] border border-noir/15 px-4 py-1.5 text-[10px] font-normal uppercase tracking-[0.12em] text-black/55 hover:border-noir/30 hover:text-noir transition-colors"
               >
                 {action.label}
               </button>
             )}
+
+            <ConfirmDialog
+              open={confirmCompleted}
+              title="Marquer comme retiré ?"
+              description={`Confirmer que la commande ${order.id.slice(0, 8)} a bien été remise au client. Cette action est définitive.`}
+              confirmLabel="Confirmer le retrait"
+              onConfirm={() => { onStatusUpdate(order.id, 'completed'); setConfirmCompleted(false); }}
+              onClose={() => setConfirmCompleted(false)}
+            />
             {order.user_id && (
               <Link
                 to={`/admin/membres/${order.user_id}`}

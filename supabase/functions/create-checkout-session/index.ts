@@ -55,10 +55,14 @@ async function fetchVerifiedPrice(
     if (error || !data) {
       throw new Error(`Produit gamme introuvable ou inactif : ${item.productId}`);
     }
-    // price_alt existe pour certains produits (ex: Gel Nettoyant 29€/39€) ;
-    // on prend price par défaut — si le client a un price_alt, le panier
-    // aura un productId différent (un autre UUID), donc price suffit ici.
-    return { verifiedUnitPrice: Number(data.price), productId: data.id };
+    const serverPrice = Number(data.price);
+    // Vérification anti-fraude : comparer le prix déclaré par le client
+    if (Math.abs(item.unitPrice - serverPrice) > 0.02) {
+      throw new Error(
+        `Écart prix suspect gamme : client=${item.unitPrice}€, serveur=${serverPrice}€ pour ${item.productId}`
+      );
+    }
+    return { verifiedUnitPrice: serverPrice, productId: data.id };
   }
 
   // Produit bar : chercher par slug (productId = slug) ou par UUID

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Copy, Mail } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
+import { auditLog } from '../../lib/auditLog';
 import { DASH_MAIN_PAD } from '../../components/dashboard/layoutClasses';
 import type { Order, OrderItem, Profile, Subscription } from '../../types/database';
 
@@ -286,6 +287,7 @@ const AdminMemberDetail = () => {
         setError(upErr.message);
         return;
       }
+      auditLog({ action: 'member.update', entity_type: 'subscription', entity_id: subscription.id, details: { plan: subForm.plan, status: subForm.status } });
     } else {
       const { error: insErr } = await db.from('subscriptions').insert({
         user_id: memberId,
@@ -296,6 +298,7 @@ const AdminMemberDetail = () => {
         setError(insErr.message);
         return;
       }
+      auditLog({ action: 'member.update', entity_type: 'subscription', entity_id: memberId, details: { plan: subForm.plan, status: subForm.status } });
     }
     showToast('Abonnement enregistré.');
     load();

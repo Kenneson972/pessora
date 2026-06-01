@@ -27,7 +27,8 @@ export function AnalyticsDashboard() {
         .select('id, total, created_at, order_items(product_name, quantity)')
         .gte('created_at', sevenDaysAgo)
         .in('status', ['completed', 'ready', 'preparing', 'paid'])
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(200);
 
       if (cancelled) return;
 
