@@ -78,6 +78,7 @@ const PageSEO = () => {
 
     // Twitter
     setMetaName('twitter:card', 'summary_large_image');
+    setMetaName('twitter:site', '@pessora_mq');
     setMetaName('twitter:title', ogTitle);
     setMetaName('twitter:description', ogDesc);
     setMetaName('twitter:image', imageUrl);
