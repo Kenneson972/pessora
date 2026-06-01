@@ -206,7 +206,7 @@ export function CartDrawer() {
                 onChange={setPickupTime}
               />
               {isGuest && (
-                <div className="flex flex-col gap-3 pb-4 px-5 md:px-6">
+                <div className="flex flex-col gap-2 pb-2 px-5 md:px-6">
                   <input
                     type="text"
                     placeholder="Votre nom"
@@ -229,8 +229,8 @@ export function CartDrawer() {
                   )}
                 </div>
               )}
-              <Sheet.Footer className="flex flex-col border-t border-noir/[0.06] bg-white px-5 py-5 md:px-6">
-                <div className="mb-5 flex items-baseline justify-between gap-4">
+              <Sheet.Footer className="flex flex-col border-t border-noir/[0.06] bg-white px-5 py-3 md:px-6">
+                <div className="mb-3 flex items-baseline justify-between gap-4">
                   <span className="text-[9px] font-normal uppercase tracking-[0.18em] text-black/45">
                     Total
                   </span>
@@ -250,7 +250,7 @@ export function CartDrawer() {
                   <p className="mb-3 text-[10px] text-red-500">{checkoutError}</p>
                 )}
 
-                <p className="mb-4 text-[10px] font-light leading-relaxed text-black/40">
+                <p className="mb-2 text-[10px] font-light leading-relaxed text-black/40">
                   Paiement sécurisé en ligne via Stripe.
                 </p>
                 <div className="flex flex-col gap-2">
