@@ -1,5 +1,5 @@
 // src/pages/admin/AdminMembers.tsx
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useDeferredValue } from 'react';
 import { Link } from 'react-router-dom';
 import { Download, Mail, Phone } from 'lucide-react';
 import { Card, Skeleton } from '@heroui/react';
@@ -155,10 +155,11 @@ const AdminMembers = () => {
   const { members, loading, error, refetch } = useAdminMembers();
   const [filters, setFilters] = usePersistentAdminState('members_filters_v1', DEFAULT_FILTERS);
   const { search, filterPlan, filterRole } = filters;
+  const deferredSearch = useDeferredValue(search);
 
   const filtered = useMemo(() => {
     return members.filter((m) => {
-      const q = search.toLowerCase().trim();
+      const q = deferredSearch.toLowerCase().trim();
       const matchSearch =
         !q ||
         `${m.first_name ?? ''} ${m.last_name ?? ''} ${m.email ?? ''} ${m.phone ?? ''}`.toLowerCase().includes(q);
@@ -170,7 +171,7 @@ const AdminMembers = () => {
         (filterRole === 'member' && m.role !== 'admin');
       return matchSearch && matchPlan && matchRole;
     });
-  }, [members, search, filterPlan, filterRole]);
+  }, [members, deferredSearch, filterPlan, filterRole]);
 
   const exportCsv = () => {
     downloadCsv(

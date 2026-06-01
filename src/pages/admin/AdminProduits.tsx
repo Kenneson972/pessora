@@ -1,5 +1,5 @@
 // src/pages/admin/AdminProduits.tsx
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useDeferredValue } from 'react';
 import { Plus, Pencil, Trash2, Download, Archive, ArchiveRestore } from 'lucide-react';
 import { Card, Skeleton, Modal, useOverlayState } from '@heroui/react';
 import { ContextMenu, EmptyState, Segment } from '@heroui-pro/react';
@@ -242,6 +242,7 @@ const AdminProduits = () => {
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [filters, setFilters] = usePersistentAdminState('admin_products_filters_v1', DEFAULT_PROD_FILTERS);
   const { filterCat, search, visibility } = filters;
+  const deferredSearch = useDeferredValue(search);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
   const [deleteProductLoading, setDeleteProductLoading] = useState(false);
 
@@ -340,7 +341,7 @@ const AdminProduits = () => {
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
-      const q = search.toLowerCase().trim();
+      const q = deferredSearch.toLowerCase().trim();
       const matchSearch =
         !q ||
         p.name.toLowerCase().includes(q) ||
