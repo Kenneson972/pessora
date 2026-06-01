@@ -1,6 +1,6 @@
 # Récapitulatif Final — Site PessÓra
 
-Dernière mise à jour : **31 Mai 2026**
+Dernière mise à jour : **1er Juin 2026**
 
 ## Stack
 
@@ -120,6 +120,10 @@ Dernière mise à jour : **31 Mai 2026**
 
 ## État actuel : ✅ Production Ready
 
-Derniers commits : 31 Mai 2026 — 36/36 images gamme, 36/36 descriptions enrichies, checkout invité, analytics, bar status, stocks, audit log.
+Derniers commits : 1er Juin 2026 — **60 fixes d'audit** (5 phases) :
+- P0 Sécurité (5), P0 Frontend (4), P1 Prioritaire (16), SEO P0 (3), SEO P1-P2 (12), P2 Cosmétique (15), Analytics Vercel, rate limiter PG, verifyAdmin dédupliqué
+- Guest checkout form, descriptions enrichies skin/wellness
+- Score SEO : ~70 → ~85/100
+- 36/36 images gamme, 36/36 descriptions
 
-Prochaines étapes : déployer edge functions Stripe sur Supabase (configurer `STRIPE_SECRET_KEY`), intégrer BarStatusProvider dans App.tsx, tester checkout invité de bout en bout.
+Prochaines étapes : déployer edge functions Stripe sur Supabase (`STRIPE_SECRET_KEY`), intégrer BarStatusProvider, tester checkout invité.
