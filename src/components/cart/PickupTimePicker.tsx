@@ -82,8 +82,8 @@ export function PickupTimePicker({ businessHours, value, onChange }: PickupTimeP
         </div>
         <p className="text-[11px] font-light text-black/40">
           {new Date().getDay() === 0
-            ? "Le bar est fermé le dimanche."
-            : "Aucun créneau disponible aujourd'hui."}
+            ? "Le bar est fermé le dimanche. Vous pouvez commander pour demain."
+            : "Aucun créneau disponible aujourd'hui. Vous pouvez commander pour demain."}
         </p>
       </div>
     );

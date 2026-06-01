@@ -2,6 +2,7 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'npm:stripe@14'
+import { checkRateLimit } from '../_shared/rate-limiter.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': Deno.env.get("ALLOWED_ORIGIN") ?? "https://www.pessora.mq",
@@ -11,6 +12,15 @@ const corsHeaders = {
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
+  }
+
+  // Rate limiting pour éviter les appels abusifs
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown"
+  if (!checkRateLimit(ip)) {
+    return new Response(JSON.stringify({ error: "Trop de requêtes, veuillez patienter." }), {
+      status: 429,
+      headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "10" },
+    })
   }
 
   try {

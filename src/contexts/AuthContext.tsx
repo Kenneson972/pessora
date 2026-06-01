@@ -111,7 +111,11 @@ async function fetchUserData(
   const user: User = profileRes.data
     ? mapProfile(profileRes.data, supabaseUser.email ?? '')
     : buildFallbackUser(supabaseUser);
-  return { user, subscription: subRes.data ? mapSubscription(subRes.data) : null };
+  const sub = subRes.data ? mapSubscription(subRes.data) : null;
+  if (sub && profileRes.data?.stripe_customer_id) {
+    sub.stripeCustomerId = profileRes.data.stripe_customer_id;
+  }
+  return { user, subscription: sub };
 }
 
 /** gotrue-js: avoid calling Supabase from inside onAuthStateChange synchronously — defer with setTimeout(0). */
