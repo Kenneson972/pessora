@@ -121,9 +121,10 @@ Dernière mise à jour : **1er Juin 2026**
 ## État actuel : ✅ Production Ready
 
 Derniers commits : 1er Juin 2026 — **60 fixes d'audit** (5 phases) :
-- P0 Sécurité (5), P0 Frontend (4), P1 Prioritaire (16), SEO P0 (3), SEO P1-P2 (12), P2 Cosmétique (15), Analytics Vercel, rate limiter PG, verifyAdmin dédupliqué
-- Guest checkout form, descriptions enrichies skin/wellness
+- **65 fixes** en 23 commits sur 1 journée (1er Juin 2026)
+- P0 Sécurité (5), P0 Frontend (4), P1 Prioritaire (16), SEO (16), P2 Cosmétique (19), Analytics, Rate Limiter
+- Guest checkout form, verifyAdmin dédupliqué, debounce ×3
 - Score SEO : ~70 → ~85/100
-- 36/36 images gamme, 36/36 descriptions
+- 36/36 images gamme, 36/36 descriptions enrichies
 
 Prochaines étapes : déployer edge functions Stripe sur Supabase (`STRIPE_SECRET_KEY`), intégrer BarStatusProvider, tester checkout invité.

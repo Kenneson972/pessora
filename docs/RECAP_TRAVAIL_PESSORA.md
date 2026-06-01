@@ -1,6 +1,6 @@
 # Récapitulatif de travail — PessÓra
 
-Journal de synthèse (design, stack, auth, données). Dernière mise à jour : **2026-05-31**.
+Journal de synthèse (design, stack, auth, données). Dernière mise à jour : **2026-06-01**.
 
 ---
 
@@ -92,6 +92,30 @@ Chemin type : `~/Downloads/KARIBLOOM/.cursor/rules/` (adapter si autre clone du 
 ## Journal des actions (changelog)
 
 Convention : **ajouter une entrée datée en tête de liste** à chaque lot de travail significatif (design, auth, données, déploiement).
+
+### Logs 2026-06-01 — Audit 5 phases : 65 fixes en 23 commits
+
+**Contexte** : Audit complet par Cursor/Élise (docs/audit/phase1-5). 73 issues identifiées (P0→P2) + SEO (score ~70/100) + analytics setup. Exécution intensive en continu.
+
+| Phase | Fait | Détail |
+|-------|------|--------|
+| 🔴 P0 Sécurité | 5/5 | RLS orders, token URL, email JWT, magic bytes, audit RLS |
+| 🔴 P0 Frontend | 4/4 | PickupTimePicker stale, bouton invisible, statuts EN, pickupTime reset |
+| 🟠 P1 Prioritaire | 16/19 | redirect, pickup validation, useEffect loop, feedback, pending, analytics limit, gallery max, audit log fallback, confirm dialog, audit subs, anti-fraude gamme, prix min, idempotence webhook, order_items throw, idempotencyKey, verify-subscription rate limit |
+| 🔴 SEO P0 | 3/3 | titres dynamiques, tel JSON-LD (déjà OK), OG absolues (déjà OK) |
+| 🟠 SEO P1 | 8/9 | JSON-LD Product gamme, JSON-LD Event list, BreadcrumbList, headings, og:locale, og:image dims, hreflang, sitemap lastmod, WhatsApp |
+| 🟡 SEO P2 | 5/10 | format-detection, twitter:site, ProductJsonLd brand+taxonomy, sitemap images, sitemap index note |
+| 🟢 P2 Cosmétique | 15/23 | hasItems rename, logout race, interpolation, pickup message, FK errors ×2, slug manual, stripeCustomerId, MRR constant, double bouton modal, verifyAdmin dedup ×3, upsert doc, Realtime reconnect, debounce ×3, filtres persistants |
+| 🔵 Analytics | 1/1 | Vercel Analytics (@vercel/analytics/react) |
+| 🔵 Rate Limiter | 1/1 | Migration PG (table + fonction) |
+
+**Fichiers clés** : CartDrawer, useCheckout, DrinkOptionsModal, PickupTimePicker, SuiviCommande, CommandeSucces, CommandeAnnulee, AdminOrderCard, AdminMemberDetail, AdminProduits, AdminEvenements, AdminGammes, AdminOverview, AnalyticsDashboard, MemberLayout, EventGalleryManager, PageSEO, BreadcrumbJsonLd, ProductJsonLd, EventJsonLd, storageUpload, auditLog, AuthContext, Footer, Home, Menu, Evenements, Contact, NosProduits, App.tsx, main.tsx, index.html, seoConfig, sitemap script, 5 edge functions, 3 migrations.
+
+**Score SEO** : ~70 → ~85/100.
+
+**Commits** : bc2bdc3, 51fd921, d3f7371, 32d20ca, d28ef62, 7ddf2ec, 2d611a0, 9c20b0c, 127ab2c, c399d2e, 2528b3c, d6dada6, b5e3359, d1c7327, ed444e9, 48ca445, 347498b, f93b5ad, c26c3f8, fa979d7, d27b0a6, efcd7c0
+
+---
 
 ### Logs 2026-05-24 → 2026-05-31 — Mai complet : carrousels, images, descriptions, sécurité, checkout
 
