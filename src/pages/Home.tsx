@@ -174,9 +174,9 @@ const Home = () => {
               variant="ghost"
               onPress={goPrev}
               aria-label="Univers précédent"
-              className="absolute left-0 top-[42%] z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-noir/[0.12] bg-white/90 text-black/55 shadow-sm backdrop-blur-sm transition-colors hover:border-noir/25 hover:text-black md:left-2 lg:left-4"
+              className="absolute left-0 top-[42%] z-20 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-noir/[0.08] bg-white/70 text-black/35 transition-colors hover:border-noir/20 hover:text-black md:left-2 lg:left-4"
             >
-              <ChevronLeft size={22} strokeWidth={1.25} aria-hidden />
+              <ChevronLeft size={14} strokeWidth={1} aria-hidden />
             </Button>
             <Button
               isIconOnly
@@ -184,9 +184,9 @@ const Home = () => {
               variant="ghost"
               onPress={goNext}
               aria-label="Univers suivant"
-              className="absolute right-0 top-[42%] z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-noir/[0.12] bg-white/90 text-black/55 shadow-sm backdrop-blur-sm transition-colors hover:border-noir/25 hover:text-black md:right-2 lg:right-4"
+              className="absolute right-0 top-[42%] z-20 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full border border-noir/[0.08] bg-white/70 text-black/35 transition-colors hover:border-noir/20 hover:text-black md:right-2 lg:right-4"
             >
-              <ChevronRight size={22} strokeWidth={1.25} aria-hidden />
+              <ChevronRight size={14} strokeWidth={1} aria-hidden />
             </Button>
 
             {/* Pas de fondu opacity sur le parent : WebKit assombrit ou masque la &lt;video&gt;. */}
