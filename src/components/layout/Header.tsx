@@ -18,7 +18,7 @@ const navFocusDark =
 
 // Parcours desktop — inclut Óra+ (conversion) + la carte & services clés
 const DESKTOP_NAV = PRIMARY_NAV.filter((i) =>
-  ['/menu', '/nos-produits', '/ora-plus', '/evenements', '/bilan-bien-etre', '/concept'].includes(i.path)
+  ['/menu', '/nos-produits', '/ora-plus', '/evenements', '/bilan-bien-etre', '/contact'].includes(i.path)
 );
 
 const Header = () => {
