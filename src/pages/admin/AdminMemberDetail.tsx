@@ -522,8 +522,10 @@ const AdminMemberDetail = () => {
             </label>
           </div>
         </div>
-        {subscription && (
-          <div className="mt-4 border-t border-noir/[0.06] pt-4" />
+        {subscription?.stripe_subscription_id && (
+          <p className="mt-4 text-[10px] font-light text-amber-600 bg-amber-50 border border-amber-100 rounded-[2px] px-3 py-2">
+            ⚠️ Cet abonnement est lié à Stripe. Les modifications manuelles peuvent désynchroniser le statut réel.
+          </p>
         )}
         <button
           type="button"
