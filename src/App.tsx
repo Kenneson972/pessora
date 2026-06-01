@@ -9,6 +9,7 @@ import Footer from './components/layout/Footer';
 import { CartDrawer } from './components/cart/CartDrawer';
 import ScrollToTop from './components/common/ScrollToTop';
 import PageSEO from './components/common/PageSEO';
+import { BreadcrumbJsonLd } from './components/seo/BreadcrumbJsonLd';
 import LazyWidget from './components/common/LazyWidget';
 import { AnnouncementPopup } from './components/common/AnnouncementPopup';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -116,6 +117,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
     <>
       <ScrollToTop />
       <PageSEO />
+      <BreadcrumbJsonLd />
       <div className="flex min-h-screen flex-col">
         {showPublicChrome && (
           <a

@@ -14,14 +14,14 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const BASE = 'https://pessora.mq';
 
-interface SlugRow { slug: string }
-interface GammeSlugRow { slug: string; gamme: string }
+interface SlugRow { slug: string; updated_at?: string }
+interface GammeSlugRow { slug: string; gamme: string; updated_at?: string }
 
 async function main() {
   const [productsRes, eventsRes, gammeProductsRes] = await Promise.all([
-    supabase.from('products').select('slug').eq('active', true).not('slug', 'is', null) as any,
-    supabase.from('events').select('slug').eq('active', true).not('slug', 'is', null) as any,
-    supabase.from('gamme_products').select('slug,gamme').eq('active', true).not('slug', 'is', null) as any,
+    supabase.from('products').select('slug,updated_at').eq('active', true).not('slug', 'is', null) as any,
+    supabase.from('events').select('slug,updated_at').eq('active', true).not('slug', 'is', null) as any,
+    supabase.from('gamme_products').select('slug,gamme,updated_at').eq('active', true).not('slug', 'is', null) as any,
   ]);
 
   const productSlugs = (productsRes.data || []) as SlugRow[];
@@ -48,31 +48,31 @@ async function main() {
     { loc: '/cgv', priority: '0.35', changefreq: 'yearly' },
   ];
 
-  const urls: Array<{ loc: string; priority: string; changefreq: string }> = [...staticPages];
+  const urls: Array<{ loc: string; priority: string; changefreq: string; lastmod: string }> = staticPages.map(s => ({ ...s, lastmod: today }));
 
-  for (const { slug } of productSlugs) {
-    urls.push({ loc: `/menu/${slug}`, priority: '0.7', changefreq: 'weekly' });
+  for (const { slug, updated_at } of productSlugs) {
+    urls.push({ loc: `/menu/${slug}`, priority: '0.7', changefreq: 'weekly', lastmod: (updated_at ?? today).split('T')[0] });
   }
 
-  for (const { slug } of eventSlugs) {
-    urls.push({ loc: `/evenements/${slug}`, priority: '0.7', changefreq: 'monthly' });
+  for (const { slug, updated_at } of eventSlugs) {
+    urls.push({ loc: `/evenements/${slug}`, priority: '0.7', changefreq: 'monthly', lastmod: (updated_at ?? today).split('T')[0] });
   }
 
-  for (const { slug, gamme } of gammeProducts) {
-    urls.push({ loc: `/nos-produits/${gamme}/${slug}`, priority: '0.65', changefreq: 'weekly' });
+  for (const { slug, gamme, updated_at } of gammeProducts) {
+    urls.push({ loc: `/nos-produits/${gamme}/${slug}`, priority: '0.65', changefreq: 'weekly', lastmod: (updated_at ?? today).split('T')[0] });
   }
 
   // Pages gamme (sans slug produit)
   const rangeKeys = [...new Set(gammeProducts.map((g) => g.gamme).filter(Boolean))];
   for (const r of rangeKeys) {
-    urls.push({ loc: `/nos-produits/${r}`, priority: '0.75', changefreq: 'weekly' });
+    urls.push({ loc: `/nos-produits/${r}`, priority: '0.75', changefreq: 'weekly', lastmod: today });
   }
 
   const xml = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     ...urls.map(u =>
-      `  <url><loc>${BASE}${u.loc}</loc><lastmod>${today}</lastmod><changefreq>${u.changefreq}</changefreq><priority>${u.priority}</priority></url>`
+      `  <url><loc>${BASE}${u.loc}</loc><lastmod>${u.lastmod}</lastmod><changefreq>${u.changefreq}</changefreq><priority>${u.priority}</priority></url>`
     ),
     '</urlset>',
     '',
