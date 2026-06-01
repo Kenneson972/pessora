@@ -80,7 +80,7 @@ export function DrinkOptionsModal({ item, onClose }: Props) {
       category: item.category,
       optionsKey,
       optionLabels,
-      image: item.icon,
+      image: item.image_url || item.icon,
       source: 'bar',
     });
 
