@@ -63,8 +63,8 @@ export const oraPlusHero = {
   ] satisfies OraPlusMetric[],
   /** Image éditoriale du hero — reprend la collection existante, traitée en N&B */
   image: {
-    src: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&q=80&w=1400',
-    alt: 'Rituel Óra+ — plan rapproché d’un shake protéiné, lumière studio',
+    src: '/images/oraplus-hero.jpg',
+    alt: 'Femme sportive buvant un smoothie Pessóra, banc extérieur',
   },
 } as const;
 
