@@ -1,79 +1,62 @@
-# Récap Élise — 30 Mai 2026
+# Récap Élise — Mise à jour 31 Mai 2026 (soir)
 
-## Contexte
+## Résumé rapide
 
-Pessora revend des produits Herbalife. Les images des gammes (Wellness, Sport, Skin) étaient des photos Unsplash génériques. On les a remplacées par les visuels officiels Herbalife depuis leur CDN.
+- **28/36** produits gamme ont leur image (Herbalife CDN + autres sources)
+- **100%** des produits ont des **descriptions enrichies** (2-3 phrases marketing)
+- **15 produits Skin** dans la base (était 7), tous avec descriptions et images
+- **6 produits Wellness** avec descriptions enrichies
+- **15 produits Sport** avec descriptions enrichies
+- Panier : corrigé (l'URL s'affichait en texte au lieu de l'image)
+- Carrousel homepage : affiche les vraies images DB + liens détail
 
 ---
 
-## Ce qui a été fait
+## Reste 8 produits sans image
 
-### 1. Images hero des gammes (`productsData.ts`)
+| Gamme | Produit | SKU recherché |
+|-------|---------|---------------|
+| Sport | Barre Sport x6 | ? |
+| Sport | Chips BBQ Onions x10 | ? |
+| Sport | Barre Céréales x7 | ? |
+| Sport | Barres Collations x14 | ? |
+| Sport | Electrolytes Sachet x10 | même visuel que CR7 Boîte ? |
+| Skin | Crème Hydrant Éclat | ? |
+| Skin | Crème Hydrant Yeux | ? |
+| Skin | Exfoliant (corps) | ? |
+| Skin | Crème Hydratante FPS 30 | ? |
+| Skin | Sérum Rides | ? |
 
-Les 3 `heroImage` (bannières de section sur `/nos-produits`) pointent maintenant vers les canisters Herbalife :
+---
 
-| Gamme | Produit associé | SKU | URL |
-|-------|----------------|-----|-----|
-| Wellness | Aloe Vera | `1065` | `pc-1065-fr.png` |
-| Sport | Formula 1 | `048K` | `pc-048k-fr.png` |
-| Skin | Crème Tension Ultime | `513K` | `pc-513k-fr.png` |
+## Images trouvées depuis la dernière fois
 
-### 2. Images des produits individuels (`productsData.ts`)
+4 nouveaux SKU confirmés par Élise (commit `38077fc`) :
+- **Collagène** → `pc-076k-fr.png`
+- **Omega 3** → vercorssportsteam.com (image externe)
+- **Hydrate** → `pc-3150-fr.png`
+- **Lotion Tonique** → cdn.webshopapp.com
 
-11 produits sur 24 ont leur image Herbalife :
++ 8 produits Skin ajoutés avec images Herbalife : Gel Contour Yeux (2561), Crème de Nuit (539k), Sérum Niacinamide (508k), Masque d'Argile (0773), Lotion Nourrissante (514k), etc.
 
-**Wellness :** Aloe Vera (1065), Thé Detox (182K), Fibres (2554), Collagène (076K)
-**Sport :** Formula 1 (048K), Créatine (488K), Rebuild Whey (013K), Protein Drink (2600), LiftOff Citron (3152)
-**Skin :** Gel Nettoyant (511K), Crème Tension (513K), Contour Yeux (515K)
+---
 
-### 3. Base de données Supabase (`gamme_products`)
+## Descriptions enrichies
 
-Migration `20260531170000` appliquée : met à jour `image_url` dans la table `gamme_products` avec les URLs Herbalife correspondantes (mêmes SKU que ci-dessus). Les previews produits sur `/nos-produits` s'affichent maintenant.
+Tous les 36 produits ont maintenant des descriptions marketing 2-3 phrases (Herbalife officiel ou adapté). Les 7 descriptions courtes d'une ligne sur la gamme Skin ont été remplacées aujourd'hui.
 
-### 4. Pattern des URLs
+---
+
+## Pattern des URLs Herbalife
 
 ```
 https://www.herbalife.com/dmassets/market-reusable-assets/emea/france/images/canister/pc-XXXX-fr.png
 ```
 
-Remplacer `XXXX` par le SKU en minuscules (ex: `1065`, `048k`, `511k`).
-
 ---
 
-## Produits sans image (SKU à confirmer)
+## Prochaines étapes
 
-Ces produits sont dans `productsData.ts` mais n'ont pas de SKU Herbalife confirmé :
-
-| Gamme | Produit | Remarque |
-|-------|---------|----------|
-| Wellness | Complex Vitamine | ? |
-| Wellness | Minéral Complex | ? |
-| Sport | Gel Prolong | ? |
-| Sport | Electrolytes CR7 Boîte | ? |
-| Sport | Electrolytes Sachet x10 | ? |
-| Sport | Omega 3 | ? |
-| Sport | Hydrate | ? |
-| Sport | LiftOff Pamplemousse | Trouvé Citron-Citron vert (3152) et Pêche/Classique — pas Pamplemousse |
-| Skin | Gommage | ? |
-| Skin | Lotion Tonique Revitalisant | ? |
-| Skin | Crème Hydratante FPS 30 | ? |
-| Skin | Sérum Rides | ? Peut-être doublon avec Crème Tension (513K) |
-
-Dès que tu me donnes les SKU, je mets à jour en 2 minutes.
-
----
-
-## Ce que j'ai exploré sur le site Herbalife
-
-- **API officielle** : `api3.herbalife.com/api/v1/products/plp` — retourne les 77 produits France avec SKU, noms, descriptions, images
-- **Catégories** : `nutrition-au-quotidien` (49), `sport` (23), `soins-visage-corps` (12)
-- **Les URLs CDN sont stables** — même structure depuis des années, utilisée par les distributeurs officiels
-- **Le site est difficile à scraper** (React, CORS, tokens de session) — j'ai dû naviguer page par page
-
----
-
-## Pour la suite
-
-1. Confirmer les SKU manquants → je complète `productsData.ts` + migration DB
-2. Les images chargent directement depuis le CDN Herbalife, pas besoin d'upload
-3. Si vous préférez héberger les images vous-mêmes, on peut les télécharger et les mettre dans Supabase Storage
+1. Élise confirme les 8-10 SKU manquants → je mets à jour DB + static en 2 minutes
+2. Les images chargent depuis le CDN Herbalife (pas d'upload nécessaire)
+3. Si vous voulez héberger les images vous-mêmes, on peut les mettre dans Supabase Storage
