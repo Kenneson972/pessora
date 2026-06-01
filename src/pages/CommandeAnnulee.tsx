@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { XCircle, ArrowLeft } from 'lucide-react';
+import { XCircle, ArrowLeft, Loader2, CheckCircle } from 'lucide-react';
 import { PageShell } from '../components/layout/PageShell';
 import { supabase } from '../lib/supabaseClient';
 
@@ -12,30 +12,34 @@ export default function CommandeAnnulee() {
   const [searchParams] = useSearchParams();
   const orderIdRaw = searchParams.get('order_id');
   const cancelledRef = useRef(false);
+  const [cancelState, setCancelState] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
 
   useEffect(() => {
-    // Si l'URL contient un double slash (ex: //commande/annulee), rediriger
     if (window.location.pathname.startsWith('//')) {
-      navigate(window.location.pathname.replace(/\/+/g, '/'), { replace: true });
+      navigateRef.current(window.location.pathname.replace(/\/+/g, '/'), { replace: true });
     }
-  }, [navigate]);
+  }, []);
 
   useEffect(() => {
     if (!orderIdRaw || !UUID_RE.test(orderIdRaw) || cancelledRef.current) return;
     cancelledRef.current = true;
+    setCancelState('loading');
 
     void (async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.user) return;
+        if (!session?.user) { setCancelState('done'); return; }
         await supabase
           .from('orders')
           .update({ status: 'cancelled' })
           .eq('id', orderIdRaw)
           .eq('user_id', session.user.id)
           .eq('status', 'pending');
+        setCancelState('done');
       } catch {
-        /* RLS ou réseau : la commande restera pending ; nettoyage manuel possible côté admin */
+        setCancelState('error');
       }
     })();
   }, [orderIdRaw]);
@@ -59,11 +63,13 @@ export default function CommandeAnnulee() {
       <section>
         <PageShell className="py-16 lg:py-24">
           <div className="mx-auto max-w-lg text-center">
-            <XCircle
-              className="mx-auto mb-8 h-12 w-12 text-black/25"
-              strokeWidth={1}
-              aria-hidden
-            />
+            {cancelState === 'loading' ? (
+              <Loader2 className="mx-auto mb-8 h-12 w-12 animate-spin text-black/25" strokeWidth={1} aria-hidden />
+            ) : cancelState === 'done' ? (
+              <CheckCircle className="mx-auto mb-8 h-12 w-12 text-sapin/40" strokeWidth={1} aria-hidden />
+            ) : (
+              <XCircle className="mx-auto mb-8 h-12 w-12 text-black/25" strokeWidth={1} aria-hidden />
+            )}
             <p className="mb-3 text-[9px] font-normal uppercase tracking-[0.2em] text-black/35">
               Paiement annulé
             </p>

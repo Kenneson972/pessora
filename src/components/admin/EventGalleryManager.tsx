@@ -69,9 +69,15 @@ export function EventGalleryManager({
       const files = e.target.files;
       e.target.value = '';
       if (!files || files.length === 0) return;
+      const MAX_EVENT_GALLERY = 12;
+      if (gallery.length >= MAX_EVENT_GALLERY) {
+        setError(`Maximum ${MAX_EVENT_GALLERY} images dans la galerie.`);
+        return;
+      }
+      const toUpload = Math.min(files.length, MAX_EVENT_GALLERY - gallery.length);
       setGalleryUploading(true);
       setError(null);
-      const urls = await uploadMany(files);
+      const urls = await uploadMany(Array.from(files).slice(0, toUpload));
       setGalleryUploading(false);
       if (urls.length > 0) onGalleryChange([...gallery, ...urls]);
     },

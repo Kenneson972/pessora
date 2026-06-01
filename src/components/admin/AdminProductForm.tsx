@@ -372,6 +372,7 @@ export function AdminProductForm({ form, onChange, busy, isEdit }: AdminProductF
             <input
               id="prod-price"
               type="number"
+              min="0"
               step="0.01"
               inputMode="decimal"
               className={inputClass}

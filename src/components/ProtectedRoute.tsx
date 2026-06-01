@@ -21,7 +21,8 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/connexion" replace />;
+    const redirect = window.location.pathname + window.location.search;
+    return <Navigate to={`/connexion?redirect=${encodeURIComponent(redirect)}`} replace />;
   }
 
   return <>{children}</>;

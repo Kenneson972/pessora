@@ -41,7 +41,14 @@ export async function auditLog(entry: AuditEntry): Promise<void> {
       entity_id: entry.entity_id ?? null,
       details: entry.details ?? null,
     }).single();
-  } catch {
-    // Silencieux — ne bloque jamais l'action principale
+  } catch (err) {
+    console.error('[auditLog]', entry.action, err);
+    // Fallback localStorage pour ne pas perdre la trace en cas d'erreur réseau
+    try {
+      const fallback = JSON.parse(localStorage.getItem('pessora_audit_fallback') || '[]');
+      fallback.push({ ...entry, admin_id: 'unknown', timestamp: new Date().toISOString() });
+      if (fallback.length > 100) fallback.shift();
+      localStorage.setItem('pessora_audit_fallback', JSON.stringify(fallback));
+    } catch { /* localStorage plein ou indisponible */ }
   }
 }

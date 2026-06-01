@@ -96,7 +96,8 @@ const AdminOverview = () => {
         .select('*, order_items(*)')
         // File bar : uniquement après paiement confirmé (webhook → paid).
         .in('status', ['paid', 'preparing', 'ready'])
-        .order('pickup_time', { ascending: true }),
+        .order('pickup_time', { ascending: true })
+        .limit(50),
       db.from('subscriptions')
         .select('user_id, updated_at, profiles!inner(first_name, last_name, email)')
         .eq('status', 'expired')

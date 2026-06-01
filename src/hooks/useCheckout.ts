@@ -8,6 +8,10 @@ export function useCheckout(pickupTime: string, clientName: string, clientPhone:
   const items = useCart((s) => s.items);
 
   const checkout = async () => {
+    if (!pickupTime) {
+      setError('Veuillez sélectionner un créneau de retrait.');
+      return;
+    }
     setError(null);
     setIsLoading(true);
 

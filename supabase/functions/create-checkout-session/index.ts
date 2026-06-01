@@ -219,7 +219,7 @@ serve(async (req) => {
     }));
     const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
     if (itemsError) {
-      console.error('[create-checkout-session] order_items insert error:', itemsError.message);
+      throw new Error('Erreur lors de la création des articles : ' + itemsError.message);
     }
 
     const { data: profile } = await supabase
@@ -232,6 +232,7 @@ serve(async (req) => {
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
+      idempotencyKey: order.id,
       locale: 'fr',
       customer_email: profile?.email ?? user.email,
       phone_number_collection: { enabled: true },

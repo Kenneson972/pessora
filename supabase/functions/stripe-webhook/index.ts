@@ -27,28 +27,21 @@ serve(async (req) => {
     })
   }
 
-  // ── P0-2: Idempotence — ignorer les événements déjà traités ──
-  const { data: existing } = await supabase
-    .from('stripe_events_processed')
-    .select('id')
-    .eq('id', event.id)
-    .maybeSingle()
-
-  if (existing) {
-    console.log(`[stripe-webhook] already processed event ${event.id} (${event.type}) — skipping`)
-    return new Response(JSON.stringify({ received: true, skipped: true }), {
-      headers: { 'Content-Type': 'application/json' },
-    })
-  }
-
-  // Marquer l'événement comme traité (idempotent) avant d'agir
-  // pour éviter les doublons même en cas d'erreur partielle.
-  await supabase
+  // ── P0-2: Idempotence — INSERT ON CONFLICT DO NOTHING (atomique) ──
+  const { error: insertError } = await supabase
     .from('stripe_events_processed')
     .insert({ id: event.id, type: event.type })
-    .catch((err: unknown) =>
-      console.error(`[stripe-webhook] failed to mark event ${event.id} as processed:`, err)
-    )
+    .select('id')
+    .single()
+
+  if (insertError) {
+    if (insertError.code === '23505' || insertError.message?.includes('duplicate')) {
+      return new Response(JSON.stringify({ received: true, skipped: true }), {
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+    console.error(`[stripe-webhook] failed to mark event ${event.id}:`, insertError)
+  }
 
   try {
     switch (event.type) {

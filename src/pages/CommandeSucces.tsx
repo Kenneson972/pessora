@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle, Clock } from 'lucide-react';
 import { PageShell } from '../components/layout/PageShell';
@@ -16,12 +16,17 @@ export default function CommandeSucces() {
   const [token, setToken] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
 
+  const clearCartRef = useRef(clearCart);
+  clearCartRef.current = clearCart;
+  const navigateRef = useRef(navigate);
+  navigateRef.current = navigate;
+
   useEffect(() => {
-    clearCart();
+    clearCartRef.current();
     if (window.location.pathname.startsWith('//')) {
-      navigate(window.location.pathname.replace(/\/+/g, '/'), { replace: true });
+      navigateRef.current(window.location.pathname.replace(/\/+/g, '/'), { replace: true });
     }
-  }, [clearCart, navigate]);
+  }, []);
 
   useEffect(() => {
     if (!sessionId) return;

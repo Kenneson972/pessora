@@ -120,13 +120,13 @@ function GammeEditorForm({
       <div className="grid grid-cols-2 gap-4">
         <label className="flex flex-col gap-1">
           <span className="text-[10px] uppercase tracking-[0.14em] text-black/50">Prix (€) *</span>
-          <input type="number" step="0.01" className={inputClass} value={form.price} onChange={(e) => set('price', e.target.value)} placeholder="45" />
+          <input type="number" step="0.01" min="0" className={inputClass} value={form.price} onChange={(e) => set('price', e.target.value)} placeholder="45" />
         </label>
         <label className="flex flex-col gap-1">
           <span className="text-[10px] uppercase tracking-[0.14em] text-black/50">
             Prix alternatif (€) <span className="normal-case text-black/25">— ex: grand format</span>
           </span>
-          <input type="number" step="0.01" className={inputClass} value={form.price_alt} onChange={(e) => set('price_alt', e.target.value)} placeholder="Laisser vide si un seul prix" />
+          <input type="number" step="0.01" min="0" className={inputClass} value={form.price_alt} onChange={(e) => set('price_alt', e.target.value)} placeholder="Laisser vide si un seul prix" />
         </label>
       </div>
       <label className="flex flex-col gap-1">
