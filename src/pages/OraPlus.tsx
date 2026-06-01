@@ -14,7 +14,6 @@ import {
 } from '../data/oraPlusData';
 
 const OraPlus = () => {
-  useEffect(() => { document.title = 'Óra+ — PessÓra'; }, []);
   const navigate = useNavigate();
   const { user, subscription } = useAuth();
   const isOraPlusActive = subscription?.plan === 'ora_plus' && subscription?.status === 'active';
@@ -49,7 +48,7 @@ const OraPlus = () => {
   };
 
   const fadeBlock = useFadeUpWhenVisible();
-  const { container, isReducedMotion } = useStaggerReveal();
+  const { container, item, isReducedMotion } = useStaggerReveal();
 
   useEffect(() => { document.title = 'Óra+ · PessÓra'; }, []);
 
@@ -100,7 +99,7 @@ const OraPlus = () => {
                 src={oraPlusHero.image.src}
                 alt={oraPlusHero.image.alt}
                 className="h-full w-full object-cover bg-surface-product-well"
-                loading="eager"
+                fetchPriority="high"
               />
             </div>
           </div>
@@ -146,18 +145,19 @@ const OraPlus = () => {
             className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6"
           >
             {oraPlusPrivilegeCards.map((card) => (
-              <div
+              <motion.div
                 key={card.num}
+                variants={item}
                 className="group relative overflow-hidden rounded-[2px] border border-noir/[0.08] bg-white transition-shadow hover:shadow-editorial-sm"
               >
                 <div className="grid md:grid-cols-[1fr_1fr]">
                   {/* Image side */}
                   <div className="relative aspect-[4/3] overflow-hidden bg-surface-product-well md:aspect-auto">
-                    <div
-                      className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-[1.03]"
-                      style={{ backgroundImage: `url(${card.image.src})` }}
-                      role="img"
-                      aria-label={card.image.alt}
+                    <img
+                      src={card.image.src}
+                      alt={card.image.alt}
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                      loading="lazy"
                     />
                   </div>
 
@@ -193,7 +193,7 @@ const OraPlus = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </motion.div>
 
