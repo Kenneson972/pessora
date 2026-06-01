@@ -23,7 +23,7 @@ const ESPACE_LINKS = [
 ];
 const CONTACT_LINKS = [
   { label: 'Instagram', to: 'https://instagram.com/pessora.mq', external: true },
-  { label: 'WhatsApp', to: 'https://wa.me/596696000000', external: true },
+  { label: 'WhatsApp', to: 'https://wa.me/596696440404', external: true },
   { label: 'Fort-de-France', to: '/contact' },
   { label: 'Partenariats', to: '/contact-partenariat' },
 ];
@@ -90,7 +90,7 @@ function FooterLogoCenter({ context }: { context: 'mobile' | 'desktop' }) {
           <Instagram size={desktop ? 19 : 17} strokeWidth={1.35} aria-hidden />
         </a>
         <a
-          href="https://wa.me/596696000000"
+          href="https://wa.me/596696440404"
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Contacter Pessóra sur WhatsApp (ouvre un nouvel onglet)"
