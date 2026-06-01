@@ -523,32 +523,6 @@ const OraPlus = () => {
         </PageShell>
       </section>
 
-      {/* ───────────────────────────── 6 · FINAL CTA (fond noir) ───────────────────────────── */}
-      <section className="relative overflow-hidden bg-noir py-24 text-center md:py-32">
-        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.04] to-transparent" aria-hidden />
-        <PageShell className="relative">
-          <motion.div {...fadeBlock} className="mx-auto max-w-[720px] sm:max-w-none">
-            <h2 className="m-0 font-display font-normal text-white" style={{ fontSize: 'clamp(40px, 5.5vw, 72px)', lineHeight: 1, letterSpacing: '-0.025em' }}>
-              {oraPlusFinalCta.titleHead}
-              <em className="font-light italic text-white/65">{oraPlusFinalCta.titleEmphasis}</em>
-            </h2>
-            <p className="mx-auto my-8 max-w-[520px] sm:max-w-none font-display font-light italic text-white/60" style={{ fontSize: 'clamp(15px, 1.2vw, 18px)', lineHeight: 1.55 }}>
-              {isOraPlusActive ? 'Vous êtes déjà membre Óra+. Retrouvez votre espace.' : oraPlusFinalCta.body}
-            </p>
-            <Button
-              variant="ghost"
-              size="md"
-              onPress={() => void handleSubscribe()}
-              isDisabled={subLoading}
-              className="group inline-flex items-center gap-3 rounded-[2px] border border-white/35 bg-white/15 px-10 py-4 text-[11px] font-normal uppercase tracking-[0.24em] text-white transition-colors hover:border-white/50 hover:bg-white/25"
-            >
-              {isOraPlusActive ? 'Mon abonnement' : oraPlusFinalCta.cta.label}
-              <ArrowRight size={14} strokeWidth={1.5} className="transition-transform group-hover:translate-x-0.5" aria-hidden />
-            </Button>
-          </motion.div>
-        </PageShell>
-      </section>
-
       {/* ───────────────────────────── STICKY CTA MOBILE ───────────────────────────── */}
       <div className="fixed inset-x-0 bottom-0 z-50 border-t border-noir/[0.08] bg-white/95 backdrop-blur-sm md:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         <PageShell className="py-3">
