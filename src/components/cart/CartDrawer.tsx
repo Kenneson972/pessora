@@ -13,6 +13,7 @@ import { useIsOraPlus } from '../../hooks/useIsOraPlus';
 import { useCheckout } from '../../hooks/useCheckout';
 import { PickupTimePicker } from './PickupTimePicker';
 import { useBarStatus } from '../../providers/BarStatusProvider';
+import { useAuth } from '../../contexts/AuthContext';
 
 const focusRing =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sapin/30 focus-visible:ring-offset-2';
@@ -26,8 +27,11 @@ export function CartDrawer() {
   const clearCart = useCart((s) => s.clearCart);
 
   const [pickupTime, setPickupTime] = useState('');
+  const { isAuthenticated } = useAuth();
+  const [guestName, setGuestName] = useState('');
+  const [guestPhone, setGuestPhone] = useState('');
 
-  const { checkout, isLoading: isCheckingOut, error: checkoutError } = useCheckout(pickupTime);
+  const { checkout, isLoading: isCheckingOut, error: checkoutError } = useCheckout(pickupTime, guestName, guestPhone);
   const barStatus = useBarStatus();
   const { isOraPlus } = useIsOraPlus();
 
@@ -36,6 +40,10 @@ export function CartDrawer() {
     0,
   );
   const hasStripe = items.length > 0;
+  const isGuest = !isAuthenticated;
+  const guestNameValid = guestName.trim().length >= 2;
+  const guestPhoneValid = /^0[1-9]\d{8}$/.test(guestPhone.trim());
+  const guestFormValid = !isGuest || (guestNameValid && guestPhoneValid);
   const telHref = `tel:${barInfo.contact.phone.replace(/\s/g, '').replace(/X/g, '')}`;
 
   const handleOpenChange = useCallback(
@@ -197,6 +205,30 @@ export function CartDrawer() {
                 value={pickupTime}
                 onChange={setPickupTime}
               />
+              {isGuest && (
+                <div className="flex flex-col gap-3 pb-4 px-5 md:px-6">
+                  <input
+                    type="text"
+                    placeholder="Votre nom"
+                    value={guestName}
+                    onChange={(e) => setGuestName(e.target.value)}
+                    className="h-11 min-h-[44px] w-full rounded-full border border-noir/[0.12] bg-white px-5 text-[12px] text-black placeholder:text-black/30 outline-none focus:border-noir/30"
+                  />
+                  <input
+                    type="tel"
+                    placeholder="06 XX XX XX XX"
+                    value={guestPhone}
+                    onChange={(e) => setGuestPhone(e.target.value)}
+                    className="h-11 min-h-[44px] w-full rounded-full border border-noir/[0.12] bg-white px-5 text-[12px] text-black placeholder:text-black/30 outline-none focus:border-noir/30"
+                  />
+                  {guestName && !guestNameValid && (
+                    <p className="text-[9px] text-red-400">2 caractères minimum</p>
+                  )}
+                  {guestPhone && !guestPhoneValid && (
+                    <p className="text-[9px] text-red-400">Format : 06 XX XX XX XX</p>
+                  )}
+                </div>
+              )}
               <Sheet.Footer className="flex flex-col border-t border-noir/[0.06] bg-white px-5 py-5 md:px-6">
                 <div className="mb-5 flex items-baseline justify-between gap-4">
                   <span className="text-[9px] font-normal uppercase tracking-[0.18em] text-black/45">
@@ -225,7 +257,7 @@ export function CartDrawer() {
                   {hasStripe && (
                     <Button
                       type="button"
-                      isDisabled={isCheckingOut}
+                      isDisabled={isCheckingOut || !guestFormValid}
                       onPress={checkout}
                       className={cn(
                         focusRing,
@@ -250,7 +282,7 @@ export function CartDrawer() {
                       focusRing,
                       'inline-flex items-center justify-center min-h-[44px] rounded-full text-[9px] uppercase tracking-[0.14em] text-black/35 hover:text-black/55',
                     )}
-                    onClick={() => clearCart()}
+                    onClick={() => { clearCart(); setGuestName(''); setGuestPhone(''); }}
                   >
                     Vider le panier
                   </button>
