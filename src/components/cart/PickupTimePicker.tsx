@@ -97,7 +97,7 @@ export function PickupTimePicker({ businessHours, value, onChange }: PickupTimeP
           Créneau de retrait
         </span>
       </div>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5 max-h-[120px] overflow-y-auto">
         {slots.map((slot) => {
           const selected = value === slot.value;
           return (
@@ -106,7 +106,7 @@ export function PickupTimePicker({ businessHours, value, onChange }: PickupTimeP
               type="button"
               disabled={slot.disabled}
               onClick={() => onChange(slot.value)}
-              className={`min-h-[36px] px-3 py-1.5 rounded-[2px] text-[11px] font-normal transition-colors ${
+              className={`min-h-[28px] px-2 py-0.5 rounded-[2px] text-[10px] font-normal transition-colors ${
                 selected
                   ? 'bg-sapin text-white'
                   : slot.disabled
