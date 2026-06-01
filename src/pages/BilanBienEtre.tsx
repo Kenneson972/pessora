@@ -259,37 +259,42 @@ const BilanBienEtre = () => {
         <div className="mx-auto mb-10 max-w-3xl">
           <OraPlusTeaserStrip variant="muted" />
         </div>
-        <motion.ol
-          className="divide-y divide-black/[0.06] mb-[64px]"
+        <motion.div
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-[64px]"
           variants={container}
           initial={isReducedMotion ? false : 'hidden'}
           whileInView="visible"
           viewport={{ once: true, amount: 0.12, margin: '0px 0px -40px 0px' }}
           aria-label="Programme du bilan"
         >
-          {PROGRAMME.map(({ title, desc }, idx) => (
-            <motion.li key={title} variants={item} className="flex items-baseline gap-8 py-6 md:gap-12 lg:gap-16">
-              <span
-                className="shrink-0 font-display font-normal text-black/[0.12] leading-none select-none"
-                style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px, 3vw, 40px)' }}
-                aria-hidden="true"
-              >
-                {String(idx + 1).padStart(2, '0')}
-              </span>
-              <div className="flex-1 flex flex-col gap-1 md:flex-row md:items-baseline md:gap-10">
-                <h3
-                  className="shrink-0 font-display font-normal text-noir"
-                  style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(16px, 1.6vw, 20px)' }}
-                >
-                  {title}
-                </h3>
-                <p className="text-[11px] text-black/40 leading-[1.65] md:border-l md:border-noir/[0.06] md:pl-10">
+          {PROGRAMME.map(({ icon: Icon, title, desc }, idx) => (
+            <motion.div
+              key={title}
+              variants={item}
+              className="group relative overflow-hidden rounded-[2px] border border-noir/[0.08] bg-white transition-shadow hover:shadow-editorial-sm"
+            >
+              <div className="relative aspect-square overflow-hidden bg-surface-product-well">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Icon size={48} strokeWidth={1} className="text-black/[0.08]" aria-hidden="true" />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-noir/60 via-noir/10 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-5">
+                  <span className="inline-block mb-2 rounded-[2px] bg-white/90 px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.2em] text-noir/70">
+                    {String(idx + 1).padStart(2, '0')}
+                  </span>
+                  <h3 className="font-display font-normal text-white text-[18px] leading-tight">
+                    {title}
+                  </h3>
+                </div>
+              </div>
+              <div className="p-5">
+                <p className="text-[12px] text-black/50 leading-[1.6]">
                   {desc}
                 </p>
               </div>
-            </motion.li>
+            </motion.div>
           ))}
-        </motion.ol>
+        </motion.div>
 
         {/* Réservation */}
         {submitStatus === 'success' ? (
