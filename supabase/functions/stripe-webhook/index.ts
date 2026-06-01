@@ -91,11 +91,22 @@ serve(async (req) => {
         break
       }
 
+      case 'customer.subscription.updated': {
+        const sub = event.data.object as Stripe.Subscription
+        if (sub.cancel_at_period_end) {
+          await supabase
+            .from('subscriptions')
+            .update({ cancel_at_period_end: true })
+            .eq('stripe_subscription_id', sub.id)
+        }
+        break
+      }
+
       case 'customer.subscription.deleted': {
         const sub = event.data.object as Stripe.Subscription
         await supabase
           .from('subscriptions')
-          .update({ status: 'cancelled' })
+          .update({ status: 'cancelled', cancel_at_period_end: false })
           .eq('stripe_subscription_id', sub.id)
         break
       }

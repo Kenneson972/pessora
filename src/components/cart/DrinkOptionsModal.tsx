@@ -85,10 +85,7 @@ export function DrinkOptionsModal({ item, onClose }: Props) {
     });
 
     setJustAdded(true);
-    setTimeout(() => {
-      setJustAdded(false);
-      onClose();
-    }, 700);
+    setTimeout(() => setJustAdded(false), 1500);
   };
 
   const handleOpenChange = useCallback(
@@ -254,11 +251,11 @@ export function DrinkOptionsModal({ item, onClose }: Props) {
               </div>
             </Sheet.Body>
 
-            <Sheet.Footer className="border-t border-noir/[0.06] px-5 py-4">
+            <Sheet.Footer className="border-t border-noir/[0.06] px-5 py-4 flex flex-col gap-2">
               <Button
                 type="button"
                 fullWidth
-                onPress={handleAdd}
+                onPress={() => { handleAdd(); onClose(); }}
                 className={cn(
                   focusRing,
                   'flex h-12 min-h-12 w-full items-center justify-center gap-2 rounded-full bg-sapin text-[10px] font-normal uppercase tracking-[0.12em] text-white transition-colors hover:bg-sapin/85',
@@ -270,8 +267,20 @@ export function DrinkOptionsModal({ item, onClose }: Props) {
                     <span className="text-white">Ajouté</span>
                   </>
                 ) : (
-                  `Ajouter · ${total.toFixed(2).replace('.', ',')} €`
+                  `Ajouter et fermer · ${total.toFixed(2).replace('.', ',')} €`
                 )}
+              </Button>
+              <Button
+                type="button"
+                fullWidth
+                variant="ghost"
+                onPress={handleAdd}
+                className={cn(
+                  focusRing,
+                  'flex h-10 min-h-10 w-full items-center justify-center gap-2 rounded-full border border-noir/[0.12] text-[10px] font-normal uppercase tracking-[0.1em] text-black/55 transition-colors hover:border-noir/30 hover:text-black',
+                )}
+              >
+                Ajouter et continuer
               </Button>
             </Sheet.Footer>
           </Sheet.Dialog>

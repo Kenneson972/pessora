@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { EventItemListJsonLd } from '../components/seo/EventJsonLd';
 import { ArrowRight } from 'lucide-react';
 import { EmptyState, Segment } from '@heroui-pro/react';
 import { supabase } from '../lib/supabaseClient';
@@ -265,8 +266,15 @@ const Evenements = () => {
     else setSearchParams({ type });
   };
 
+  const eventItems = upcoming.map((ev) => ({
+    name: ev.title,
+    startDate: ev.date,
+    url: `${window.location.origin}/evenements/${ev.slug}`,
+  }));
+
   return (
     <div className="min-h-screen bg-white">
+      <EventItemListJsonLd items={eventItems} />
       <PageHero
         eyebrow="Communauté · Fort-de-France"
         title="Événements"
