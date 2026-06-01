@@ -11,6 +11,7 @@ import {
   MapPin,
 } from 'lucide-react';
 import { PageShell } from '../components/layout/PageShell';
+import { ProductJsonLd } from '../components/seo/ProductJsonLd';
 import { useGammeProduct } from '../hooks/useGammeProduct';
 import { useGammeCatalog } from '../hooks/useGammeCatalog';
 import { toSlug } from '../lib/toSlug';
@@ -136,8 +137,18 @@ const GammeProductDetail = () => {
     setTimeout(() => setJustAdded(false), 2000);
   };
 
+  const canonicalUrl = `${window.location.origin}/nos-produits/${rangeId}/${product.slug ?? toSlug(product.name)}`;
+
   return (
     <div className="min-h-screen bg-white">
+      <ProductJsonLd
+        name={product.name}
+        description={product.description ?? ''}
+        image={product.image_url}
+        price={product.price}
+        category={rangeId!}
+        url={canonicalUrl}
+      />
       {/* ─── Breadcrumb ─── */}
       <div>
         <PageShell className="py-5">
