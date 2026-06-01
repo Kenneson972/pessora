@@ -7,7 +7,6 @@ import { checkRateLimit } from '../_shared/rate-limiter.ts'
 
 const BodySchema = z.object({
   price_id: z.string().optional(),
-  email: z.string().email().optional(),
 })
 
 const corsHeaders = {
@@ -70,7 +69,7 @@ serve(async (req) => {
 
     const raw = await req.json().catch(() => ({}))
     const parsed = BodySchema.safeParse(raw)
-    const { price_id, email } = parsed.success ? parsed.data : {}
+    const { price_id } = parsed.success ? parsed.data : {}
 
     const priceId = price_id ?? defaultPriceId
     if (!priceId) {
@@ -85,14 +84,12 @@ serve(async (req) => {
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode: 'subscription',
       locale: 'fr',
+      customer_email: user.email,
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${siteUrl}/abonnement/succes?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${siteUrl}/commande/annulee`,
       phone_number_collection: { enabled: true },
-    }
-
-    if (email) {
-      sessionParams.customer_email = email
+      metadata: { user_id: user.id },
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams)

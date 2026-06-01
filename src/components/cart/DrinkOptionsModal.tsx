@@ -266,8 +266,8 @@ export function DrinkOptionsModal({ item, onClose }: Props) {
               >
                 {justAdded ? (
                   <>
-                    <Check className="h-4 w-4 text-sapin" strokeWidth={2} aria-hidden />{' '}
-                    <span className="text-sapin">Ajouté</span>
+                    <Check className="h-4 w-4 text-white" strokeWidth={2} aria-hidden />{' '}
+                    <span className="text-white">Ajouté</span>
                   </>
                 ) : (
                   `Ajouter · ${total.toFixed(2).replace('.', ',')} €`

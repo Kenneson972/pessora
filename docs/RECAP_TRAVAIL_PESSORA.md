@@ -105,7 +105,7 @@ Convention : **ajouter une entrée datée en tête de liste** à chaque lot de t
 | **30 Mai** | 13 commits : câblage image_url, upload AdminGammes, fix Stripe tailles+boosters, SEO (h1/OG/sitemap/canonique), AdminCommandes+notifs, hero Menu sapin, cross-sell DB, JSON-LD | `AdminGammes.tsx`, `Menu.tsx`, `DrinkDetail.tsx`, `AdminCommandes.tsx`, `seoConfig.ts` |
 | **30 Mai (soir)** | 24/36 images gamme OK, guest checkout, suivi commande live, redesign NosProduits, RLS bilan_slots/bookings | `useCheckout.ts`, `CommandeSucces.tsx`, `SuiviCommande.tsx`, `NosProduits.tsx` |
 | **31 Mai (jour)** | 6 phases Dal Cielo : CSP/HSTS, audit log, checkout token, analytics Recharts, AdminToast, bar status Realtime, stocks | `vercel.json`, `auditLog.ts`, `AnalyticsDashboard.tsx`, `AdminToast.tsx`, `BarStatusProvider.tsx` |
-| **31 Mai (soir)** | Fix panier gamme (URL→img), carrousel homepage DB, 36/36 images gamme, 36/36 descriptions enrichies, sync static `productsData.ts` | `CartDrawer.tsx`, `HomeGammesProductCarousel.tsx`, `productsData.ts`, `recap-elise-30mai-2026.md` |
+| **31 Mai (soir)** | Fix panier gamme (URL→img), carrousel homepage DB, 36/36 images gamme, 36/36 descriptions enrichies, sync static `productsData.ts`, **guest checkout form (nom+tél CartDrawer)** | `CartDrawer.tsx`, `HomeGammesProductCarousel.tsx`, `useCheckout.ts`, `productsData.ts`, `recap-elise-30mai-2026.md` |
 
 **État final au 31 mai** : 36/36 produits gamme avec image + description, checkout invité fonctionnel, analytics admin, bar status Realtime, audit log, sécurité renforcée. Récap Élise à jour.
 

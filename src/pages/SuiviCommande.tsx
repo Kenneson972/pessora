@@ -35,33 +35,44 @@ export default function SuiviCommande() {
 
     let cancelled = false;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = supabase as any;
-
-    let query = db.from('orders').select('*, order_items(*)');
     if (token) {
-      query = query.eq('access_token', token);
-    } else {
-      query = query.eq('id', orderId);
-    }
-    query.single()
-      .then(({ data, error: err }: { data: OrderWithItems | null; error: { message: string } | null }) => {
+      // Guest : passer par l'Edge Function (bypass RLS)
+      supabase.functions.invoke('get-order-by-token', {
+        body: { access_token: token },
+      }).then(({ data, error: fnError }) => {
         if (cancelled) return;
-        if (err || !data) {
+        if (fnError || !data) {
           setError('Commande introuvable.');
         } else {
-          setOrder(data);
+          setOrder(data as OrderWithItems);
         }
         setLoading(false);
+      }).catch(() => {
+        if (!cancelled) { setError('Commande introuvable.'); setLoading(false); }
       });
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const db = supabase as any;
+      db.from('orders').select('*, order_items(*)')
+        .eq('id', orderId)
+        .single()
+        .then(({ data, error: err }: { data: OrderWithItems | null; error: { message: string } | null }) => {
+          if (cancelled) return;
+          if (err || !data) {
+            setError('Commande introuvable.');
+          } else {
+            setOrder(data);
+          }
+          setLoading(false);
+        });
+    }
 
-    const trackId = token ?? orderId!;
-    const filterCol = token ? 'access_token' : 'id';
+    const trackId = orderId ?? token!;
     const channel = supabase
       .channel(`order-${trackId}`)
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'orders', filter: `${filterCol}=eq.${trackId}` },
+        { event: 'UPDATE', schema: 'public', table: 'orders', filter: `id=eq.${trackId}` },
         (payload: { new: Record<string, unknown> }) => {
           setOrder((prev) => (prev ? { ...prev, ...payload.new } as OrderWithItems : prev));
         }

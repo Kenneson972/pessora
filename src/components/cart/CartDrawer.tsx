@@ -282,7 +282,7 @@ export function CartDrawer() {
                       focusRing,
                       'inline-flex items-center justify-center min-h-[44px] rounded-full text-[9px] uppercase tracking-[0.14em] text-black/35 hover:text-black/55',
                     )}
-                    onClick={() => { clearCart(); setGuestName(''); setGuestPhone(''); }}
+                    onClick={() => { clearCart(); setPickupTime(''); setGuestName(''); setGuestPhone(''); }}
                   >
                     Vider le panier
                   </button>

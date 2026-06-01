@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle, Clock } from 'lucide-react';
 import { PageShell } from '../components/layout/PageShell';
 import { useCart } from '../store/cartStore';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabaseClient';
 
 export default function CommandeSucces() {
   useEffect(() => { document.title = 'Commande confirmée — PessÓra'; }, []);
@@ -11,8 +12,9 @@ export default function CommandeSucces() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
-  const orderId = searchParams.get('order_id');
+  const sessionId = searchParams.get('session_id');
+  const [token, setToken] = useState<string | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     clearCart();
@@ -21,9 +23,21 @@ export default function CommandeSucces() {
     }
   }, [clearCart, navigate]);
 
+  useEffect(() => {
+    if (!sessionId) return;
+    let cancelled = false;
+    supabase.functions.invoke('get-order-for-success', {
+      body: { stripe_session_id: sessionId },
+    }).then(({ data }) => {
+      if (cancelled || !data) return;
+      if (data.access_token) setToken(data.access_token);
+      if (data.id) setOrderId(data.id);
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [sessionId]);
+
   return (
     <div className="min-h-screen bg-white">
-      {/* Breadcrumb */}
       <div>
         <PageShell className="py-5">
           <nav

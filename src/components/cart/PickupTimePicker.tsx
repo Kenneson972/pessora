@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { Clock } from 'lucide-react';
 
 interface BusinessHours {
@@ -41,28 +41,34 @@ interface PickupTimePickerProps {
 }
 
 export function PickupTimePicker({ businessHours, value, onChange }: PickupTimePickerProps) {
-  const slots = useMemo<Slot[]>(() => {
-    const range = getTodayRange(businessHours);
-    if (!range) return [];
+  const [slots, setSlots] = useState<Slot[]>([]);
 
-    const now = new Date();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    const result: Slot[] = [];
+  useEffect(() => {
+    function compute() {
+      const range = getTodayRange(businessHours);
+      if (!range) { setSlots([]); return; }
 
-    const startMinutes = Math.ceil(range.start * 60 / SLOT_INTERVAL) * SLOT_INTERVAL;
-    const endMinutes = range.end * 60 - 15; // dernier créneau possible
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      const result: Slot[] = [];
 
-    for (let m = startMinutes; m <= endMinutes; m += SLOT_INTERVAL) {
-      const h = Math.floor(m / 60);
-      const min = m % 60;
-      const label = `${h}h${min > 0 ? min : ''}`;
-      const valueStr = `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
-      const slotTotalMinutes = h * 60 + min;
-      // Désactiver les créneaux dans moins de 10 min (temps de préparation)
-      const disabled = slotTotalMinutes <= currentMinutes + 10;
-      result.push({ label, value: valueStr, disabled });
+      const startMinutes = Math.ceil(range.start * 60 / SLOT_INTERVAL) * SLOT_INTERVAL;
+      const endMinutes = range.end * 60 - 15;
+
+      for (let m = startMinutes; m <= endMinutes; m += SLOT_INTERVAL) {
+        const h = Math.floor(m / 60);
+        const min = m % 60;
+        const label = `${h}h${min > 0 ? min : ''}`;
+        const valueStr = `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
+        const disabled = (h * 60 + min) <= currentMinutes + 10;
+        result.push({ label, value: valueStr, disabled });
+      }
+      setSlots(result);
     }
-    return result;
+
+    compute();
+    const interval = setInterval(compute, 60_000);
+    return () => clearInterval(interval);
   }, [businessHours]);
 
   if (slots.length === 0) {

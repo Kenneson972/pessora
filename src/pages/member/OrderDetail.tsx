@@ -7,6 +7,9 @@ import { MemberPageSkeleton } from '../../components/member/MemberPageSkeleton';
 
 const STATUS_LABEL: Record<string, string> = {
   pending: 'En attente',
+  paid: 'Payée',
+  preparing: 'En préparation',
+  ready: 'Prête',
   completed: 'Terminée',
   cancelled: 'Annulée',
 };
