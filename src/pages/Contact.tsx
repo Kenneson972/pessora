@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { barInfo } from '../data/infoData';
@@ -19,6 +19,13 @@ const Contact = () => {
   const [privacyError, setPrivacyError] = useState(false);
   const [requestType, setRequestType] = useState<RequestType>('info');
   const [sending, setSending] = useState(false);
+  const [barHours, setBarHours] = useState(barInfo.hours);
+
+  useEffect(() => {
+    (supabase as any).from('bar_settings').select('hours').single().then(({ data }: any) => {
+      if (data?.hours?.length) setBarHours(data.hours as any);
+    }).catch(() => {});
+  }, []);
   const [sent, setSent] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -145,20 +152,28 @@ const Contact = () => {
                 <h4 className="mb-6 font-display text-xl font-normal italic text-white/95" style={{ fontFamily: 'var(--font-display)' }}>
                   Horaires d’ouverture
                 </h4>
-                <div className="space-y-3 text-[14px] font-light text-white/80">
-                  <div className="flex justify-between border-b border-white/10 pb-2">
-                    <span>Lundi - Vendredi</span>
-                    <span className="font-normal text-white">9:30 - 18:00</span>
+{Array.isArray(barHours) ? barHours.map((h: any) => (
+                  <div key={h.label} className="flex justify-between border-b border-white/10 pb-2">
+                    <span>{h.label}</span>
+                    <span className={h.value === 'Fermé' ? 'font-normal text-white/45' : 'font-normal text-white'}>{h.value}</span>
                   </div>
+                )) : (
                   <div className="flex justify-between border-b border-white/10 pb-2">
-                    <span>Samedi</span>
-                    <span className="font-normal text-white">10:30 - 14:00</span>
+                    <span>{barHours.weekdays.days}</span>
+                    <span className="font-normal text-white">{barHours.weekdays.hours}</span>
+                  </div>
+                )}{Array.isArray(barHours) ? '' : (
+                  <>
+                  <div className="flex justify-between border-b border-white/10 pb-2">
+                    <span>{barHours.saturday.days}</span>
+                    <span className="font-normal text-white">{barHours.saturday.hours}</span>
                   </div>
                   <div className="flex justify-between text-white/45">
-                    <span>Dimanche</span>
-                    <span className="font-normal">Fermé</span>
+                    <span>{barHours.sunday.days}</span>
+                    <span className="font-normal">{barHours.sunday.hours}</span>
                   </div>
-                </div>
+                  </>
+                )}
               </Card>
               </motion.div>
             </motion.div>
