@@ -1,5 +1,5 @@
 // src/pages/admin/AdminEvenements.tsx
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useDeferredValue } from 'react';
 import {
   Plus,
   X,
@@ -329,9 +329,11 @@ const AdminEvenements = () => {
     fetchEvents();
   }, []);
 
+  const deferredSearch = useDeferredValue(filters.search);
+
   const filteredEvents = useMemo(() => {
     return events.filter((ev) => {
-      const q = filters.search.toLowerCase().trim();
+      const q = deferredSearch.toLowerCase().trim();
       const matchSearch =
         !q ||
         ev.title.toLowerCase().includes(q) ||
@@ -475,12 +477,16 @@ const AdminEvenements = () => {
     setDeleteEventLoading(true);
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any).from('events').delete().eq('id', deleteEventId);
+      const { error: delErr } = await (supabase as any).from('events').delete().eq('id', deleteEventId);
+      if (delErr) { setFetchError(formatMutationError(delErr.message)); setDeleteEventId(null); return; }
       setExpandedId((prev) => (prev === deleteEventId ? null : prev));
       if (view.kind === 'edit' && view.id === deleteEventId) {
         goToList();
       }
       fetchEvents();
+      setDeleteEventId(null);
+    } catch (err) {
+      setFetchError(formatMutationError(err instanceof Error ? err.message : 'contrainte inconnue'));
       setDeleteEventId(null);
     } finally {
       setDeleteEventLoading(false);
