@@ -39,7 +39,7 @@ export function CartDrawer() {
     (sum, x) => sum + displayBarLineUnit(x, isOraPlus) * x.quantity,
     0,
   );
-  const hasStripe = items.length > 0;
+  const hasItems = items.length > 0;
   const isGuest = !isAuthenticated;
   const guestNameValid = guestName.trim().length >= 2;
   const guestPhoneValid = /^0[1-9]\d{8}$/.test(guestPhone.trim());
@@ -254,7 +254,7 @@ export function CartDrawer() {
                   Paiement sécurisé en ligne via Stripe.
                 </p>
                 <div className="flex flex-col gap-2">
-                  {hasStripe && (
+                  {hasItems && (
                     <Button
                       type="button"
                       isDisabled={isCheckingOut || !guestFormValid}

@@ -1,4 +1,4 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
 import {
   LayoutDashboard, CalendarDays, Heart, ShoppingBag,
@@ -11,7 +11,6 @@ import { MemberDashboardBottomNav } from '../dashboard/DashboardBottomNav';
 
 const MemberLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
-  const navigate = useNavigate();
   const { user, logout, isAdmin } = useAuth();
 
   const prefix = location.pathname.startsWith('/demo-espace') ? '/demo-espace' : '/mon-espace';
@@ -36,7 +35,6 @@ const MemberLayout = ({ children }: { children: React.ReactNode }) => {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/connexion');
   };
 
   const isActive = (path: string, exact?: boolean) =>

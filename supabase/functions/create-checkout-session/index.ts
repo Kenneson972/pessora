@@ -58,9 +58,8 @@ async function fetchVerifiedPrice(
     const serverPrice = Number(data.price);
     // Vérification anti-fraude : comparer le prix déclaré par le client
     if (Math.abs(item.unitPrice - serverPrice) > 0.02) {
-      throw new Error(
-        `Écart prix suspect gamme : client=${item.unitPrice}€, serveur=${serverPrice}€ pour ${item.productId}`
-      );
+      console.error(`[create-checkout-session] Écart prix gamme : client=${item.unitPrice}€, serveur=${serverPrice}€ pour ${item.productId}`);
+      throw new Error('Erreur de validation du panier. Veuillez le vider et réessayer.');
     }
     return { verifiedUnitPrice: serverPrice, productId: data.id };
   }
@@ -99,9 +98,8 @@ async function fetchVerifiedPrice(
   // Vérification anti-fraude : client base estimate vs serveur
   const clientBaseEstimate = item.barBasePublic ?? (item.unitPrice - boosterCount);
   if (Math.abs(clientBaseEstimate - baseProductPrice) > 0.02) {
-    throw new Error(
-      `Écart prix suspect : client=${clientBaseEstimate}€, serveur=${baseProductPrice}€ pour ${item.productId}`
-    );
+    console.error(`[create-checkout-session] Écart prix bar : client=${clientBaseEstimate}€, serveur=${baseProductPrice}€ pour ${item.productId}`);
+    throw new Error('Erreur de validation du panier. Veuillez le vider et réessayer.');
   }
 
   const verifiedUnitPrice = baseProductPrice + boosterCount;

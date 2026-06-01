@@ -68,11 +68,12 @@ export default function SuiviCommande() {
     }
 
     const trackId = orderId ?? token!;
+    const filter = orderId ? `id=eq.${orderId}` : undefined;
     const channel = supabase
-      .channel(`order-${trackId}`)
+      .channel(`order-${trackId.substring(0, 36)}`)
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'orders', filter: `id=eq.${trackId}` },
+        { event: 'UPDATE', schema: 'public', table: 'orders', filter },
         (payload: { new: Record<string, unknown> }) => {
           setOrder((prev) => (prev ? { ...prev, ...payload.new } as OrderWithItems : prev));
         }

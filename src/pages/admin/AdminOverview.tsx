@@ -8,6 +8,8 @@ import {
   DashBtn, DashRule, DashStatusBadge,
 } from '../../components/dashboard/primitives';
 import { DASH_MAIN_PAD } from '../../components/dashboard/layoutClasses';
+
+const ORA_PLUS_PRICE = 24.90;
 import { AnalyticsDashboard } from '../../components/admin/AnalyticsDashboard';
 import type { OrderWithItems } from '../../hooks/useOrders';
 
@@ -237,7 +239,7 @@ const AdminOverview = () => {
                   <KPI.Title>MRR</KPI.Title>
                 </KPI.Header>
                 <KPI.Content>
-                  <KPI.Value maximumFractionDigits={2} value={L ? 0 : stats.activeSubscriptions * 24.90} />
+                  <KPI.Value maximumFractionDigits={2} value={L ? 0 : stats.activeSubscriptions * ORA_PLUS_PRICE} />
                 </KPI.Content>
               </KPI>
             </div>
