@@ -66,7 +66,7 @@ function FeaturedLayout({ a, onClose, onCta }: { a: SiteAnnouncement; onClose: (
         <p className="mb-4 text-[10px] font-normal uppercase tracking-[0.35em] text-black/50">
           {a.subtitle || 'Pessóra · Coup de projecteur'}
         </p>
-        <div className="mb-6 h-px w-8 bg-black/15" />
+        <div className="mb-6 h-px w-8 bg-noir/15" />
         <h2 className="mb-4 font-display text-3xl font-normal leading-tight text-black sm:text-4xl">{a.title}</h2>
         {a.message && (
           <p className="mb-6 max-w-xl text-sm sm:text-base leading-relaxed text-black/60 line-clamp-4">{a.message}</p>
@@ -80,7 +80,7 @@ function FeaturedLayout({ a, onClose, onCta }: { a: SiteAnnouncement; onClose: (
           <button
             type="button"
             onClick={onCta}
-            className="mb-4 w-full max-w-xs rounded-[2px] bg-black py-3.5 min-h-12 text-[11px] font-normal uppercase tracking-[0.14em] text-white transition-opacity hover:bg-black/85"
+            className="mb-4 w-full max-w-xs rounded-[2px] bg-noir py-3.5 min-h-12 text-[11px] font-normal uppercase tracking-[0.14em] text-white transition-opacity hover:bg-noir/85"
           >
             {a.cta_label}
           </button>
@@ -108,11 +108,11 @@ function PromoLayout({ a, onClose, onCta }: { a: SiteAnnouncement; onClose: () =
       )}
       <div className="flex min-w-0 flex-1 flex-col justify-center bg-white px-6 py-8 sm:px-10 md:py-12">
         {a.subtitle && (
-          <span className="mb-4 inline-block self-start rounded-full border border-black/12 bg-black/[0.04] px-3 py-1 text-[9px] font-normal uppercase tracking-[0.2em] text-black/70">
+          <span className="mb-4 inline-block self-start rounded-full border border-black/12 bg-noir/[0.04] px-3 py-1 text-[9px] font-normal uppercase tracking-[0.2em] text-black/70">
             {a.subtitle}
           </span>
         )}
-        <div className="mb-5 h-px w-8 bg-black/15" />
+        <div className="mb-5 h-px w-8 bg-noir/15" />
         <h2 className="mb-4 font-display text-3xl font-normal leading-tight text-black sm:text-4xl">{a.title}</h2>
         {a.message && <p className="mb-6 max-w-xl text-sm sm:text-base leading-relaxed text-black/60 line-clamp-4">{a.message}</p>}
         {a.expires_at && (
@@ -125,7 +125,7 @@ function PromoLayout({ a, onClose, onCta }: { a: SiteAnnouncement; onClose: () =
           <button
             type="button"
             onClick={onCta}
-            className="mb-4 w-full max-w-xs rounded-[2px] bg-black py-3.5 min-h-12 text-[11px] font-normal uppercase tracking-[0.14em] text-white transition-opacity hover:bg-black/85"
+            className="mb-4 w-full max-w-xs rounded-[2px] bg-noir py-3.5 min-h-12 text-[11px] font-normal uppercase tracking-[0.14em] text-white transition-opacity hover:bg-noir/85"
           >
             {a.cta_label}
           </button>
@@ -160,7 +160,7 @@ function EventLayout({ a, onClose, onCta }: { a: SiteAnnouncement; onClose: () =
             <span className="text-[10px] font-normal uppercase tracking-[0.28em] text-black/50">{a.subtitle}</span>
           )}
         </div>
-        <div className="mb-5 h-px w-8 bg-black/15" />
+        <div className="mb-5 h-px w-8 bg-noir/15" />
         <h2 className="mb-4 font-display text-3xl font-normal leading-tight text-black sm:text-4xl">{a.title}</h2>
         {a.message && <p className="mb-6 max-w-xl text-sm sm:text-base leading-relaxed text-black/60 line-clamp-4">{a.message}</p>}
         {a.expires_at && (
@@ -176,7 +176,7 @@ function EventLayout({ a, onClose, onCta }: { a: SiteAnnouncement; onClose: () =
           <button
             type="button"
             onClick={onCta}
-            className="mb-4 w-full max-w-xs rounded-[2px] bg-black py-3.5 min-h-12 text-[11px] font-normal uppercase tracking-[0.14em] text-white transition-opacity hover:bg-black/85"
+            className="mb-4 w-full max-w-xs rounded-[2px] bg-noir py-3.5 min-h-12 text-[11px] font-normal uppercase tracking-[0.14em] text-white transition-opacity hover:bg-noir/85"
           >
             {a.cta_label}
           </button>
@@ -197,16 +197,16 @@ function AlertLayout({ a, onClose }: { a: SiteAnnouncement; onClose: () => void 
     >
       <CloseBtn onClose={onClose} />
       <div className="flex flex-col items-center px-8 py-12 text-center">
-        <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-black/10 bg-black/[0.04]">
+        <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-black/10 bg-noir/[0.04]">
           <AlertTriangle size={28} className="text-black/75" aria-hidden />
         </div>
-        <div className="mb-6 h-px w-8 bg-black/15" />
+        <div className="mb-6 h-px w-8 bg-noir/15" />
         <h2 className="mb-4 font-display text-2xl font-normal text-black sm:text-3xl">{a.title}</h2>
         {a.message && <p className="mb-8 max-w-[340px] text-sm leading-relaxed text-black/60">{a.message}</p>}
         <button
           type="button"
           onClick={onClose}
-          className="w-full max-w-xs rounded-[2px] bg-black py-3.5 text-[11px] font-normal uppercase tracking-[0.14em] text-white transition-opacity hover:bg-black/85"
+          className="w-full max-w-xs rounded-[2px] bg-noir py-3.5 text-[11px] font-normal uppercase tracking-[0.14em] text-white transition-opacity hover:bg-noir/85"
         >
           {a.cta_label || 'Compris'}
         </button>

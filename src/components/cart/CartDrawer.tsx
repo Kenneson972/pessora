@@ -30,6 +30,7 @@ export function CartDrawer() {
   const { isAuthenticated } = useAuth();
   const [guestName, setGuestName] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
+  const [confirmClear, setConfirmClear] = useState(false);
 
   const { checkout, isLoading: isCheckingOut, error: checkoutError } = useCheckout(pickupTime, guestName, guestPhone);
   const barStatus = useBarStatus();
@@ -42,7 +43,10 @@ export function CartDrawer() {
   const hasItems = items.length > 0;
   const isGuest = !isAuthenticated;
   const guestNameValid = guestName.trim().length >= 2;
-  const guestPhoneValid = /^0[1-9]\d{8}$/.test(guestPhone.trim());
+  const guestPhoneValid = (() => {
+    const p = guestPhone.replace(/[\s.-]/g, '');
+    return /^(?:\+596\d{9}|0\d{9}|596\d{9})$/.test(p);
+  })();
   const guestFormValid = !isGuest || (guestNameValid && guestPhoneValid);
   const telHref = `tel:${barInfo.contact.phone.replace(/\s/g, '').replace(/X/g, '')}`;
 
@@ -282,9 +286,12 @@ export function CartDrawer() {
                       focusRing,
                       'inline-flex items-center justify-center min-h-[44px] rounded-full text-[9px] uppercase tracking-[0.14em] text-black/35 hover:text-black/55',
                     )}
-                    onClick={() => { clearCart(); setPickupTime(''); setGuestName(''); setGuestPhone(''); }}
+                    onClick={() => {
+                      if (confirmClear) { clearCart(); setPickupTime(''); setGuestName(''); setGuestPhone(''); setConfirmClear(false); }
+                      else { setConfirmClear(true); setTimeout(() => setConfirmClear(false), 3000); }
+                    }}
                   >
-                    Vider le panier
+                    {confirmClear ? 'Confirmer ?' : 'Vider le panier'}
                   </button>
                 </div>
               </Sheet.Footer>

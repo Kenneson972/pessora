@@ -59,7 +59,7 @@ const radioListClass = 'flex flex-col gap-3'
 
 const radioItemClass = cn(
   'flex cursor-pointer items-start gap-3 rounded-[2px] border border-noir/[0.08] p-3 transition-colors',
-  'data-[selected=true]:border-noir/25 data-[selected=true]:bg-black/[0.02]',
+  'data-[selected=true]:border-noir/25 data-[selected=true]:bg-noir/[0.02]',
 )
 
 function mapRpcErrorMessage(raw: string): string {
