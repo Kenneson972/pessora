@@ -314,9 +314,13 @@ const AdminProduits = () => {
     setDeleteProductLoading(true);
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any).from('products').delete().eq('id', deleteProductId);
+      const { error: delErr } = await (supabase as any).from('products').delete().eq('id', deleteProductId);
+      if (delErr) { setFetchError(formatMutationError(delErr.message)); setDeleteProductId(null); return; }
       invalidateMenuCatalogCache();
       fetchProducts();
+      setDeleteProductId(null);
+    } catch (err) {
+      setFetchError(formatMutationError(err instanceof Error ? err.message : 'contrainte inconnue'));
       setDeleteProductId(null);
     } finally {
       setDeleteProductLoading(false);

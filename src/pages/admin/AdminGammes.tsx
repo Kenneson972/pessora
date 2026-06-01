@@ -71,6 +71,8 @@ function GammeEditorForm({
   const [form, setForm] = useState<FormState>(initial ?? EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+  useEffect(() => { setSlugManuallyEdited(false); }, [initial]);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -110,12 +112,12 @@ function GammeEditorForm({
         <span className="text-[10px] uppercase tracking-[0.14em] text-black/50">Nom *</span>
         <input className={inputClass} value={form.name} onChange={(e) => {
           set('name', e.target.value);
-          set('slug', slugify(e.target.value));
+          if (!slugManuallyEdited) set('slug', slugify(e.target.value));
         }} />
       </label>
       <label className="flex flex-col gap-1">
         <span className="text-[10px] uppercase tracking-[0.14em] text-black/50">Slug (URL)</span>
-        <input className={inputClass} value={form.slug} onChange={(e) => set('slug', e.target.value)} placeholder="auto-généré depuis le nom" />
+        <input className={inputClass} value={form.slug} onChange={(e) => { setSlugManuallyEdited(true); set('slug', e.target.value); }} placeholder="auto-généré depuis le nom" />
       </label>
       <div className="grid grid-cols-2 gap-4">
         <label className="flex flex-col gap-1">
