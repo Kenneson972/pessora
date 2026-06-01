@@ -4,33 +4,14 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import { Button, cn } from '@heroui/react';
+import { Button } from '@heroui/react';
 import { useFadeUpWhenVisible, useStaggerReveal } from '../lib/motionReveal';
 import { PageShell } from '../components/layout/PageShell';
 import {
   oraPlusHero,
-  oraPlusStats,
   oraPlusFinalCta,
   oraPlusPrivilegeCards,
-  type OraPlusMetric,
 } from '../data/oraPlusData';
-
-const renderMetricTemplate = (m: OraPlusMetric, emphasisClass: string) => {
-  const parts = m.template.split('{n}');
-  return (
-    <>
-      {parts.map((part, j) => (
-        <span key={j}>
-          {part}
-          {j < parts.length - 1 && (
-            <em className={cn('italic font-light', emphasisClass)}>{m.emphasis}</em>
-          )}
-        </span>
-      ))}
-    </>
-  );
-};
-
 
 const OraPlus = () => {
   useEffect(() => { document.title = 'Óra+ — PessÓra'; }, []);
@@ -126,31 +107,6 @@ const OraPlus = () => {
         </PageShell>
       </section>
 
-      {/* ───────────────────────────── 2 · STATS ───────────────────────────── */}
-      <div className="border-b border-noir/[0.06] bg-surface-muted">
-        <PageShell className="py-8 md:py-9">
-          <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-[1fr_auto_auto_auto] md:gap-12">
-            <span className="max-w-[260px] sm:max-w-none font-display text-[14px] font-light italic leading-snug text-noir/55">
-              {oraPlusStats.label}
-            </span>
-            <div className="grid grid-cols-2 gap-6 md:flex md:gap-12">
-            {oraPlusStats.items.map((s, i) => (
-              <div key={i} className="flex flex-col gap-1">
-                <span
-                  className="font-display font-normal leading-none text-noir"
-                  style={{ fontSize: 'clamp(26px, 2.6vw, 34px)', letterSpacing: '-0.01em' }}
-                >
-                  {renderMetricTemplate(s, 'text-noir/90')}
-                </span>
-                <span className="text-[11px] font-normal uppercase tracking-[0.24em] text-noir/50">
-                  {s.label}
-                </span>
-              </div>
-            ))}
-            </div>
-          </div>
-        </PageShell>
-      </div>
 
       {/* ───────────────────────────── 3 · PRIVILÈGES (CARDS VISUELLES) ───────────────────────────── */}
       <section className="border-b border-noir/[0.06] bg-white py-20 md:py-28">
