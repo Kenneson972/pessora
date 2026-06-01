@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
-import { ChevronLeft, ChevronRight, Activity, Utensils, Sparkles, Target, CheckCircle, AlertCircle, Clock, ArrowRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle, AlertCircle, Clock, ArrowRight } from 'lucide-react';
 import { Spinner } from '@heroui/react';
 import { Stepper } from '@heroui-pro/react';
 import { supabase } from '../lib/supabaseClient';
@@ -136,10 +136,10 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 const PROGRAMME = [
-  { icon: Activity, title: 'Analyse corporelle', desc: 'Composition corporelle, IMC, masse musculaire et graisseuse' },
-  { icon: Utensils, title: 'Bilan nutritionnel', desc: 'Habitudes alimentaires, apports, carences et recommandations personnalisées' },
-  { icon: Sparkles, title: 'Skincare', desc: 'Analyse de peau, routine recommandée et produits adaptés à ton profil' },
-  { icon: Target, title: 'Challenge 21 jours', desc: 'Programme personnalisé et objectifs concrets pour transformer tes habitudes' },
+  { img: '/images/bilan/analyse-corporelle.jpg', title: 'Analyse corporelle', desc: 'Composition corporelle, IMC, masse musculaire et graisseuse' },
+  { img: '/images/bilan/bilan-nutritionnel.jpg', title: 'Bilan nutritionnel', desc: 'Habitudes alimentaires, apports, carences et recommandations personnalisées' },
+  { img: '/images/bilan/skincare.jpg', title: 'Skincare', desc: 'Analyse de peau, routine recommandée et produits adaptés à ton profil' },
+  { img: '/images/bilan/challenge-21j.jpg', title: 'Challenge 21 jours', desc: 'Programme personnalisé et objectifs concrets pour transformer tes habitudes' },
 ];
 
 const inputClass =
@@ -267,16 +267,14 @@ const BilanBienEtre = () => {
           viewport={{ once: true, amount: 0.12, margin: '0px 0px -40px 0px' }}
           aria-label="Programme du bilan"
         >
-          {PROGRAMME.map(({ icon: Icon, title, desc }, idx) => (
+          {PROGRAMME.map(({ img, title, desc }, idx) => (
             <motion.div
               key={title}
               variants={item}
               className="group relative overflow-hidden rounded-[2px] border border-noir/[0.08] bg-white transition-shadow hover:shadow-editorial-sm"
             >
               <div className="relative aspect-square overflow-hidden bg-surface-product-well">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Icon size={48} strokeWidth={1} className="text-black/[0.08]" aria-hidden="true" />
-                </div>
+                <img src={img} alt={title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]" />
                 <div className="absolute inset-0 bg-gradient-to-t from-noir/60 via-noir/10 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-5">
                   <span className="inline-block mb-2 rounded-[2px] bg-white/90 px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.2em] text-noir/70">

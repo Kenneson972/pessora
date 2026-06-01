@@ -25,6 +25,7 @@ const UNIVERS = [
     bgClass: 'bg-surface-product-well',
     variant: 'light' as const,
     path: '/menu',
+    bgImage: '/images/univers-shakes.jpg',
   },
   {
     id: 'communaute',
@@ -43,6 +44,7 @@ const UNIVERS = [
     bgClass: 'bg-surface-muted',
     variant: 'light' as const,
     path: '/bilan-bien-etre',
+    bgImage: '/images/univers-bilan-30min.jpg',
   },
 ] as const;
 
@@ -196,6 +198,7 @@ const Home = () => {
                 title={active.title}
                 titleEm={active.titleEm}
                 bgClass={active.bgClass}
+                bgImage={'bgImage' in active ? (active as typeof active & { bgImage?: string }).bgImage : undefined}
                 variant={active.variant}
                 bgVideoSrc={
                   active.eyebrow === 'Communauté'
