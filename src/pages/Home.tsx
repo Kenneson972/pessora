@@ -21,7 +21,7 @@ const UNIVERS = [
     id: 'nutrition',
     eyebrow: 'Shakes',
     title: 'Shakes',
-    titleEm: '& gauffres',
+    titleEm: '',
     bgClass: 'bg-surface-product-well',
     variant: 'light' as const,
     path: '/menu',
