@@ -199,17 +199,17 @@ const Home = () => {
                 variant={active.variant}
                 bgVideoSrc={
                   active.eyebrow === 'Communauté'
-                    ? publicAssetWithCache('videos/evenements-communaute.mp4')
+                    ? publicAssetWithCache('videos/communaute-v2.mp4')
                     : undefined
                 }
                 bgVideoSrcWebm={
                   active.eyebrow === 'Communauté'
-                    ? publicAssetWithCache('videos/evenements-communaute.webm')
+                    ? publicAssetWithCache('videos/communaute-v2.webm')
                     : undefined
                 }
                 bgVideoPosterSrc={
                   active.eyebrow === 'Communauté'
-                    ? publicAssetWithCache('videos/evenements-communaute-poster.jpg')
+                    ? publicAssetWithCache('videos/communaute-v2-poster.jpg')
                     : undefined
                 }
                 aspectRatio="aspect-[3/2] md:aspect-[21/8]"
