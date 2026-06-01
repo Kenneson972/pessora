@@ -53,15 +53,28 @@ const PageSEO = () => {
       link.href = window.location.origin + location.pathname;
     }
 
+    // hreflang
+    let hreflang = document.querySelector<HTMLLinkElement>('link[rel="alternate"][hreflang]');
+    if (!hreflang) {
+      hreflang = document.createElement('link');
+      hreflang.rel = 'alternate';
+      hreflang.setAttribute('hreflang', 'fr-MQ');
+      document.head.appendChild(hreflang);
+    }
+    hreflang.href = window.location.origin + location.pathname;
+
     // Open Graph
     const imageUrl = ogImage.startsWith('http') ? ogImage : window.location.origin + ogImage;
     setMetaTag('og:title', ogTitle);
     setMetaTag('og:description', ogDesc);
     setMetaTag('og:image', imageUrl);
+    setMetaTag('og:image:width', '1200');
+    setMetaTag('og:image:height', '630');
     setMetaTag('og:type', ogType);
     setMetaTag('og:url', window.location.origin + location.pathname);
     setMetaTag('og:site_name', 'PessÓra');
     setMetaTag('og:locale', 'fr_FR');
+    setMetaTag('og:updated_time', new Date().toISOString());
 
     // Twitter
     setMetaName('twitter:card', 'summary_large_image');

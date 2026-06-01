@@ -44,9 +44,9 @@ function ProductPreview({ product }: { product: GammeProduct }) {
           </div>
         )}
       </div>
-      <h4 className="text-[13px] font-medium text-black group-hover:text-black/60 transition-colors truncate">
+      <h3 className="text-[13px] font-medium text-black group-hover:text-black/60 transition-colors truncate">
         {product.name}
-      </h4>
+      </h3>
       <p className="text-[12px] font-light text-black/40 mt-0.5">
         {product.price.toFixed(2).replace('.', ',')}€
       </p>

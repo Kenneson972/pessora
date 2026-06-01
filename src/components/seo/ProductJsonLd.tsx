@@ -13,6 +13,7 @@ export function ProductJsonLd({ name, description, image, price, category, url }
     '@type': 'Product',
     name,
     description,
+    brand: { '@type': 'Brand', name: 'Herbalife' },
     ...(image ? { image } : {}),
     offers: {
       '@type': 'Offer',
