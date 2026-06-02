@@ -5,6 +5,7 @@ interface AdminOrdersListProps {
   orders: OrderWithItems[];
   loading: boolean;
   onStatusUpdate: (orderId: string, nextStatus: string) => void;
+  onDeleteOrder: (orderId: string) => void;
 }
 
 const PRIORITY_ORDER: Record<string, number> = {
@@ -13,7 +14,7 @@ const PRIORITY_ORDER: Record<string, number> = {
   ready: 2,
 };
 
-export function AdminOrdersList({ orders, loading, onStatusUpdate }: AdminOrdersListProps) {
+export function AdminOrdersList({ orders, loading, onStatusUpdate, onDeleteOrder }: AdminOrdersListProps) {
   if (loading) {
     return (
       <div className="space-y-3">
@@ -54,6 +55,7 @@ export function AdminOrdersList({ orders, loading, onStatusUpdate }: AdminOrders
           key={order.id}
           order={order}
           onStatusUpdate={onStatusUpdate}
+          onDeleteOrder={onDeleteOrder}
         />
       ))}
     </div>

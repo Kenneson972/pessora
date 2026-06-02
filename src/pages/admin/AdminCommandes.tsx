@@ -60,6 +60,17 @@ const AdminCommandes = () => {
     });
   };
 
+  const handleDeleteOrder = async (orderId: string) => {
+    const db = supabase as any;
+    await db.from('order_items').delete().eq('order_id', orderId);
+    await db.from('orders').delete().eq('id', orderId);
+    auditLog({
+      action: 'order.delete',
+      entity_type: 'order',
+      entity_id: orderId,
+    });
+  };
+
   const filteredOrders = orders.filter((o) => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
@@ -139,6 +150,7 @@ const AdminCommandes = () => {
           orders={filteredOrders}
           loading={loading}
           onStatusUpdate={handleStatusUpdate}
+          onDeleteOrder={handleDeleteOrder}
         />
       </div>
     </div>

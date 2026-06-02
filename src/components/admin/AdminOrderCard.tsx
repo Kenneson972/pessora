@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CupSoda, ChevronDown, ChevronUp, Phone } from 'lucide-react';
+import { CupSoda, ChevronDown, ChevronUp, Phone, Trash2 } from 'lucide-react';
 import { cn } from '@heroui/react';
 import type { OrderWithItems } from '../../hooks/useOrders';
 import { ConfirmDialog } from '../dashboard/ConfirmDialog';
@@ -35,11 +35,13 @@ const STATUS_BADGE_CLASS: Record<string, string> = {
 interface AdminOrderCardProps {
   order: OrderWithItems;
   onStatusUpdate: (orderId: string, nextStatus: string) => void;
+  onDeleteOrder: (orderId: string) => void;
 }
 
-export function AdminOrderCard({ order, onStatusUpdate }: AdminOrderCardProps) {
+export function AdminOrderCard({ order, onStatusUpdate, onDeleteOrder }: AdminOrderCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [confirmCompleted, setConfirmCompleted] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const items = order.order_items ?? [];
   const itemNames = items.map((it) => `${it.quantity}× ${it.product_name}`).join(', ');
   const pickupLabel = order.pickup_time
@@ -138,6 +140,24 @@ export function AdminOrderCard({ order, onStatusUpdate }: AdminOrderCardProps) {
                 Contact
               </span>
             )}
+            <div className="flex-1" />
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(true)}
+              className="min-h-[36px] rounded-[2px] border border-red-200 px-4 py-1.5 text-[10px] font-normal uppercase tracking-[0.12em] text-red-500 hover:bg-red-50 hover:border-red-300 transition-colors inline-flex items-center gap-1.5"
+            >
+              <Trash2 size={12} strokeWidth={1.3} />
+              Supprimer
+            </button>
+
+            <ConfirmDialog
+              open={confirmDelete}
+              title="Supprimer cette commande ?"
+              description={`La commande ${order.id.slice(0, 8)} et tous ses articles seront définitivement supprimés. Cette action est irréversible.`}
+              confirmLabel="Supprimer"
+              onConfirm={() => { onDeleteOrder(order.id); setConfirmDelete(false); }}
+              onClose={() => setConfirmDelete(false)}
+            />
           </div>
         </div>
       )}
