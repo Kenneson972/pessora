@@ -2,6 +2,8 @@ import { Search } from 'lucide-react';
 import { cn } from '@heroui/react';
 import type { OrderFilterStatus } from '../../hooks/useAdminOrders';
 
+export type OrderTypeFilter = 'all' | 'bar' | 'gamme';
+
 const FILTER_TABS: { key: OrderFilterStatus; label: string }[] = [
   { key: 'all', label: 'Toutes' },
   { key: 'pending', label: 'En cours' },
@@ -14,6 +16,8 @@ const FILTER_TABS: { key: OrderFilterStatus; label: string }[] = [
 interface AdminOrdersFilterProps {
   filterStatus: OrderFilterStatus;
   onFilterChange: (status: OrderFilterStatus) => void;
+  orderType: OrderTypeFilter;
+  onOrderTypeChange: (type: OrderTypeFilter) => void;
   searchQuery: string;
   onSearchChange: (query: string) => void;
 }
@@ -21,12 +25,31 @@ interface AdminOrdersFilterProps {
 export function AdminOrdersFilter({
   filterStatus,
   onFilterChange,
+  orderType,
+  onOrderTypeChange,
   searchQuery,
   onSearchChange,
 }: AdminOrdersFilterProps) {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex flex-wrap gap-1.5">
+        {/* Filtre type */}
+        {(['all', 'bar', 'gamme'] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => onOrderTypeChange(t)}
+            className={cn(
+              'rounded-[2px] px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.08em] transition-colors',
+              orderType === t
+                ? 'bg-anthracite text-white'
+                : 'bg-surface-muted text-black/45 hover:bg-noir/[0.06] hover:text-black',
+            )}
+          >
+            {t === 'all' ? 'Tous' : t === 'bar' ? 'Bar' : 'Gamme'}
+          </button>
+        ))}
+        <span className="w-px bg-noir/[0.08] mx-1 self-stretch" aria-hidden />
         {FILTER_TABS.map((tab) => (
           <button
             key={tab.key}

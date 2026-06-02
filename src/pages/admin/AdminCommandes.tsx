@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 import { DashPageHeader, DashCard } from '../../components/dashboard/primitives';
 import { DASH_MAIN_PAD } from '../../components/dashboard/layoutClasses';
 import { AdminOrdersFilter } from '../../components/admin/AdminOrdersFilter';
+import type { OrderTypeFilter } from '../../components/admin/AdminOrdersFilter';
 import { AdminOrdersList } from '../../components/admin/AdminOrdersList';
 import { useAdminOrders, type OrderFilterStatus } from '../../hooks/useAdminOrders';
 import { playNewOrderSound, playPaidSound, setMuted, isMuted } from '../../lib/notificationSound';
@@ -13,8 +14,31 @@ import { supabase } from '../../lib/supabaseClient';
 const AdminCommandes = () => {
   const [filterStatus, setFilterStatus] = useState<OrderFilterStatus>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [orderType, setOrderType] = useState<OrderTypeFilter>('all');
   const [soundMuted, setSoundMuted] = useState(isMuted());
   const { orders, loading, kpis, newOrderAlert, clearAlert, paidAlert, clearPaidAlert } = useAdminOrders(filterStatus);
+
+  const kpisFiltered = useMemo(() => ({
+    paid: orders.filter((o) => o.status === 'paid' && (orderType === 'all' || o.order_type === orderType)).length,
+    preparing: orders.filter((o) => o.status === 'preparing' && (orderType === 'all' || o.order_type === orderType)).length,
+    ready: orders.filter((o) => o.status === 'ready' && (orderType === 'all' || o.order_type === orderType)).length,
+    todayCompleted: orders.filter((o) => {
+      if (o.status !== 'completed') return false;
+      if (orderType !== 'all' && o.order_type !== orderType) return false;
+      const d = new Date(o.created_at);
+      const now = new Date();
+      return d.toDateString() === now.toDateString();
+    }).length,
+    todayRevenue: orders
+      .filter((o) => {
+        if (o.status !== 'completed') return false;
+        if (orderType !== 'all' && o.order_type !== orderType) return false;
+        const d = new Date(o.created_at);
+        const now = new Date();
+        return d.toDateString() === now.toDateString();
+      })
+      .reduce((sum, o) => sum + o.total, 0),
+  }), [orders, orderType]);
 
   const toggleSound = () => {
     const next = !soundMuted;
@@ -72,6 +96,7 @@ const AdminCommandes = () => {
   };
 
   const filteredOrders = orders.filter((o) => {
+    if (orderType !== 'all' && o.order_type !== orderType) return false;
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
     const items = o.order_items ?? [];
@@ -113,11 +138,11 @@ const AdminCommandes = () => {
 
         <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
           {[
-            { label: 'En attente', value: kpis.paid, color: 'text-blue-600' },
-            { label: 'En prépa', value: kpis.preparing, color: 'text-sky-600' },
-            { label: 'Prêtes', value: kpis.ready, color: 'text-sapin' },
-            { label: 'Retirées auj.', value: kpis.todayCompleted, color: 'text-black/60' },
-            { label: 'CA du jour', value: `${kpis.todayRevenue.toFixed(0)}€`, color: 'text-black' },
+            { label: 'En attente', value: kpisFiltered.paid, color: 'text-blue-600' },
+            { label: 'En prépa', value: kpisFiltered.preparing, color: 'text-sky-600' },
+            { label: 'Prêtes', value: kpisFiltered.ready, color: 'text-sapin' },
+            { label: 'Retirées auj.', value: kpisFiltered.todayCompleted, color: 'text-black/60' },
+            { label: 'CA du jour', value: `${kpisFiltered.todayRevenue.toFixed(0)}€`, color: 'text-black' },
           ].map((kpi) => (
             <DashCard key={kpi.label} pad={14} className="text-center">
               <p className="text-[9px] font-normal uppercase tracking-[0.14em] text-black/35">{kpi.label}</p>
@@ -132,6 +157,8 @@ const AdminCommandes = () => {
           <AdminOrdersFilter
             filterStatus={filterStatus}
             onFilterChange={setFilterStatus}
+            orderType={orderType}
+            onOrderTypeChange={setOrderType}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
           />

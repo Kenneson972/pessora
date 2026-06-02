@@ -71,13 +71,23 @@ export function AdminOrderCard({ order, onStatusUpdate, onDeleteOrder }: AdminOr
             <span className="font-medium text-black/60">{order.client_name || order.user_id?.slice(0, 8) || 'Client'}</span>
             {order.client_phone && <span>{order.client_phone}</span>}
             <span>{dateLabel}</span>
-            <span>Retrait {pickupLabel}</span>
+            <span>{order.order_type === 'gamme' && order.scheduled_pickup_date
+  ? `Retrait ${new Date(order.scheduled_pickup_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })} à ${new Date(order.scheduled_pickup_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
+  : `Retrait ${pickupLabel}`}</span>
             <span>{order.total.toFixed(2).replace('.', ',')}€</span>
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <span className={cn('inline-block rounded-[2px] px-2 py-1 text-[9px] font-medium uppercase tracking-[0.12em]', STATUS_BADGE_CLASS[order.status] ?? 'bg-noir/[0.04] text-black/40')}>
             {STATUS_LABELS[order.status] ?? order.status}
+          </span>
+          <span className={cn(
+            'inline-block rounded-[2px] px-2 py-1 text-[9px] font-medium uppercase tracking-[0.12em]',
+            order.order_type === 'gamme'
+              ? 'bg-purple-50 text-purple-700 border border-purple-200'
+              : 'bg-noir/[0.04] text-black/40'
+          )}>
+            {order.order_type === 'gamme' ? 'Gamme' : 'Bar'}
           </span>
           {expanded ? (
             <ChevronUp size={14} strokeWidth={1.3} className="text-black/35" />
