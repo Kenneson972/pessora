@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Clock, CreditCard, ChefHat, CheckCircle, Package, UserPlus } from 'lucide-react';
+import { Clock, CreditCard, ChefHat, CheckCircle, Package, UserPlus, Sparkles } from 'lucide-react';
 import { PageShell } from '../components/layout/PageShell';
 import { supabase } from '../lib/supabaseClient';
 import type { OrderWithItems } from '../hooks/useOrders';
@@ -10,7 +10,7 @@ const STEPS = [
   { key: 'pending', label: 'Commande reçue', icon: Clock },
   { key: 'paid', label: 'Paiement confirmé', icon: CreditCard },
   { key: 'preparing', label: 'En préparation', icon: ChefHat },
-  { key: 'ready', label: 'Prête ! Passez la chercher', icon: CheckCircle },
+  { key: 'ready', label: 'Prête !', icon: CheckCircle },
   { key: 'completed', label: 'Retirée', icon: Package },
 ];
 
@@ -36,7 +36,6 @@ export default function SuiviCommande() {
     let cancelled = false;
 
     if (token) {
-      // Guest : passer par l'Edge Function (bypass RLS)
       supabase.functions.invoke('get-order-by-token', {
         body: { access_token: token },
       }).then(({ data, error: fnError }) => {
@@ -88,24 +87,39 @@ export default function SuiviCommande() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="animate-pulse text-[13px] text-black/35">Chargement de votre commande…</div>
+      <div className="flex min-h-screen items-center justify-center bg-surface-warm" role="status" aria-label="Chargement de votre commande">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
+        >
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-sapin-subtle">
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+            >
+              <Sparkles size={32} strokeWidth={1.2} className="text-sapin/60" />
+            </motion.div>
+          </div>
+          <p className="font-display text-[18px] text-black">Chargement de votre commande…</p>
+          <p className="mt-1 text-[12px] text-black/40">Un instant</p>
+        </motion.div>
       </div>
     );
   }
 
   if (error || !order) {
     return (
-      <div className="min-h-screen bg-white">
-        <PageShell className="py-20 text-center">
-          <p className="mb-6 text-[14px] text-black/50">{error ?? 'Commande introuvable.'}</p>
+      <div className="flex min-h-screen items-center justify-center bg-surface-warm">
+        <div className="text-center">
+          <p className="mb-6 text-[15px] text-black/60">{error ?? 'Commande introuvable.'}</p>
           <Link
             to="/menu"
-            className="inline-flex h-11 min-h-[44px] items-center rounded-full border border-noir/15 px-6 text-[10px] uppercase tracking-[0.1em] text-black/55 hover:border-noir/30 hover:text-black"
+            className="inline-flex h-12 min-h-[44px] items-center rounded-full bg-sapin px-8 text-[11px] font-medium uppercase tracking-[0.1em] text-white hover:bg-sapin/90 transition-colors"
           >
             Retour au menu
           </Link>
-        </PageShell>
+        </div>
       </div>
     );
   }
@@ -114,74 +128,170 @@ export default function SuiviCommande() {
   const items = order.order_items ?? [];
   const itemNames = items.map((it) => `${it.quantity}× ${it.product_name}`).join(', ');
   const isGuest = !!token;
+  const isDone = order.status === 'completed';
+  const CurrentIcon = currentIdx >= 0 && currentIdx < STEPS.length ? STEPS[currentIdx].icon : Package;
 
   return (
-    <div className="min-h-screen bg-white">
-      <div>
-        <PageShell className="py-5">
+    <div className="min-h-screen bg-surface-warm" style={{ backgroundImage: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(30,53,41,0.04), transparent 60%)' }}>
+      {/* Breadcrumb */}
+      <div className="border-b border-noir/[0.04] bg-white/60 backdrop-blur-sm">
+        <PageShell className="py-4">
           <nav
             aria-label="Fil d'Ariane"
-            className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-[10px] uppercase tracking-[0.08em] text-black/40 sm:justify-start sm:text-left"
+            className="mx-auto flex w-full max-w-4xl flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-[10px] uppercase tracking-[0.08em] text-black/40 sm:justify-start sm:text-left"
           >
             <Link to="/" className="transition-colors duration-200 hover:text-black">Accueil</Link>
             <span aria-hidden="true" className="text-sapin/35">/</span>
-            <span className="text-black/70" aria-current="page">Suivi de commande</span>
+            <span className="text-black/60" aria-current="page">Suivi de commande</span>
           </nav>
         </PageShell>
       </div>
 
-      <section>
-        <PageShell className="py-12 lg:py-20">
-          <div className="mx-auto max-w-md">
-            <h1
-              className="mb-2 text-center font-display font-normal leading-[1.05] text-black"
-              style={{ fontSize: 'clamp(28px, 3.5vw, 40px)' }}
+      {/* Hero — statut actuel */}
+      <section className="relative overflow-hidden border-b border-noir/[0.04]">
+        {/* Fond texturé subtil */}
+        <div className="pointer-events-none absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 40% 60%, #1E3529 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+
+        <PageShell className="py-16 lg:py-24">
+          <div className="mx-auto max-w-md text-center">
+            {/* Cercle statut */}
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 18, delay: 0.1 }}
+              className={`mx-auto mb-8 flex h-28 w-28 items-center justify-center rounded-full border-2 ${
+                isDone
+                  ? 'border-sapin/20 bg-sapin-subtle'
+                  : order.status === 'cancelled'
+                  ? 'border-red-200 bg-red-50'
+                  : 'border-sapin/20 bg-sapin-subtle'
+              }`}
             >
-              Votre commande
-            </h1>
+              <CurrentIcon
+                size={44}
+                strokeWidth={1.2}
+                className={isDone ? 'text-sapin' : order.status === 'cancelled' ? 'text-red-500' : 'text-sapin'}
+              />
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="font-display font-normal leading-[1.05] text-black mb-3"
+              style={{ fontSize: 'clamp(36px, 5vw, 56px)' }}
+            >
+              {isDone
+                ? 'Commande retirée !'
+                : order.status === 'cancelled'
+                ? 'Commande annulée'
+                : order.status === 'ready'
+                ? 'C\'est prêt !'
+                : 'On s\'en occupe'}
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-[13px] text-black/50 mb-3"
+            >
+              {isDone
+                ? 'Merci de votre visite, à bientôt chez PessÓra'
+                : order.status === 'cancelled'
+                ? 'Cette commande n\'a pas abouti'
+                : order.status === 'ready'
+                ? 'Passez la récupérer au comptoir !'
+                : 'Votre commande avance, suivez-la en temps réel'}
+            </motion.p>
+
             {itemNames && (
-              <p className="mb-2 text-center text-[12px] font-light text-black/45 truncate">{itemNames}</p>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="text-[12px] font-medium text-black/60 truncate"
+              >
+                {itemNames}
+              </motion.p>
             )}
-            <p className="mb-10 text-center font-mono text-[11px] text-black/30">
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.45 }}
+              className="mt-1 font-mono text-[11px] text-black/35"
+            >
               N° {order.id.slice(0, 8)}
+            </motion.p>
+
+            {!isDone && order.status !== 'cancelled' && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="mt-5 inline-flex items-center gap-2 rounded-full bg-sapin-subtle px-5 py-2 text-[12px] font-medium text-sapin"
+              >
+                <motion.span
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                  className="inline-block h-2 w-2 rounded-full bg-sapin"
+                />
+                Mise à jour en direct
+              </motion.p>
+            )}
+          </div>
+        </PageShell>
+      </section>
+
+      {/* Timeline */}
+      <section>
+        <PageShell className="py-12 lg:py-16">
+          <div className="mx-auto max-w-md">
+            <p className="mb-8 text-center text-[9px] font-medium uppercase tracking-[0.22em] text-black/30">
+              Progression
             </p>
 
-            <div className="space-y-0">
+            <div className="space-y-0" role="list" aria-label="Étapes de la commande">
               {STEPS.map((step, i) => {
                 const isActive = i <= currentIdx;
                 const isCurrent = i === currentIdx;
+                const isPast = i < currentIdx;
                 const StepIcon = step.icon;
 
                 return (
                   <motion.div
                     key={step.key}
-                    initial={{ opacity: 0, x: -20 }}
+                    role="listitem"
+                    initial={{ opacity: 0, x: -24 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                    className="flex items-start gap-4 border-l-2 py-5 pl-6"
-                    style={{
-                      borderColor: isActive
-                        ? isCurrent
-                          ? 'var(--color-sapin)'
-                          : 'rgb(0 0 0 / 0.12)'
-                        : 'rgb(0 0 0 / 0.06)',
-                    }}
+                    transition={{ delay: i * 0.08 + 0.3 }}
+                    className={`flex items-start gap-5 border-l-2 py-5 pl-7 ${
+                      isCurrent
+                        ? 'border-l-sapin'
+                        : isPast
+                        ? 'border-l-sapin/25'
+                        : 'border-l-noir/[0.06]'
+                    }`}
                   >
-                    <StepIcon
-                      size={20}
-                      strokeWidth={1.5}
-                      className={
+                    <div
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
                         isCurrent
-                          ? 'text-sapin'
-                          : isActive
-                          ? 'text-black/40'
-                          : 'text-black/15'
-                      }
-                    />
-                    <div>
+                          ? 'bg-sapin text-white shadow-[0_4px_20px_rgba(30,53,41,0.2)]'
+                          : isPast
+                          ? 'bg-sapin-subtle text-sapin'
+                          : 'bg-noir/[0.04] text-black/20'
+                      }`}
+                    >
+                      <StepIcon size={18} strokeWidth={1.5} aria-hidden="true" />
+                    </div>
+                    <div className="min-w-0 pt-1.5">
                       <p
-                        className={`text-[14px] ${
-                          isActive ? 'font-medium text-black' : 'font-light text-black/30'
+                        className={`text-[15px] ${
+                          isCurrent
+                            ? 'font-bold text-black'
+                            : isPast
+                            ? 'font-medium text-black/65'
+                            : 'font-light text-black/25'
                         }`}
                       >
                         {step.key === 'ready' && isCurrent
@@ -189,12 +299,12 @@ export default function SuiviCommande() {
                           : step.label}
                       </p>
                       {isCurrent && order.status !== 'completed' && order.status !== 'cancelled' && (
-                        <p className="mt-1 text-[11px] font-light text-sapin/70 animate-pulse">
+                        <p className="mt-1.5 text-[11px] font-medium text-sapin/70 animate-pulse">
                           En cours…
                         </p>
                       )}
-                      {i < currentIdx && (
-                        <p className="mt-1 text-[10px] font-light text-black/25">Terminé</p>
+                      {isPast && (
+                        <p className="mt-1 text-[10px] font-medium text-sapin/40">✓ Terminé</p>
                       )}
                     </div>
                   </motion.div>
@@ -203,40 +313,59 @@ export default function SuiviCommande() {
             </div>
 
             {order.status === 'cancelled' && (
-              <div className="mt-8 rounded-[2px] border border-red-200 bg-red-50 px-5 py-4 text-center">
-                <p className="text-[13px] font-medium text-red-700">Commande annulée</p>
-                <p className="mt-1 text-[11px] text-red-500">Cette commande a été annulée.</p>
-              </div>
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-8 rounded-2xl border border-red-200 bg-red-50/80 px-6 py-5 text-center"
+              >
+                <p className="text-[14px] font-medium text-red-700">Commande annulée</p>
+                <p className="mt-1 text-[12px] text-red-500/80">Cette commande n&apos;a pas abouti.</p>
+              </motion.div>
             )}
+          </div>
+        </PageShell>
+      </section>
+
+      {/* CTA invité + Commander à nouveau */}
+      <section className="border-t border-noir/[0.04]">
+        <PageShell className="py-12 lg:py-16">
+          <div className="mx-auto max-w-md space-y-6">
 
             {isGuest && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
-                className="mt-10 rounded-[2px] border border-sapin/15 bg-sapin-subtle p-6 text-center"
+                className="relative overflow-hidden rounded-2xl bg-sapin p-8 text-center text-white"
               >
-                <UserPlus size={28} strokeWidth={1.3} className="mx-auto mb-3 text-sapin" />
-                <p className="mb-1 text-[14px] font-medium text-black">
-                  Gardez un œil sur toutes vos commandes
-                </p>
-                <p className="mb-5 text-[12px] font-light text-black/50">
-                  Créez votre compte gratuitement pour suivre votre historique, recevoir des offres exclusives et accéder à Óra+.
-                </p>
-                <Link
-                  to="/inscription"
-                  className="inline-flex h-11 min-h-[44px] items-center gap-2 rounded-full bg-sapin px-8 text-[10px] font-medium uppercase tracking-[0.1em] text-white hover:bg-sapin/90 transition-colors"
-                >
-                  <UserPlus size={14} strokeWidth={1.5} />
-                  Créer mon compte
-                </Link>
+                {/* Fond décoratif */}
+                <div className="pointer-events-none absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 80%, #fff 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+
+                <div className="relative">
+                  <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-white/15">
+                    <UserPlus size={28} strokeWidth={1.3} className="text-white" />
+                  </div>
+                  <h2 className="mb-2 font-display text-[22px] font-normal text-white">
+                    Votre espace bien-être
+                  </h2>
+                  <p className="mb-6 text-[13px] font-light text-white/70">
+                    Suivez toutes vos commandes, découvrez Óra+ et recevez des offres exclusives.
+                  </p>
+                  <Link
+                    to="/inscription"
+                    className="inline-flex h-12 min-h-[44px] items-center gap-2 rounded-full bg-white px-8 text-[11px] font-bold uppercase tracking-[0.1em] text-sapin hover:bg-white/95 transition-colors"
+                  >
+                    <UserPlus size={15} strokeWidth={1.8} />
+                    Créer mon compte gratuitement
+                  </Link>
+                </div>
               </motion.div>
             )}
 
-            <div className="mt-8 text-center">
+            <div className="text-center">
               <Link
                 to="/menu"
-                className="inline-flex h-11 min-h-[44px] items-center rounded-full border border-noir/15 px-6 text-[10px] uppercase tracking-[0.1em] text-black/55 hover:border-noir/30 hover:text-black"
+                className="inline-flex h-12 min-h-[44px] items-center gap-2 rounded-full border-2 border-noir/[0.08] px-8 text-[11px] font-medium uppercase tracking-[0.1em] text-black/50 hover:border-noir/20 hover:text-black transition-colors"
               >
                 Commander à nouveau
               </Link>
