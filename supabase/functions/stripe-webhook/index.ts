@@ -53,12 +53,17 @@ serve(async (req) => {
           // Commande classique : pending → paid (statut intermédiaire,
           // le passage à completed sera fait manuellement quand la commande
           // est préparée/remise au client)
-          const orderId = session.metadata?.order_id
-          if (orderId) {
+          const orderIds = session.metadata?.order_ids
+            ? session.metadata.order_ids.split(',')
+            : session.metadata?.order_id
+              ? [session.metadata.order_id]
+              : [];
+
+          if (orderIds.length > 0) {
             await supabase
               .from('orders')
               .update({ status: 'paid', stripe_payment_intent_id: session.payment_intent as string })
-              .eq('id', orderId)
+              .in('id', orderIds);
           }
         }
         break
@@ -114,12 +119,17 @@ serve(async (req) => {
       case 'checkout.session.async_payment_succeeded': {
         const session = event.data.object as Stripe.Checkout.Session
         if (session.mode === 'payment') {
-          const orderId = session.metadata?.order_id
-          if (orderId) {
+          const orderIds = session.metadata?.order_ids
+            ? session.metadata.order_ids.split(',')
+            : session.metadata?.order_id
+              ? [session.metadata.order_id]
+              : [];
+
+          if (orderIds.length > 0) {
             await supabase
               .from('orders')
               .update({ status: 'paid', stripe_payment_intent_id: session.payment_intent as string })
-              .eq('id', orderId)
+              .in('id', orderIds);
           }
         }
         break
