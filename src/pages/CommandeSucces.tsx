@@ -31,13 +31,20 @@ export default function CommandeSucces() {
   useEffect(() => {
     if (!sessionId) return;
     let cancelled = false;
-    supabase.functions.invoke('get-order-for-success', {
-      body: { stripe_session_id: sessionId },
-    }).then(({ data }) => {
+    (async () => {
+      const { data } = await supabase.functions.invoke('get-order-for-success', {
+        body: { stripe_session_id: sessionId },
+      });
       if (cancelled || !data) return;
       if (data.access_token) setToken(data.access_token);
-      if (data.id) setOrderId(data.id);
-    }).catch(() => {});
+      if (data.id) {
+        setOrderId(data.id);
+        // PATCH : passer la commande de pending → paid (idempotent)
+        supabase.functions.invoke('update-order-status', {
+          body: { orderId: data.id, status: 'paid' },
+        }).catch(() => {});
+      }
+    })().catch(() => {});
     return () => { cancelled = true; };
   }, [sessionId]);
 

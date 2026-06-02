@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import type { OrderWithItems } from './useOrders';
 
-export type OrderFilterStatus = 'all' | 'paid' | 'preparing' | 'ready' | 'completed';
+export type OrderFilterStatus = 'all' | 'pending' | 'paid' | 'preparing' | 'ready' | 'completed';
 
 export function useAdminOrders(filterStatus: OrderFilterStatus = 'all') {
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
@@ -21,7 +21,6 @@ export function useAdminOrders(filterStatus: OrderFilterStatus = 'all') {
     let query = db
       .from('orders')
       .select('*, order_items(*)')
-      .neq('status', 'pending')
       .order('created_at', { ascending: false });
 
     if (filterStatus !== 'all') {
@@ -116,7 +115,7 @@ export function useAdminOrders(filterStatus: OrderFilterStatus = 'all') {
         return d.toDateString() === now.toDateString();
       })
       .reduce((sum, o) => sum + o.total, 0),
-    activeCount: orders.filter((o) => ['paid', 'preparing', 'ready'].includes(o.status)).length,
+    activeCount: orders.filter((o) => ['pending', 'paid', 'preparing', 'ready'].includes(o.status)).length,
   };
 
   return { orders, loading, kpis, newOrderAlert, clearAlert, paidAlert, clearPaidAlert };
