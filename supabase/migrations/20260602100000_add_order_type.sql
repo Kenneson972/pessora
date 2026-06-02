@@ -9,3 +9,9 @@ CREATE INDEX IF NOT EXISTS idx_orders_type_status ON orders(order_type, status);
 -- Index pour le planning gamme (tri par date de retrait)
 CREATE INDEX IF NOT EXISTS idx_orders_scheduled_pickup ON orders(scheduled_pickup_date)
   WHERE order_type = 'gamme';
+
+-- Fix: ajouter 'paid' et 'confirmed' au check constraint status
+ALTER TABLE orders DROP CONSTRAINT IF EXISTS orders_status_check;
+ALTER TABLE orders ADD CONSTRAINT orders_status_check CHECK (
+  status = ANY (ARRAY['pending', 'paid', 'confirmed', 'preparing', 'ready', 'completed', 'cancelled'])
+);

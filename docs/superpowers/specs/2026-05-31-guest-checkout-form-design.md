@@ -1,4 +1,4 @@
-# Guest Checkout — Formulaire Nom & Téléphone dans le Panier
+go# Guest Checkout — Formulaire Nom & Téléphone dans le Panier
 
 Date : 2026-05-31
 Statut : ✅ Approuvé

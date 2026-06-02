@@ -8,6 +8,7 @@ import { ConfirmDialog } from '../dashboard/ConfirmDialog';
 const STATUS_LABELS: Record<string, string> = {
   pending: 'En attente de paiement',
   paid: 'Payée',
+  confirmed: 'Confirmée',
   preparing: 'En préparation',
   ready: 'Prêt',
   completed: 'Retiré',
@@ -17,6 +18,7 @@ const STATUS_LABELS: Record<string, string> = {
 const STATUS_ACTIONS: Record<string, { label: string; next: string } | null> = {
   pending: null,
   paid: { label: 'Préparer', next: 'preparing' },
+  confirmed: null,
   preparing: { label: 'Marquer prêt', next: 'ready' },
   ready: { label: 'Retiré', next: 'completed' },
   completed: null,
@@ -26,6 +28,7 @@ const STATUS_ACTIONS: Record<string, { label: string; next: string } | null> = {
 const STATUS_BADGE_CLASS: Record<string, string> = {
   pending: 'bg-amber-50 text-amber-700 border border-amber-200',
   paid: 'bg-blue-50 text-blue-700 border border-blue-200',
+  confirmed: 'bg-purple-50 text-purple-700 border border-purple-200',
   preparing: 'bg-sky-50 text-sky-700 border border-sky-200',
   ready: 'bg-sapin-subtle text-sapin border border-sapin-muted',
   completed: 'bg-noir/[0.04] text-black/40',
