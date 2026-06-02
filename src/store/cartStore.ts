@@ -16,6 +16,7 @@ export interface CartLine {
   /** Emoji ou URL vignette */
   image?: string;
   source: 'bar' | 'gamme';
+  scheduledPickupDate?: string; // ISO, gamme uniquement
 }
 
 const cartLocalStorage: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> = {
