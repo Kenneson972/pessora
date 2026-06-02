@@ -99,7 +99,22 @@ export default function OrderDetail() {
               ) : (
                 STATUS_LABEL[order.status] ?? order.status
               )}
+              {order.order_type === 'gamme' && (
+                <span className="ml-2 inline-block rounded-[2px] bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5 text-[9px] font-medium uppercase tracking-[0.12em]">
+                  Gamme
+                </span>
+              )}
             </p>
+            {order.order_type === 'gamme' && order.scheduled_pickup_date && (
+              <p className="mt-2 flex items-center gap-1.5 text-[12px] text-black/50">
+                <Calendar size={13} strokeWidth={1.3} className="text-sapin-light" />
+                Retrait le {new Date(order.scheduled_pickup_date).toLocaleDateString('fr-FR', {
+                  weekday: 'long', day: 'numeric', month: 'long',
+                })} à {new Date(order.scheduled_pickup_date).toLocaleTimeString('fr-FR', {
+                  hour: '2-digit', minute: '2-digit',
+                })}
+              </p>
+            )}
           </div>
         </div>
 
