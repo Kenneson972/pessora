@@ -31,6 +31,7 @@ const CartLineSchema = z.object({
   barBasePublic: z.number().positive().optional(),
   // default 'gamme' : compatibilité panier localStorage antérieur au champ source
   source: z.enum(['bar', 'gamme']).optional().default('gamme'),
+  scheduledPickupDate: z.string().optional(),
 });
 
 const CheckoutRequestSchema = z.object({
@@ -126,6 +127,61 @@ async function fetchVerifiedPrice(
   return { verifiedUnitPrice, productId: null };
 }
 
+type VerifiedLineItem = z.infer<typeof CartLineSchema> & { verifiedUnitPrice: number; dbProductId: string | null };
+
+async function createOrder(
+  supabase: ReturnType<typeof createClient>,
+  params: {
+    lines: VerifiedLineItem[],
+    user_id: string | null,
+    pickup_time: string | null,
+    client_name: string | null,
+    client_phone: string | null,
+    order_type: 'bar' | 'gamme',
+    scheduled_pickup_date: string | null,
+  },
+): Promise<string> {
+  const total = params.lines.reduce((sum, i) => sum + i.verifiedUnitPrice * i.quantity, 0);
+  const accessToken = crypto.randomUUID().replace(/-/g, '');
+
+  const orderPayload: Record<string, unknown> = {
+    total,
+    status: 'pending',
+    order_type: params.order_type,
+    access_token: accessToken,
+  };
+  if (params.user_id) orderPayload.user_id = params.user_id;
+  if (params.client_name) orderPayload.client_name = params.client_name;
+  if (params.client_phone) orderPayload.client_phone = params.client_phone;
+  if (params.order_type === 'bar' && params.pickup_time) {
+    orderPayload.pickup_time = params.pickup_time;
+  }
+  if (params.order_type === 'gamme' && params.scheduled_pickup_date) {
+    orderPayload.scheduled_pickup_date = params.scheduled_pickup_date;
+  }
+
+  const { data: order, error } = await supabase
+    .from('orders')
+    .insert(orderPayload)
+    .select('id')
+    .single();
+
+  if (error || !order) throw new Error('Impossible de créer la commande : ' + error?.message);
+
+  const orderItems = params.lines.map((item) => ({
+    order_id: order.id,
+    product_id: item.dbProductId ?? (UUID_RE.test(item.productId) ? item.productId : null),
+    product_name: item.name,
+    quantity: item.quantity,
+    price_at_time: item.verifiedUnitPrice,
+  }));
+
+  const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
+  if (itemsError) throw new Error('Erreur articles : ' + itemsError.message);
+
+  return order.id;
+}
+
 serve(async (req) => {
   const cors = buildCorsHeaders(req.headers.get('origin'));
 
@@ -181,11 +237,6 @@ serve(async (req) => {
       }),
     );
 
-    const total = verifiedLines.reduce(
-      (sum, i) => sum + i.verifiedUnitPrice * i.quantity,
-      0,
-    );
-
     // Construire le pickup_time ISO complet (date d'aujourd'hui + créneau choisi)
     const orderPickupTime = pickup_time
       ? (() => {
@@ -196,37 +247,54 @@ serve(async (req) => {
         })()
       : null;
 
-    const accessToken = crypto.randomUUID().replace(/-/g, '');
-    const orderPayload: Record<string, unknown> = {
-      total,
-      status: 'pending',
-      pickup_time: orderPickupTime,
-      access_token: accessToken,
-    };
-    if (user_id) orderPayload.user_id = user_id;
-    if (client_name) orderPayload.client_name = client_name;
-    if (client_phone) orderPayload.client_phone = client_phone;
+    // Split ou non : bar vs gamme → 2 orders partagent 1 Stripe session
+    const barLines = verifiedLines.filter((i) => i.source !== 'gamme');
+    const gammeLines = verifiedLines.filter((i) => i.source === 'gamme');
+    const gammePickupDate = gammeLines[0]?.scheduledPickupDate ?? null;
 
-    const { data: order, error: orderError } = await supabase
-      .from('orders')
-      .insert(orderPayload)
-      .select('id')
-      .single();
+    let orderIds: string[] = [];
 
-    if (orderError || !order) {
-      throw new Error('Impossible de créer la commande : ' + orderError?.message);
-    }
-
-    const orderItems = verifiedLines.map((item) => ({
-      order_id: order.id,
-      product_id: item.dbProductId ?? (UUID_RE.test(item.productId) ? item.productId : null),
-      product_name: item.name,
-      quantity: item.quantity,
-      price_at_time: item.verifiedUnitPrice,
-    }));
-    const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
-    if (itemsError) {
-      throw new Error('Erreur lors de la création des articles : ' + itemsError.message);
+    if (barLines.length > 0 && gammeLines.length > 0) {
+      // Split : 2 orders, 1 Stripe
+      if (gammeLines.length > 0) {
+        const gammeId = await createOrder(supabase, {
+          lines: gammeLines,
+          user_id,
+          pickup_time: null,
+          client_name,
+          client_phone,
+          order_type: 'gamme',
+          scheduled_pickup_date: gammePickupDate,
+        });
+        orderIds.push(gammeId);
+      }
+      if (barLines.length > 0) {
+        const barId = await createOrder(supabase, {
+          lines: barLines,
+          user_id,
+          pickup_time: orderPickupTime,
+          client_name,
+          client_phone,
+          order_type: 'bar',
+          scheduled_pickup_date: null,
+        });
+        orderIds.push(barId);
+      }
+    } else {
+      // Homogène (tout bar ou tout gamme)
+      const theType = gammeLines.length > 0 ? 'gamme' : 'bar';
+      const thePickup = theType === 'bar' ? orderPickupTime : null;
+      const theScheduled = theType === 'gamme' ? gammePickupDate : null;
+      const theId = await createOrder(supabase, {
+        lines: verifiedLines,
+        user_id,
+        pickup_time: thePickup,
+        client_name,
+        client_phone,
+        order_type: theType,
+        scheduled_pickup_date: theScheduled,
+      });
+      orderIds.push(theId);
     }
 
     // Email client : uniquement si user_id présent
@@ -241,7 +309,7 @@ serve(async (req) => {
     }
 
     const successUrl = `${siteUrl}/commande/succes?session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${siteUrl}/commande/annulee?order_id=${order.id}`;
+    const cancelUrl = `${siteUrl}/commande/annulee?order_id=${orderIds[0]}`;
 
     // Appel direct à l'API Stripe (contourne le SDK npm:stripe en Deno)
     const stripeBody = new URLSearchParams();
@@ -249,7 +317,7 @@ serve(async (req) => {
     stripeBody.append('locale', 'fr');
     stripeBody.append('success_url', successUrl);
     stripeBody.append('cancel_url', cancelUrl);
-    stripeBody.append('metadata[order_id]', order.id);
+    stripeBody.append('metadata[order_ids]', orderIds.join(','));
     if (customerEmail) stripeBody.append('customer_email', customerEmail);
     stripeBody.append('phone_number_collection[enabled]', 'true');
 
@@ -282,10 +350,12 @@ serve(async (req) => {
       throw new Error(stripeJson.error?.message ?? 'Stripe session creation failed');
     }
 
-    await supabase
-      .from('orders')
-      .update({ stripe_session_id: stripeJson.id ?? null })
-      .eq('id', order.id);
+    for (const oid of orderIds) {
+      await supabase
+        .from('orders')
+        .update({ stripe_session_id: stripeJson.id ?? null })
+        .eq('id', oid);
+    }
 
     return new Response(JSON.stringify({ url: stripeJson.url, version: '2026-06-02-v2' }), {
       headers: { ...cors, 'Content-Type': 'application/json' },
