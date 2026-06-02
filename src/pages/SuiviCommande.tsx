@@ -219,7 +219,7 @@ export default function SuiviCommande() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.45 }}
-              className="mt-1 font-mono text-[11px] text-black/35"
+              className="mt-1 font-mono text-[11px] text-black/50"
             >
               N° {order.id.slice(0, 8)}
             </motion.p>
@@ -247,7 +247,7 @@ export default function SuiviCommande() {
       <section>
         <PageShell className="py-12 lg:py-16">
           <div className="mx-auto max-w-md">
-            <p className="mb-8 text-center text-[9px] font-medium uppercase tracking-[0.22em] text-black/30">
+            <p className="mb-8 text-center text-[9px] font-medium uppercase tracking-[0.22em] text-black/45">
               Progression
             </p>
 
@@ -279,7 +279,7 @@ export default function SuiviCommande() {
                           ? 'bg-sapin text-white shadow-[0_4px_20px_rgba(30,53,41,0.2)]'
                           : isPast
                           ? 'bg-sapin-subtle text-sapin'
-                          : 'bg-noir/[0.04] text-black/20'
+                          : 'bg-noir/[0.04] text-black/30'
                       }`}
                     >
                       <StepIcon size={18} strokeWidth={1.5} aria-hidden="true" />
@@ -291,7 +291,7 @@ export default function SuiviCommande() {
                             ? 'font-bold text-black'
                             : isPast
                             ? 'font-medium text-black/65'
-                            : 'font-light text-black/25'
+                            : 'font-light text-black/40'
                         }`}
                       >
                         {step.key === 'ready' && isCurrent
