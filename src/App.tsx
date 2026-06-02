@@ -202,7 +202,7 @@ function App() {
               <ProtectedAdminRoute>
                 <AdminLayout><AdminCommandes /></AdminLayout>
               </ProtectedAdminRoute>
-            }
+            } />
             <Route path="/admin/mode-bar" element={
               <ProtectedAdminRoute>
                 <ModeBar />
