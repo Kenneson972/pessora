@@ -1,6 +1,6 @@
 // src/pages/admin/AdminProduits.tsx
 import { useState, useEffect, useMemo, useCallback, useDeferredValue } from 'react';
-import { Plus, Pencil, Trash2, Download, Archive, ArchiveRestore } from 'lucide-react';
+import { Plus, Pencil, Trash2, Download, Archive, ArchiveRestore, Copy, Loader2 } from 'lucide-react';
 import { Card, Skeleton, Modal, useOverlayState } from '@heroui/react';
 import { ContextMenu, EmptyState, Segment } from '@heroui-pro/react';
 import { supabase } from '../../lib/supabaseClient';
@@ -91,17 +91,43 @@ function ProductCard({
   onEdit,
   onArchive,
   onDelete,
+  onDuplicate,
 }: {
   p: Product;
   onEdit: () => void;
   onArchive: () => void;
   onDelete: () => void;
+  onDuplicate: () => void;
 }) {
   const priceStr = p.price != null ? `${p.price.toFixed(2).replace('.', ',')}\u00a0€` : '—';
   const macros =
     [p.calories != null ? `${p.calories}\u00a0kcal` : null, p.protein != null ? `${p.protein}g\u00a0prot.` : null]
       .filter(Boolean)
       .join(' · ') || null;
+
+  // Inline price edit
+  const [editingPrice, setEditingPrice] = useState(false);
+  const [priceValue, setPriceValue] = useState(p.price != null ? String(p.price) : '');
+  const [savingPrice, setSavingPrice] = useState(false);
+
+  const commitPrice = async () => {
+    const num = priceValue === '' ? null : parseFloat(priceValue);
+    if (num !== null && (isNaN(num) || num < 0)) {
+      setPriceValue(p.price != null ? String(p.price) : '');
+      setEditingPrice(false);
+      return;
+    }
+    setSavingPrice(true);
+    const { error } = await (supabase as any).from('products').update({ price: num }).eq('id', p.id);
+    setSavingPrice(false);
+    if (error) {
+      setPriceValue(p.price != null ? String(p.price) : '');
+    } else {
+      p.price = num;
+      invalidateMenuCatalogCache();
+    }
+    setEditingPrice(false);
+  };
 
   return (
     <ContextMenu>
@@ -153,12 +179,43 @@ function ProductCard({
         </div>
         <div className="flex items-end justify-between gap-3 border-t border-noir/[0.06] pt-3">
           <div>
-            <p className="font-display text-[18px] font-normal tabular-nums text-black" style={{ fontFamily: 'var(--font-display)' }}>
-              {priceStr}
-            </p>
+            {editingPrice ? (
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={priceValue}
+                onChange={(e) => setPriceValue(e.target.value)}
+                onBlur={commitPrice}
+                onKeyDown={(e) => { if (e.key === 'Enter') commitPrice(); if (e.key === 'Escape') { setPriceValue(p.price != null ? String(p.price) : ''); setEditingPrice(false); } }}
+                className="w-20 rounded-[2px] border border-sapin/40 bg-white px-2 py-1 font-display text-[18px] tabular-nums text-black outline-none focus:ring-2 focus:ring-sapin/20"
+                style={{ fontFamily: 'var(--font-display)' }}
+                autoFocus
+                disabled={savingPrice}
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => { setPriceValue(p.price != null ? String(p.price) : ''); setEditingPrice(true); }}
+                className="font-display text-[18px] font-normal tabular-nums text-black hover:text-sapin cursor-pointer transition-colors rounded-[2px] hover:bg-sapin-subtle px-1 -ml-1"
+                style={{ fontFamily: 'var(--font-display)' }}
+                title="Cliquer pour modifier le prix"
+              >
+                {savingPrice ? <Loader2 size={16} className="animate-spin inline" /> : priceStr}
+              </button>
+            )}
             {macros && <p className="mt-0.5 text-[10px] font-light tracking-wide text-black/38">{macros}</p>}
           </div>
           <div className="flex shrink-0 items-center gap-1">
+            <button
+              type="button"
+              onClick={onDuplicate}
+              className="flex h-11 min-w-[44px] items-center justify-center rounded-[2px] border border-noir/12 bg-white text-black/45 transition-colors hover:border-sapin/30 hover:text-sapin"
+              aria-label={`Dupliquer ${p.name}`}
+              title="Dupliquer"
+            >
+              <Copy size={15} strokeWidth={1.5} />
+            </button>
             <button
               type="button"
               onClick={onEdit}
@@ -372,9 +429,30 @@ const AdminProduits = () => {
     );
   };
 
+  // Duplicate : pre-fill from sessionStorage, cleared on read
+  const [duplicateFrom, setDuplicateFrom] = useState<Product | null>(null);
+  useEffect(() => {
+    const raw = sessionStorage.getItem('pessora_duplicate_product');
+    if (raw) {
+      try {
+        const dup = JSON.parse(raw) as Product;
+        setDuplicateFrom(dup);
+      } catch { /* ignore */ }
+      sessionStorage.removeItem('pessora_duplicate_product');
+    } else {
+      setDuplicateFrom(null);
+    }
+  }, [showForm]);
+
   const editorMode = editProduct ? 'edit' : 'create';
-  const editorTitle =
-    editorMode === 'edit' ? `Modifier · ${editProduct?.name ?? ''}` : 'Nouveau produit';
+  const editorTitle = editProduct
+    ? `Modifier · ${editProduct.name ?? ''}`
+    : duplicateFrom
+      ? `Dupliquer · ${duplicateFrom.name}`
+      : 'Nouveau produit';
+  // Pour dupliquer : vider nom et slug (auto-générés au save)
+  const editorInitial = editProduct
+    ?? (duplicateFrom ? { ...duplicateFrom, name: '', slug: '' } : undefined);
 
   return (
     <div>
@@ -484,14 +562,14 @@ const AdminProduits = () => {
               </Modal.Header>
               <Modal.Body className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
                 <AdminProductEditorForm
-                  key={editProduct?.id ?? 'create'}
-                  mode={editorMode}
-                  initial={editProduct ?? undefined}
+                  key={editProduct?.id ?? duplicateFrom?.id ?? 'create'}
+                  mode="create"
+                  initial={editorInitial}
                   onSave={async (formState) => {
                     if (editProduct) await handleUpdate(formState);
                     else await handleCreate(formState);
                   }}
-                  onCancel={() => editorOverlay.close()}
+                  onCancel={() => { editorOverlay.close(); setDuplicateFrom(null); }}
                 />
               </Modal.Body>
             </Modal.Dialog>
@@ -533,6 +611,12 @@ const AdminProduits = () => {
                 }}
                 onArchive={() => handleArchive(p)}
                 onDelete={() => setDeleteProductId(p.id)}
+                onDuplicate={() => {
+                  setEditProduct(null);
+                  setShowForm(true);
+                  // Pre-fill via a ref that AdminProductEditorForm will pick up
+                  sessionStorage.setItem('pessora_duplicate_product', JSON.stringify(p));
+                }}
               />
             </li>
           ))}

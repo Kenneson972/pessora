@@ -300,7 +300,42 @@ interface AdminProductFormProps {
   isEdit: boolean;
 }
 
+function roundTo50(n: number): number {
+  return Math.round(n * 2) / 2;
+}
+
 export function AdminProductForm({ form, onChange, busy, isEdit }: AdminProductFormProps) {
+  // Auto-price : détecté si small/large sont vides et medium est rempli
+  const [autoPrice, setAutoPrice] = useState(
+    form.price_small === '' && form.price_large === '' && form.price_medium !== ''
+  );
+
+  const handleMediumChange = (val: string) => {
+    const num = parseFloat(val);
+    if (autoPrice && !isNaN(num) && num > 0) {
+      onChange({
+        price_medium: val,
+        price_small: String(roundTo50(num * 0.8)),
+        price_large: String(roundTo50(num * 1.3)),
+      });
+    } else {
+      onChange({ price_medium: val });
+    }
+  };
+
+  const toggleAutoPrice = (on: boolean) => {
+    setAutoPrice(on);
+    if (on) {
+      const med = parseFloat(form.price_medium || form.price);
+      if (!isNaN(med) && med > 0) {
+        onChange({
+          price_medium: form.price_medium || String(med),
+          price_small: String(roundTo50(med * 0.8)),
+          price_large: String(roundTo50(med * 1.3)),
+        });
+      }
+    }
+  };
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(isEdit);
@@ -385,48 +420,89 @@ export function AdminProductForm({ form, onChange, busy, isEdit }: AdminProductF
             </p>
           </div>
           <div className="md:col-span-2">
-            <p className={labelClass}>Autres tailles (€) — facultatif</p>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div>
-                <label htmlFor="prod-ps" className="mb-1 block text-[10px] text-black/40">
-                  Petit
-                </label>
+            <div className="flex items-center gap-2 mb-3">
+              <p className={labelClass + ' mb-0'}>Autres tailles (€)</p>
+              <label className="flex cursor-pointer items-center gap-1.5">
                 <input
-                  id="prod-ps"
-                  type="number"
-                  step="0.01"
-                  className={inputClass}
-                  value={form.price_small}
-                  onChange={(e) => onChange({ price_small: e.target.value })}
+                  type="checkbox"
+                  checked={autoPrice}
+                  onChange={(e) => toggleAutoPrice(e.target.checked)}
+                  className="h-3.5 w-3.5 accent-black"
                 />
-              </div>
-              <div>
-                <label htmlFor="prod-pm" className="mb-1 block text-[10px] text-black/40">
-                  Moyen
-                </label>
-                <input
-                  id="prod-pm"
-                  type="number"
-                  step="0.01"
-                  className={inputClass}
-                  value={form.price_medium}
-                  onChange={(e) => onChange({ price_medium: e.target.value })}
-                />
-              </div>
-              <div>
-                <label htmlFor="prod-pl" className="mb-1 block text-[10px] text-black/40">
-                  Grand
-                </label>
-                <input
-                  id="prod-pl"
-                  type="number"
-                  step="0.01"
-                  className={inputClass}
-                  value={form.price_large}
-                  onChange={(e) => onChange({ price_large: e.target.value })}
-                />
-              </div>
+                <span className="text-[10px] text-black/50">Prix auto par taille</span>
+              </label>
             </div>
+            {autoPrice ? (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <span className="mb-1 block text-[10px] text-black/30">Petit</span>
+                  <p className="rounded-[6px] border border-noir/[0.10] bg-noir/[0.02] px-3 py-2 text-[13px] text-black/45">
+                    {form.price_small ? `${parseFloat(form.price_small).toFixed(2).replace('.', ',')} €` : '—'}
+                  </p>
+                </div>
+                <div>
+                  <label htmlFor="prod-pm" className="mb-1 block text-[10px] text-black/40">
+                    Moyen
+                  </label>
+                  <input
+                    id="prod-pm"
+                    type="number"
+                    step="0.01"
+                    className={inputClass}
+                    value={form.price_medium}
+                    onChange={(e) => handleMediumChange(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <span className="mb-1 block text-[10px] text-black/30">Grand</span>
+                  <p className="rounded-[6px] border border-noir/[0.10] bg-noir/[0.02] px-3 py-2 text-[13px] text-black/45">
+                    {form.price_large ? `${parseFloat(form.price_large).toFixed(2).replace('.', ',')} €` : '—'}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div>
+                  <label htmlFor="prod-ps" className="mb-1 block text-[10px] text-black/40">
+                    Petit
+                  </label>
+                  <input
+                    id="prod-ps"
+                    type="number"
+                    step="0.01"
+                    className={inputClass}
+                    value={form.price_small}
+                    onChange={(e) => onChange({ price_small: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="prod-pm" className="mb-1 block text-[10px] text-black/40">
+                    Moyen
+                  </label>
+                  <input
+                    id="prod-pm"
+                    type="number"
+                    step="0.01"
+                    className={inputClass}
+                    value={form.price_medium}
+                    onChange={(e) => onChange({ price_medium: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="prod-pl" className="mb-1 block text-[10px] text-black/40">
+                    Grand
+                  </label>
+                  <input
+                    id="prod-pl"
+                    type="number"
+                    step="0.01"
+                    className={inputClass}
+                    value={form.price_large}
+                    onChange={(e) => onChange({ price_large: e.target.value })}
+                  />
+                </div>
+              </div>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-6 md:col-span-2">
             <label className="flex cursor-pointer items-center gap-2">
