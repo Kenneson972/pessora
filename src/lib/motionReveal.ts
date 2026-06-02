@@ -1,6 +1,23 @@
 import { useMemo } from 'react';
-import type { Transition, Variants } from 'framer-motion';
+import type { Transition, Variants, TargetAndTransition } from 'framer-motion';
 import { useReducedMotion } from 'framer-motion';
+
+/** Transition qui respecte prefers-reduced-motion (durée 0). */
+export function motionTransition(
+  reduceMotion: boolean | null | undefined,
+  normal: Transition
+): Transition {
+  return reduceMotion ? { duration: 0 } : normal;
+}
+
+/** Initial qui respecte prefers-reduced-motion. */
+export function motionInitial(
+  reduceMotion: boolean | null | undefined,
+  value: TargetAndTransition
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any {
+  return reduceMotion ? false : value;
+}
 
 /** Courbe type editorial / luxe — entrées courtes, lisible */
 export const EDITORIAL_EASE = [0.22, 1, 0.36, 1] as const;
