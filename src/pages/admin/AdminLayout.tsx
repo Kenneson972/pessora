@@ -20,6 +20,7 @@ const NAV: {
   { label: 'Produits & Gammes', shortLabel: 'Prod.', icon: Package, path: '/admin/produits-gammes' },
   { label: 'Bilans', shortLabel: 'Bilans', icon: Heart, path: '/admin/bilans' },
   { label: 'Mode Bar', shortLabel: 'Bar', icon: CupSoda, path: '/admin/mode-bar' },
+  { label: 'Retraits Gamme', shortLabel: 'Retraits', icon: Package, path: '/admin/retraits' },
   { label: 'Commandes', shortLabel: 'Cmd.', icon: ClipboardList, path: '/admin/commandes' },
   { label: 'Communication', shortLabel: 'Comm.', icon: Megaphone, path: '/admin/communication' },
   { label: 'Contenu', shortLabel: 'Contenu', icon: Images, path: '/admin/contenu' },

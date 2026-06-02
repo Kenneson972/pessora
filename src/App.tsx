@@ -53,6 +53,7 @@ const AdminEvenements = lazy(() => import('./pages/admin/AdminEvenements'));
 const AdminBilans = lazy(() => import('./pages/admin/AdminBilans'));
 const AdminCommandes = lazy(() => import('./pages/admin/AdminCommandes'));
 const ModeBar = lazy(() => import('./pages/admin/ModeBar'));
+const RetraitsGamme = lazy(() => import('./pages/admin/RetraitsGamme'));
 const SuiviCommande = lazy(() => import('./pages/SuiviCommande'));
 const AdminCommunications = lazy(() => import('./pages/admin/AdminCommunications'));
 const AdminProduitsGammes = lazy(() => import('./pages/admin/AdminProduitsGammes'));
@@ -206,6 +207,11 @@ function App() {
             <Route path="/admin/mode-bar" element={
               <ProtectedAdminRoute>
                 <ModeBar />
+              </ProtectedAdminRoute>
+            } />
+            <Route path="/admin/retraits" element={
+              <ProtectedAdminRoute>
+                <RetraitsGamme />
               </ProtectedAdminRoute>
             } />
             <Route path="/admin/communication" element={
