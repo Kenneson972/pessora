@@ -48,7 +48,9 @@ const GammeProductDetail = () => {
   const { isAdmin } = useAuth();
 
   const [quantity, setQuantity] = useState(1);
+  const [spoonSelected, setSpoonSelected] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
+  const SPOON_PRICE = 1;
   const [productOverride, setProductOverride] = useState<GammeProduct | null>(null);
 
   const { product: dbProduct, loading, error } = useGammeProduct(rangeId, slug);
@@ -117,20 +119,24 @@ const GammeProductDetail = () => {
   const displayPrice = product.price_alt !== null
     ? `${formatEur(product.price)}€ / ${formatEur(product.price_alt)}€`
     : `${formatEur(product.price)}€`;
-  const totalPrice = product.price * quantity;
+  const totalPrice = spoonUnitPrice * quantity;
 
   const RangeIcon = RANGE_ICONS[rangeId!] ?? Sparkles;
 
+  const spoonUnitPrice = spoonSelected ? product.price + SPOON_PRICE : product.price;
+  const spoonOptionLabels = spoonSelected ? ['Cuillère doseuse'] : [] as string[];
+
   const handleAddToCart = () => {
     addLine({
-      productId: product.id,          // UUID ✓ — edge function accepte ça
+      productId: product.id,
       name: product.name,
-      unitPrice: product.price,        // number ✓ — plus de parsing string
+      unitPrice: spoonUnitPrice,
+      barBasePublic: product.price,
       quantity,
       category: rangeId!,
       source: 'gamme',
-      optionsKey: 'default',
-      optionLabels: [],
+      optionsKey: spoonSelected ? 'spoon:1' : 'default',
+      optionLabels: spoonOptionLabels,
       image: product.image_url || product.name.charAt(0),
     });
     setJustAdded(true);
@@ -219,7 +225,7 @@ const GammeProductDetail = () => {
               )}
 
               {/* Prix */}
-              <div className="mb-8">
+              <div className="mb-6">
                 <p className="mb-1 text-center text-[9px] font-normal uppercase tracking-[0.2em] text-black/35 sm:text-left">
                   Prix
                 </p>
@@ -230,6 +236,20 @@ const GammeProductDetail = () => {
                   {displayPrice}
                 </span>
               </div>
+
+              {/* Option cuillère doseuse */}
+              <label className="mb-6 flex cursor-pointer items-center gap-3 rounded-[2px] border border-noir/[0.08] bg-sapin-subtle px-4 py-3 transition-colors hover:border-sapin/30">
+                <input
+                  type="checkbox"
+                  checked={spoonSelected}
+                  onChange={(e) => setSpoonSelected(e.target.checked)}
+                  className="h-4 w-4 accent-sapin"
+                />
+                <span className="flex-1 text-[12px] text-black/75">
+                  Avec cuillère doseuse
+                </span>
+                <span className="text-[12px] font-medium text-sapin">+{SPOON_PRICE}€</span>
+              </label>
 
               {/* Quantité + CTA */}
               <div className="mb-6 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center">

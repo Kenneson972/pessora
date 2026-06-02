@@ -73,12 +73,15 @@ async function fetchVerifiedPrice(
       throw new Error(`Produit gamme introuvable ou inactif : ${item.productId}`);
     }
     const serverPrice = Number(data.price);
-    // Vérification anti-fraude : comparer le prix déclaré par le client
-    if (Math.abs(item.unitPrice - serverPrice) > 0.02) {
-      console.error(`[create-checkout-session] Écart prix gamme : client=${item.unitPrice}€, serveur=${serverPrice}€ pour ${item.productId}`);
+    // Option cuillère doseuse : +1€ (encodé dans optionsKey comme spoon:1)
+    const spoonMatch = item.optionsKey?.match(/(?:^|\|)spoon:(\d+)(?:\||$)/);
+    const spoonPrice = spoonMatch ? Number(spoonMatch[1]) : 0;
+    const expectedPrice = serverPrice + spoonPrice;
+    if (Math.abs(item.unitPrice - expectedPrice) > 0.02) {
+      console.error(`[create-checkout-session] Écart prix gamme : client=${item.unitPrice}€, attendu=${expectedPrice}€ pour ${item.productId}`);
       throw new Error('Erreur de validation du panier. Veuillez le vider et réessayer.');
     }
-    return { verifiedUnitPrice: serverPrice, productId: data.id };
+    return { verifiedUnitPrice: expectedPrice, productId: data.id };
   }
 
   // Produit bar : chercher par slug (productId = slug) ou par UUID
