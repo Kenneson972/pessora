@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronRight, Calendar, MapPin, CupSoda } from 'lucide-react';
 import { EmptyState } from '@heroui-pro/react';
+import { cn } from '@heroui/react';
 import { useOrders } from '../../hooks/useOrders';
 import { DashPageHeader } from '../../components/dashboard/primitives';
 import { DASH_MAIN_PAD } from '../../components/dashboard/layoutClasses';
@@ -16,10 +17,15 @@ const History = () => {
   const prefix = pathname.startsWith('/demo-espace') ? '/demo-espace' : '/mon-espace';
   const { orders, loading, error, totalThisMonth, topProducts } = useOrders();
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [orderTypeTab, setOrderTypeTab] = useState<'all' | 'bar' | 'gamme'>('all');
+
+  const filtered = orderTypeTab === 'all'
+    ? orders
+    : orders.filter((o) => o.order_type === orderTypeTab);
+  const visibleOrders = filtered.slice(0, visibleCount);
+  const hasMore = visibleCount < filtered.length;
 
   const monthLabel = new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
-  const visibleOrders = orders.slice(0, visibleCount);
-  const hasMore = visibleCount < orders.length;
 
   return (
     <div>
@@ -34,7 +40,26 @@ const History = () => {
 
         {loading ? (
           <MemberPageSkeleton rows={6} />
-        ) : orders.length === 0 ? (
+        ) : (
+          <>
+          <div className="flex gap-1.5 mb-5">
+            {(['all', 'bar', 'gamme'] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => { setOrderTypeTab(tab); setVisibleCount(PAGE_SIZE); }}
+                className={cn(
+                  'rounded-[2px] px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.08em] transition-colors',
+                  orderTypeTab === tab
+                    ? 'bg-sapin text-white'
+                    : 'bg-surface-muted text-black/45 hover:bg-noir/[0.06] hover:text-black',
+                )}
+              >
+                {tab === 'all' ? 'Toutes' : tab === 'bar' ? 'Bar' : 'Gamme'}
+              </button>
+            ))}
+          </div>
+          {filtered.length === 0 ? (
           <EmptyState className="rounded-[2px] border border-noir/[0.06] bg-white p-10">
             <EmptyState.Header>
               <EmptyState.Title className="text-[13px] font-normal text-black">
@@ -112,11 +137,13 @@ const History = () => {
               onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
               className="self-start rounded-[2px] border border-noir/15 px-5 py-3 min-h-[44px] inline-flex items-center text-[10px] font-normal uppercase tracking-[0.12em] text-black/55 hover:border-noir/30 hover:text-noir transition-colors"
             >
-              Charger plus ({orders.length - visibleCount} restantes)
+              Charger plus ({filtered.length - visibleCount} restantes)
             </button>
           )}
           </>
         )}
+        </>
+      )}
       </div>
 
       {/* Sidebar Stats */}
