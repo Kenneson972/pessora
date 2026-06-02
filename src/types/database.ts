@@ -170,6 +170,9 @@ export interface Database {
           picked_up_at: string | null
           stripe_payment_intent_id: string | null
           stripe_session_id: string | null
+          access_token: string | null
+          client_name: string | null
+          client_phone: string | null
           created_at: string
         }
         Insert: Omit<Database['public']['Tables']['orders']['Row'], 'id' | 'created_at'>

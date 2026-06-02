@@ -61,9 +61,9 @@ const AdminCommandes = () => {
   };
 
   const handleDeleteOrder = async (orderId: string) => {
-    const db = supabase as any;
-    await db.from('order_items').delete().eq('order_id', orderId);
-    await db.from('orders').delete().eq('id', orderId);
+    await supabase.functions.invoke('delete-order', {
+      body: { orderId },
+    });
     auditLog({
       action: 'order.delete',
       entity_type: 'order',

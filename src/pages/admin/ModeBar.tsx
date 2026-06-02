@@ -22,8 +22,26 @@ export default function ModeBar() {
   const { orders: allOrders, loading, newOrderAlert, clearAlert, paidAlert, clearPaidAlert } =
     useAdminOrders('all');
 
+  //  state local pour mises a jour optimistes (evite le delai de polling)
+  const [localOrders, setLocalOrders] = useState<OrderWithItems[]>([]);
+
+  // Sync avec useAdminOrders (evite de perdre les ajouts Realtime)
+  useEffect(() => {
+    setLocalOrders((prev) => {
+      const prevIds = new Set(prev.map((o) => o.id));
+      const fresh = allOrders.filter((o) => !prevIds.has(o.id));
+      // Merge: garde les updates optimistes locales, ajoute les nouveaux
+      const merged = prev.map((o) => {
+        const updated = allOrders.find((a) => a.id === o.id);
+        return updated ?? o;
+      });
+      for (const f of fresh) merged.unshift(f);
+      return merged;
+    });
+  }, [allOrders]);
+
   // Filtrer : seulement paid + preparing
-  const orders = allOrders.filter((o) => o.status === 'paid' || o.status === 'preparing');
+  const orders = localOrders.filter((o) => o.status === 'paid' || o.status === 'preparing');
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [now, setNow] = useState(new Date());
@@ -65,14 +83,16 @@ export default function ModeBar() {
   }, []);
 
   const handleStartPrep = async (orderId: string) => {
+    setLocalOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status: 'preparing' as const } : o)));
     await (supabase as any).from('orders').update({ status: 'preparing' }).eq('id', orderId);
     auditLog({ action: 'order.status_change', entity_type: 'order', entity_id: orderId, details: { new_status: 'preparing' } });
   };
 
   const handleMarkReady = async (orderId: string) => {
+    setLocalOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status: 'ready' as const } : o)));
+    setCurrentIndex((prev) => (prev < orders.length - 1 ? prev + 1 : 0));
     await (supabase as any).from('orders').update({ status: 'ready' }).eq('id', orderId);
     auditLog({ action: 'order.status_change', entity_type: 'order', entity_id: orderId, details: { new_status: 'ready' } });
-    setCurrentIndex((prev) => (prev < orders.length - 1 ? prev + 1 : 0));
   };
 
   const handleNext = () => {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CupSoda, ChevronDown, ChevronUp, Phone, Trash2 } from 'lucide-react';
+import { CupSoda, ChevronDown, ChevronUp, Phone, Trash2, User } from 'lucide-react';
 import { cn } from '@heroui/react';
 import type { OrderWithItems } from '../../hooks/useOrders';
 import { ConfirmDialog } from '../dashboard/ConfirmDialog';
@@ -68,12 +68,11 @@ export function AdminOrderCard({ order, onStatusUpdate, onDeleteOrder }: AdminOr
         <div className="min-w-0 flex-1">
           <p className="truncate text-[13px] font-medium text-black">{itemNames || '—'}</p>
           <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[10.5px] text-black/45">
+            <span className="font-medium text-black/60">{order.client_name || order.user_id?.slice(0, 8) || 'Client'}</span>
+            {order.client_phone && <span>{order.client_phone}</span>}
             <span>{dateLabel}</span>
             <span>Retrait {pickupLabel}</span>
             <span>{order.total.toFixed(2).replace('.', ',')}€</span>
-            {order.user_id && (
-              <span className="font-mono text-[9.5px]">#{order.user_id.slice(0, 8)}</span>
-            )}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -126,6 +125,18 @@ export function AdminOrderCard({ order, onStatusUpdate, onDeleteOrder }: AdminOr
               onConfirm={() => { onStatusUpdate(order.id, 'completed'); setConfirmCompleted(false); }}
               onClose={() => setConfirmCompleted(false)}
             />
+            {order.client_name && (
+              <span className="flex items-center gap-1 text-[11px] text-black/55">
+                <User size={12} strokeWidth={1.3} className="text-black/30" />
+                {order.client_name}
+              </span>
+            )}
+            {order.client_phone && (
+              <span className="flex items-center gap-1 text-[11px] text-black/55">
+                <Phone size={12} strokeWidth={1.3} className="text-black/30" />
+                {order.client_phone}
+              </span>
+            )}
             {order.user_id && (
               <Link
                 to={`/admin/membres/${order.user_id}`}
@@ -133,12 +144,6 @@ export function AdminOrderCard({ order, onStatusUpdate, onDeleteOrder }: AdminOr
               >
                 Voir le membre
               </Link>
-            )}
-            {order.user_id && (
-              <span className="flex items-center gap-1 text-[10.5px] text-black/35">
-                <Phone size={11} strokeWidth={1.3} className="text-black/30" />
-                Contact
-              </span>
             )}
             <div className="flex-1" />
             <button
