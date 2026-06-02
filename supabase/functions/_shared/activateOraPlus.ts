@@ -24,29 +24,63 @@ export async function activateOraPlus(
   const priceId = stripeSub.items.data[0]?.price.id ?? null
   const currentPeriodEnd = new Date(stripeSub.current_period_end * 1000).toISOString()
 
-  // Chercher l'utilisateur par email dans profiles
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('id')
-    .eq('email', email)
-    .maybeSingle()
-
+  // Priorité au user_id dans les metadata (évite tout mismatch email Stripe/Supabase)
+  const metadataUserId = session.metadata?.user_id as string | undefined
   let userId: string
 
-  if (profile) {
-    userId = profile.id
-  } else {
-    // Nouveau membre — envoyer un magic link d'invitation
-    const { data: inviteData, error: inviteErr } = await supabase.auth.admin.inviteUserByEmail(email)
-    if (inviteErr || !inviteData.user) {
-      throw new Error(`inviteUserByEmail failed: ${inviteErr?.message}`)
+  if (metadataUserId) {
+    // Vérifier que le profil existe bien
+    const { data: profileById } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', metadataUserId)
+      .maybeSingle()
+
+    if (profileById) {
+      userId = profileById.id
+    } else {
+      // Le user_id des metadata ne correspond à aucun profil → fallback email
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle()
+
+      if (profile) {
+        userId = profile.id
+      } else {
+        const { data: inviteData, error: inviteErr } = await supabase.auth.admin.inviteUserByEmail(email)
+        if (inviteErr || !inviteData.user) {
+          throw new Error(`inviteUserByEmail failed: ${inviteErr?.message}`)
+        }
+        userId = inviteData.user.id
+        await supabase.from('profiles').upsert(
+          { id: userId, email },
+          { onConflict: 'id', ignoreDuplicates: true },
+        )
+      }
     }
-    userId = inviteData.user.id
-    // Upsert profile (le trigger peut l'avoir déjà créé)
-    await supabase.from('profiles').upsert(
-      { id: userId, email },
-      { onConflict: 'id', ignoreDuplicates: true },
-    )
+  } else {
+    // Fallback : chercher par email (comportement actuel)
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle()
+
+    if (profile) {
+      userId = profile.id
+    } else {
+      const { data: inviteData, error: inviteErr } = await supabase.auth.admin.inviteUserByEmail(email)
+      if (inviteErr || !inviteData.user) {
+        throw new Error(`inviteUserByEmail failed: ${inviteErr?.message}`)
+      }
+      userId = inviteData.user.id
+      await supabase.from('profiles').upsert(
+        { id: userId, email },
+        { onConflict: 'id', ignoreDuplicates: true },
+      )
+    }
   }
 
   // Mettre à jour stripe_customer_id sur profiles
