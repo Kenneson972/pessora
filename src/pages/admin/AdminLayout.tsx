@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
-import { LayoutDashboard, Users, CalendarDays, Package, Heart, LogOut, Megaphone, ArrowLeft, Images, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, Users, CalendarDays, Package, Heart, LogOut, Megaphone, ArrowLeft, Images, ClipboardList, CupSoda } from 'lucide-react';
 import { cn } from '@heroui/react';
 import { useAuth } from '../../contexts/AuthContext';
 import { BrandLogo } from '../../components/common/BrandLogo';
@@ -19,6 +19,7 @@ const NAV: {
   { label: 'Événements', shortLabel: 'Évén.', icon: CalendarDays, path: '/admin/evenements' },
   { label: 'Produits & Gammes', shortLabel: 'Prod.', icon: Package, path: '/admin/produits-gammes' },
   { label: 'Bilans', shortLabel: 'Bilans', icon: Heart, path: '/admin/bilans' },
+  { label: 'Mode Bar', shortLabel: 'Bar', icon: CupSoda, path: '/admin/mode-bar' },
   { label: 'Commandes', shortLabel: 'Cmd.', icon: ClipboardList, path: '/admin/commandes' },
   { label: 'Communication', shortLabel: 'Comm.', icon: Megaphone, path: '/admin/communication' },
   { label: 'Contenu', shortLabel: 'Contenu', icon: Images, path: '/admin/contenu' },
