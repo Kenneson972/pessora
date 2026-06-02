@@ -1,0 +1,179 @@
+---
+description: Workflow prompts Karibloom - écrire les prompts par lots AVANT de les exécuter, bibliothèque de prompts réutilisables. Pratique issue de DIAMANTNOIR (CURSOR_PROMPTS_28MAI.md) qui a prouvé son efficacité.
+globs: "**/docs/prompts/**"
+alwaysApply: true
+---
+
+# Workflow Prompts — Karibloom
+
+> **Origine** : DIAMANTNOIR a introduit `CURSOR_PROMPTS_28MAI.md` — un fichier de prompts pré-écrits par lots avant exécution. Cette pratique a drastiquement réduit les allers-retours et les erreurs d'interprétation. Elle devient standard sur tous les projets Karibloom.
+
+---
+
+## Principe
+
+**Ne jamais improviser un prompt sur une tâche > 30 minutes.**
+
+Avant d'exécuter, écrire le prompt complet dans `docs/prompts/` avec :
+1. Le contexte précis (fichiers concernés, état actuel)
+2. Le problème exact et sa cause
+3. Les actions demandées (numérotées, une par une)
+4. Les règles à respecter (ne pas toucher à X, ne pas modifier Y)
+5. La vérification attendue
+
+---
+
+## Format standard d'un prompt
+
+```markdown
+# [DATE] [Feature] — [Description courte]
+
+## Contexte
+[Quel est l'état actuel ? Qu'est-ce qui a été fait jusqu'ici ?]
+
+## Problème
+[Quel est le problème exact ? Quelle est la cause identifiée ?]
+
+## Actions demandées
+
+1. **[Action 1]** :
+   - Fichier : `src/components/...`
+   - Ce qu'il faut faire : ...
+
+2. **[Action 2]** :
+   - Fichier : `src/lib/...`
+   - Ce qu'il faut faire : ...
+
+## Règles
+- NE PAS modifier [fichier ou système X]
+- NE PAS changer le schéma Supabase
+- Tous les changements côté [frontend/backend] uniquement
+- [Autre contrainte spécifique]
+
+## Vérification
+- [ ] `npm run build` passe sans erreur
+- [ ] [Comportement attendu à tester manuellement]
+- [ ] [Autre vérification]
+```
+
+---
+
+## Organisation des fichiers
+
+```
+docs/prompts/
+  YYYY-MM-DD-[feature]-[action].md
+```
+
+Exemples :
+```
+docs/prompts/
+  2026-06-01-security-csrf-middleware.md
+  2026-06-01-admin-auth-pin-server.md
+  2026-05-31-rls-bilan-slots.md
+  2026-05-30-admin-commandes-realtime.md
+  2026-05-28-image-urls-standardization.md
+```
+
+---
+
+## Catégories de prompts fréquents (bibliothèque)
+
+Ces prompts types couvrent 80% des cas rencontrés sur les projets Karibloom.
+Les copier et adapter pour chaque projet.
+
+### Sécurité — RLS audit
+```markdown
+## Contexte
+Audit RLS demandé. Liste des tables sans politique RLS à corriger.
+
+## Actions
+1. Pour chaque table listée, créer une migration `supabase/migrations/YYYYMMDD_rls_[table].sql` :
+   - Activer RLS si non actif
+   - Politique SELECT : tout le monde peut voir (si données publiques) OU utilisateur connecté voit ses données
+   - Politique INSERT/UPDATE/DELETE : utilisateur authentifié sur ses propres données OU admin via service_role
+   - Tester : `SELECT * FROM public.[table]` doit retourner 0 lignes sans auth
+
+## Règles
+- Migrations idempotentes (IF NOT EXISTS, IF EXISTS)
+- Ne jamais GRANT sur service_role (il bypass RLS par défaut)
+- Documenter les cas où RLS est volontairement désactivée (tables de référence publiques)
+```
+
+### Sécurité — Headers + CSRF
+```markdown
+## Actions
+1. Ajouter dans `next.config.js` la section `async headers()` avec CSP, HSTS, XFO, nosniff
+2. Créer `middleware.ts` avec génération token CSRF + validation sur requêtes POST/PUT/DELETE
+3. Créer `lib/csrf.ts` avec `getCsrfToken()` et `csrfHeaders()` pour les fetch() clients
+
+## Règles
+- Exempter `/api/webhooks/stripe` du CSRF (signature propre)
+- Exempter `/api/auth/` du CSRF (Bearer JWT)
+- HSTS uniquement en prod (process.env.NODE_ENV === 'production')
+```
+
+### Images — Standardisation image_url / image_urls
+```markdown
+## Problème
+Confusion entre `[table].image_url` (string, principale) et `[table].image_urls` (array, galerie).
+
+## Actions
+1. Migration SQL : ajouter `image_url TEXT` et `image_urls TEXT[] DEFAULT '{}'` si absents
+2. Dans le composant admin : synchroniser `image_url = image_urls[0] ?? null` au save
+3. Dans les composants d'affichage : utiliser `image_url` pour l'img principale, `image_urls` pour la galerie
+
+## Règles
+- Ne jamais supprimer image_url même si image_urls est présent
+- Ne jamais utiliser image_urls[0] directement dans les balises <img> LCP (toujours passer par image_url)
+```
+
+### Admin — Ajout d'une nouvelle vue admin
+```markdown
+## Contexte
+Ajouter la vue `[nom]` dans le dashboard admin.
+
+## Actions
+1. Créer `app/(dashboard)/admin/[nom]/page.tsx` — page RSC avec fetch Supabase côté serveur
+2. Créer les Route Handlers correspondants dans `app/api/admin/[nom]/route.ts`
+3. Ajouter `requireAdminWithRateLimit(req)` en première ligne de chaque Route Handler
+4. Ajouter `logAdminAction("[domaine].[action]", details, ip)` après chaque mutation
+5. Ajouter le lien dans la sidebar admin
+
+## Règles
+- Tous les fetch admin via service_role (lib/supabase/admin.ts)
+- Valider les inputs avec Zod avant toute mutation
+- Suivre le pattern AdminCard + AdminSectionHeader de DALCIELO
+```
+
+### Chatbot — Nouveau projet
+```markdown
+## Actions
+1. Créer `app/api/chat/route.ts` (copier depuis kb-chatbot.mdc)
+2. Créer `components/chatbot/karibot-widget.tsx` (copier depuis kb-chatbot.mdc)
+3. Ajouter dans `app/layout.tsx` : `dynamic(() => import('@/components/chatbot/karibot-widget'), { ssr: false })`
+4. Configurer `N8N_CHATBOT_WEBHOOK_URL` dans `.env.local`
+5. Personnaliser : name, avatarSrc, primaryColor, welcomeMessage, quickSuggestions, hideOnPaths
+
+## Règles
+- Toujours `ssr: false` sur le dynamic import (window object)
+- hideOnPaths doit inclure /admin, /espace-client, /dashboard
+- Rate limit : 20 messages / minute / IP
+```
+
+---
+
+## Règle d'utilisation
+
+- **Tâche < 15 min** : pas de fichier prompt nécessaire — exécuter directement
+- **Tâche 15-30 min** : noter le prompt dans la session ACTIONS_LOG
+- **Tâche > 30 min** : créer un fichier `docs/prompts/YYYY-MM-DD-[nom].md` AVANT d'exécuter
+- **Bug critique / sécurité** : toujours un fichier prompt, même si urgent
+
+---
+
+## Lien avec les autres règles
+
+- `kb-action-documentation.mdc` : journaliser l'action après exécution
+- `kb-workflow-orchestration.mdc` : phases Plan → Execute → Verify
+- `kb-core-workflow.mdc` : vérifier avant de committer

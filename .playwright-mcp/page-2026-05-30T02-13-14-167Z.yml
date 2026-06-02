@@ -1,0 +1,112 @@
+- generic [ref=e3]:
+  - link "Aller au contenu" [ref=e4] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - link "Pessóra" [ref=e7] [cursor=pointer]:
+        - /url: /
+        - img "Pessóra" [ref=e8]
+      - generic [ref=e9]:
+        - link "Connexion" [ref=e10] [cursor=pointer]:
+          - /url: /connexion
+          - img [ref=e11]
+        - button "Panier, vide" [ref=e15] [cursor=pointer]:
+          - img
+        - button "Ouvrir le menu" [ref=e16] [cursor=pointer]:
+          - generic [ref=e18]:
+            - img
+    - radiogroup "Navigation secondaire" [ref=e21]:
+      - radio "Vue d’ensemble" [checked] [ref=e22] [cursor=pointer]: Vue d’ensemble
+      - radio "Wellness" [ref=e24] [cursor=pointer]: Wellness
+      - radio "Sport" [ref=e25] [cursor=pointer]: Sport
+      - radio "Skin" [ref=e26] [cursor=pointer]: Skin
+  - main [ref=e27]:
+    - status [ref=e28]:
+      - generic [ref=e29]: Chargement de la page
+      - generic [ref=e30]:
+        - generic:
+          - img
+        - paragraph [ref=e31]: Chargement
+  - contentinfo [ref=e33]:
+    - generic [ref=e36]:
+      - region "Marque Pessóra" [ref=e37]:
+        - generic [ref=e38]:
+          - generic [ref=e39]:
+            - img "Pessóra" [ref=e40]
+            - paragraph [ref=e41]: Bar protéiné · Fort-de-France, Martinique
+          - generic [ref=e42]:
+            - link "Pessóra sur Instagram (ouvre un nouvel onglet)" [ref=e43] [cursor=pointer]:
+              - /url: https://instagram.com/pessora.mq
+              - img [ref=e44]
+            - link "Contacter Pessóra sur WhatsApp (ouvre un nouvel onglet)" [ref=e47] [cursor=pointer]:
+              - /url: https://wa.me/596696000000
+              - img [ref=e48]
+      - generic [ref=e50]:
+        - generic [ref=e51]:
+          - region "Navigation menu" [ref=e52]:
+            - paragraph [ref=e53]: Sur le site
+            - generic [ref=e54]:
+              - paragraph [ref=e55]: Menu
+              - navigation "Menu" [ref=e56]:
+                - link "Shakes" [ref=e57] [cursor=pointer]:
+                  - /url: /menu
+                - link "Boissons énergie" [ref=e58] [cursor=pointer]:
+                  - /url: /menu
+                - link "Carte complète" [ref=e59] [cursor=pointer]:
+                  - /url: /menu
+          - region "Newsletter" [ref=e60]:
+            - generic [ref=e61]:
+              - heading "Newsletter" [level=3] [ref=e62]
+              - form "Newsletter" [ref=e63]:
+                - generic [ref=e64]:
+                  - generic [ref=e65]: Adresse e-mail pour la newsletter
+                  - textbox "Adresse e-mail pour la newsletter Adresse e-mail pour la newsletter" [ref=e66]:
+                    - /placeholder: Votre e-mail
+                  - button "S’inscrire à la newsletter" [ref=e67] [cursor=pointer]:
+                    - img
+                - generic [ref=e69] [cursor=pointer]:
+                  - checkbox "J’accepte de recevoir la newsletter et j’ai pris connaissance de la politique de confidentialité." [ref=e71]
+                  - generic [ref=e72]:
+                    - text: J’accepte de recevoir la newsletter et j’ai pris connaissance de la
+                    - link "politique de confidentialité" [ref=e73]:
+                      - /url: /politique-confidentialite
+                    - text: .
+        - generic [ref=e74]:
+          - region "Espace membres et services" [ref=e75]:
+            - generic [ref=e76]:
+              - paragraph [ref=e77]: Espace
+              - navigation "Espace" [ref=e78]:
+                - link "Óra+" [ref=e79] [cursor=pointer]:
+                  - /url: /ora-plus
+                - link "Événements" [ref=e80] [cursor=pointer]:
+                  - /url: /evenements
+                - link "Bilan Bien-être" [ref=e81] [cursor=pointer]:
+                  - /url: /bilan-bien-etre
+          - region "Contact et réseaux" [ref=e83]:
+            - generic [ref=e84]:
+              - paragraph [ref=e85]: Nous rejoindre
+              - navigation "Contact et réseaux" [ref=e86]:
+                - link "Instagram" [ref=e88] [cursor=pointer]:
+                  - /url: https://instagram.com/pessora.mq
+                - generic [ref=e89]:
+                  - generic [ref=e90]: ·
+                  - link "WhatsApp" [ref=e91] [cursor=pointer]:
+                    - /url: https://wa.me/596696000000
+                - generic [ref=e92]:
+                  - generic [ref=e93]: ·
+                  - link "Fort-de-France" [ref=e94] [cursor=pointer]:
+                    - /url: /contact
+                - generic [ref=e95]:
+                  - generic [ref=e96]: ·
+                  - link "Partenariats" [ref=e97] [cursor=pointer]:
+                    - /url: /contact-partenariat
+    - generic [ref=e99]:
+      - generic [ref=e100]: © 2026 Pessóra · Fort-de-France
+      - generic [ref=e101]:
+        - link "Mentions légales" [ref=e102] [cursor=pointer]:
+          - /url: /mentions-legales
+        - link "Confidentialité" [ref=e103] [cursor=pointer]:
+          - /url: /politique-confidentialite
+        - button "Cookies" [ref=e104]
+        - link "CGV" [ref=e105] [cursor=pointer]:
+          - /url: /cgv

@@ -22,7 +22,7 @@ const ESPACE_LINKS = [
   { label: 'Bilan Bien-être', to: '/bilan-bien-etre' },
 ];
 const CONTACT_LINKS = [
-  { label: 'Instagram', to: 'https://instagram.com/pessora.mq', external: true },
+  { label: 'Instagram', to: 'https://instagram.com/pessora.fr', external: true },
   { label: 'WhatsApp', to: 'https://wa.me/596696440404', external: true },
   { label: 'Fort-de-France', to: '/contact' },
   { label: 'Partenariats', to: '/contact-partenariat' },
@@ -81,7 +81,7 @@ function FooterLogoCenter({ context }: { context: 'mobile' | 'desktop' }) {
       </div>
       <div className="mt-4 flex items-center justify-center gap-4 sm:gap-5">
         <a
-          href="https://instagram.com/pessora.mq"
+          href="https://instagram.com/pessora.fr"
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Pessóra sur Instagram (ouvre un nouvel onglet)"

@@ -24,7 +24,7 @@ const MentionsLegales = () => {
                 <strong>Raison sociale :</strong> PessÓra<br />
                 <strong>Forme juridique :</strong> [À compléter]<br />
                 <strong>Adresse :</strong> C.C. La Véranda – Cluny, 97200 Fort-de-France, Martinique<br />
-                <strong>Email :</strong> pessora.mq@gmail.com<br />
+                <strong>Email :</strong> pessora.fr@gmail.com<br />
                 <strong>Directeur de la publication :</strong> [À compléter]
               </p>
             </div>
@@ -63,7 +63,7 @@ const MentionsLegales = () => {
                 .
               </p>
               <p className="text-gray-700 leading-relaxed mt-4">
-                Pour exercer ces droits, vous pouvez nous contacter à l'adresse suivante : pessora.mq@gmail.com
+                Pour exercer ces droits, vous pouvez nous contacter à l'adresse suivante : pessora.fr@gmail.com
               </p>
             </div>
 

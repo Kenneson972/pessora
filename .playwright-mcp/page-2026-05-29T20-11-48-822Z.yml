@@ -1,0 +1,377 @@
+- generic [ref=e3]:
+  - link "Aller au contenu" [ref=e4] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - link "Pessóra" [ref=e7] [cursor=pointer]:
+        - /url: /
+        - img "Pessóra" [ref=e8]
+      - navigation "Navigation principale" [ref=e9]:
+        - link "Concept" [ref=e10] [cursor=pointer]:
+          - /url: /concept
+        - link "La carte" [ref=e11] [cursor=pointer]:
+          - /url: /menu
+        - link "Produits" [ref=e12] [cursor=pointer]:
+          - /url: /nos-produits
+        - link "Óra+" [ref=e13] [cursor=pointer]:
+          - /url: /ora-plus
+        - link "Événements" [ref=e14] [cursor=pointer]:
+          - /url: /evenements
+        - link "Bilan" [ref=e15] [cursor=pointer]:
+          - /url: /bilan-bien-etre
+      - generic [ref=e16]:
+        - button "Ouvrir la recherche (Ctrl+K)" [ref=e19]:
+          - img [ref=e20]
+        - link "Connexion" [ref=e23] [cursor=pointer]:
+          - /url: /connexion
+          - img [ref=e24]
+          - generic [ref=e27]: Connexion
+        - button "Panier, vide" [ref=e29] [cursor=pointer]:
+          - img
+  - main [ref=e30]:
+    - generic [ref=e446]:
+      - heading "La carte" [level=1] [ref=e447]
+      - radiogroup "Filtrer par gamme" [ref=e450]:
+        - radio "Tout" [checked] [ref=e451] [cursor=pointer]: Tout
+        - radio "Wellness" [ref=e453] [cursor=pointer]: Wellness
+        - radio "Énergie" [ref=e454] [cursor=pointer]: Énergie
+        - radio "Shakes" [ref=e455] [cursor=pointer]: Shakes
+        - radio "Coffee" [ref=e456] [cursor=pointer]: Coffee
+      - complementary [ref=e459]:
+        - generic [ref=e460]:
+          - paragraph [ref=e461]: Óra+ — 24,90€/ mois · jusqu’à −50 % sur les boissons.
+          - paragraph [ref=e462]: Bilan & événements prioritaires.
+        - link "Découvrir Óra+" [ref=e463] [cursor=pointer]:
+          - /url: /ora-plus
+          - text: Découvrir Óra+
+          - img [ref=e464]
+      - generic [ref=e467]:
+        - generic [ref=e468]:
+          - heading "Wellness" [level=2] [ref=e472]
+          - generic [ref=e473]:
+            - link "Voir GLOW MY SKIN" [ref=e475] [cursor=pointer]:
+              - /url: /menu/glow-my-skin
+              - generic [ref=e476]:
+                - generic [ref=e478]: ✨
+                - generic [ref=e479]:
+                  - generic [ref=e480]: Wellness
+                  - generic [ref=e481]:
+                    - heading "GLOW MY SKIN" [level=3] [ref=e482]
+                    - generic [ref=e483]:
+                      - generic [ref=e484]: 10€
+                      - generic [ref=e485]: Óra+ dès 10 €
+                  - paragraph [ref=e486]: 30 kcal
+                  - generic [ref=e489]:
+                    - generic [ref=e490]:
+                      - button "P 8€" [ref=e491]
+                      - button "M 10€" [pressed] [ref=e492]
+                      - button "G 12€" [ref=e493]
+                    - button "Ajouter" [ref=e494]:
+                      - img [ref=e495]
+                      - text: Ajouter
+            - link "Voir IMMUNE PARADISE" [ref=e499] [cursor=pointer]:
+              - /url: /menu/immune-paradise
+              - generic [ref=e500]:
+                - generic [ref=e502]: 🌸
+                - generic [ref=e503]:
+                  - generic [ref=e504]: Wellness
+                  - generic [ref=e505]:
+                    - heading "IMMUNE PARADISE" [level=3] [ref=e506]
+                    - generic [ref=e507]:
+                      - generic [ref=e508]: 10€
+                      - generic [ref=e509]: Óra+ dès 10 €
+                  - paragraph [ref=e510]: 35 kcal
+                  - generic [ref=e513]:
+                    - generic [ref=e514]:
+                      - button "P 8€" [ref=e515]
+                      - button "M 10€" [pressed] [ref=e516]
+                      - button "G 12€" [ref=e517]
+                    - button "Ajouter" [ref=e518]:
+                      - img [ref=e519]
+                      - text: Ajouter
+        - generic [ref=e522]:
+          - heading "Énergie Drink" [level=2] [ref=e526]
+          - generic [ref=e527]:
+            - link "Voir BLUE LAGOON" [ref=e529] [cursor=pointer]:
+              - /url: /menu/blue-lagoon
+              - generic [ref=e530]:
+                - generic [ref=e532]: 💙
+                - generic [ref=e533]:
+                  - generic [ref=e534]: Énergie Drink
+                  - generic [ref=e535]:
+                    - heading "BLUE LAGOON" [level=3] [ref=e536]
+                    - generic [ref=e537]:
+                      - generic [ref=e538]: 10€
+                      - generic [ref=e539]: Óra+ dès 10 €
+                  - paragraph [ref=e540]: 50 kcal
+                  - generic [ref=e543]:
+                    - generic [ref=e544]:
+                      - button "P 8€" [ref=e545]
+                      - button "M 10€" [pressed] [ref=e546]
+                      - button "G 12€" [ref=e547]
+                    - button "Ajouter" [ref=e548]:
+                      - img [ref=e549]
+                      - text: Ajouter
+            - link "Voir HYDRA BOOST LITCHI" [ref=e553] [cursor=pointer]:
+              - /url: /menu/hydra-boost
+              - generic [ref=e558]:
+                - generic [ref=e559]: Énergie Drink
+                - generic [ref=e560]:
+                  - heading "HYDRA BOOST LITCHI" [level=3] [ref=e561]
+                  - generic [ref=e562]:
+                    - generic [ref=e563]: 10€
+                    - generic [ref=e564]: Óra+ dès 10 €
+                - generic [ref=e567]:
+                  - generic [ref=e568]:
+                    - button "P 8€" [ref=e569]
+                    - button "M 10€" [pressed] [ref=e570]
+                    - button "G 12€" [ref=e571]
+                  - button "Ajouter" [ref=e572]:
+                    - img [ref=e573]
+                    - text: Ajouter
+            - link "Voir SPICY MANGO" [ref=e577] [cursor=pointer]:
+              - /url: /menu/spicy-mango
+              - generic [ref=e578]:
+                - generic [ref=e580]: 🔥
+                - generic [ref=e581]:
+                  - generic [ref=e582]: Énergie Drink
+                  - generic [ref=e583]:
+                    - heading "SPICY MANGO" [level=3] [ref=e584]
+                    - generic [ref=e585]:
+                      - generic [ref=e586]: 10€
+                      - generic [ref=e587]: Óra+ dès 10 €
+                  - paragraph [ref=e588]: 50 kcal
+                  - generic [ref=e591]:
+                    - generic [ref=e592]:
+                      - button "P 8€" [ref=e593]
+                      - button "M 10€" [pressed] [ref=e594]
+                      - button "G 12€" [ref=e595]
+                    - button "Ajouter" [ref=e596]:
+                      - img [ref=e597]
+                      - text: Ajouter
+        - generic [ref=e600]:
+          - heading "Shakes Protéinés" [level=2] [ref=e604]
+          - generic [ref=e605]:
+            - link "Voir CARAMEL GLACÉ" [ref=e607] [cursor=pointer]:
+              - /url: /menu/iced-caramel-latte
+              - generic [ref=e608]:
+                - generic [ref=e610]: ☕
+                - generic [ref=e611]:
+                  - generic [ref=e612]: Shakes Protéinés
+                  - generic [ref=e613]:
+                    - heading "CARAMEL GLACÉ" [level=3] [ref=e614]
+                    - generic [ref=e615]:
+                      - generic [ref=e616]: 14€
+                      - generic [ref=e617]: Óra+ dès 14 €
+                  - paragraph [ref=e618]: 18g protéines · 220 kcal
+                  - generic [ref=e621]:
+                    - generic [ref=e622]:
+                      - button "P 10€" [ref=e623]
+                      - button "M 14€" [pressed] [ref=e624]
+                      - button "G 16€" [ref=e625]
+                    - button "Ajouter" [ref=e626]:
+                      - img [ref=e627]
+                      - text: Ajouter
+            - link "Voir CHOCO PROT" [ref=e631] [cursor=pointer]:
+              - /url: /menu/choco-prot
+              - generic [ref=e632]:
+                - generic [ref=e634]: 🍫
+                - generic [ref=e635]:
+                  - generic [ref=e636]: Shakes Protéinés
+                  - generic [ref=e637]:
+                    - heading "CHOCO PROT" [level=3] [ref=e638]
+                    - generic [ref=e639]:
+                      - generic [ref=e640]: 14€
+                      - generic [ref=e641]: Óra+ dès 14 €
+                  - paragraph [ref=e642]: 20g protéines · 250 kcal
+                  - generic [ref=e645]:
+                    - generic [ref=e646]:
+                      - button "P 10€" [ref=e647]
+                      - button "M 14€" [pressed] [ref=e648]
+                      - button "G 16€" [ref=e649]
+                    - button "Ajouter" [ref=e650]:
+                      - img [ref=e651]
+                      - text: Ajouter
+            - link "Voir COOKIE CREAM" [ref=e655] [cursor=pointer]:
+              - /url: /menu/cookie-cream
+              - generic [ref=e656]:
+                - generic [ref=e658]: 🍪
+                - generic [ref=e659]:
+                  - generic [ref=e660]: Shakes Protéinés
+                  - generic [ref=e661]:
+                    - heading "COOKIE CREAM" [level=3] [ref=e662]
+                    - generic [ref=e663]:
+                      - generic [ref=e664]: 14€
+                      - generic [ref=e665]: Óra+ dès 14 €
+                  - paragraph [ref=e666]: 18g protéines · 220 kcal
+                  - generic [ref=e669]:
+                    - generic [ref=e670]:
+                      - button "P 10€" [ref=e671]
+                      - button "M 14€" [pressed] [ref=e672]
+                      - button "G 16€" [ref=e673]
+                    - button "Ajouter" [ref=e674]:
+                      - img [ref=e675]
+                      - text: Ajouter
+            - link "Voir GLAM MATCHA" [ref=e679] [cursor=pointer]:
+              - /url: /menu/glam-matcha
+              - generic [ref=e680]:
+                - generic [ref=e682]: 🍵
+                - generic [ref=e683]:
+                  - generic [ref=e684]: Shakes Protéinés
+                  - generic [ref=e685]:
+                    - heading "GLAM MATCHA" [level=3] [ref=e686]
+                    - generic [ref=e687]:
+                      - generic [ref=e688]: 14€
+                      - generic [ref=e689]: Óra+ dès 14 €
+                  - paragraph [ref=e690]: 18g protéines · 220 kcal
+                  - generic [ref=e693]:
+                    - generic [ref=e694]:
+                      - button "P 10€" [ref=e695]
+                      - button "M 14€" [pressed] [ref=e696]
+                      - button "G 16€" [ref=e697]
+                    - button "Ajouter" [ref=e698]:
+                      - img [ref=e699]
+                      - text: Ajouter
+            - link "Voir PINK DRAGON" [ref=e703] [cursor=pointer]:
+              - /url: /menu/pink-dragon
+              - generic [ref=e704]:
+                - generic [ref=e706]: 🐉
+                - generic [ref=e707]:
+                  - generic [ref=e708]: Shakes Protéinés
+                  - generic [ref=e709]:
+                    - heading "PINK DRAGON" [level=3] [ref=e710]
+                    - generic [ref=e711]:
+                      - generic [ref=e712]: 14€
+                      - generic [ref=e713]: Óra+ dès 14 €
+                  - paragraph [ref=e714]: 21g protéines · 230 kcal
+                  - generic [ref=e717]:
+                    - generic [ref=e718]:
+                      - button "P 10€" [ref=e719]
+                      - button "M 14€" [pressed] [ref=e720]
+                      - button "G 16€" [ref=e721]
+                    - button "Ajouter" [ref=e722]:
+                      - img [ref=e723]
+                      - text: Ajouter
+        - generic [ref=e726]:
+          - heading "Coffee" [level=2] [ref=e730]
+          - generic [ref=e731]:
+            - link "Voir CAFÉ LONG" [ref=e733] [cursor=pointer]:
+              - /url: /menu/cafe-long
+              - generic [ref=e734]:
+                - generic [ref=e736]: ☕
+                - generic [ref=e737]:
+                  - generic [ref=e738]: Coffee
+                  - generic [ref=e739]:
+                    - heading "CAFÉ LONG" [level=3] [ref=e740]
+                    - generic [ref=e741]:
+                      - generic [ref=e742]: 4€
+                      - generic [ref=e743]: Óra+ dès 4 €
+                  - paragraph [ref=e744]: 10 kcal
+                  - button "Ajouter" [ref=e748]:
+                    - img [ref=e749]
+                    - text: Ajouter
+            - link "Voir ESPRESSO" [ref=e753] [cursor=pointer]:
+              - /url: /menu/espresso
+              - generic [ref=e754]:
+                - generic [ref=e756]: ☕
+                - generic [ref=e757]:
+                  - generic [ref=e758]: Coffee
+                  - generic [ref=e759]:
+                    - heading "ESPRESSO" [level=3] [ref=e760]
+                    - generic [ref=e761]:
+                      - generic [ref=e762]: 2.5€
+                      - generic [ref=e763]: Óra+ dès 2,50 €
+                  - paragraph [ref=e764]: 5 kcal
+                  - button "Ajouter" [ref=e768]:
+                    - img [ref=e769]
+                    - text: Ajouter
+      - generic [ref=e774]:
+        - generic [ref=e775]:
+          - paragraph [ref=e776]: Bilan Bien-être
+          - heading "30 minutes offertes" [level=3] [ref=e777]:
+            - text: 30 minutes
+            - emphasis [ref=e778]: offertes
+        - link "Réserver mon bilan" [ref=e779] [cursor=pointer]:
+          - /url: /bilan-bien-etre
+  - contentinfo [ref=e36]:
+    - generic [ref=e39]:
+      - generic [ref=e41]:
+        - region "Navigation menu" [ref=e42]:
+          - paragraph [ref=e43]: Sur le site
+          - generic [ref=e44]:
+            - paragraph [ref=e45]: Menu
+            - navigation "Menu" [ref=e46]:
+              - link "Shakes" [ref=e47] [cursor=pointer]:
+                - /url: /menu
+              - link "Boissons énergie" [ref=e48] [cursor=pointer]:
+                - /url: /menu
+              - link "Carte complète" [ref=e49] [cursor=pointer]:
+                - /url: /menu
+        - region "Newsletter" [ref=e50]:
+          - generic [ref=e51]:
+            - heading "Newsletter" [level=3] [ref=e52]
+            - form "Newsletter" [ref=e53]:
+              - generic [ref=e54]:
+                - generic [ref=e55]: Adresse e-mail pour la newsletter
+                - textbox "Votre e-mail" [ref=e56]
+                - button "S’inscrire à la newsletter" [ref=e57] [cursor=pointer]:
+                  - img
+              - generic [ref=e59] [cursor=pointer]:
+                - checkbox "J’accepte de recevoir la newsletter et j’ai pris connaissance de la politique de confidentialité." [ref=e61]
+                - generic [ref=e62]:
+                  - text: J’accepte de recevoir la newsletter et j’ai pris connaissance de la
+                  - link "politique de confidentialité" [ref=e63]:
+                    - /url: /politique-confidentialite
+                  - text: .
+      - region "Marque Pessóra" [ref=e65]:
+        - generic [ref=e66]:
+          - generic [ref=e67]:
+            - img "Pessóra" [ref=e68]
+            - paragraph [ref=e69]: Bar protéiné · Fort-de-France, Martinique
+          - generic [ref=e70]:
+            - link "Pessóra sur Instagram (ouvre un nouvel onglet)" [ref=e71] [cursor=pointer]:
+              - /url: https://instagram.com/pessora.mq
+              - img [ref=e72]
+            - link "Contacter Pessóra sur WhatsApp (ouvre un nouvel onglet)" [ref=e75] [cursor=pointer]:
+              - /url: https://wa.me/596696000000
+              - img [ref=e76]
+      - generic [ref=e79]:
+        - region "Espace membres et services" [ref=e80]:
+          - generic [ref=e81]:
+            - paragraph [ref=e82]: Espace
+            - navigation "Espace" [ref=e83]:
+              - link "Óra+" [ref=e84] [cursor=pointer]:
+                - /url: /ora-plus
+              - link "Événements" [ref=e85] [cursor=pointer]:
+                - /url: /evenements
+              - link "Bilan Bien-être" [ref=e86] [cursor=pointer]:
+                - /url: /bilan-bien-etre
+        - region "Contact et réseaux" [ref=e88]:
+          - generic [ref=e89]:
+            - paragraph [ref=e90]: Nous rejoindre
+            - navigation "Contact et réseaux" [ref=e91]:
+              - link "Instagram" [ref=e93] [cursor=pointer]:
+                - /url: https://instagram.com/pessora.mq
+              - generic [ref=e94]:
+                - generic [ref=e95]: ·
+                - link "WhatsApp" [ref=e96] [cursor=pointer]:
+                  - /url: https://wa.me/596696000000
+              - generic [ref=e97]:
+                - generic [ref=e98]: ·
+                - link "Fort-de-France" [ref=e99] [cursor=pointer]:
+                  - /url: /contact
+              - generic [ref=e100]:
+                - generic [ref=e101]: ·
+                - link "Partenariats" [ref=e102] [cursor=pointer]:
+                  - /url: /contact-partenariat
+    - generic [ref=e104]:
+      - generic [ref=e105]: © 2026 Pessóra · Fort-de-France
+      - generic [ref=e106]:
+        - link "Mentions légales" [ref=e107] [cursor=pointer]:
+          - /url: /mentions-legales
+        - link "Confidentialité" [ref=e108] [cursor=pointer]:
+          - /url: /politique-confidentialite
+        - button "Cookies" [ref=e109]
+        - link "CGV" [ref=e110] [cursor=pointer]:
+          - /url: /cgv
+  - button "Ouvrir Pessobot" [ref=e445] [cursor=pointer]

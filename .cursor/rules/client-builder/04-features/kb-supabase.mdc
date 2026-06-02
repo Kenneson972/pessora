@@ -20,55 +20,85 @@ Règles non négociables :
 - Les types TS sont générés depuis le schéma (`supabase gen types`), pas écrits à la main.
 - Zéro `NEXT_PUBLIC_` sur la service role.
 
-## 2. Les 3 clients
+## 2. Les 3 clients — pattern `@supabase/ssr` (référence : DIAMANTNOIR)
 
-### `lib/supabase.ts` (browser + admin)
+> ⚠️ Le pattern ci-dessous remplace l'ancien `createClient` direct sans cookies. Ne pas utiliser `@supabase/supabase-js` seul pour les clients server/browser dans un projet Next.js — utiliser `@supabase/ssr`.
 
-```ts
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/types/supabase";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-
-let supabaseBrowserClient: ReturnType<typeof createClient<Database>> | null = null;
-
-export const getSupabaseBrowser = () => {
-  if (supabaseBrowserClient) return supabaseBrowserClient;
-  if (!supabaseUrl || !supabaseAnonKey) return null;
-  supabaseBrowserClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
-  return supabaseBrowserClient;
-};
-
-export const supabaseAdmin = () => {
-  if (!supabaseUrl || !supabaseServiceRoleKey) {
-    throw new Error("Supabase admin is not configured.");
-  }
-  return createClient<Database>(supabaseUrl, supabaseServiceRoleKey, {
-    auth: { persistSession: false },
-  });
-};
+```bash
+npm install @supabase/ssr @supabase/supabase-js
 ```
 
-### `lib/supabase-server.ts` (RSC, Route Handlers)
+### `lib/supabase/client.ts` — Browser (Client Components)
 
 ```ts
+// lib/supabase/client.ts
+import { createBrowserClient } from "@supabase/ssr";
+import type { Database } from "@/types/database.types";
+
+let client: ReturnType<typeof createBrowserClient<Database>> | null = null;
+
+export function getSupabaseBrowser() {
+  if (client) return client;
+  client = createBrowserClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  return client;
+}
+```
+
+### `lib/supabase/server.ts` — Server (RSC, Route Handlers, Server Actions)
+
+```ts
+// lib/supabase/server.ts
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import type { Database } from "@/types/database.types";
+
+export async function createServerSupabase() {
+  const cookieStore = await cookies();
+  return createServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => cookieStore.getAll(),
+        setAll: (toSet) => {
+          try {
+            toSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
+          } catch {
+            // Route Handler appelé depuis RSC — cookies non modifiables (ignoré)
+          }
+        },
+      },
+    }
+  );
+}
+```
+
+### `lib/supabase/admin.ts` — Admin (service_role, server-only)
+
+```ts
+// lib/supabase/admin.ts
 import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/types/supabase";
+import type { Database } from "@/types/database.types";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-
-export const getSupabaseServer = () => {
-  return createClient<Database>(supabaseUrl, supabaseAnonKey, {
-    global: {
-      fetch: (url, options) => fetch(url, { ...options, cache: "no-store" }),
-    },
+export function supabaseAdmin() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error("Supabase admin non configuré");
+  return createClient<Database>(url, key, {
     auth: { persistSession: false },
   });
-};
+}
 ```
+
+**Règles d'importation :**
+- `getSupabaseBrowser()` → uniquement dans les fichiers `"use client"` (hooks, composants client)
+- `createServerSupabase()` → RSC, Route Handlers (`app/api/**/route.ts`), Server Actions (`"use server"`)
+- `supabaseAdmin()` → uniquement dans Route Handlers et Server Actions côté service (webhooks Stripe, crons) — **jamais importé dans un `"use client"`**
 
 ## 3. Variables d'environnement
 
@@ -122,10 +152,9 @@ Tester les policies avec le SQL Editor Supabase en impersonant un user via `SET 
 
 ## 5. Migrations SQL
 
-Deux conventions acceptées :
+**Une seule convention** : `supabase/migrations/YYYYMMDDHHMMSS_description.sql`
 
-- **Supabase CLI** : `supabase/migrations/YYYYMMDDHHMMSS_description.sql`
-- **Projet simple** : fichiers racine ou `/sql/` nommés `schema.sql`, `supabase-migrations-v1.sql`, `add_{feature}.sql`
+Les dossiers `database/`, `sql/`, ou les fichiers à la racine sont **interdits** (voir DALCIELO legacy). Compatible `supabase db push` et `supabase db diff`.
 
 Règles :
 

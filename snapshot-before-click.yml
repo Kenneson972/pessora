@@ -1,0 +1,237 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - link "Aller au contenu" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - banner [ref=e5]:
+      - generic [ref=e6]:
+        - link "Pessóra" [ref=e7] [cursor=pointer]:
+          - /url: /
+          - img "Pessóra" [ref=e8]
+        - navigation "Navigation principale" [ref=e9]:
+          - link "Concept" [ref=e10] [cursor=pointer]:
+            - /url: /concept
+          - link "La carte" [ref=e11] [cursor=pointer]:
+            - /url: /menu
+          - link "Produits" [ref=e12] [cursor=pointer]:
+            - /url: /nos-produits
+          - link "Óra+" [ref=e13] [cursor=pointer]:
+            - /url: /ora-plus
+          - link "Événements" [ref=e14] [cursor=pointer]:
+            - /url: /evenements
+          - link "Bilan" [ref=e15] [cursor=pointer]:
+            - /url: /bilan-bien-etre
+        - generic [ref=e16]:
+          - button "Ouvrir la recherche (Ctrl+K)" [ref=e19]:
+            - img [ref=e20]
+          - link "Connexion" [ref=e23] [cursor=pointer]:
+            - /url: /connexion
+            - img [ref=e24]
+            - generic [ref=e27]: Connexion
+          - button "Panier, vide" [ref=e29] [cursor=pointer]:
+            - img
+      - radiogroup "Navigation secondaire" [ref=e32]:
+        - radio "Vue d’ensemble" [checked] [ref=e33] [cursor=pointer]: Vue d’ensemble
+        - radio "Wellness" [ref=e35] [cursor=pointer]: Wellness
+        - radio "Sport" [ref=e36] [cursor=pointer]: Sport
+        - radio "Skin" [ref=e37] [cursor=pointer]: Skin
+    - main [ref=e38]:
+      - generic [ref=e129]:
+        - generic [ref=e131]:
+          - paragraph [ref=e132]: Catalogue
+          - generic [ref=e134]:
+            - heading "Les gammes PessÓra" [level=1] [ref=e135]
+            - paragraph [ref=e136]: Nutrition, sport et soins — chaque gamme a été composée avec une exigence précise. Découvrez celle qui vous correspond.
+        - generic [ref=e138]:
+          - generic [ref=e139]:
+            - heading "La collection" [level=2] [ref=e140]
+            - generic [ref=e141]:
+              - button "Précédent" [ref=e142] [cursor=pointer]:
+                - img
+              - button "Suivant" [ref=e143] [cursor=pointer]:
+                - img
+          - generic [ref=e144]:
+            - button "Gamme Wellness Gamme Wellness Compléments nutrition" [ref=e145]:
+              - img "Gamme Wellness" [ref=e146]
+              - generic [ref=e147]:
+                - paragraph [ref=e148]: Gamme Wellness
+                - paragraph [ref=e149]: Compléments nutrition
+            - button "Gamme Sport Gamme Sport Performance & récupération" [ref=e150]:
+              - img "Gamme Sport" [ref=e151]
+              - generic [ref=e152]:
+                - paragraph [ref=e153]: Gamme Sport
+                - paragraph [ref=e154]: Performance & récupération
+            - button "Gamme Skin Gamme Skin Beauté & éclat" [ref=e155]:
+              - img "Gamme Skin" [ref=e156]
+              - generic [ref=e157]:
+                - paragraph [ref=e158]: Gamme Skin
+                - paragraph [ref=e159]: Beauté & éclat
+            - button "Photo à venir En boutique · Martinique Conseils personnalisés" [ref=e160]:
+              - generic [ref=e162]: Photo à venir
+              - generic [ref=e163]:
+                - paragraph [ref=e164]: En boutique · Martinique
+                - paragraph [ref=e165]: Conseils personnalisés
+        - generic [ref=e167]:
+          - paragraph [ref=e168]: Explorer par gamme
+          - generic [ref=e169]:
+            - button "Voir Gamme Wellness" [ref=e170]:
+              - img "Gamme Wellness" [ref=e171]
+              - generic [ref=e173]: Wellness
+              - generic [ref=e174]:
+                - generic [ref=e175]: Compléments nutrition
+                - img [ref=e177]
+            - button "Voir Gamme Sport" [ref=e179]:
+              - img "Gamme Sport" [ref=e180]
+              - generic [ref=e182]: Sport
+              - generic [ref=e183]:
+                - generic [ref=e184]: Performance & récupération
+                - img [ref=e186]
+            - button "Voir Gamme Skin" [ref=e188]:
+              - img "Gamme Skin" [ref=e189]
+              - generic [ref=e191]: Skin
+              - generic [ref=e192]:
+                - generic [ref=e193]: Beauté & éclat
+                - img [ref=e195]
+        - generic [ref=e197]:
+          - generic [ref=e200]:
+            - generic [ref=e201]:
+              - img "Visuel de la gamme Gamme Wellness" [ref=e203]
+              - generic [ref=e205]: Compléments nutrition
+              - generic [ref=e206]: 6 produits
+            - generic [ref=e207]:
+              - paragraph [ref=e208]: Compléments nutrition
+              - heading "Gamme Wellness" [level=2] [ref=e209]
+              - paragraph [ref=e210]: « Nutrition & équilibre »
+              - paragraph [ref=e211]: Une sélection de compléments essentiels pour nourrir votre corps, soutenir votre bien-être et votre équilibre au quotidien.
+              - button "Découvrir la collection" [ref=e212] [cursor=pointer]:
+                - text: Découvrir la collection
+                - img
+          - generic [ref=e215]:
+            - generic [ref=e216]:
+              - img "Visuel de la gamme Gamme Sport" [ref=e218]
+              - generic [ref=e220]: Sport & performance
+              - generic [ref=e221]: 11 produits
+            - generic [ref=e222]:
+              - paragraph [ref=e223]: Sport & performance
+              - heading "Gamme Sport" [level=2] [ref=e224]
+              - paragraph [ref=e225]: « Performance & récupération »
+              - paragraph [ref=e226]: "Conçue pour les athlètes de tous niveaux : énergie, endurance et récupération musculaire au meilleur niveau."
+              - button "Découvrir la collection" [ref=e227] [cursor=pointer]:
+                - text: Découvrir la collection
+                - img
+          - generic [ref=e230]:
+            - generic [ref=e231]:
+              - img "Visuel de la gamme Gamme Skin" [ref=e233]
+              - generic [ref=e235]: Soins visage
+              - generic [ref=e236]: 7 produits
+            - generic [ref=e237]:
+              - paragraph [ref=e238]: Soins visage
+              - heading "Gamme Skin" [level=2] [ref=e239]
+              - paragraph [ref=e240]: « Beauté & éclat »
+              - paragraph [ref=e241]: Révélez l'éclat naturel de votre peau avec des soins enrichis en actifs ciblés, du nettoyage profond aux sérums anti-âge.
+              - button "Découvrir la collection" [ref=e242] [cursor=pointer]:
+                - text: Découvrir la collection
+                - img
+        - generic [ref=e245]:
+          - paragraph [ref=e246]: En boutique
+          - heading "Conseils personnalisés sur place" [level=3] [ref=e247]:
+            - text: Conseils personnalisés
+            - text: sur place
+          - paragraph [ref=e248]: Disponibilité des produits et recommandations adaptées à vos besoins. La carte complète des boissons est sur le menu.
+          - button "Voir le menu" [ref=e249] [cursor=pointer]:
+            - text: Voir le menu
+            - img
+    - contentinfo [ref=e44]:
+      - generic [ref=e47]:
+        - generic [ref=e49]:
+          - region "Navigation menu" [ref=e50]:
+            - paragraph [ref=e51]: Sur le site
+            - generic [ref=e52]:
+              - paragraph [ref=e53]: Menu
+              - navigation "Menu" [ref=e54]:
+                - link "Shakes" [ref=e55] [cursor=pointer]:
+                  - /url: /menu
+                - link "Boissons énergie" [ref=e56] [cursor=pointer]:
+                  - /url: /menu
+                - link "Carte complète" [ref=e57] [cursor=pointer]:
+                  - /url: /menu
+          - region "Newsletter" [ref=e58]:
+            - generic [ref=e59]:
+              - heading "Newsletter" [level=3] [ref=e60]
+              - form "Newsletter" [ref=e61]:
+                - generic [ref=e62]:
+                  - generic [ref=e63]: Adresse e-mail pour la newsletter
+                  - textbox "Votre e-mail" [ref=e64]
+                  - button "S’inscrire à la newsletter" [ref=e65] [cursor=pointer]:
+                    - img
+                - generic [ref=e67] [cursor=pointer]:
+                  - checkbox "J’accepte de recevoir la newsletter et j’ai pris connaissance de la politique de confidentialité." [ref=e69]
+                  - generic [ref=e70]:
+                    - text: J’accepte de recevoir la newsletter et j’ai pris connaissance de la
+                    - link "politique de confidentialité" [ref=e71]:
+                      - /url: /politique-confidentialite
+                    - text: .
+        - region "Marque Pessóra" [ref=e73]:
+          - generic [ref=e74]:
+            - generic [ref=e75]:
+              - img "Pessóra" [ref=e76]
+              - paragraph [ref=e77]: Bar protéiné · Fort-de-France, Martinique
+            - generic [ref=e78]:
+              - link "Pessóra sur Instagram (ouvre un nouvel onglet)" [ref=e79] [cursor=pointer]:
+                - /url: https://instagram.com/pessora.mq
+                - img [ref=e80]
+              - link "Contacter Pessóra sur WhatsApp (ouvre un nouvel onglet)" [ref=e83] [cursor=pointer]:
+                - /url: https://wa.me/596696000000
+                - img [ref=e84]
+        - generic [ref=e87]:
+          - region "Espace membres et services" [ref=e88]:
+            - generic [ref=e89]:
+              - paragraph [ref=e90]: Espace
+              - navigation "Espace" [ref=e91]:
+                - link "Óra+" [ref=e92] [cursor=pointer]:
+                  - /url: /ora-plus
+                - link "Événements" [ref=e93] [cursor=pointer]:
+                  - /url: /evenements
+                - link "Bilan Bien-être" [ref=e94] [cursor=pointer]:
+                  - /url: /bilan-bien-etre
+          - region "Contact et réseaux" [ref=e96]:
+            - generic [ref=e97]:
+              - paragraph [ref=e98]: Nous rejoindre
+              - navigation "Contact et réseaux" [ref=e99]:
+                - link "Instagram" [ref=e101] [cursor=pointer]:
+                  - /url: https://instagram.com/pessora.mq
+                - generic [ref=e102]:
+                  - generic [ref=e103]: ·
+                  - link "WhatsApp" [ref=e104] [cursor=pointer]:
+                    - /url: https://wa.me/596696000000
+                - generic [ref=e105]:
+                  - generic [ref=e106]: ·
+                  - link "Fort-de-France" [ref=e107] [cursor=pointer]:
+                    - /url: /contact
+                - generic [ref=e108]:
+                  - generic [ref=e109]: ·
+                  - link "Partenariats" [ref=e110] [cursor=pointer]:
+                    - /url: /contact-partenariat
+      - generic [ref=e112]:
+        - generic [ref=e113]: © 2026 Pessóra · Fort-de-France
+        - generic [ref=e114]:
+          - link "Mentions légales" [ref=e115] [cursor=pointer]:
+            - /url: /mentions-legales
+          - link "Confidentialité" [ref=e116] [cursor=pointer]:
+            - /url: /politique-confidentialite
+          - button "Cookies" [ref=e117]
+          - link "CGV" [ref=e118] [cursor=pointer]:
+            - /url: /cgv
+    - button "Ouvrir Pessobot" [ref=e250] [cursor=pointer]
+  - dialog "Cookies & données" [ref=e119]:
+    - generic [ref=e120]:
+      - generic [ref=e121]:
+        - paragraph [ref=e122]: Cookies & données
+        - paragraph [ref=e123]:
+          - text: Nous utilisons des cookies et le stockage local pour le panier et, avec votre accord, des mesures d’audience. Consultez notre
+          - link "politique de confidentialité" [ref=e124] [cursor=pointer]:
+            - /url: /politique-confidentialite
+          - text: .
+      - generic [ref=e125]:
+        - button "Personnaliser" [ref=e126]
+        - button "Nécessaires uniquement" [ref=e127]
+        - button "Tout accepter" [ref=e128]

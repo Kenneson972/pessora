@@ -1,0 +1,125 @@
+- generic [ref=e1]:
+  - region "Menu d'accessibilité rapide":
+    - button "Aller au contenu principal" [ref=e2] [cursor=pointer]:
+      - generic [ref=e3]:
+        - img [ref=e5]
+        - generic [ref=e9]: Aller au contenu principal
+      - img [ref=e11]
+    - button "Permettre l’accessibilité pour les personnes malvoyantes" [ref=e16] [cursor=pointer]:
+      - generic [ref=e17]:
+        - img [ref=e19]
+        - generic [ref=e26]: Permettre l’accessibilité pour les personnes malvoyantes
+      - img [ref=e28]
+    - button "Ouvrir le menu d'accessibilité" [ref=e33] [cursor=pointer]:
+      - generic [ref=e34]:
+        - img [ref=e36]
+        - generic [ref=e38]: Ouvrir le menu d'accessibilité
+      - img [ref=e40]
+  - generic "Menu d'accessibilité":
+    - button "Menu d'accessibilité" [ref=e46] [cursor=pointer]
+  - main [ref=e49]:
+    - generic [ref=e50]:
+      - button "skiplink" [ref=e51] [cursor=pointer]: skip to content
+      - generic [ref=e56]:
+        - link "Herbalife One Logo" [ref=e60] [cursor=pointer]:
+          - /url: /fr-fr
+          - img "Herbalife One Logo" [ref=e62]
+        - generic [ref=e64]:
+          - button "navbar-search" [ref=e69] [cursor=pointer]:
+            - generic [ref=e70]: 
+          - generic [ref=e71]:
+            - link "FLaytout Menu" [ref=e72]:
+              - img "FLaytout Menu" [ref=e75]
+            - generic [ref=e76]:
+              - generic [ref=e77]:
+                - generic [ref=e78]:
+                  - link "Herbalife One Logo" [ref=e82] [cursor=pointer]:
+                    - /url: /fr-fr
+                    - img "Herbalife One Logo" [ref=e84]
+                  - button "Close icon for the flyout" [ref=e85] [cursor=pointer]:
+                    - img "Close icon for the flyout" [ref=e89]
+                - list [ref=e93]:
+                  - listitem [ref=e94]:
+                    - generic [ref=e95]: Atteindre vos objectifs
+                  - listitem [ref=e96]:
+                    - generic [ref=e97]: Produits
+                  - listitem [ref=e98]:
+                    - link "Ressources bien-être" [ref=e99] [cursor=pointer]:
+                      - /url: /fr-fr/ressources-d-informations-sur-le-bien-etre
+                  - listitem [ref=e100]:
+                    - link "Opportunité commerciale" [ref=e101] [cursor=pointer]:
+                      - /url: /fr-fr/opportunite-commerciale
+                  - listitem [ref=e102]:
+                    - generic [ref=e103]: A propos de Herbalife
+              - generic [ref=e112]:
+                - img [ref=e113]
+                - paragraph [ref=e115]: "| FR"
+      - generic [ref=e175]:
+        - generic [ref=e176]:
+          - generic:
+            - generic:
+              - generic:
+                - link "H1 Logo":
+                  - /url: /fr-fr
+                  - generic:
+                    - img "H1 Logo"
+          - generic [ref=e179]:
+            - paragraph [ref=e181] [cursor=pointer]: Nos Produits
+            - paragraph [ref=e184] [cursor=pointer]: A propos de Herbalife
+            - paragraph [ref=e187] [cursor=pointer]: Obtenir de l’aide
+            - paragraph [ref=e190] [cursor=pointer]: Pour les Distributeurs
+        - generic [ref=e192]:
+          - generic [ref=e195]:
+            - link "Plan du site" [ref=e196] [cursor=pointer]:
+              - /url: /fr-fr/sitemap
+            - link "Conditions d'utilisation" [ref=e197] [cursor=pointer]:
+              - /url: /fr-fr/footer/conditions-d-utilisation
+            - link "Garantie de confidentialité" [ref=e198] [cursor=pointer]:
+              - /url: /fr-fr/footer/garantie-de-confidentialite
+            - link "Politique en matière de cookies" [ref=e199] [cursor=pointer]:
+              - /url: /fr-fr/footer/politique-en-matiere-de-cookies
+            - link "Déclaration de revenus moyens" [ref=e200] [cursor=pointer]:
+              - /url: /content/dam/global-reusable-assets/documents/pd-statement-typical-distributor-earnings-fr-fr.pdf
+            - link "Déclaration d’accessibilité" [ref=e201] [cursor=pointer]:
+              - /url: https://www.herbalife.com/fr-fr/footer/declaration-d-accessibilite-en-vertu-de-l-acte-legislatif-europeen-sur-l-accessibilite
+          - generic [ref=e204]:
+            - link "Blog":
+              - /url: https://www.herbalife-blog.fr/
+              - generic:
+                - img "Blog"
+            - link "Facebook":
+              - /url: https://www.facebook.com/HerbalifeFrance
+              - generic:
+                - img "Facebook"
+            - link "X":
+              - /url: https://twitter.com/Herbalife
+              - generic:
+                - img "X"
+            - link "Instagram":
+              - /url: https://www.instagram.com/herbalifefrance/
+              - generic:
+                - img "Instagram"
+            - link "Youtube":
+              - /url: https://www.youtube.com/playlist?list=PLB3ZV-mBfQYxaY-43hg5a-5lLf7-Qhvbi
+              - generic:
+                - img "Youtube"
+        - generic [ref=e205]:
+          - paragraph [ref=e208]: © 2026 Herbalife International of America, Inc. Toute reproduction partielle ou totale n’est pas autorisée sans accord écrit. Sauf indication contraire, toutes les marques commerciales et images de produits présentées sur ce site sont la propriété de Herbalife International, Inc.
+          - link "France Icon France" [ref=e212] [cursor=pointer]:
+            - /url: /fr-fr/selecteur-d-emplacement
+            - img "France Icon" [ref=e214]
+            - generic [ref=e215]: France
+  - alert [ref=e216]
+  - region "Bannière de cookies" [ref=e217]:
+    - dialog "Confidentialité" [ref=e218]:
+      - generic [ref=e219]:
+        - generic [ref=e221]:
+          - text: Ce site utilise des cookies, y compris des cookies tiers, pour recueillir des informations statistiques, mesurer les performances du site, mémoriser vos préférences, personnaliser notre contenu publicitaire (y compris le profilage) et permettre l'interaction avec les réseaux sociaux. Pour naviguer sur le site, veuillez accepter notre utilisation des cookies ou modifier les cookies que vous souhaitez autoriser en accédant aux paramètres des cookies. Vous pourrez modifier vos paramètres de cookies ultérieurement en visitant notre centre de préférences en matière de cookies, comme décrit dans notre « Politique en matière de cookies ».
+          - link "Pour en savoir plus sur la protection de votre vie privée, s'ouvre dans un nouvel onglet" [active] [ref=e222] [cursor=pointer]:
+            - /url: /fr-fr/footer/politique-en-matiere-de-cookies
+            - text: Pour en savoir plus, cliquez ici >>
+        - generic [ref=e224]:
+          - generic [ref=e225]:
+            - button "Refuser les cookies" [ref=e226] [cursor=pointer]
+            - button "Accepter les cookies" [ref=e227] [cursor=pointer]
+          - button "Paramètres des cookies" [ref=e228] [cursor=pointer]

@@ -1,0 +1,434 @@
+---
+description: Stripe Karibloom - Checkout Session, webhook signé idempotent, Customer Portal, événements à gérer. Référence : DIAMANTNOIR (webhook le plus complet) + DALCIELO. Stack Stripe 14.25+.
+globs: "**/lib/stripe*.ts,**/app/api/webhooks/stripe/**,**/app/api/stripe/**"
+alwaysApply: false
+---
+
+# Stripe — Règles Karibloom
+
+> Stripe est dans la stack standard pour tout projet e-commerce ou réservation. Ce fichier centralise les patterns — ne pas réimplémenter à chaque projet.
+
+---
+
+## 1. Setup initial
+
+```bash
+npm install stripe
+```
+
+**Variables d'environnement :**
+
+```bash
+# .env.local
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...   # ou pk_test_... en dev
+STRIPE_SECRET_KEY=sk_live_...                     # JAMAIS NEXT_PUBLIC_
+STRIPE_WEBHOOK_SECRET=whsec_...                   # Depuis le dashboard Stripe CLI
+```
+
+**`lib/stripe.ts` — instance serveur-only :**
+
+```ts
+// lib/stripe.ts
+import Stripe from "stripe";
+
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error("STRIPE_SECRET_KEY manquante");
+}
+
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2025-01-27",
+  typescript: true,
+});
+```
+
+Ne jamais instancier Stripe dans un composant ou un fichier `"use client"`. Toujours importer depuis `@/lib/stripe`.
+
+---
+
+## 2. Checkout Session
+
+### Route Handler — `app/api/stripe/checkout/route.ts`
+
+```ts
+import { NextResponse } from "next/server";
+import { stripe } from "@/lib/stripe";
+import { createServerSupabase } from "@/lib/supabase/server";
+import { requireAdminWithRateLimit } from "@/lib/adminAuth"; // si admin-only
+import { z } from "zod";
+
+const CheckoutSchema = z.object({
+  // Selon le projet : bookingId ou orderId
+  bookingId: z.string().uuid().optional(),
+  orderId: z.string().uuid().optional(),
+  lineItems: z.array(z.object({
+    price_data: z.object({
+      currency: z.literal("eur"),
+      product_data: z.object({ name: z.string() }),
+      unit_amount: z.number().int().positive(), // en centimes
+    }),
+    quantity: z.number().int().positive(),
+  })),
+  successPath: z.string().default("/succes"),
+  cancelPath: z.string().default("/annulation"),
+});
+
+export async function POST(req: Request) {
+  const body = await req.json();
+  const parsed = CheckoutSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Données invalides" }, { status: 400 });
+  }
+
+  const { lineItems, bookingId, orderId, successPath, cancelPath } = parsed.data;
+
+  const origin =
+    req.headers.get("origin") ??
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    "http://localhost:3000";
+
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    line_items: lineItems,
+    mode: "payment",
+    // ⚠️ Toujours passer les IDs en metadata — le webhook en aura besoin
+    metadata: {
+      ...(bookingId && { bookingId }),
+      ...(orderId && { orderId }),
+    },
+    success_url: `${origin}${successPath}?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}${cancelPath}`,
+    // Optionnel : email pré-rempli si connu
+    // customer_email: guestEmail,
+    // Optionnel : expiration 30 min
+    expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
+  });
+
+  return NextResponse.json({ url: session.url });
+}
+```
+
+**Côté client :**
+
+```ts
+const res = await fetch("/api/stripe/checkout", {
+  method: "POST",
+  headers: { "Content-Type": "application/json", ...csrfHeaders() },
+  body: JSON.stringify({ bookingId, lineItems }),
+});
+const { url } = await res.json();
+if (url) window.location.href = url;
+```
+
+---
+
+## 3. Webhook signé — `app/api/webhooks/stripe/route.ts`
+
+**Règle absolue :** vérification de signature AVANT tout traitement. Jamais de skip, même en dev.
+
+```ts
+// app/api/webhooks/stripe/route.ts
+import { NextResponse } from "next/server";
+import { stripe } from "@/lib/stripe";
+import { supabaseAdmin } from "@/lib/supabase/admin";
+import type Stripe from "stripe";
+
+export const runtime = "nodejs"; // Obligatoire pour stripe.webhooks.constructEvent
+
+export async function POST(request: Request) {
+  if (!process.env.STRIPE_WEBHOOK_SECRET) {
+    return NextResponse.json({ error: "Webhook secret manquant" }, { status: 500 });
+  }
+
+  // ── 1. Lire le corps RAW (text, pas json) ──────────────────────────────────
+  let body: string;
+  try {
+    body = await request.text();
+  } catch {
+    return NextResponse.json({ error: "Corps invalide" }, { status: 400 });
+  }
+
+  // ── 2. Vérifier la signature Stripe ───────────────────────────────────────
+  const sig = request.headers.get("stripe-signature");
+  if (!sig) {
+    return NextResponse.json({ error: "Signature manquante" }, { status: 400 });
+  }
+
+  let event: Stripe.Event;
+  try {
+    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Signature invalide";
+    console.error("[stripe/webhook] Signature verification failed:", msg);
+    return NextResponse.json({ error: msg }, { status: 400 });
+  }
+
+  const supabase = supabaseAdmin();
+
+  // ── 3. Idempotence — rejeter les doublons ──────────────────────────────────
+  const { data: existing } = await supabase
+    .from("stripe_events_processed")
+    .select("event_id")
+    .eq("event_id", event.id)
+    .maybeSingle();
+
+  if (existing) {
+    return NextResponse.json({ received: true, duplicate: true });
+  }
+
+  // ── 4. Handler des événements ──────────────────────────────────────────────
+  try {
+    await handleStripeEvent(event, supabase);
+
+    // Marquer comme traité SEULEMENT si succès
+    await supabase.from("stripe_events_processed").insert({
+      event_id: event.id,
+      event_type: event.type,
+    });
+
+    return NextResponse.json({ received: true });
+  } catch (err) {
+    // NE PAS marquer comme processed → Stripe retentera automatiquement
+    const msg = err instanceof Error ? err.message : "Handler error";
+    console.error("[stripe/webhook] Handler failed:", msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
+}
+
+async function handleStripeEvent(
+  event: Stripe.Event,
+  supabase: ReturnType<typeof supabaseAdmin>
+) {
+  switch (event.type) {
+    case "checkout.session.completed": {
+      const session = event.data.object as Stripe.Checkout.Session;
+      await handleCheckoutCompleted(session, supabase);
+      break;
+    }
+    case "checkout.session.expired": {
+      const session = event.data.object as Stripe.Checkout.Session;
+      await handleCheckoutExpired(session, supabase);
+      break;
+    }
+    case "payment_intent.succeeded": {
+      const pi = event.data.object as Stripe.PaymentIntent;
+      if (pi.metadata?.bookingId) {
+        await supabase
+          .from("bookings")
+          .update({ payment_status: "paid", status: "confirmed" })
+          .eq("id", pi.metadata.bookingId)
+          .eq("status", "pending");
+      }
+      break;
+    }
+    case "payment_intent.payment_failed": {
+      const pi = event.data.object as Stripe.PaymentIntent;
+      if (pi.metadata?.bookingId) {
+        await supabase
+          .from("bookings")
+          .update({ payment_status: "failed" })
+          .eq("id", pi.metadata.bookingId);
+      }
+      break;
+    }
+    case "charge.dispute.created": {
+      const dispute = event.data.object as Stripe.Dispute;
+      await supabase.from("stripe_disputes").insert({
+        dispute_id: dispute.id,
+        charge_id: dispute.charge,
+        amount_cents: dispute.amount,
+        reason: dispute.reason,
+        status: dispute.status,
+      });
+      break;
+    }
+    default:
+      // Événement non géré → 200 quand même (ne pas retenter)
+      break;
+  }
+}
+
+async function handleCheckoutCompleted(
+  session: Stripe.Checkout.Session,
+  supabase: ReturnType<typeof supabaseAdmin>
+) {
+  const bookingId = session.metadata?.bookingId;
+  const orderId = session.metadata?.orderId;
+
+  if (bookingId) {
+    await supabase
+      .from("bookings")
+      .update({ status: "confirmed", payment_status: "paid" })
+      .eq("id", bookingId);
+
+    // Notifier n8n (fire-and-forget)
+    if (process.env.N8N_BOOKING_CONFIRM_WEBHOOK_URL) {
+      fetch(process.env.N8N_BOOKING_CONFIRM_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookingId }),
+        signal: AbortSignal.timeout(10_000),
+      }).catch(() => {});
+    }
+  }
+
+  if (orderId) {
+    await supabase
+      .from("orders")
+      .update({ status: "paid" })
+      .eq("id", orderId);
+
+    // Déclencher génération reçu PDF via n8n
+    const { data: order } = await supabase
+      .from("orders")
+      .select("token")
+      .eq("id", orderId)
+      .single();
+
+    if (order?.token && process.env.N8N_RECEIPT_WEBHOOK_URL) {
+      fetch(process.env.N8N_RECEIPT_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: order.token }),
+        signal: AbortSignal.timeout(10_000),
+      }).catch(() => {});
+    }
+  }
+}
+
+async function handleCheckoutExpired(
+  session: Stripe.Checkout.Session,
+  supabase: ReturnType<typeof supabaseAdmin>
+) {
+  const bookingId = session.metadata?.bookingId;
+  if (!bookingId) return;
+
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("status")
+    .eq("id", bookingId)
+    .single();
+
+  // Annuler seulement si encore pending
+  if (booking?.status === "pending") {
+    await supabase
+      .from("bookings")
+      .update({ status: "cancelled", payment_status: "unpaid" })
+      .eq("id", bookingId);
+  }
+}
+```
+
+---
+
+## 4. Table Supabase — idempotence
+
+```sql
+-- supabase/migrations/YYYYMMDDHHMMSS_create_stripe_events_processed.sql
+CREATE TABLE IF NOT EXISTS public.stripe_events_processed (
+  event_id    TEXT PRIMARY KEY,
+  event_type  TEXT NOT NULL,
+  processed_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE public.stripe_events_processed ENABLE ROW LEVEL SECURITY;
+-- Seul service_role peut lire/écrire
+CREATE POLICY "service_role_only" ON public.stripe_events_processed
+  USING (false) WITH CHECK (false);
+```
+
+---
+
+## 5. Customer Portal (si abonnements)
+
+```ts
+// app/api/stripe/portal/route.ts
+import { stripe } from "@/lib/stripe";
+import { createServerSupabase } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+
+export async function POST(req: Request) {
+  const supabase = await createServerSupabase();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("stripe_customer_id")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile?.stripe_customer_id) {
+    return NextResponse.json({ error: "Pas de compte Stripe" }, { status: 404 });
+  }
+
+  const origin = req.headers.get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "";
+
+  const session = await stripe.billingPortal.sessions.create({
+    customer: profile.stripe_customer_id,
+    return_url: `${origin}/espace-client`,
+  });
+
+  return NextResponse.json({ url: session.url });
+}
+```
+
+---
+
+## 6. CSRF — exemption webhook Stripe
+
+Dans `middleware.ts`, le webhook Stripe est exempt de CSRF (il a sa propre signature) :
+
+```ts
+const CSRF_EXEMPT = [
+  "/api/webhooks/",   // Stripe — signature propre
+  "/api/auth/",       // Bearer JWT
+];
+```
+
+---
+
+## 7. Tests en local — Stripe CLI
+
+```bash
+# Écouter les webhooks Stripe en local
+stripe listen --forward-to localhost:3000/api/webhooks/stripe
+
+# Déclencher un événement de test
+stripe trigger checkout.session.completed
+```
+
+Le `STRIPE_WEBHOOK_SECRET` utilisé en local est celui fourni par `stripe listen` (commence par `whsec_`), différent du secret de production.
+
+---
+
+## 8. Checklist Stripe (nouveau projet)
+
+```
+□ npm install stripe
+□ lib/stripe.ts créé
+□ STRIPE_SECRET_KEY, NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET dans .env.local
+□ Route /api/stripe/checkout/route.ts créée
+□ Route /api/webhooks/stripe/route.ts créée (vérification signature + idempotence)
+□ Migration stripe_events_processed.sql créée et pushée
+□ /api/webhooks/ exempté du CSRF dans middleware.ts
+□ metadata.bookingId OU metadata.orderId passé dans la Checkout Session
+□ n8n fire-and-forget après checkout.session.completed
+□ Stripe CLI testé en local
+□ Webhook enregistré dans le dashboard Stripe (URL de prod + événements sélectionnés)
+```
+
+**Événements Stripe à enregistrer dans le dashboard :**
+- `checkout.session.completed`
+- `checkout.session.expired`
+- `payment_intent.succeeded`
+- `payment_intent.payment_failed`
+- `charge.dispute.created`
+
+---
+
+## Lien avec les autres règles
+
+- `kb-n8n-workflows.mdc` : fire-and-forget n8n après paiement (receipt PDF, confirmation)
+- `kb-security-baseline.mdc` : CSRF exempt pour `/api/webhooks/`, rate limiting
+- `kb-supabase.mdc` : `supabaseAdmin()` dans le webhook handler
+- `kb-naming-conventions.mdc` : routes `/succes`, `/annulation` (pas `/success`, `/cancel`)

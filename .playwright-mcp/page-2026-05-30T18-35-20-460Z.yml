@@ -1,0 +1,7 @@
+- main [ref=e4]:
+  - status [ref=e5]:
+    - generic [ref=e6]: Chargement de la page
+    - generic [ref=e7]:
+      - generic:
+        - img
+      - paragraph [ref=e8]: Chargement

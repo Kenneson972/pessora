@@ -97,6 +97,21 @@ Le seul arbitrage au démarrage c'est :
 2. Features activées (booking, cart, wishlist, i18n, etc.) → voir les `kb-*.mdc`
 3. Palette + design tokens → voir la skill `color-palette`
 
+---
+
+## 6. Projets existants — Exceptions documentées
+
+Les projets listés ci-dessous sont des exceptions validées et **ne constituent pas un précédent** pour les nouveaux projets.
+
+| Projet | Stack actuelle | Raison | Statut |
+|--------|---------------|--------|--------|
+| **PESSORA** | Vite + React 19 + React Router 7 + HeroUI v3 | Démarré avant l'adoption de Next.js comme standard agence. Projet mature, migration non planifiée. | ✅ Validé — ne pas migrer |
+
+**Règles pour les projets exceptions :**
+- Ne jamais copier la stack d'un projet exception sur un nouveau projet
+- Appliquer quand même toutes les règles de sécurité (`kb-security-baseline.mdc`) en adaptant les patterns (pas de `middleware.ts` Next.js → utiliser un wrapper React + Express si besoin)
+- Pour PESSORA spécifiquement : les env vars sont préfixées `VITE_` au lieu de `NEXT_PUBLIC_`, les Server Actions n'existent pas (utiliser les Edge Functions Supabase)
+
 La stack elle-même n'est **plus une variable**.
 
 ---

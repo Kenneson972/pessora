@@ -1,0 +1,261 @@
+- generic [ref=e3]:
+  - link "Aller au contenu" [ref=e4] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - link "Pessóra" [ref=e7] [cursor=pointer]:
+        - /url: /
+        - img "Pessóra" [ref=e8]
+      - navigation "Navigation principale" [ref=e9]:
+        - link "Concept" [ref=e10] [cursor=pointer]:
+          - /url: /concept
+        - link "La carte" [ref=e11] [cursor=pointer]:
+          - /url: /menu
+        - link "Produits" [ref=e12] [cursor=pointer]:
+          - /url: /nos-produits
+        - link "Óra+" [ref=e13] [cursor=pointer]:
+          - /url: /ora-plus
+        - link "Événements" [ref=e14] [cursor=pointer]:
+          - /url: /evenements
+        - link "Bilan" [ref=e15] [cursor=pointer]:
+          - /url: /bilan-bien-etre
+      - generic [ref=e16]:
+        - button "Ouvrir la recherche (Ctrl+K)" [ref=e19]:
+          - img [ref=e20]
+        - link "Connexion" [ref=e23] [cursor=pointer]:
+          - /url: /connexion
+          - img [ref=e24]
+          - generic [ref=e27]: Connexion
+        - button "Panier, vide" [ref=e29] [cursor=pointer]:
+          - img
+  - main [ref=e30]:
+    - generic [ref=e446]:
+      - navigation "Fil d'Ariane" [ref=e449]:
+        - link "Menu" [ref=e450] [cursor=pointer]:
+          - /url: /menu
+        - generic [ref=e451]: /
+        - link "Énergie Drink" [ref=e452] [cursor=pointer]:
+          - /url: /menu?gamme=energie
+        - generic [ref=e453]: /
+        - generic [ref=e454]: BLUE LAGOON
+      - generic [ref=e457]:
+        - generic [ref=e458]:
+          - generic [ref=e459]:
+            - img
+            - generic [ref=e461]:
+              - img [ref=e462]
+              - text: Énergie Drink
+            - generic [ref=e465]: 50 kcal
+          - generic [ref=e466]:
+            - paragraph [ref=e467]: Composition
+            - paragraph [ref=e468]: Créatine · Yuzu · Açaï · Citron · Curaçao · Menthe · Caféine de Guarana · Biotine · Taurine
+        - generic [ref=e469]:
+          - heading "BLUE LAGOON" [level=1] [ref=e470]
+          - paragraph [ref=e471]: « L'électrochoc frais pour se réveiller »
+          - generic [ref=e472]:
+            - generic [ref=e473]:
+              - paragraph [ref=e474]: Total estimé
+              - generic [ref=e476]: 10,00 €
+            - generic [ref=e477]:
+              - generic [ref=e478]:
+                - paragraph [ref=e479]:
+                  - text: Óra+ · dès 5 € la boisson
+                  - generic [ref=e480]: (max. −50 %)
+                - link "Abonnement 24,90€/mois" [ref=e481] [cursor=pointer]:
+                  - /url: /ora-plus
+                  - text: Abonnement 24,90€/mois
+                  - img [ref=e482]
+              - group [ref=e484]:
+                - generic "Détail du total indicatif membre" [ref=e485] [cursor=pointer]:
+                  - generic [ref=e486]:
+                    - text: Détail du total indicatif membre
+                    - generic [ref=e487]: ▾
+          - generic [ref=e488]:
+            - paragraph [ref=e489]: Taille
+            - paragraph [ref=e490]: Choisissez votre format
+            - generic [ref=e491]:
+              - button "Petit 8€" [ref=e492]:
+                - text: Petit
+                - generic [ref=e493]: 8€
+              - button "Moyen 10€" [pressed] [ref=e494]:
+                - text: Moyen
+                - generic [ref=e495]: 10€
+              - button "Grand 12€" [ref=e496]:
+                - text: Grand
+                - generic [ref=e497]: 12€
+          - generic [ref=e498]:
+            - paragraph [ref=e499]: Boosters
+            - paragraph [ref=e500]: +1 € par option sélectionnée
+            - list [ref=e501]:
+              - listitem [ref=e502]:
+                - button "Collagène — Peau, ongles, cheveux. Supplément 1 euro" [ref=e503] [cursor=pointer]:
+                  - generic [ref=e504]:
+                    - img
+                    - generic [ref=e505]: Collagène
+              - listitem [ref=e507]:
+                - button "Créatine — Force & performance. Supplément 1 euro" [ref=e508] [cursor=pointer]:
+                  - generic [ref=e509]:
+                    - img
+                    - generic [ref=e510]: Créatine
+              - listitem [ref=e512]:
+                - button "12g Protéines — Récupération musculaire. Supplément 1 euro" [ref=e513] [cursor=pointer]:
+                  - generic [ref=e514]:
+                    - img
+                    - generic [ref=e515]: 12g Protéines
+              - listitem [ref=e517]:
+                - button "Électrolytes — Hydratation & anti-crampe. Supplément 1 euro" [ref=e518] [cursor=pointer]:
+                  - generic [ref=e519]:
+                    - img
+                    - generic [ref=e520]: Électrolytes
+              - listitem [ref=e522]:
+                - button "Fibres — Confort digestif. Supplément 1 euro" [ref=e523] [cursor=pointer]:
+                  - generic [ref=e524]:
+                    - img
+                    - generic [ref=e525]: Fibres
+              - listitem [ref=e527]:
+                - button "Aloé Vera — Détox & hydratation. Supplément 1 euro" [ref=e528] [cursor=pointer]:
+                  - generic [ref=e529]:
+                    - img
+                    - generic [ref=e530]: Aloé Vera
+          - generic [ref=e532]:
+            - generic [ref=e533]:
+              - button "Diminuer la quantité" [disabled]:
+                - img
+              - generic [ref=e534]: "1"
+              - button "Augmenter la quantité" [ref=e535] [cursor=pointer]:
+                - img
+            - button "Ajouter au panier" [ref=e536] [cursor=pointer]:
+              - img
+              - text: Ajouter au panier
+          - generic [ref=e537]:
+            - img [ref=e538]
+            - paragraph [ref=e540]: Préparé à la commande avec des ingrédients frais. 100% végétal, sans compromis sur le goût.
+      - region "Détails produit" [ref=e541]:
+        - generic [ref=e543]:
+          - tablist "Sections détail produit" [ref=e544]:
+            - tab "Ingrédients" [ref=e545] [cursor=pointer]
+            - tab "Nutritionnel" [ref=e546] [cursor=pointer]
+            - tab "Bénéfices" [active] [selected] [ref=e547] [cursor=pointer]
+          - tabpanel "Bénéfices" [ref=e549]:
+            - generic [ref=e551]:
+              - generic [ref=e552]:
+                - generic [ref=e553]: "01"
+                - generic [ref=e554]: Énergie rapide
+              - generic [ref=e555]:
+                - generic [ref=e556]: "02"
+                - generic [ref=e557]: Endurance
+              - generic [ref=e558]:
+                - generic [ref=e559]: "03"
+                - generic [ref=e560]: Puissance
+              - generic [ref=e561]:
+                - generic [ref=e562]: "04"
+                - generic [ref=e563]: Hydratation
+              - generic [ref=e564]:
+                - generic [ref=e565]: "05"
+                - generic [ref=e566]: Anti-crampe
+      - generic [ref=e569]:
+        - generic [ref=e570]:
+          - generic [ref=e571]:
+            - heading "Vous aimerez aussi" [level=2] [ref=e572]
+            - paragraph [ref=e573]: D'autres boissons qui pourraient vous plaire
+          - link "Voir tout" [ref=e574] [cursor=pointer]:
+            - /url: /menu
+            - text: Voir tout
+            - img [ref=e575]
+        - generic [ref=e577]:
+          - link "HYDRA BOOST LITCHI 10€" [ref=e578] [cursor=pointer]:
+            - /url: /menu/hydra-boost-litchi
+            - img [ref=e580]
+            - heading "HYDRA BOOST LITCHI" [level=3] [ref=e582]
+            - paragraph
+            - generic [ref=e583]: 10€
+          - link "50 kcal SPICY MANGO Mangue épicée · Açaï · Créatine 10€" [ref=e584] [cursor=pointer]:
+            - /url: /menu/spicy-mango
+            - generic [ref=e585]:
+              - img [ref=e586]
+              - generic [ref=e589]: 50 kcal
+            - heading "SPICY MANGO" [level=3] [ref=e590]
+            - paragraph [ref=e591]: Mangue épicée · Açaï · Créatine
+            - generic [ref=e592]: 10€
+  - contentinfo [ref=e36]:
+    - generic [ref=e39]:
+      - generic [ref=e41]:
+        - region "Navigation menu" [ref=e42]:
+          - paragraph [ref=e43]: Sur le site
+          - generic [ref=e44]:
+            - paragraph [ref=e45]: Menu
+            - navigation "Menu" [ref=e46]:
+              - link "Shakes" [ref=e47] [cursor=pointer]:
+                - /url: /menu
+              - link "Boissons énergie" [ref=e48] [cursor=pointer]:
+                - /url: /menu
+              - link "Carte complète" [ref=e49] [cursor=pointer]:
+                - /url: /menu
+        - region "Newsletter" [ref=e50]:
+          - generic [ref=e51]:
+            - heading "Newsletter" [level=3] [ref=e52]
+            - form "Newsletter" [ref=e53]:
+              - generic [ref=e54]:
+                - generic [ref=e55]: Adresse e-mail pour la newsletter
+                - textbox "Votre e-mail" [ref=e56]
+                - button "S’inscrire à la newsletter" [ref=e57] [cursor=pointer]:
+                  - img
+              - generic [ref=e59] [cursor=pointer]:
+                - checkbox "J’accepte de recevoir la newsletter et j’ai pris connaissance de la politique de confidentialité." [ref=e61]
+                - generic [ref=e62]:
+                  - text: J’accepte de recevoir la newsletter et j’ai pris connaissance de la
+                  - link "politique de confidentialité" [ref=e63]:
+                    - /url: /politique-confidentialite
+                  - text: .
+      - region "Marque Pessóra" [ref=e65]:
+        - generic [ref=e66]:
+          - generic [ref=e67]:
+            - img "Pessóra" [ref=e68]
+            - paragraph [ref=e69]: Bar protéiné · Fort-de-France, Martinique
+          - generic [ref=e70]:
+            - link "Pessóra sur Instagram (ouvre un nouvel onglet)" [ref=e71] [cursor=pointer]:
+              - /url: https://instagram.com/pessora.mq
+              - img [ref=e72]
+            - link "Contacter Pessóra sur WhatsApp (ouvre un nouvel onglet)" [ref=e75] [cursor=pointer]:
+              - /url: https://wa.me/596696000000
+              - img [ref=e76]
+      - generic [ref=e79]:
+        - region "Espace membres et services" [ref=e80]:
+          - generic [ref=e81]:
+            - paragraph [ref=e82]: Espace
+            - navigation "Espace" [ref=e83]:
+              - link "Óra+" [ref=e84] [cursor=pointer]:
+                - /url: /ora-plus
+              - link "Événements" [ref=e85] [cursor=pointer]:
+                - /url: /evenements
+              - link "Bilan Bien-être" [ref=e86] [cursor=pointer]:
+                - /url: /bilan-bien-etre
+        - region "Contact et réseaux" [ref=e88]:
+          - generic [ref=e89]:
+            - paragraph [ref=e90]: Nous rejoindre
+            - navigation "Contact et réseaux" [ref=e91]:
+              - link "Instagram" [ref=e93] [cursor=pointer]:
+                - /url: https://instagram.com/pessora.mq
+              - generic [ref=e94]:
+                - generic [ref=e95]: ·
+                - link "WhatsApp" [ref=e96] [cursor=pointer]:
+                  - /url: https://wa.me/596696000000
+              - generic [ref=e97]:
+                - generic [ref=e98]: ·
+                - link "Fort-de-France" [ref=e99] [cursor=pointer]:
+                  - /url: /contact
+              - generic [ref=e100]:
+                - generic [ref=e101]: ·
+                - link "Partenariats" [ref=e102] [cursor=pointer]:
+                  - /url: /contact-partenariat
+    - generic [ref=e104]:
+      - generic [ref=e105]: © 2026 Pessóra · Fort-de-France
+      - generic [ref=e106]:
+        - link "Mentions légales" [ref=e107] [cursor=pointer]:
+          - /url: /mentions-legales
+        - link "Confidentialité" [ref=e108] [cursor=pointer]:
+          - /url: /politique-confidentialite
+        - button "Cookies" [ref=e109]
+        - link "CGV" [ref=e110] [cursor=pointer]:
+          - /url: /cgv
+  - button "Ouvrir Pessobot" [ref=e445] [cursor=pointer]

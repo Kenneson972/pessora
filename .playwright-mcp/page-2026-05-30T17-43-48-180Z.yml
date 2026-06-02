@@ -1,0 +1,272 @@
+- generic [ref=e1]:
+  - region "Menu d'accessibilité rapide":
+    - button "Aller au contenu principal" [ref=e2] [cursor=pointer]:
+      - generic [ref=e3]:
+        - img [ref=e5]
+        - generic [ref=e9]: Aller au contenu principal
+      - img [ref=e11]
+    - button "Permettre l’accessibilité pour les personnes malvoyantes" [ref=e16] [cursor=pointer]:
+      - generic [ref=e17]:
+        - img [ref=e19]
+        - generic [ref=e26]: Permettre l’accessibilité pour les personnes malvoyantes
+      - img [ref=e28]
+    - button "Ouvrir le menu d'accessibilité" [ref=e33] [cursor=pointer]:
+      - generic [ref=e34]:
+        - img [ref=e36]
+        - generic [ref=e38]: Ouvrir le menu d'accessibilité
+      - img [ref=e40]
+  - generic "Menu d'accessibilité":
+    - button "Menu d'accessibilité" [ref=e46] [cursor=pointer]
+  - main [ref=e49]:
+    - generic [ref=e50]:
+      - button [ref=e51] [cursor=pointer]: skip to content
+      - generic [ref=e56]:
+        - link [ref=e60] [cursor=pointer]:
+          - /url: /fr-fr
+          - img [ref=e62]
+        - generic [ref=e64]:
+          - button [ref=e69] [cursor=pointer]:
+            - generic [ref=e70]: 
+          - generic [ref=e71]:
+            - link [ref=e72]:
+              - img [ref=e75]
+            - generic [ref=e76]:
+              - generic [ref=e77]:
+                - generic [ref=e78]:
+                  - link [ref=e82] [cursor=pointer]:
+                    - /url: /fr-fr
+                    - img [ref=e84]
+                  - button [ref=e85] [cursor=pointer]:
+                    - img [ref=e89]
+                - list [ref=e93]:
+                  - listitem [ref=e94]:
+                    - generic [ref=e95]: Atteindre vos objectifs
+                  - listitem [ref=e96]:
+                    - generic [ref=e97]: Produits
+                  - listitem [ref=e98]:
+                    - link [ref=e99] [cursor=pointer]:
+                      - /url: /fr-fr/ressources-d-informations-sur-le-bien-etre
+                      - text: Ressources bien-être
+                  - listitem [ref=e100]:
+                    - link [ref=e101] [cursor=pointer]:
+                      - /url: /fr-fr/opportunite-commerciale
+                      - text: Opportunité commerciale
+                  - listitem [ref=e102]:
+                    - generic [ref=e103]: A propos de Herbalife
+              - generic [ref=e112]:
+                - img [ref=e113]
+                - paragraph [ref=e115]: "| FR"
+      - generic [ref=e117]:
+        - navigation [ref=e118]:
+          - list [ref=e119]:
+            - listitem [ref=e120]:
+              - link:
+                - /url: /
+                - generic: 
+                - generic: Tous les produits
+            - listitem [ref=e121]:
+              - generic [ref=e122]:
+                - generic [ref=e123]: "|"
+                - generic [ref=e124]: Tous les produits
+        - generic [ref=e125]:
+          - heading [level=2] [ref=e127]: Tous les produits
+          - paragraph [ref=e129]:
+            - text: Que votre objectif soit de contrôler votre poids, de nourrir vos performances sportives, de répondre à des besoins nutritionnels spécifiques ou d'affiner votre programme de soins de la peau, notre gamme de produits est là pour répondre à vos besoins. Besoin d’aide ?
+            - link [ref=e130] [cursor=pointer]:
+              - /url: https://www.herbalife.com/fr-fr/footer/contactez-nous
+              - text: Contactez-nous
+            - text: .
+        - generic [ref=e132]:
+          - generic [ref=e133]:
+            - tablist [ref=e134]:
+              - tab [selected] [ref=e136] [cursor=pointer]:
+                - generic [ref=e137]:
+                  - generic [ref=e138]: Tous les produits
+                  - generic [ref=e139]: 
+              - tab [ref=e141] [cursor=pointer]:
+                - generic [ref=e143]: Nutrition au quotidien
+              - tab [ref=e145] [cursor=pointer]:
+                - generic [ref=e147]: Contrôle de poids
+              - tab [ref=e149] [cursor=pointer]:
+                - generic [ref=e151]: Accessoires
+              - tab [ref=e153] [cursor=pointer]:
+                - generic [ref=e155]: Visage et corps
+              - tab [ref=e157] [cursor=pointer]:
+                - generic [ref=e159]: Soutien ciblé
+              - tab [ref=e161] [cursor=pointer]:
+                - generic [ref=e163]: Soupes, encas et barres
+              - tab [ref=e165] [cursor=pointer]:
+                - generic [ref=e167]: Soins visage et corps
+              - tab [ref=e169] [cursor=pointer]:
+                - generic [ref=e171]: Shakes
+              - tab [ref=e173] [cursor=pointer]:
+                - generic [ref=e175]: Compléments alimentaires
+              - tab [ref=e177] [cursor=pointer]:
+                - generic [ref=e179]: Boissons et thés
+              - tab [ref=e181] [cursor=pointer]:
+                - generic [ref=e183]: Performance
+              - tab [ref=e185] [cursor=pointer]:
+                - generic [ref=e187]: Sport
+            - text: 
+            - button [ref=e188] [cursor=pointer]:
+              - generic [ref=e189]: 
+          - tabpanel [ref=e191]:
+            - generic [ref=e192]:
+              - button [ref=e193] [cursor=pointer]:
+                - img [ref=e194]: 
+                - generic [ref=e195]: Filtre
+              - button [ref=e199] [cursor=pointer]:
+                - generic [ref=e200]: "Trier par: À la une"
+                - generic [ref=e201]: 
+            - generic [ref=e205]:
+              - generic [ref=e206]:
+                - generic [ref=e209]:
+                  - link [ref=e210] [cursor=pointer]:
+                    - /url: /fr-fr/u/products/boisson-multi-fibres-pomme-204g-2554
+                  - generic [ref=e211]:
+                    - generic [ref=e212]:
+                      - paragraph [ref=e215]: À la une
+                      - img [ref=e218]
+                      - generic [ref=e219]:
+                        - img [ref=e221]
+                        - paragraph [ref=e222]: Délicate pomme
+                    - generic [ref=e223]:
+                      - paragraph [ref=e224]: Boisson multi-fibres
+                      - paragraph [ref=e225]: 204 g
+                - generic [ref=e228]:
+                  - link [ref=e229] [cursor=pointer]:
+                    - /url: /fr-fr/u/products/melange-pour-boisson-proteinee-vanille-588g-2600
+                  - generic [ref=e230]:
+                    - generic [ref=e231]:
+                      - paragraph [ref=e234]: À la une
+                      - img [ref=e237]
+                      - generic [ref=e238]:
+                        - img [ref=e240]
+                        - paragraph [ref=e241]: Vanille
+                    - generic [ref=e242]:
+                      - paragraph [ref=e243]: Mélange pour boisson protéinée
+                      - paragraph [ref=e244]: 588 g
+                - generic [ref=e247]:
+                  - link [ref=e248] [cursor=pointer]:
+                    - /url: /fr-fr/u/products/boisson-instantanee-a-base-de-the-et-dextraits-vegetaux-framboise-51g-182k
+                  - generic [ref=e249]:
+                    - generic [ref=e250]:
+                      - paragraph [ref=e253]: À la une
+                      - img [ref=e256]
+                      - generic [ref=e257]:
+                        - img [ref=e259]
+                        - paragraph [ref=e260]: Framboise
+                    - generic [ref=e261]:
+                      - paragraph [ref=e262]: Boisson instantanée à base de thé et d'extraits végétaux
+                      - paragraph [ref=e263]: 51 g
+                      - button [ref=e266] [cursor=pointer]: 4 Saveur(s)
+              - button [ref=e286] [cursor=pointer]: Charger plus
+      - generic [ref=e289]:
+        - generic [ref=e293]:
+          - paragraph [ref=e295] [cursor=pointer]: Nos Produits
+          - paragraph [ref=e298] [cursor=pointer]: A propos de Herbalife
+          - paragraph [ref=e301] [cursor=pointer]: Obtenir de l’aide
+          - paragraph [ref=e304] [cursor=pointer]: Pour les Distributeurs
+        - generic [ref=e309]:
+          - link [ref=e310] [cursor=pointer]:
+            - /url: /fr-fr/sitemap
+            - text: Plan du site
+          - link [ref=e311] [cursor=pointer]:
+            - /url: /fr-fr/footer/conditions-d-utilisation
+            - text: Conditions d'utilisation
+          - link [ref=e312] [cursor=pointer]:
+            - /url: /fr-fr/footer/garantie-de-confidentialite
+            - text: Garantie de confidentialité
+          - link [ref=e313] [cursor=pointer]:
+            - /url: /fr-fr/footer/politique-en-matiere-de-cookies
+            - text: Politique en matière de cookies
+          - link [ref=e314] [cursor=pointer]:
+            - /url: /content/dam/global-reusable-assets/documents/pd-statement-typical-distributor-earnings-fr-fr.pdf
+            - text: Déclaration de revenus moyens
+          - link [ref=e315] [cursor=pointer]:
+            - /url: https://www.herbalife.com/fr-fr/footer/declaration-d-accessibilite-en-vertu-de-l-acte-legislatif-europeen-sur-l-accessibilite
+            - text: Déclaration d’accessibilité
+        - generic [ref=e319]:
+          - paragraph [ref=e322]: © 2026 Herbalife International of America, Inc. Toute reproduction partielle ou totale n’est pas autorisée sans accord écrit. Sauf indication contraire, toutes les marques commerciales et images de produits présentées sur ce site sont la propriété de Herbalife International, Inc.
+          - link [ref=e326] [cursor=pointer]:
+            - /url: /fr-fr/selecteur-d-emplacement
+            - img [ref=e328]
+            - generic [ref=e329]: France
+  - alert [ref=e330]
+  - generic:
+    - generic:
+      - generic:
+        - dialog "plpFilters":
+          - generic [ref=e334]:
+            - generic [ref=e335]: plpFilters
+            - generic [ref=e336]:
+              - heading "Filtrer les produits" [level=4] [ref=e337]
+              - button "close button" [ref=e338] [cursor=pointer]:
+                - generic [ref=e339]: 
+            - generic [ref=e340]:
+              - button "Saveur " [expanded] [ref=e341] [cursor=pointer]:
+                - paragraph [ref=e342]: Saveur
+                - generic [ref=e343]: 
+              - generic [ref=e344]:
+                - generic [ref=e346]:
+                  - img [ref=e348]: 
+                  - generic [ref=e349]: Baies d'Açai
+                - generic [ref=e351]:
+                  - img [ref=e353]: 
+                  - generic [ref=e354]: Baies rouges et agrumes
+                - generic [ref=e356]:
+                  - img [ref=e358]: 
+                  - generic [ref=e359]: Baies sauvages
+                - generic [ref=e361]:
+                  - img [ref=e363]: 
+                  - generic [ref=e364]: banane
+                - generic [ref=e366]:
+                  - img [ref=e368]: 
+                  - generic [ref=e369]: Barbecue
+                - generic [ref=e371]:
+                  - img [ref=e373]: 
+                  - generic [ref=e374]: Café Latte
+                - button "Afficher toutes les saveurs " [ref=e375] [cursor=pointer]:
+                  - generic [ref=e376]: Afficher toutes les saveurs
+                  - generic [ref=e377]: 
+              - button "Taille " [expanded] [ref=e378] [cursor=pointer]:
+                - paragraph [ref=e379]: Taille
+                - generic [ref=e380]: 
+              - generic [ref=e381]:
+                - generic [ref=e383]:
+                  - img [ref=e385]: 
+                  - generic [ref=e386]: 1.892 l
+                - generic [ref=e388]:
+                  - img [ref=e390]: 
+                  - generic [ref=e391]: 10 paquets
+                - generic [ref=e393]:
+                  - img [ref=e395]: 
+                  - generic [ref=e396]: 10 Sachets
+                - generic [ref=e398]:
+                  - img [ref=e400]: 
+                  - generic [ref=e401]: 1000 g
+                - generic [ref=e403]:
+                  - img [ref=e405]: 
+                  - generic [ref=e406]: 102 g
+                - generic [ref=e408]:
+                  - img [ref=e410]: 
+                  - generic [ref=e411]: 120 comprimés
+                - button "Afficher toutes les tailles " [ref=e412] [cursor=pointer]:
+                  - generic [ref=e413]: Afficher toutes les tailles
+                  - generic [ref=e414]: 
+            - generic [ref=e415]:
+              - button "Afficher 77 résultat(s)" [ref=e416] [cursor=pointer]
+              - button "Clear All" [ref=e417] [cursor=pointer]: Effacer tout
+  - region "Bannière de cookies" [ref=e418]:
+    - dialog "Confidentialité" [ref=e419]:
+      - generic [ref=e420]:
+        - generic [ref=e422]:
+          - text: Ce site utilise des cookies, y compris des cookies tiers, pour recueillir des informations statistiques, mesurer les performances du site, mémoriser vos préférences, personnaliser notre contenu publicitaire (y compris le profilage) et permettre l'interaction avec les réseaux sociaux. Pour naviguer sur le site, veuillez accepter notre utilisation des cookies ou modifier les cookies que vous souhaitez autoriser en accédant aux paramètres des cookies. Vous pourrez modifier vos paramètres de cookies ultérieurement en visitant notre centre de préférences en matière de cookies, comme décrit dans notre « Politique en matière de cookies ».
+          - link "Pour en savoir plus sur la protection de votre vie privée, s'ouvre dans un nouvel onglet" [active] [ref=e423] [cursor=pointer]:
+            - /url: /fr-fr/footer/politique-en-matiere-de-cookies
+            - text: Pour en savoir plus, cliquez ici >>
+        - generic [ref=e425]:
+          - generic [ref=e426]:
+            - button "Refuser les cookies" [ref=e427] [cursor=pointer]
+            - button "Accepter les cookies" [ref=e428] [cursor=pointer]
+          - button "Paramètres des cookies" [ref=e429] [cursor=pointer]

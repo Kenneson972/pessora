@@ -42,7 +42,7 @@ const CheckoutRequestSchema = z.object({
 });
 
 function buildCorsHeaders(origin: string | null): Record<string, string> {
-  const allowed = Deno.env.get('ALLOWED_ORIGIN') || 'https://www.pessora.mq';
+  const allowed = Deno.env.get('ALLOWED_ORIGIN') || 'https://www.pessora.fr';
   const isLocalhost = origin != null &&
     (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'));
   return {
@@ -145,7 +145,7 @@ serve(async (req) => {
     const rawSiteUrl = Deno.env.get('SITE_URL');
     const siteUrl = (isLocalhostOrigin
       ? reqOrigin
-      : (rawSiteUrl && rawSiteUrl.startsWith('http') ? rawSiteUrl : 'https://www.pessora.mq')
+      : (rawSiteUrl && rawSiteUrl.startsWith('http') ? rawSiteUrl : 'https://www.pessora.fr')
     ).replace(/\/+$/, '');
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;

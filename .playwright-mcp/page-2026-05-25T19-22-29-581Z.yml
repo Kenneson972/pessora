@@ -1,0 +1,202 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - link "Aller au contenu" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - banner [ref=e5]:
+      - generic [ref=e6]:
+        - link "Pessóra" [ref=e7] [cursor=pointer]:
+          - /url: /
+          - img "Pessóra" [ref=e8]
+        - navigation "Navigation principale" [ref=e9]:
+          - link "Concept" [ref=e10] [cursor=pointer]:
+            - /url: /concept
+          - link "La carte" [ref=e11] [cursor=pointer]:
+            - /url: /menu
+          - link "Produits" [ref=e12] [cursor=pointer]:
+            - /url: /nos-produits
+          - link "Óra+" [ref=e13] [cursor=pointer]:
+            - /url: /ora-plus
+          - link "Événements" [ref=e14] [cursor=pointer]:
+            - /url: /evenements
+          - link "Bilan" [ref=e15] [cursor=pointer]:
+            - /url: /bilan-bien-etre
+        - generic [ref=e16]:
+          - button "Ouvrir la recherche (Ctrl+K)" [ref=e19]:
+            - img [ref=e20]
+          - link "Connexion" [ref=e23] [cursor=pointer]:
+            - /url: /connexion
+            - img [ref=e24]
+            - generic [ref=e27]: Connexion
+          - button "Panier, vide" [ref=e29] [cursor=pointer]:
+            - img
+      - radiogroup "Navigation secondaire" [ref=e32]:
+        - radio "Vue d’ensemble" [checked] [ref=e33] [cursor=pointer]: Vue d’ensemble
+        - radio "Wellness" [ref=e35] [cursor=pointer]: Wellness
+        - radio "Sport" [ref=e36] [cursor=pointer]: Sport
+        - radio "Skin" [ref=e37] [cursor=pointer]: Skin
+    - main [ref=e38]:
+      - generic [ref=e129]:
+        - navigation "Fil d'Ariane" [ref=e132]:
+          - link "Gammes" [ref=e133] [cursor=pointer]:
+            - /url: /nos-produits
+          - generic [ref=e134]: /
+          - link "Wellness" [ref=e135] [cursor=pointer]:
+            - /url: /nos-produits/wellness
+          - generic [ref=e136]: /
+          - generic [ref=e137]: Aloe Vera
+        - generic [ref=e140]:
+          - generic [ref=e142]:
+            - generic: A
+            - generic [ref=e144]:
+              - img [ref=e145]
+              - text: Wellness
+          - generic [ref=e147]:
+            - heading "Aloe Vera" [level=1] [ref=e148]
+            - paragraph [ref=e149]: Concentré d'aloé vera pour l'hydratation.
+            - generic [ref=e150]:
+              - paragraph [ref=e151]: Prix
+              - text: 60€
+            - generic [ref=e152]:
+              - generic [ref=e153]:
+                - button "Diminuer la quantité" [disabled]:
+                  - img
+                - generic [ref=e154]: "1"
+                - button "Augmenter la quantité" [ref=e155] [cursor=pointer]:
+                  - img
+              - button "Ajouter au panier · 60.00€" [ref=e156] [cursor=pointer]:
+                - img
+                - text: Ajouter au panier · 60.00€
+            - generic [ref=e157]:
+              - img [ref=e158]
+              - paragraph [ref=e160]: Paiement sécurisé en ligne. Retrait en boutique.
+        - generic [ref=e163]:
+          - generic [ref=e164]:
+            - generic [ref=e165]:
+              - heading "Vous aimerez aussi" [level=2] [ref=e166]
+              - paragraph [ref=e167]: D'autres produits de la gamme Wellness
+            - link "Voir toute la gamme" [ref=e168] [cursor=pointer]:
+              - /url: /nos-produits/wellness
+              - text: Voir toute la gamme
+              - img [ref=e169]
+          - generic [ref=e171]:
+            - link "C Collagène 85€" [ref=e172] [cursor=pointer]:
+              - /url: /nos-produits/wellness/collagene
+              - generic [ref=e174]: C
+              - heading "Collagène" [level=3] [ref=e175]
+              - text: 85€
+            - link "T Thé Detox 45€" [ref=e176] [cursor=pointer]:
+              - /url: /nos-produits/wellness/the-detox
+              - generic [ref=e178]: T
+              - heading "Thé Detox" [level=3] [ref=e179]
+              - text: 45€
+            - link "F Fibres 45€" [ref=e180] [cursor=pointer]:
+              - /url: /nos-produits/wellness/fibres
+              - generic [ref=e182]: F
+              - heading "Fibres" [level=3] [ref=e183]
+              - text: 45€
+        - generic [ref=e185]:
+          - heading "Envie d'en savoir plus ?" [level=2] [ref=e186]
+          - paragraph [ref=e187]: "Retrouvez-nous au :"
+          - generic [ref=e188]:
+            - img [ref=e189]
+            - generic [ref=e192]: C.C. La Véranda – Cluny, 97200 Fort-de-France
+          - generic [ref=e193]:
+            - link "Nous trouver" [ref=e194] [cursor=pointer]:
+              - /url: /contact
+            - link "Retour à la gamme" [ref=e195] [cursor=pointer]:
+              - /url: /nos-produits/wellness
+    - contentinfo [ref=e44]:
+      - generic [ref=e47]:
+        - generic [ref=e49]:
+          - region "Navigation menu" [ref=e50]:
+            - paragraph [ref=e51]: Sur le site
+            - generic [ref=e52]:
+              - paragraph [ref=e53]: Menu
+              - navigation "Menu" [ref=e54]:
+                - link "Shakes" [ref=e55] [cursor=pointer]:
+                  - /url: /menu
+                - link "Boissons énergie" [ref=e56] [cursor=pointer]:
+                  - /url: /menu
+                - link "Carte complète" [ref=e57] [cursor=pointer]:
+                  - /url: /menu
+          - region "Newsletter" [ref=e58]:
+            - generic [ref=e59]:
+              - heading "Newsletter" [level=3] [ref=e60]
+              - form "Newsletter" [ref=e61]:
+                - generic [ref=e62]:
+                  - generic [ref=e63]: Adresse e-mail pour la newsletter
+                  - textbox "Votre e-mail" [ref=e64]
+                  - button "S’inscrire à la newsletter" [ref=e65] [cursor=pointer]:
+                    - img
+                - generic [ref=e67] [cursor=pointer]:
+                  - checkbox "J’accepte de recevoir la newsletter et j’ai pris connaissance de la politique de confidentialité." [ref=e69]
+                  - generic [ref=e70]:
+                    - text: J’accepte de recevoir la newsletter et j’ai pris connaissance de la
+                    - link "politique de confidentialité" [ref=e71]:
+                      - /url: /politique-confidentialite
+                    - text: .
+        - region "Marque Pessóra" [ref=e73]:
+          - generic [ref=e74]:
+            - generic [ref=e75]:
+              - img "Pessóra" [ref=e76]
+              - paragraph [ref=e77]: Bar protéiné · Fort-de-France, Martinique
+            - generic [ref=e78]:
+              - link "Pessóra sur Instagram (ouvre un nouvel onglet)" [ref=e79] [cursor=pointer]:
+                - /url: https://instagram.com/pessora.mq
+                - img [ref=e80]
+              - link "Contacter Pessóra sur WhatsApp (ouvre un nouvel onglet)" [ref=e83] [cursor=pointer]:
+                - /url: https://wa.me/596696000000
+                - img [ref=e84]
+        - generic [ref=e87]:
+          - region "Espace membres et services" [ref=e88]:
+            - generic [ref=e89]:
+              - paragraph [ref=e90]: Espace
+              - navigation "Espace" [ref=e91]:
+                - link "Óra+" [ref=e92] [cursor=pointer]:
+                  - /url: /ora-plus
+                - link "Événements" [ref=e93] [cursor=pointer]:
+                  - /url: /evenements
+                - link "Bilan Bien-être" [ref=e94] [cursor=pointer]:
+                  - /url: /bilan-bien-etre
+          - region "Contact et réseaux" [ref=e96]:
+            - generic [ref=e97]:
+              - paragraph [ref=e98]: Nous rejoindre
+              - navigation "Contact et réseaux" [ref=e99]:
+                - link "Instagram" [ref=e101] [cursor=pointer]:
+                  - /url: https://instagram.com/pessora.mq
+                - generic [ref=e102]:
+                  - generic [ref=e103]: ·
+                  - link "WhatsApp" [ref=e104] [cursor=pointer]:
+                    - /url: https://wa.me/596696000000
+                - generic [ref=e105]:
+                  - generic [ref=e106]: ·
+                  - link "Fort-de-France" [ref=e107] [cursor=pointer]:
+                    - /url: /contact
+                - generic [ref=e108]:
+                  - generic [ref=e109]: ·
+                  - link "Partenariats" [ref=e110] [cursor=pointer]:
+                    - /url: /contact-partenariat
+      - generic [ref=e112]:
+        - generic [ref=e113]: © 2026 Pessóra · Fort-de-France
+        - generic [ref=e114]:
+          - link "Mentions légales" [ref=e115] [cursor=pointer]:
+            - /url: /mentions-legales
+          - link "Confidentialité" [ref=e116] [cursor=pointer]:
+            - /url: /politique-confidentialite
+          - button "Cookies" [ref=e117]
+          - link "CGV" [ref=e118] [cursor=pointer]:
+            - /url: /cgv
+    - button "Ouvrir Pessobot" [ref=e196] [cursor=pointer]
+  - dialog "Cookies & données" [ref=e119]:
+    - generic [ref=e120]:
+      - generic [ref=e121]:
+        - paragraph [ref=e122]: Cookies & données
+        - paragraph [ref=e123]:
+          - text: Nous utilisons des cookies et le stockage local pour le panier et, avec votre accord, des mesures d’audience. Consultez notre
+          - link "politique de confidentialité" [ref=e124] [cursor=pointer]:
+            - /url: /politique-confidentialite
+          - text: .
+      - generic [ref=e125]:
+        - button "Personnaliser" [ref=e126]
+        - button "Nécessaires uniquement" [ref=e127]
+        - button "Tout accepter" [ref=e128]

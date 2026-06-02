@@ -30,9 +30,9 @@ export const barInfo = {
 
   contact: {
     phone: '+596 696 XX XX XX', // À remplacer
-    email: 'pessora.mq@gmail.com',
-    instagram: '@pessora.mq',
-    instagramUrl: 'https://www.instagram.com/pessora.mq/'
+    email: 'pessora.fr@gmail.com',
+    instagram: '@pessora.fr',
+    instagramUrl: 'https://www.instagram.com/pessora.fr/'
   },
 
   values: [
@@ -92,9 +92,9 @@ export const events = [
 export const socialLinks = [
   {
     platform: 'Instagram',
-    url: 'https://www.instagram.com/pessora.mq/',
+    url: 'https://www.instagram.com/pessora.fr/',
     icon: 'instagram',
-    handle: '@pessora.mq'
+    handle: '@pessora.fr'
   },
   {
     platform: 'Facebook',

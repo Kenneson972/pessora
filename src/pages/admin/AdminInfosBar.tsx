@@ -227,7 +227,7 @@ const AdminInfosBar = () => {
                   className={inputClass}
                   value={contact.email}
                   onChange={(e) => setContactField('email', e.target.value)}
-                  placeholder="pessora.mq@gmail.com"
+                  placeholder="pessora.fr@gmail.com"
                 />
               </div>
               <div>
@@ -248,7 +248,7 @@ const AdminInfosBar = () => {
                   className={inputClass}
                   value={contact.instagram}
                   onChange={(e) => setContactField('instagram', e.target.value)}
-                  placeholder="@pessora.mq"
+                  placeholder="@pessora.fr"
                 />
               </div>
               <div>
@@ -258,7 +258,7 @@ const AdminInfosBar = () => {
                   className={inputClass}
                   value={contact.instagram_url}
                   onChange={(e) => setContactField('instagram_url', e.target.value)}
-                  placeholder="https://www.instagram.com/pessora.mq/"
+                  placeholder="https://www.instagram.com/pessora.fr/"
                 />
               </div>
             </div>
@@ -312,7 +312,7 @@ const AdminInfosBar = () => {
                   className={inputClass}
                   value={oraPlus.cta_url}
                   onChange={(e) => setOraField('cta_url', e.target.value)}
-                  placeholder="https://pessora.mq/ora-plus"
+                  placeholder="https://pessora.fr/ora-plus"
                 />
               </div>
               <div className="md:col-span-2">

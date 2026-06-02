@@ -119,7 +119,7 @@ const CGV = () => {
             <h2 className="text-3xl font-bold mb-6 text-primary">9. Réclamations</h2>
             <div className="mb-8">
               <p className="text-gray-700 leading-relaxed">
-                Toute réclamation doit être adressée à : pessora.mq@gmail.com ou directement en bar.
+                Toute réclamation doit être adressée à : pessora.fr@gmail.com ou directement en bar.
                 Nous nous engageons à traiter toute réclamation dans les meilleurs délais.
               </p>
             </div>
@@ -164,7 +164,7 @@ const CGV = () => {
                 <strong>Dernière mise à jour :</strong> {new Date().toLocaleDateString('fr-FR')}
               </p>
               <p className="text-sm text-gray-600 mt-2">
-                Pour toute question concernant ces CGV, contactez-nous à : pessora.mq@gmail.com
+                Pour toute question concernant ces CGV, contactez-nous à : pessora.fr@gmail.com
               </p>
             </div>
           </div>

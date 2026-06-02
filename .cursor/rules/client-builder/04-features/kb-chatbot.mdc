@@ -1,0 +1,435 @@
+---
+description: Chatbot n8n Karibloom - composant KaribotWidget configurable, route /api/chat avec rate limiting, déploiement en moins de 30 minutes. Présent sur PESSORA (PessoBot), DALCIELO (CieloBot), DIAMANTNOIR (DiamantBot) — même architecture.
+globs: "**/components/chatbot/**,**/components/common/Chatbot*,**/app/api/chat/**"
+alwaysApply: false
+---
+
+# Chatbot Karibloom — KaribotWidget
+
+> Chaque site client a un chatbot connecté à n8n. L'architecture est identique sur tous les projets — seuls le nom, l'avatar, la couleur et les suggestions rapides changent. Ce fichier centralise le pattern.
+
+---
+
+## Architecture globale
+
+```
+Browser → /api/chat (Next.js Route Handler)
+             ↓ rate limiting par IP
+             ↓ forward message + historique
+         n8n Webhook → DeepSeek / LLM
+             ↓ réponse
+Browser ← JSON { response: string }
+```
+
+Le chatbot ne parle **jamais directement** au LLM depuis le browser — toujours via `/api/chat` pour protéger la clé API et contrôler le rate limiting.
+
+---
+
+## 1. Route `/api/chat/route.ts`
+
+```ts
+// app/api/chat/route.ts
+import { NextResponse } from "next/server";
+import { checkRateLimit, getIp } from "@/lib/rateLimit";
+
+const N8N_CHATBOT_URL = process.env.N8N_CHATBOT_WEBHOOK_URL ?? "";
+
+interface HistoryMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export async function POST(req: Request) {
+  // Rate limiting : 20 messages / minute par IP
+  const ip = getIp(req);
+  if (!checkRateLimit(ip, 20, 60_000)) {
+    return NextResponse.json({
+      response: "Vous envoyez trop de messages. Attendez une minute.",
+    });
+  }
+
+  if (!N8N_CHATBOT_URL) {
+    return NextResponse.json({
+      response: "Le chatbot est momentanément indisponible. Contactez-nous directement.",
+    });
+  }
+
+  try {
+    const { message, history = [] } = await req.json();
+
+    if (!message?.trim()) {
+      return NextResponse.json({ response: "Message vide." });
+    }
+
+    const recentHistory: HistoryMessage[] = Array.isArray(history)
+      ? history.slice(-10)
+      : [];
+
+    const payload = {
+      message: message.trim(),
+      history: recentHistory,
+      // Optionnel : contexte utilisateur si disponible
+      // userId: session?.user?.id,
+    };
+
+    const n8nRes = await fetch(N8N_CHATBOT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(30_000), // 30s max
+    });
+
+    if (!n8nRes.ok) {
+      throw new Error(`n8n returned ${n8nRes.status}`);
+    }
+
+    const data = await n8nRes.json();
+    const response = data.response ?? data.output ?? data.text ?? "Réponse indisponible.";
+
+    return NextResponse.json({ response });
+  } catch (err) {
+    console.error("[chatbot]", err);
+    return NextResponse.json({
+      response: "Une erreur est survenue. Réessayez dans quelques instants.",
+    });
+  }
+}
+```
+
+---
+
+## 2. Composant `<KaribotWidget />`
+
+```tsx
+// components/chatbot/karibot-widget.tsx
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { X, Send, MessageCircle, Maximize2, Minimize2 } from "lucide-react";
+
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+  timestamp?: Date;
+}
+
+interface QuickSuggestions {
+  default: string[];
+  [context: string]: string[];
+}
+
+interface KaribotWidgetProps {
+  name: string;                          // "PessoBot", "CieloBot", "DiamantBot"
+  avatarSrc: string;                     // "/images/pessobot.png"
+  primaryColor?: string;                 // "var(--color-gold)" ou "#E17B5F"
+  webhookUrl?: string;                   // si passé en prop (sinon env var côté /api/chat)
+  quickSuggestions?: QuickSuggestions;   // suggestions rapides par contexte
+  hideOnPaths?: string[];                // ["/admin", "/espace-client", "/dashboard"]
+  welcomeMessage?: string;               // Message d'accueil
+  placeholder?: string;                  // Placeholder input
+}
+
+const DEFAULT_SUGGESTIONS: QuickSuggestions = {
+  default: ["Comment vous contacter ?", "Vos horaires ?", "Vos tarifs ?"],
+};
+
+export function KaribotWidget({
+  name,
+  avatarSrc,
+  primaryColor = "var(--color-primary, #E17B5F)",
+  quickSuggestions = DEFAULT_SUGGESTIONS,
+  hideOnPaths = ["/admin", "/espace-client", "/dashboard"],
+  welcomeMessage,
+  placeholder = "Posez votre question...",
+}: KaribotWidgetProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState(quickSuggestions.default);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+
+  // Masquer sur certaines routes
+  const isHidden = hideOnPaths.some((p) => pathname?.startsWith(p));
+  if (isHidden) return null;
+
+  // Scroll automatique
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // Message d'accueil à l'ouverture
+  useEffect(() => {
+    if (isOpen && messages.length === 0 && welcomeMessage) {
+      setMessages([{
+        role: "assistant",
+        content: welcomeMessage,
+        timestamp: new Date(),
+      }]);
+    }
+  }, [isOpen]);
+
+  const sendMessage = async (text: string) => {
+    if (!text.trim() || isLoading) return;
+
+    const userMsg: Message = { role: "user", content: text.trim(), timestamp: new Date() };
+    setMessages((prev) => [...prev, userMsg]);
+    setInput("");
+    setIsLoading(true);
+    setSuggestions([]); // Cacher les suggestions pendant la réponse
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: text.trim(),
+          history: messages.slice(-10).map((m) => ({
+            role: m.role,
+            content: m.content,
+          })),
+        }),
+      });
+
+      const data = await res.json();
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: data.response, timestamp: new Date() },
+      ]);
+
+      // Suggestions contextuelles après réponse
+      const lowerResponse = data.response.toLowerCase();
+      if (lowerResponse.includes("tarif") || lowerResponse.includes("prix")) {
+        setSuggestions(quickSuggestions.pricing ?? quickSuggestions.default);
+      } else if (lowerResponse.includes("réserv") || lowerResponse.includes("disponib")) {
+        setSuggestions(quickSuggestions.booking ?? quickSuggestions.default);
+      } else {
+        setSuggestions(quickSuggestions.default);
+      }
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Erreur de connexion. Réessayez.", timestamp: new Date() },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <>
+      {/* FAB (bouton flottant) */}
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2"
+          style={{ backgroundColor: primaryColor }}
+          aria-label={`Ouvrir ${name}`}
+        >
+          <img src={avatarSrc} alt={name} className="h-10 w-10 rounded-full object-cover" />
+        </button>
+      )}
+
+      {/* Fenêtre de chat */}
+      {isOpen && (
+        <div
+          className={`fixed z-50 flex flex-col overflow-hidden rounded-2xl bg-white shadow-2xl transition-all ${
+            isFullscreen
+              ? "inset-4"
+              : "bottom-6 right-6 h-[520px] w-[380px] max-w-[calc(100vw-2rem)]"
+          }`}
+        >
+          {/* Header */}
+          <div
+            className="flex items-center gap-3 px-4 py-3"
+            style={{ backgroundColor: primaryColor }}
+          >
+            <img src={avatarSrc} alt={name} className="h-8 w-8 rounded-full object-cover" />
+            <span className="flex-1 font-semibold text-white">{name}</span>
+            <button
+              onClick={() => setIsFullscreen((v) => !v)}
+              className="rounded p-1 text-white/80 hover:text-white"
+              aria-label={isFullscreen ? "Réduire" : "Agrandir"}
+            >
+              {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
+            </button>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="rounded p-1 text-white/80 hover:text-white"
+              aria-label="Fermer"
+            >
+              <X size={16} />
+            </button>
+          </div>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            {messages.map((msg, i) => (
+              <div
+                key={i}
+                className={`flex ${msg.role === "user" ? "justify-end" : "justify-start gap-2"}`}
+              >
+                {msg.role === "assistant" && (
+                  <img src={avatarSrc} alt={name} className="h-6 w-6 flex-shrink-0 rounded-full object-cover mt-1" />
+                )}
+                <div
+                  className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${
+                    msg.role === "user"
+                      ? "rounded-br-sm text-white"
+                      : "rounded-bl-sm bg-gray-100 text-gray-800"
+                  }`}
+                  style={msg.role === "user" ? { backgroundColor: primaryColor } : {}}
+                >
+                  {msg.content}
+                </div>
+              </div>
+            ))}
+
+            {isLoading && (
+              <div className="flex items-center gap-2">
+                <img src={avatarSrc} alt={name} className="h-6 w-6 rounded-full object-cover" />
+                <div className="flex gap-1 rounded-2xl bg-gray-100 px-3 py-2">
+                  <span className="animate-bounce h-1.5 w-1.5 rounded-full bg-gray-400" style={{ animationDelay: "0ms" }} />
+                  <span className="animate-bounce h-1.5 w-1.5 rounded-full bg-gray-400" style={{ animationDelay: "150ms" }} />
+                  <span className="animate-bounce h-1.5 w-1.5 rounded-full bg-gray-400" style={{ animationDelay: "300ms" }} />
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Suggestions rapides */}
+          {suggestions.length > 0 && !isLoading && (
+            <div className="flex flex-wrap gap-2 px-4 pb-2">
+              {suggestions.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => sendMessage(s)}
+                  className="rounded-full border border-gray-200 px-3 py-1 text-xs text-gray-600 hover:border-gray-400 transition-colors"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Input */}
+          <div className="flex items-center gap-2 border-t border-gray-100 px-3 py-3">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage(input)}
+              placeholder={placeholder}
+              className="flex-1 rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm outline-none focus:border-gray-400"
+              disabled={isLoading}
+            />
+            <button
+              onClick={() => sendMessage(input)}
+              disabled={!input.trim() || isLoading}
+              className="flex h-9 w-9 items-center justify-center rounded-full text-white transition-opacity disabled:opacity-40"
+              style={{ backgroundColor: primaryColor }}
+              aria-label="Envoyer"
+            >
+              <Send size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+```
+
+---
+
+## 3. Usage par projet
+
+```tsx
+// app/layout.tsx (dans le root layout, lazy loaded)
+import dynamic from "next/dynamic";
+const KaribotWidget = dynamic(
+  () => import("@/components/chatbot/karibot-widget").then((m) => m.KaribotWidget),
+  { ssr: false }
+);
+
+// PESSORA
+<KaribotWidget
+  name="PessoBot"
+  avatarSrc="/images/pessobot-mascot.png"
+  primaryColor="var(--color-noir)"
+  welcomeMessage="Bonjour ! Je suis PessoBot 🌿 Comment puis-je vous aider ?"
+  quickSuggestions={{
+    default: ["Voir le menu", "Nos horaires", "Créer un compte"],
+    health: ["Valeurs nutritionnelles", "Végétalien ?", "Sans gluten ?"],
+  }}
+  hideOnPaths={["/admin", "/mon-espace", "/connexion"]}
+/>
+
+// DALCIELO
+<KaribotWidget
+  name="CieloBot"
+  avatarSrc="/images/cielobot.png"
+  primaryColor="var(--pdc-coral)"
+  welcomeMessage="Ciao ! Envie d'une pizza ? Je suis là pour vous aider 🍕"
+  quickSuggestions={{
+    default: ["Voir le menu", "Commander maintenant", "Horaires"],
+    ordering: ["Pizza du chef du jour", "Délai de livraison", "Zone de livraison"],
+  }}
+  hideOnPaths={["/admin", "/mon-compte"]}
+/>
+
+// DIAMANTNOIR
+<KaribotWidget
+  name="Kayvilla Assistant"
+  avatarSrc="/images/kayvilla-bot.png"
+  primaryColor="var(--dn-gold)"
+  welcomeMessage="Bienvenue chez Kayvilla. Comment puis-je vous accompagner ?"
+  quickSuggestions={{
+    default: ["Villas disponibles", "Tarifs", "Services conciergerie"],
+    booking: ["Réserver pour 2 nuits", "Voir les disponibilités"],
+    pricing: ["Tarif haute saison", "Frais supplémentaires"],
+  }}
+  hideOnPaths={["/admin", "/espace-client", "/dashboard"]}
+/>
+```
+
+---
+
+## 4. Variables d'environnement
+
+```bash
+# .env.local
+N8N_CHATBOT_WEBHOOK_URL=https://kenneson.app.n8n.cloud/webhook/[nom-client]-bot
+# Optionnel : secret partagé pour sécuriser l'endpoint n8n
+N8N_CHATBOT_SECRET=votre-secret-long
+```
+
+---
+
+## 5. Configuration n8n minimale
+
+Le webhook n8n doit :
+1. Recevoir `{ message: string, history: Message[] }`
+2. Envoyer au LLM (DeepSeek via OpenAI compatible) avec le contexte du client
+3. Retourner `{ response: string }`
+
+Les tools calling optionnels (get_menu, get_events, get_availability) s'ajoutent comme des branches n8n.
+
+---
+
+## 6. Checklist déploiement chatbot (< 30 min)
+
+```
+□ Route /api/chat/route.ts créée (copier le template ci-dessus)
+□ N8N_CHATBOT_WEBHOOK_URL dans .env.local
+□ Webhook n8n créé et actif
+□ Composant KaribotWidget ajouté dans le layout racine avec ssr: false
+□ hideOnPaths configuré (exclure admin, espace-client, dashboard)
+□ Avatar du chatbot ajouté dans /public/images/
+□ welcomeMessage et quickSuggestions personnalisés pour le client
+□ Test : envoyer un message, vérifier la réponse dans la console n8n
+```

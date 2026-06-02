@@ -1,0 +1,60 @@
+<h2>Où placer le bouton "✏️ Modifier" ?</h2>
+<p class="subtitle">Visible uniquement quand un admin est connecté. Quelle option te convient le mieux ?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8f8f8;padding:0;overflow:hidden;height:200px;position:relative;">
+      <!-- Mockup A : barre admin en haut -->
+      <div style="background:#1E3529;color:white;padding:8px 16px;font-size:11px;display:flex;align-items:center;justify-content:space-between;">
+        <span style="opacity:0.6;letter-spacing:0.1em;font-size:9px;text-transform:uppercase;">Mode admin</span>
+        <button style="background:white;color:#1E3529;border:none;padding:4px 12px;border-radius:20px;font-size:9px;cursor:pointer;font-weight:600;">✏️ Modifier cette fiche</button>
+      </div>
+      <div style="padding:12px 16px;">
+        <div style="height:12px;background:#ddd;border-radius:4px;margin-bottom:8px;width:60%"></div>
+        <div style="height:8px;background:#eee;border-radius:4px;margin-bottom:6px;width:90%"></div>
+        <div style="height:8px;background:#eee;border-radius:4px;width:70%"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Barre admin en haut</h3>
+      <p>Une fine barre verte en haut de page avec le bouton Modifier. Clair, non intrusif pour le contenu.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8f8f8;padding:0;overflow:hidden;height:200px;position:relative;">
+      <!-- Mockup B : bouton flottant coin bas droite -->
+      <div style="padding:12px 16px;">
+        <div style="height:12px;background:#ddd;border-radius:4px;margin-bottom:8px;width:60%"></div>
+        <div style="height:8px;background:#eee;border-radius:4px;margin-bottom:6px;width:90%"></div>
+        <div style="height:8px;background:#eee;border-radius:4px;width:70%"></div>
+        <div style="height:8px;background:#eee;border-radius:4px;margin-top:6px;width:50%"></div>
+      </div>
+      <button style="position:absolute;bottom:12px;right:12px;background:#1E3529;color:white;border:none;padding:8px 14px;border-radius:24px;font-size:10px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.2);">✏️ Modifier</button>
+    </div>
+    <div class="card-body">
+      <h3>B — Bouton flottant (coin bas droit)</h3>
+      <p>Bouton fixe en bas à droite, visible en scrollant. Discret, ne perturbe pas la lecture.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8f8f8;padding:0;overflow:hidden;height:200px;position:relative;">
+      <!-- Mockup C : bouton inline à côté du titre -->
+      <div style="padding:12px 16px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <div style="height:16px;background:#222;border-radius:3px;width:45%"></div>
+          <button style="background:transparent;border:1px solid #1E3529;color:#1E3529;padding:2px 8px;border-radius:12px;font-size:9px;cursor:pointer;">✏️ Modifier</button>
+        </div>
+        <div style="height:8px;background:#eee;border-radius:4px;margin-bottom:6px;width:90%"></div>
+        <div style="height:8px;background:#eee;border-radius:4px;width:70%"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Inline à côté du titre</h3>
+      <p>Le bouton est placé juste à côté du nom du produit. Contextuel, on sait exactement ce qu'on modifie.</p>
+    </div>
+  </div>
+
+</div>

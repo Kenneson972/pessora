@@ -12,7 +12,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-const BASE = 'https://pessora.mq';
+const BASE = 'https://pessora.fr';
 
 interface SlugRow { slug: string; updated_at?: string; image_url?: string | null }
 interface GammeSlugRow { slug: string; gamme: string; updated_at?: string; image_url?: string | null }

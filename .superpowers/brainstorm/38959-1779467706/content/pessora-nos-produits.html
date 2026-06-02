@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PESSÓRA — Nos Produits (nouvelles sections)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f4f0; color: #111; }
+
+  .page-header {
+    background: #fff; border-bottom: 1px solid #e8e4dc;
+    padding: 14px 32px; display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .page-header .brand { font-family: Georgia, serif; font-size: 18px; letter-spacing: 0.12em; font-weight: 400; font-style: italic; }
+  .page-header .nav { display: flex; gap: 24px; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #555; }
+
+  .section-label {
+    font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: #aaa;
+    padding: 8px 32px; background: #f5f4f0; border-top: 1px dashed #ddd;
+  }
+  .existing-section {
+    background: #f0ede6; padding: 20px 32px;
+    border-left: 3px solid #ccc;
+    font-size: 12px; color: #888; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+
+  /* ── Page Hero texte existant ── */
+  .page-hero {
+    background: #fff; padding: 48px 32px 40px;
+    border-bottom: 1px solid #eee;
+  }
+  .page-hero .eyebrow { font-size: 9px; letter-spacing: 0.3em; text-transform: uppercase; color: #aaa; margin-bottom: 10px; }
+  .page-hero h1 { font-size: 32px; font-weight: 300; letter-spacing: -0.02em; margin-bottom: 12px; }
+  .page-hero p { font-size: 13px; color: #777; font-weight: 300; max-width: 520px; line-height: 1.65; }
+
+  /* ── Carrousel ── */
+  .carousel-section { background: #fff; padding: 40px 0 40px 32px; border-bottom: 1px solid #eee; }
+  .carousel-header { display: flex; justify-content: space-between; align-items: flex-end; padding-right: 32px; margin-bottom: 24px; }
+  .carousel-header h2 { font-size: 18px; font-weight: 300; letter-spacing: -0.01em; }
+  .carousel-header .arrows { display: flex; gap: 8px; }
+  .carousel-header .arrows button { width: 34px; height: 34px; border-radius: 50%; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 14px; color: #555; }
+
+  .carousel-track {
+    display: flex; gap: 12px; overflow-x: auto; padding-right: 32px; padding-bottom: 4px;
+    scroll-snap-type: x mandatory; scrollbar-width: none;
+  }
+  .carousel-track::-webkit-scrollbar { display: none; }
+
+  .carousel-card {
+    flex-shrink: 0; width: 280px; height: 360px; border-radius: 10px; overflow: hidden;
+    position: relative; scroll-snap-align: start; cursor: pointer;
+  }
+  .carousel-card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+  .carousel-card:hover img { transform: scale(1.04); }
+  .carousel-card-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.65) 100%);
+    display: flex; flex-direction: column; justify-content: flex-end; padding: 18px;
+  }
+  .carousel-card-eyebrow { font-size: 8px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 5px; }
+  .carousel-card-title { font-size: 16px; font-weight: 300; color: #fff; line-height: 1.25; }
+  .carousel-card-arrow {
+    position: absolute; bottom: 14px; right: 14px;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 14px; backdrop-filter: blur(4px);
+  }
+
+  /* ── Tuiles gammes ── */
+  .tiles-section { background: #fff; padding: 48px 32px; border-bottom: 1px solid #eee; }
+  .tiles-section h2 { font-size: 18px; font-weight: 300; margin-bottom: 8px; }
+  .tiles-section .sub { font-size: 11px; color: #aaa; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 20px; }
+  .tiles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .tile {
+    border-radius: 10px; overflow: hidden;
+    aspect-ratio: 4/3; position: relative; cursor: pointer;
+  }
+  .tile img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; }
+  .tile:hover img { transform: scale(1.04); }
+  .tile-label { position: absolute; top: 14px; left: 14px; font-size: 12px; font-weight: 400; color: #fff; letter-spacing: 0.04em; }
+  .tile-sub { position: absolute; bottom: 14px; left: 14px; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.6); }
+  .tile-arrow { position: absolute; bottom: 12px; right: 12px; width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; }
+
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="brand">PessÓra</div>
+  <div class="nav"><span>Menu</span><span>Nos Produits</span><span>Événements</span></div>
+</div>
+
+<!-- Hero texte existant -->
+<div class="page-hero">
+  <p class="eyebrow">Catalogue</p>
+  <h1>Les gammes PessÓra</h1>
+  <p>Nutrition, sport et soins — chaque gamme a été composée avec une exigence précise. Découvrez celle qui vous correspond.</p>
+</div>
+
+<!-- ════════════════════════════════════
+     NOUVELLE SECTION 1 — Carrousel photos
+     ════════════════════════════════════ -->
+<div class="section-label">✦ NOUVELLE SECTION 1 — Carrousel éditorial (modèles + produits par gamme)</div>
+<section class="carousel-section">
+  <div class="carousel-header">
+    <h2>La collection</h2>
+    <div class="arrows"><button>‹</button><button>›</button></div>
+  </div>
+  <div class="carousel-track">
+
+    <div class="carousel-card" style="background:#0d1a14;">
+      <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=70&fit=crop&crop=top" alt="Wellness" loading="lazy" />
+      <div class="carousel-card-overlay">
+        <p class="carousel-card-eyebrow">Gamme Wellness</p>
+        <p class="carousel-card-title">Compléments<br>nutrition</p>
+      </div>
+      <div class="carousel-card-arrow">›</div>
+    </div>
+
+    <div class="carousel-card" style="background:#1a0a0a;">
+      <img src="https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=600&q=70&fit=crop" alt="Sport" loading="lazy" />
+      <div class="carousel-card-overlay">
+        <p class="carousel-card-eyebrow">Gamme Sport</p>
+        <p class="carousel-card-title">Performance<br>& récupération</p>
+      </div>
+      <div class="carousel-card-arrow">›</div>
+    </div>
+
+    <div class="carousel-card" style="background:#1a1020;">
+      <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=70&fit=crop" alt="Skin" loading="lazy" />
+      <div class="carousel-card-overlay">
+        <p class="carousel-card-eyebrow">Gamme Skin</p>
+        <p class="carousel-card-title">Soins visage<br>& nutricosmétique</p>
+      </div>
+      <div class="carousel-card-arrow">›</div>
+    </div>
+
+    <div class="carousel-card" style="background:#1a1208;">
+      <img src="https://images.unsplash.com/photo-1509785307050-d4066910ec1e?w=600&q=70&fit=crop" alt="Ambiance boutique" loading="lazy" />
+      <div class="carousel-card-overlay">
+        <p class="carousel-card-eyebrow">En boutique · Martinique</p>
+        <p class="carousel-card-title">Conseils<br>personnalisés</p>
+      </div>
+      <div class="carousel-card-arrow">›</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
+     NOUVELLE SECTION 2 — Tuiles 3 gammes
+     ════════════════════════════════════ -->
+<div class="section-label">✦ NOUVELLE SECTION 2 — Tuiles 3 gammes (navigation visuelle rapide)</div>
+<section class="tiles-section">
+  <h2>Explorer par gamme</h2>
+  <p class="sub">Choisissez votre univers</p>
+  <div class="tiles-grid">
+
+    <div class="tile">
+      <img src="https://images.unsplash.com/photo-1544145945-f90425340c7e?w=600&q=70&fit=crop" alt="Wellness" loading="lazy" />
+      <div class="tile-label">Wellness</div>
+      <div class="tile-sub">Compléments nutrition</div>
+      <div class="tile-arrow">›</div>
+    </div>
+
+    <div class="tile">
+      <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=70&fit=crop&crop=top" alt="Sport" loading="lazy" />
+      <div class="tile-label">Sport</div>
+      <div class="tile-sub">Performance</div>
+      <div class="tile-arrow">›</div>
+    </div>
+
+    <div class="tile">
+      <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=70&fit=crop" alt="Skin" loading="lazy" />
+      <div class="tile-label">Skin</div>
+      <div class="tile-sub">Soins visage</div>
+      <div class="tile-arrow">›</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════════════════════════════════
+     Sections existantes
+     ════════════════════════════════════ -->
+<div class="existing-section">◈ Sections alternées Wellness / Sport / Skin existantes — inchangées</div>
+<div class="existing-section">◈ CTA "En boutique" existant — inchangé</div>
+
+<div style="height: 60px; background: #f5f4f0;"></div>
+
+</body>
+</html>

@@ -1,0 +1,89 @@
+<h2>Comment le mode édition s'affiche-t-il ?</h2>
+<p class="subtitle">Au clic sur "✏️ Modifier", les champs apparaissent comment ?</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8f8f8;padding:12px 16px;height:210px;overflow:hidden;">
+      <!-- Mockup A : inline, les textes deviennent des inputs sur place -->
+      <div style="font-size:9px;color:#888;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">Édition inline — la page se transforme</div>
+      <div style="border:1.5px solid #1E3529;border-radius:4px;padding:4px 8px;margin-bottom:6px;background:white;">
+        <span style="font-size:8px;color:#888;">Nom</span>
+        <div style="font-size:12px;font-weight:600;color:#222;">Wellness Boost</div>
+      </div>
+      <div style="border:1.5px solid #ddd;border-radius:4px;padding:4px 8px;margin-bottom:6px;background:white;height:40px;">
+        <span style="font-size:8px;color:#888;">Description</span>
+        <div style="font-size:9px;color:#555;margin-top:2px;">Un concentré de bien-être...</div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <div style="border:1.5px solid #ddd;border-radius:4px;padding:4px 8px;background:white;flex:1;">
+          <span style="font-size:8px;color:#888;">Prix</span>
+          <div style="font-size:11px;color:#222;">6,50 €</div>
+        </div>
+        <div style="border:1.5px solid #ddd;border-radius:4px;padding:4px 8px;background:white;flex:1;">
+          <span style="font-size:8px;color:#888;">Calories</span>
+          <div style="font-size:11px;color:#222;">180 kcal</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <button style="background:#1E3529;color:white;border:none;padding:5px 12px;border-radius:20px;font-size:9px;flex:1;">💾 Enregistrer</button>
+        <button style="background:transparent;border:1px solid #ccc;color:#666;padding:5px 12px;border-radius:20px;font-size:9px;flex:1;">Annuler</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Inline (la page se transforme)</h3>
+      <p>Les textes deviennent des champs éditables directement sur la page. Expérience fluide, contexte préservé.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8f8f8;padding:0;height:210px;overflow:hidden;position:relative;">
+      <!-- Mockup B : drawer/panel depuis la droite -->
+      <div style="padding:12px 16px;opacity:0.35;">
+        <div style="height:14px;background:#222;border-radius:3px;margin-bottom:8px;width:55%"></div>
+        <div style="height:8px;background:#ccc;border-radius:3px;margin-bottom:5px;width:90%"></div>
+        <div style="height:8px;background:#ccc;border-radius:3px;width:75%"></div>
+      </div>
+      <!-- Drawer depuis la droite -->
+      <div style="position:absolute;top:0;right:0;width:55%;height:100%;background:white;box-shadow:-4px 0 16px rgba(0,0,0,0.12);padding:10px;">
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1E3529;margin-bottom:8px;">✏️ Modifier la fiche</div>
+        <div style="border:1px solid #ddd;border-radius:3px;padding:4px 6px;margin-bottom:5px;font-size:9px;color:#555;">Wellness Boost</div>
+        <div style="border:1px solid #ddd;border-radius:3px;padding:4px 6px;margin-bottom:5px;font-size:9px;color:#555;height:28px;">Description...</div>
+        <div style="display:flex;gap:4px;margin-bottom:8px;">
+          <div style="border:1px solid #ddd;border-radius:3px;padding:4px 6px;font-size:9px;color:#555;flex:1;">6,50 €</div>
+          <div style="border:1px solid #ddd;border-radius:3px;padding:4px 6px;font-size:9px;color:#555;flex:1;">180</div>
+        </div>
+        <button style="background:#1E3529;color:white;border:none;padding:5px 10px;border-radius:20px;font-size:8px;width:100%;">💾 Enregistrer</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Panneau latéral (drawer)</h3>
+      <p>Un panneau glisse depuis la droite. La page reste visible à gauche pour contexte. Plus structuré.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8f8f8;padding:0;height:210px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;">
+      <!-- Mockup C : modal centré -->
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,0.3);"></div>
+      <div style="position:relative;background:white;border-radius:6px;padding:14px;width:80%;box-shadow:0 4px 24px rgba(0,0,0,0.2);">
+        <div style="font-size:10px;font-weight:700;color:#1E3529;margin-bottom:8px;">✏️ Modifier — Wellness Boost</div>
+        <div style="border:1px solid #ddd;border-radius:3px;padding:4px 6px;margin-bottom:5px;font-size:9px;color:#555;">Wellness Boost</div>
+        <div style="border:1px solid #ddd;border-radius:3px;padding:4px 6px;margin-bottom:5px;font-size:9px;color:#555;height:24px;">Description...</div>
+        <div style="display:flex;gap:4px;margin-bottom:8px;">
+          <div style="border:1px solid #ddd;border-radius:3px;padding:4px 6px;font-size:9px;flex:1;">6,50 €</div>
+          <div style="border:1px solid #ddd;border-radius:3px;padding:4px 6px;font-size:9px;flex:1;">180 kcal</div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button style="background:#1E3529;color:white;border:none;padding:4px 10px;border-radius:20px;font-size:8px;flex:1;">💾 Enregistrer</button>
+          <button style="background:transparent;border:1px solid #ccc;color:#666;padding:4px 10px;border-radius:20px;font-size:8px;flex:1;">Annuler</button>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Modal centré</h3>
+      <p>Une fenêtre modale s'ouvre au centre. Classique, séparation claire entre lecture et édition.</p>
+    </div>
+  </div>
+
+</div>

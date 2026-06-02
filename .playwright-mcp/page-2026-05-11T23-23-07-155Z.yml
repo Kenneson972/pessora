@@ -1,0 +1,129 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - link "Aller au contenu" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - banner [ref=e5]:
+      - generic [ref=e6]:
+        - link "Pessóra" [ref=e7] [cursor=pointer]:
+          - /url: /
+          - img "Pessóra" [ref=e8]
+        - navigation "Navigation principale" [ref=e9]:
+          - link "Concept" [ref=e10] [cursor=pointer]:
+            - /url: /concept
+          - link "La carte" [ref=e11] [cursor=pointer]:
+            - /url: /menu
+          - link "Produits" [ref=e12] [cursor=pointer]:
+            - /url: /nos-produits
+          - link "Óra+" [ref=e13] [cursor=pointer]:
+            - /url: /ora-plus
+          - link "Événements" [ref=e14] [cursor=pointer]:
+            - /url: /evenements
+          - link "Bilan" [ref=e15] [cursor=pointer]:
+            - /url: /bilan-bien-etre
+        - generic [ref=e16]:
+          - button "Ouvrir la recherche (Ctrl+K)" [ref=e19]:
+            - img [ref=e20]
+          - link "Connexion" [ref=e23] [cursor=pointer]:
+            - /url: /connexion
+            - img [ref=e24]
+            - generic [ref=e27]: Connexion
+          - button "Panier, vide" [ref=e29] [cursor=pointer]:
+            - img
+    - main [ref=e30]:
+      - status [ref=e31]:
+        - generic [ref=e32]: Chargement de la page
+        - generic [ref=e33]:
+          - generic:
+            - img
+          - paragraph [ref=e34]: Chargement
+    - contentinfo [ref=e36]:
+      - generic [ref=e40]:
+        - generic [ref=e42]:
+          - paragraph [ref=e43]: Menu
+          - navigation "Menu" [ref=e44]:
+            - link "Shakes" [ref=e45] [cursor=pointer]:
+              - /url: /menu
+            - link "Boissons énergie" [ref=e46] [cursor=pointer]:
+              - /url: /menu
+            - link "Carte complète" [ref=e47] [cursor=pointer]:
+              - /url: /menu
+        - generic [ref=e48]:
+          - generic [ref=e49]:
+            - img "Pessóra" [ref=e50]
+            - paragraph [ref=e51]:
+              - text: Bar protéiné
+              - text: Fort-de-France, Martinique
+            - generic [ref=e52]:
+              - link "Pessóra sur Instagram (ouvre un nouvel onglet)" [ref=e53] [cursor=pointer]:
+                - /url: https://instagram.com/pessora.mq
+                - img [ref=e54]
+              - link "Contacter Pessóra sur WhatsApp (ouvre un nouvel onglet)" [ref=e57] [cursor=pointer]:
+                - /url: https://wa.me/596696000000
+                - img [ref=e58]
+          - generic [ref=e60]:
+            - paragraph [ref=e61]: Newsletter
+            - paragraph [ref=e62]: Offres, nouveautés et événements — une fois de temps en temps, jamais spam.
+            - generic [ref=e63]:
+              - generic [ref=e64]:
+                - generic [ref=e65]: Adresse e-mail
+                - textbox "votre@email.com" [ref=e66]
+                - button "S’inscrire à la newsletter" [ref=e67] [cursor=pointer]:
+                  - img
+              - generic [ref=e69] [cursor=pointer]:
+                - checkbox "J’accepte de recevoir la newsletter et j’ai pris connaissance de la politique de confidentialité." [ref=e71]
+                - generic [ref=e72]:
+                  - text: J’accepte de recevoir la newsletter et j’ai pris connaissance de la
+                  - link "politique de confidentialité" [ref=e73]:
+                    - /url: /politique-confidentialite
+                  - text: .
+          - paragraph [ref=e74]: « Nourrir le meilleur de toi-même. »
+        - generic [ref=e75]:
+          - generic [ref=e77]:
+            - paragraph [ref=e78]: Espace
+            - navigation "Espace" [ref=e79]:
+              - link "Óra+" [ref=e80] [cursor=pointer]:
+                - /url: /ora-plus
+              - link "Événements" [ref=e81] [cursor=pointer]:
+                - /url: /evenements
+              - link "Bilan Bien-être" [ref=e82] [cursor=pointer]:
+                - /url: /bilan-bien-etre
+          - generic [ref=e84]:
+            - paragraph [ref=e85]: Contact
+            - navigation "Contact et réseaux" [ref=e86]:
+              - link "Instagram" [ref=e88] [cursor=pointer]:
+                - /url: https://instagram.com/pessora.mq
+              - generic [ref=e89]:
+                - generic [ref=e90]: ·
+                - link "WhatsApp" [ref=e91] [cursor=pointer]:
+                  - /url: https://wa.me/596696000000
+              - generic [ref=e92]:
+                - generic [ref=e93]: ·
+                - link "Fort-de-France" [ref=e94] [cursor=pointer]:
+                  - /url: /contact
+              - generic [ref=e95]:
+                - generic [ref=e96]: ·
+                - link "Partenariats" [ref=e97] [cursor=pointer]:
+                  - /url: /contact-partenariat
+      - generic [ref=e98]:
+        - generic [ref=e99]: © 2026 Pessóra · Fort-de-France
+        - generic [ref=e100]:
+          - link "Mentions légales" [ref=e101] [cursor=pointer]:
+            - /url: /mentions-legales
+          - link "Confidentialité" [ref=e102] [cursor=pointer]:
+            - /url: /politique-confidentialite
+          - button "Cookies" [ref=e103]
+          - link "CGV" [ref=e104] [cursor=pointer]:
+            - /url: /cgv
+  - dialog "Cookies & données" [ref=e105]:
+    - generic [ref=e106]:
+      - generic [ref=e107]:
+        - paragraph [ref=e108]: Cookies & données
+        - paragraph [ref=e109]:
+          - text: Nous utilisons des cookies et le stockage local pour le panier et, avec votre accord, des mesures d’audience. Consultez notre
+          - link "politique de confidentialité" [ref=e110] [cursor=pointer]:
+            - /url: /politique-confidentialite
+          - text: .
+      - generic [ref=e111]:
+        - button "Personnaliser" [ref=e112]
+        - button "Nécessaires uniquement" [ref=e113]
+        - button "Tout accepter" [ref=e114]

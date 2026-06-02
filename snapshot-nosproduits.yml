@@ -1,0 +1,118 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - link "Aller au contenu" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - banner [ref=e5]:
+      - generic [ref=e6]:
+        - link "Pessóra" [ref=e7] [cursor=pointer]:
+          - /url: /
+          - img "Pessóra" [ref=e8]
+        - navigation "Navigation principale" [ref=e9]:
+          - link "Concept" [ref=e10] [cursor=pointer]:
+            - /url: /concept
+          - link "La carte" [ref=e11] [cursor=pointer]:
+            - /url: /menu
+          - link "Produits" [ref=e12] [cursor=pointer]:
+            - /url: /nos-produits
+          - link "Óra+" [ref=e13] [cursor=pointer]:
+            - /url: /ora-plus
+          - link "Événements" [ref=e14] [cursor=pointer]:
+            - /url: /evenements
+          - link "Bilan" [ref=e15] [cursor=pointer]:
+            - /url: /bilan-bien-etre
+        - generic [ref=e16]:
+          - button "Ouvrir la recherche (Ctrl+K)" [ref=e19]:
+            - img [ref=e20]
+          - link "Connexion" [ref=e23] [cursor=pointer]:
+            - /url: /connexion
+            - img [ref=e24]
+            - generic [ref=e27]: Connexion
+          - button "Panier, vide" [ref=e29] [cursor=pointer]:
+            - img
+      - radiogroup "Navigation secondaire" [ref=e32]:
+        - radio "Vue d’ensemble" [checked] [ref=e33] [cursor=pointer]: Vue d’ensemble
+        - radio "Wellness" [ref=e35] [cursor=pointer]: Wellness
+        - radio "Sport" [ref=e36] [cursor=pointer]: Sport
+        - radio "Skin" [ref=e37] [cursor=pointer]: Skin
+    - main [ref=e38]:
+      - generic [ref=e129]:
+        - generic [ref=e131]:
+          - paragraph [ref=e132]: Catalogue
+          - generic [ref=e134]:
+            - heading "Les gammes PessÓra" [level=1] [ref=e135]
+            - paragraph [ref=e136]: Nutrition, sport et soins — chaque gamme a été composée avec une exigence précise. Découvrez celle qui vous correspond.
+        - generic [ref=e138]:
+          - generic [ref=e139]:
+            - heading "La collection" [level=2] [ref=e140]
+            - generic [ref=e141]
+          - generic [ref=e144]:
+            - button "Gamme Wellness Gamme Wellness Compléments nutrition" [ref=e145]
+            - button "Gamme Sport Gamme Sport Performance & récupération" [ref=e150]
+            - button "Gamme Skin Gamme Skin Beauté & éclat" [ref=e155]
+            - button "Photo à venir En boutique · Martinique Conseils personnalisés" [ref=e160]
+        - generic [ref=e167]:
+          - paragraph [ref=e168]: Explorer par gamme
+          - generic [ref=e169]:
+            - button "Voir Gamme Wellness" [ref=e170]
+            - button "Voir Gamme Sport" [ref=e179]
+            - button "Voir Gamme Skin" [ref=e188]
+        - generic [ref=e197]:
+          - generic [ref=e200]:
+            - generic [ref=e201]
+            - generic [ref=e207]
+          - generic [ref=e215]:
+            - generic [ref=e216]
+            - generic [ref=e222]
+          - generic [ref=e230]:
+            - generic [ref=e231]
+            - generic [ref=e237]
+        - generic [ref=e245]:
+          - paragraph [ref=e246]: En boutique
+          - heading "Conseils personnalisés sur place" [level=3] [ref=e247]:
+            - text: Conseils personnalisés
+            - text: sur place
+          - paragraph [ref=e248]: Disponibilité des produits et recommandations adaptées à vos besoins. La carte complète des boissons est sur le menu.
+          - button "Voir le menu" [ref=e249] [cursor=pointer]:
+            - text: Voir le menu
+            - img
+    - contentinfo [ref=e44]:
+      - generic [ref=e47]:
+        - generic [ref=e49]:
+          - region "Navigation menu" [ref=e50]:
+            - paragraph [ref=e51]: Sur le site
+            - generic [ref=e52]
+          - region "Newsletter" [ref=e58]:
+            - generic [ref=e59]
+        - region "Marque Pessóra" [ref=e73]:
+          - generic [ref=e74]:
+            - generic [ref=e75]
+            - generic [ref=e78]
+        - generic [ref=e87]:
+          - region "Espace membres et services" [ref=e88]:
+            - generic [ref=e89]
+          - region "Contact et réseaux" [ref=e96]:
+            - generic [ref=e97]
+      - generic [ref=e112]:
+        - generic [ref=e113]: © 2026 Pessóra · Fort-de-France
+        - generic [ref=e114]:
+          - link "Mentions légales" [ref=e115] [cursor=pointer]:
+            - /url: /mentions-legales
+          - link "Confidentialité" [ref=e116] [cursor=pointer]:
+            - /url: /politique-confidentialite
+          - button "Cookies" [ref=e117]
+          - link "CGV" [ref=e118] [cursor=pointer]:
+            - /url: /cgv
+    - button "Ouvrir Pessobot" [ref=e250] [cursor=pointer]
+  - dialog "Cookies & données" [ref=e119]:
+    - generic [ref=e120]:
+      - generic [ref=e121]:
+        - paragraph [ref=e122]: Cookies & données
+        - paragraph [ref=e123]:
+          - text: Nous utilisons des cookies et le stockage local pour le panier et, avec votre accord, des mesures d’audience. Consultez notre
+          - link "politique de confidentialité" [ref=e124] [cursor=pointer]:
+            - /url: /politique-confidentialite
+          - text: .
+      - generic [ref=e125]:
+        - button "Personnaliser" [ref=e126]
+        - button "Nécessaires uniquement" [ref=e127]
+        - button "Tout accepter" [ref=e128]

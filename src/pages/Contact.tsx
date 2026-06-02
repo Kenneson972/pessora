@@ -134,7 +134,7 @@ const Contact = () => {
                   </div>
                   <div className="space-y-2">
                     <h4 className="text-[10px] font-normal uppercase tracking-[0.18em] text-black/40">Instagram</h4>
-                    <p className="text-[17px] font-light text-black">@pessora.mq</p>
+                    <p className="text-[17px] font-light text-black">@pessora.fr</p>
                     <a
                       href={barInfo.contact.instagramUrl}
                       target="_blank"

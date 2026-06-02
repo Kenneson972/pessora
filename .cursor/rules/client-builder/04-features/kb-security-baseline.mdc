@@ -1,0 +1,359 @@
+---
+description: Sécurité baseline Karibloom - 5 fichiers à créer AVANT toute feature, checklist P0 obligatoire avant livraison. Référence : architecture DALCIELO (projet le plus mature en sécurité).
+globs: "**/middleware.ts,**/lib/csrf.ts,**/lib/rateLimit.ts,**/lib/adminAuth.ts,**/lib/auditLog.ts,**/next.config.*"
+alwaysApply: false
+---
+
+# Sécurité Baseline — P0 avant toute feature
+
+> **Règle absolue** : Ces 5 fichiers existent sur le projet AVANT d'écrire la moindre page ou API.
+> Référence terrain : DALCIELO est le projet le plus sécurisé de l'agence. Copier ce pattern.
+> Complète `kb-security.mdc` (détails théoriques) — ce fichier est opérationnel.
+
+---
+
+## Les 5 fichiers obligatoires au démarrage
+
+### 1. `lib/csrf.ts` — Protection CSRF
+
+```ts
+// lib/csrf.ts
+import { randomBytes } from "crypto";
+
+const CSRF_COOKIE = "csrf_token";
+const CSRF_HEADER = "x-csrf-token";
+
+export function generateCsrfToken(): string {
+  return randomBytes(32).toString("hex");
+}
+
+export function getCsrfToken(): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp(`(?:^|; )${CSRF_COOKIE}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+export function setCsrfCookie(token: string) {
+  const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
+  document.cookie = `${CSRF_COOKIE}=${token}; Path=/; SameSite=Strict${secure}`;
+}
+
+// À appeler dans les fetch() clients vers /api/*
+export function csrfHeaders(): Record<string, string> {
+  const token = getCsrfToken();
+  return token ? { [CSRF_HEADER]: token } : {};
+}
+```
+
+### 2. `lib/rateLimit.ts` — Rate limiting IP
+
+```ts
+// lib/rateLimit.ts
+const store = new Map<string, { count: number; resetAt: number }>();
+
+export function checkRateLimit(
+  ip: string,
+  maxRequests = 20,
+  windowMs = 60_000
+): boolean {
+  const now = Date.now();
+  const entry = store.get(ip);
+
+  if (!entry || entry.resetAt < now) {
+    store.set(ip, { count: 1, resetAt: now + windowMs });
+    // Nettoyage si trop d'entrées
+    if (store.size > 1000) {
+      for (const [k, v] of store) {
+        if (v.resetAt < now) store.delete(k);
+      }
+    }
+    return true;
+  }
+
+  entry.count++;
+  return entry.count <= maxRequests;
+}
+
+export function getIp(req: Request): string {
+  const xff = (req as any).headers?.get?.("x-forwarded-for");
+  if (xff) return xff.split(",")[0].trim();
+  const xri = (req as any).headers?.get?.("x-real-ip");
+  return xri ?? "unknown";
+}
+```
+
+### 3. `lib/adminAuth.ts` — Auth admin PIN serveur
+
+```ts
+// lib/adminAuth.ts
+import { timingSafeEqual, createHash } from "crypto";
+import { checkRateLimit, getIp } from "./rateLimit";
+import { NextResponse } from "next/server";
+
+const MAX_FAILURES = 15;
+const BLOCK_WINDOW_MS = 60_000; // 1 min
+const BLOCK_DURATION_MS = 15 * 60_000; // 15 min
+
+const failures = new Map<string, { count: number; blockedUntil?: number }>();
+
+function getAdminPin(): string {
+  const pin = process.env.ADMIN_PIN;
+  // NEXT_PUBLIC_ADMIN_PIN toléré EN DEV uniquement
+  const devPin = process.env.NEXT_PUBLIC_ADMIN_PIN;
+  if (!pin && process.env.NODE_ENV !== "production" && devPin) return devPin;
+  if (!pin) throw new Error("ADMIN_PIN manquant");
+  return pin;
+}
+
+export function requireAdminWithRateLimit(req: Request): Response | null {
+  const ip = getIp(req);
+  const now = Date.now();
+
+  // Vérifier si l'IP est bloquée
+  const f = failures.get(ip);
+  if (f?.blockedUntil && f.blockedUntil > now) {
+    return NextResponse.json({ error: "Trop de tentatives" }, { status: 429 });
+  }
+
+  // Vérifier le PIN (comparaison constant-time)
+  const providedPin = req.headers.get("x-admin-pin") ?? "";
+  let adminPin: string;
+  try {
+    adminPin = getAdminPin();
+  } catch {
+    return NextResponse.json({ error: "Configuration manquante" }, { status: 500 });
+  }
+
+  const buf1 = Buffer.from(createHash("sha256").update(providedPin).digest("hex"));
+  const buf2 = Buffer.from(createHash("sha256").update(adminPin).digest("hex"));
+
+  let valid = false;
+  try {
+    valid = buf1.length === buf2.length && timingSafeEqual(buf1, buf2);
+  } catch {
+    valid = providedPin === adminPin;
+  }
+
+  if (!valid) {
+    const entry = failures.get(ip) ?? { count: 0 };
+    entry.count++;
+    if (entry.count >= MAX_FAILURES) {
+      entry.blockedUntil = now + BLOCK_DURATION_MS;
+    }
+    failures.set(ip, entry);
+    return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+  }
+
+  // Succès → reset compteur
+  failures.delete(ip);
+  return null; // null = auth OK, continuer
+}
+```
+
+### 4. `lib/auditLog.ts` — Journal admin
+
+```ts
+// lib/auditLog.ts
+import { supabaseAdmin } from "./supabase/admin";
+
+export type AuditAction =
+  | "order.validate" | "order.update" | "order.delete"
+  | "product.create" | "product.update" | "product.delete"
+  | "booking.create" | "booking.update" | "booking.cancel"
+  | "client.create" | "client.update" | "client.delete"
+  | "admin.login";
+
+export async function logAdminAction(
+  action: AuditAction,
+  details: Record<string, unknown>,
+  ip?: string
+) {
+  try {
+    const supabase = supabaseAdmin();
+    await supabase.from("admin_audit_log").insert({
+      action,
+      details,
+      ip_address: ip ?? null,
+      created_at: new Date().toISOString(),
+    });
+  } catch {
+    // Silent fail — ne jamais bloquer une opération pour le log
+  }
+}
+```
+
+Migration Supabase correspondante :
+```sql
+-- supabase/migrations/YYYYMMDDHHMMSS_create_admin_audit_log.sql
+CREATE TABLE IF NOT EXISTS public.admin_audit_log (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  action TEXT NOT NULL,
+  details JSONB DEFAULT '{}',
+  ip_address TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+ALTER TABLE public.admin_audit_log ENABLE ROW LEVEL SECURITY;
+-- Seul service_role peut lire/écrire (le client ne peut jamais accéder à cette table)
+CREATE POLICY "Service role only" ON public.admin_audit_log
+  USING (false)
+  WITH CHECK (false);
+```
+
+### 5. `middleware.ts` — CSRF + Auth Next.js
+
+```ts
+// middleware.ts (racine du projet)
+import { NextResponse, type NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { randomBytes } from "crypto";
+
+const CSRF_COOKIE = "csrf_token";
+const CSRF_HEADER = "x-csrf-token";
+const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+
+// Routes API exemptées du CSRF (elles ont leur propre auth)
+const CSRF_EXEMPT = [
+  "/api/webhooks/",   // Signatures Stripe/partenaires
+  "/api/auth/",       // Bearer JWT
+  "/api/account/",    // Bearer JWT
+];
+
+export async function middleware(request: NextRequest) {
+  const { pathname, method } = request.nextUrl;
+  const response = NextResponse.next({ request });
+
+  // ── 1. CSRF ──────────────────────────────────────────────
+  // Générer ou propager le cookie CSRF
+  let csrfToken = request.cookies.get(CSRF_COOKIE)?.value;
+  if (!csrfToken) {
+    csrfToken = randomBytes(32).toString("hex");
+    response.cookies.set(CSRF_COOKIE, csrfToken, {
+      httpOnly: false,     // Doit être lu par le JS client
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+    });
+  }
+
+  // Valider sur les requêtes mutantes vers /api/*
+  if (
+    pathname.startsWith("/api/") &&
+    MUTATING_METHODS.has(method) &&
+    !CSRF_EXEMPT.some((p) => pathname.startsWith(p))
+  ) {
+    const headerToken = request.headers.get(CSRF_HEADER);
+    if (!headerToken || headerToken !== csrfToken) {
+      return NextResponse.json({ error: "CSRF token invalide" }, { status: 403 });
+    }
+  }
+
+  // ── 2. Auth Supabase (session cookies) ───────────────────
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => request.cookies.getAll(),
+        setAll: (toSet) => {
+          toSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          );
+        },
+      },
+    }
+  );
+
+  await supabase.auth.getUser(); // Refreshe session si expirée
+
+  return response;
+}
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+};
+```
+
+---
+
+## Headers sécurité dans `next.config.js`
+
+```js
+// next.config.js — à ajouter sur TOUS les projets
+async headers() {
+  const isProd = process.env.NODE_ENV === "production";
+  return [
+    {
+      source: "/(.*)",
+      headers: [
+        { key: "X-Content-Type-Options", value: "nosniff" },
+        { key: "X-Frame-Options", value: "SAMEORIGIN" },
+        { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        { key: "Permissions-Policy", value: "geolocation=(self), microphone=(), camera=()" },
+        ...(isProd ? [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" }] : []),
+        {
+          key: "Content-Security-Policy",
+          value: [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline' https://js.stripe.com",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+            "font-src 'self' https://fonts.gstatic.com",
+            "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com",
+            "connect-src 'self' https://*.supabase.co https://api.stripe.com wss://*.supabase.co",
+            "frame-src https://js.stripe.com",
+            "frame-ancestors 'none'",
+          ].join("; "),
+        },
+      ],
+    },
+  ];
+},
+```
+
+---
+
+## Checklist P0 — À cocher avant de passer à la feature principale
+
+```
+□ middleware.ts créé avec CSRF + session Supabase
+□ lib/csrf.ts créé
+□ lib/rateLimit.ts créé
+□ lib/adminAuth.ts créé (si projet avec admin)
+□ lib/auditLog.ts créé + migration SQL admin_audit_log
+□ Headers sécurité dans next.config.js (CSP, HSTS, XFO, nosniff)
+□ .env.local configuré — ADMIN_PIN server-only (jamais NEXT_PUBLIC_ADMIN_PIN en prod)
+□ RLS activée sur toutes les tables avec données user
+□ SUPABASE_SERVICE_ROLE_KEY jamais dans NEXT_PUBLIC_*
+□ STRIPE_SECRET_KEY jamais dans NEXT_PUBLIC_*
+□ Webhook Stripe → vérification de signature (pas de skip)
+□ lib/supabase/admin.ts → jamais importé dans un composant "use client"
+```
+
+---
+
+## Utiliser `requireAdminWithRateLimit` dans chaque route admin
+
+```ts
+// app/api/admin/products/route.ts
+import { requireAdminWithRateLimit } from "@/lib/adminAuth";
+import { logAdminAction } from "@/lib/auditLog";
+import { getIp } from "@/lib/rateLimit";
+
+export async function POST(req: Request) {
+  const authError = requireAdminWithRateLimit(req);
+  if (authError) return authError;
+
+  // ... logique métier ...
+
+  await logAdminAction("product.create", { name: data.name }, getIp(req));
+  return NextResponse.json({ ok: true });
+}
+```
+
+---
+
+## Lien avec les autres règles
+
+- `kb-security.mdc` : principes théoriques complets (RLS, CSP, secrets)
+- `kb-supabase.mdc` : pattern 3 clients (browser / server / admin)
+- `kb-api-routes.mdc` : validation Zod, Server Actions vs Route Handlers
+- `kb-auth.mdc` : Supabase Auth + middleware RBAC complet

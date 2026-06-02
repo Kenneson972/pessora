@@ -1,0 +1,127 @@
+- main [ref=e4]:
+  - generic [ref=e10]:
+    - complementary "Navigation admin" [ref=e11]:
+      - generic [ref=e12]:
+        - link "Accueil" [ref=e13] [cursor=pointer]:
+          - /url: /
+          - img "Pessóra" [ref=e14]
+        - paragraph [ref=e15]: Administration
+      - navigation [ref=e16]:
+        - link "Vue d'ensemble" [ref=e17] [cursor=pointer]:
+          - /url: /admin
+          - img [ref=e18]
+          - generic [ref=e23]: Vue
+        - link "Membres" [ref=e24] [cursor=pointer]:
+          - /url: /admin/membres
+          - img [ref=e25]
+          - generic [ref=e30]: Membres
+        - link "Événements" [ref=e31] [cursor=pointer]:
+          - /url: /admin/evenements
+          - img [ref=e32]
+          - generic [ref=e34]: Évén.
+        - link "Produits & Gammes" [ref=e35] [cursor=pointer]:
+          - /url: /admin/produits-gammes
+          - img [ref=e36]
+          - generic [ref=e40]: Prod.
+        - link "Bilans" [ref=e41] [cursor=pointer]:
+          - /url: /admin/bilans
+          - img [ref=e42]
+          - generic [ref=e44]: Bilans
+        - link "Commandes" [ref=e45] [cursor=pointer]:
+          - /url: /admin/commandes
+          - img [ref=e46]
+          - generic [ref=e49]: Cmd.
+        - link "Communication" [ref=e50] [cursor=pointer]:
+          - /url: /admin/communication
+          - img [ref=e51]
+          - generic [ref=e54]: Comm.
+        - link "Contenu" [ref=e55] [cursor=pointer]:
+          - /url: /admin/contenu
+          - img [ref=e56]
+          - generic [ref=e61]: Contenu
+      - generic [ref=e62]:
+        - button "Déconnexion" [ref=e63]:
+          - img [ref=e64]
+          - generic [ref=e67]: Déconnexion
+        - generic "admin@pessora.mq" [ref=e68]:
+          - generic [ref=e69]: admin
+    - main [ref=e71]:
+      - generic [ref=e72]:
+        - generic [ref=e74]:
+          - generic [ref=e75]: Administration
+          - heading "Contenu" [level=1] [ref=e76]
+          - paragraph [ref=e77]: Infos bar, carrousel, moments et bannière
+        - generic [ref=e78]:
+          - tablist [ref=e79]:
+            - tab "Infos bar" [ref=e80] [cursor=pointer]
+            - tab "Carrousel" [selected] [ref=e81] [cursor=pointer]
+            - tab "Moments" [ref=e82] [cursor=pointer]
+            - tab "Bannière" [ref=e83] [cursor=pointer]
+          - tabpanel "Carrousel" [ref=e84]:
+            - generic [ref=e85]:
+              - generic [ref=e86]: Contenu
+              - generic [ref=e87]:
+                - heading "Carrousel éditorial" [level=1] [ref=e89]
+                - button "Ajouter une carte" [ref=e91] [cursor=pointer]:
+                  - img
+                  - text: Ajouter une carte
+              - generic [ref=e92]:
+                - generic [ref=e93]:
+                  - paragraph [ref=e94]: Section "À la une"
+                  - paragraph [ref=e95]: Visible sur la page d'accueil
+                - button "Désactiver À la une" [ref=e96]
+              - generic [ref=e98]:
+                - paragraph [ref=e99]: Glisser-déposer pour réordonner
+                - generic [ref=e100]:
+                  - img [ref=e101]
+                  - img [ref=e110]
+                  - generic [ref=e113]:
+                    - paragraph [ref=e114]: Wellness · Coup de cœur
+                    - paragraph [ref=e115]: Ton moment bien-être
+                    - paragraph [ref=e116]: /menu?gamme=wellness
+                  - generic [ref=e117]: Actif
+                  - generic [ref=e118]:
+                    - button "Modifier" [ref=e119] [cursor=pointer]:
+                      - img
+                    - button "Supprimer" [ref=e120] [cursor=pointer]:
+                      - img
+                - generic [ref=e121]:
+                  - img [ref=e122]
+                  - img [ref=e131]
+                  - generic [ref=e134]:
+                    - paragraph [ref=e135]: Wellness · Coup de cœur
+                    - paragraph [ref=e136]: Ton moment bien-être
+                    - paragraph [ref=e137]: /menu?gamme=wellness
+                  - generic [ref=e138]: Actif
+                  - generic [ref=e139]:
+                    - button "Modifier" [ref=e140] [cursor=pointer]:
+                      - img
+                    - button "Supprimer" [ref=e141] [cursor=pointer]:
+                      - img
+                - generic [ref=e142]:
+                  - img [ref=e143]
+                  - img [ref=e152]
+                  - generic [ref=e155]:
+                    - paragraph [ref=e156]: Shakes · Protéinés
+                    - paragraph [ref=e157]: Shake Mangue Passion
+                    - paragraph [ref=e158]: /menu?gamme=shakes
+                  - generic [ref=e159]: Actif
+                  - generic [ref=e160]:
+                    - button "Modifier" [ref=e161] [cursor=pointer]:
+                      - img
+                    - button "Supprimer" [ref=e162] [cursor=pointer]:
+                      - img
+                - generic [ref=e163]:
+                  - img [ref=e164]
+                  - img [ref=e173]
+                  - generic [ref=e176]:
+                    - paragraph [ref=e177]: Coffee · Martinique
+                    - paragraph [ref=e178]: Coffee glacé maison
+                    - paragraph [ref=e179]: /menu?gamme=coffee
+                  - generic [ref=e180]: Actif
+                  - generic [ref=e181]:
+                    - button "Modifier" [ref=e182] [cursor=pointer]:
+                      - img
+                    - button "Supprimer" [ref=e183] [cursor=pointer]:
+                      - img
+      - alert

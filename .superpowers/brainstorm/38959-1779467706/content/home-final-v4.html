@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PESSÓRA — Home v4</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #111; }
+
+  nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.93); backdrop-filter: blur(12px); border-bottom: 1px solid #e8e4dc; padding: 0 48px; display: flex; align-items: center; justify-content: space-between; height: 56px; }
+  .nav-logo { font-family: Georgia, serif; font-size: 22px; font-style: italic; font-weight: 400; letter-spacing: 0.08em; }
+  .nav-links { display: flex; gap: 28px; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #555; }
+  .nav-actions { display: flex; gap: 20px; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: #555; }
+
+  .ann { font-size: 9px; letter-spacing: 0.26em; text-transform: uppercase; padding: 5px 48px; border-top: 1px dashed #e8e4dc; border-bottom: 1px dashed #e8e4dc; }
+  .ann.keep { color: #bbb; background: #fafaf8; }
+  .ann.new  { color: #d4a017; background: #fffbf0; }
+  .ann.mod  { color: #0d7c4f; background: #f0fdf4; }
+
+  /* HERO */
+  .hero { position: relative; height: 570px; overflow: hidden; background: #0d0a06; }
+  .hero-bg { position: absolute; inset: 0; background: url('https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=1400&q=80&fit=crop&crop=top') center/cover no-repeat; opacity: 0.45; }
+  .hero-grad { position: absolute; inset: 0; background: linear-gradient(160deg, rgba(10,6,2,0.72) 0%, rgba(10,6,2,0.28) 60%, transparent 100%); }
+  .hero-body { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; padding: 0 72px 64px; max-width: 480px; }
+  .hero-body .tagline { font-size: 17px; font-weight: 300; line-height: 1.45; color: rgba(255,255,255,0.88); margin-bottom: 14px; }
+  .hero-body .sub { font-size: 8px; letter-spacing: 0.28em; text-transform: uppercase; color: rgba(255,255,255,0.42); margin-bottom: 26px; }
+  .hero-body button { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: #fff; background: none; border: none; cursor: pointer; }
+
+  /* SHARED */
+  .sec { padding: 52px 0 52px 48px; }
+  .sec.bg-off { background: #faf9f6; }
+  .sec.bg-w { background: #fff; }
+  .sec-head { display: flex; align-items: flex-end; justify-content: space-between; padding-right: 48px; margin-bottom: 26px; }
+  .sec-head h2 { font-size: 20px; font-weight: 300; }
+  .sec-head a { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #aaa; text-decoration: none; border-bottom: 1px solid #ddd; }
+  .arrows { display: flex; gap: 8px; }
+  .arrows button { width: 38px; height: 38px; border-radius: 50%; border: 1px solid #ddd; background: #fff; cursor: pointer; font-size: 16px; color: #666; display: flex; align-items: center; justify-content: center; }
+  .track { display: flex; gap: 14px; overflow-x: auto; padding-right: 48px; scrollbar-width: none; }
+  .track::-webkit-scrollbar { display: none; }
+
+  /* TITLE PICKER */
+  .title-picker { background: #fffbf0; border: 1px dashed #d4a017; margin: 0 48px 0; padding: 14px 20px; border-radius: 6px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .title-picker span { font-size: 10px; color: #92620a; letter-spacing: 0.06em; flex-shrink: 0; }
+  .title-pill { padding: 7px 16px; border-radius: 20px; border: 1px solid #d4a017; font-size: 13px; font-weight: 300; color: #111; cursor: pointer; background: #fff; transition: all 0.15s; }
+  .title-pill:hover { background: #111; color: #fff; border-color: #111; }
+
+  /* ADMIN BADGE */
+  .admin-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; border-radius: 20px; padding: 3px 10px; }
+
+  /* EDITORIAL CARDS */
+  .ed-card { flex-shrink: 0; width: 310px; height: 420px; border-radius: 10px; overflow: hidden; position: relative; cursor: pointer; }
+  .ed-card img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+  .ed-card:hover img { transform: scale(1.04); }
+  .ed-ov { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 35%, rgba(0,0,0,0.68) 100%); display: flex; flex-direction: column; justify-content: flex-end; padding: 22px; }
+  .ed-eye { font-size: 8.5px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.55); margin-bottom: 5px; }
+  .ed-title { font-size: 17px; font-weight: 300; color: #fff; line-height: 1.25; }
+  .ed-btn { position: absolute; bottom: 18px; right: 18px; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.28); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; }
+
+  /* PRODUIT CARDS */
+  .prod-card { flex-shrink: 0; width: 220px; border-radius: 2px; border: 1px solid rgba(0,0,0,0.08); overflow: hidden; background: #fff; cursor: pointer; }
+  .prod-img { aspect-ratio: 1; background: #f5f4f0; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .prod-img img { width: 100%; height: 100%; object-fit: cover; }
+  .prod-img .badge { position: absolute; left: 8px; top: 8px; background: #111; color: #fff; font-size: 7px; letter-spacing: 0.15em; text-transform: uppercase; writing-mode: vertical-rl; transform: rotate(180deg); padding: 6px 4px; border-radius: 2px; }
+  .prod-img .add { position: absolute; bottom: 10px; right: 10px; width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; font-size: 16px; color: #555; }
+  .prod-body { padding: 14px; }
+  .prod-body h3 { font-size: 11px; font-weight: 500; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .prod-body p { font-size: 10px; color: #888; font-weight: 300; margin-bottom: 6px; line-height: 1.4; }
+  .prod-body .price { font-size: 12px; font-weight: 300; }
+
+  /* GAMME PRODUCT CARDS */
+  .gp-card { flex-shrink: 0; width: 200px; border-radius: 8px; overflow: hidden; background: #fff; border: 1px solid #eee; cursor: pointer; }
+  .gp-img { height: 200px; background: #f5f4f0; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+  .gp-img img { width: 100%; height: 100%; object-fit: cover; }
+  .gp-body { padding: 12px 14px; }
+  .gp-body h3 { font-size: 11px; font-weight: 500; letter-spacing: 0.05em; margin-bottom: 3px; }
+  .gp-body p { font-size: 10px; color: #999; line-height: 1.4; margin-bottom: 6px; }
+  .gp-body .price { font-size: 11px; font-weight: 300; color: #111; }
+
+  /* ÓRA+ */
+  .ora { margin: 0 48px 40px; border: 1px solid #e8e4dc; border-radius: 2px; padding: 15px 22px; display: flex; align-items: center; justify-content: space-between; background: #faf9f6; }
+  .ora p { font-size: 12px; color: #555; font-weight: 300; }
+  .ora p strong { color: #111; font-weight: 400; }
+  .ora a { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #111; text-decoration: none; }
+
+  /* SPLIT */
+  .split-section { background: #faf9f6; padding: 72px 48px; }
+  .split-head { text-align: center; margin-bottom: 36px; }
+  .split-head h2 { font-size: 28px; font-weight: 300; margin-bottom: 10px; }
+  .split-head p { font-size: 13px; color: #888; max-width: 400px; margin: 0 auto 22px; line-height: 1.65; font-weight: 300; }
+  .split-tabs { display: flex; justify-content: center; gap: 8px; }
+  .stab { padding: 9px 20px; border-radius: 22px; border: 1px solid #ccc; background: #fff; font-size: 11px; letter-spacing: 0.06em; cursor: pointer; color: #555; }
+  .stab.on { background: #111; color: #fff; border-color: #111; }
+  .split-grid { display: grid; grid-template-columns: 3fr 2fr; gap: 5px; border-radius: 12px; overflow: hidden; height: 530px; margin-top: 30px; }
+  .split-main { position: relative; overflow: hidden; }
+  .split-main img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+  .split-copy { position: absolute; bottom: 0; left: 0; right: 0; padding: 26px; background: linear-gradient(transparent, rgba(0,0,0,0.55)); }
+  .split-copy .eye { font-size: 8.5px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.58); margin-bottom: 5px; }
+  .split-copy h3 { font-size: 20px; font-weight: 300; color: #fff; line-height: 1.3; }
+  .split-side { display: flex; flex-direction: column; gap: 5px; }
+  .split-side div { flex: 1; overflow: hidden; }
+  .split-side img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* NOS UNIVERS */
+  .univers-section { background: #fff; padding: 72px 48px; }
+  .u-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 26px; }
+  .u-head h2 { font-size: 20px; font-weight: 300; }
+  .u-head a { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #aaa; text-decoration: none; border-bottom: 1px solid #ddd; }
+  .univers-card { position: relative; border-radius: 4px; overflow: hidden; aspect-ratio: 21/8; background: linear-gradient(135deg,#1a3a2e,#0d1f18); cursor: pointer; }
+  .uc-text { position: absolute; bottom: 28px; left: 40px; }
+  .uc-eye { font-size: 8.5px; letter-spacing: 0.28em; text-transform: uppercase; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
+  .uc-title { font-size: 34px; font-weight: 300; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.82); line-height: 1; }
+  .uc-title em { display: block; font-style: italic; font-size: 26px; text-transform: none; letter-spacing: 0.02em; }
+  .utabs { margin-top: 18px; display: flex; gap: 8px; }
+  .utab { padding: 8px 18px; border-radius: 20px; border: 1px solid #ddd; font-size: 10px; letter-spacing: 0.08em; color: #666; cursor: pointer; }
+  .utab.on { background: #111; color: #fff; border-color: #111; }
+
+  /* GAMMES TILES */
+  .gammes-section { background: #faf9f6; padding: 72px 48px 0; }
+  .g-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; }
+  .g-head h2 { font-size: 20px; font-weight: 300; }
+  .g-head a { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #aaa; text-decoration: none; border-bottom: 1px solid #ddd; }
+  .gammes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .g-tile { border-radius: 10px; overflow: hidden; aspect-ratio: 4/5; position: relative; cursor: pointer; }
+  .g-tile img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.45s; }
+  .g-tile:hover img { transform: scale(1.05); }
+  .g-tile::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.48) 100%); }
+  .g-label { position: absolute; top: 16px; left: 16px; z-index: 1; font-size: 14px; font-weight: 300; color: #fff; }
+  .g-sub { position: absolute; bottom: 16px; left: 16px; z-index: 1; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.58); }
+  .g-arrow { position: absolute; bottom: 14px; right: 14px; z-index: 1; width: 30px; height: 30px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; }
+
+  /* GAMME PRODUCT CAROUSEL */
+  .gpc-section { background: #faf9f6; padding: 40px 0 60px 48px; }
+  .gpc-head { display: flex; align-items: center; gap: 10px; padding-right: 48px; margin-bottom: 20px; }
+  .gpc-tabs { display: flex; gap: 8px; }
+  .gpc-tab { padding: 7px 16px; border-radius: 20px; border: 1px solid #ccc; background: #fff; font-size: 10px; letter-spacing: 0.06em; cursor: pointer; color: #666; }
+  .gpc-tab.on { background: #111; color: #fff; border-color: #111; }
+  .placeholder-photo { flex-shrink: 0; width: 200px; border-radius: 8px; overflow: hidden; background: #fff; border: 1px dashed #ccc; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 260px; gap: 8px; }
+  .placeholder-photo span { font-size: 28px; }
+  .placeholder-photo p { font-size: 9px; color: #bbb; text-align: center; line-height: 1.5; letter-spacing: 0.05em; }
+
+  /* REVIEWS */
+  .rev-section { background: #fff; padding: 72px 48px; }
+  .rv-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 28px; }
+  .rv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .rv-card { background: #faf9f6; border: 1px solid #ece9e2; border-radius: 8px; padding: 22px; font-size: 13px; font-weight: 300; color: #444; line-height: 1.65; }
+  .rv-meta { margin-top: 14px; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: #bbb; }
+
+  /* EVENTS */
+  .events { background: #fff; padding: 56px 48px; text-align: center; }
+  .events .eye { font-size: 8.5px; letter-spacing: 0.48em; text-transform: uppercase; color: #bbb; margin-bottom: 14px; }
+  .events h2 { font-size: clamp(30px, 4vw, 48px); font-weight: 300; line-height: 0.95; margin-bottom: 24px; }
+  .events h2 em { font-style: italic; color: #aaa; }
+  .events a { font-size: 10px; letter-spacing: 0.26em; text-transform: uppercase; color: #666; text-decoration: none; border-bottom: 1px solid #ccc; }
+
+  footer { background: #0d0a06; padding: 48px; }
+  .ft { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; }
+  .ft-logo { font-family: Georgia, serif; font-size: 24px; font-style: italic; color: #fff; margin-bottom: 10px; }
+  .ft h4 { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: #888; margin-bottom: 12px; }
+  .ft a { display: block; font-size: 12px; color: #555; text-decoration: none; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">PessÓra</div>
+  <div class="nav-links"><span>Concept</span><span>La Carte</span><span>Produits</span><span>Óra+</span><span>Événements</span><span>Bilan</span></div>
+  <div class="nav-actions"><span>🔍</span><span>Connexion</span><span>🛒</span></div>
+</nav>
+
+<!-- 1. HERO -->
+<div class="ann keep">◈ 1 — Hero vidéo — inchangé</div>
+<section class="hero">
+  <div class="hero-bg"></div><div class="hero-grad"></div>
+  <div class="hero-body">
+    <p class="tagline">Plus qu'une boisson<br>un style de vie</p>
+    <p class="sub">Performance · Protein bar · Nutricosmetics</p>
+    <button>Menu →</button>
+  </div>
+</section>
+
+<!-- 2. CARROUSEL ÉDITORIAL PHOTOS -->
+<div class="ann new">✦ 2 — NOUVEAU — Carrousel éditorial · modifiable depuis le dashboard admin &nbsp;<span class="admin-badge">⚙ Admin</span></div>
+
+<div class="title-picker">
+  <span>Titre à choisir :</span>
+  <div class="title-pill">À la une</div>
+  <div class="title-pill">L'instant Pessóra</div>
+  <div class="title-pill">Nos créations</div>
+  <div class="title-pill">En ce moment</div>
+  <div class="title-pill">Le bar en images</div>
+  <div class="title-pill">Autre (dis-moi)</div>
+</div>
+
+<section class="sec bg-w" style="padding-top:32px;">
+  <div class="sec-head">
+    <h2 style="font-style:italic;color:#d4a017;">[ Titre à choisir ↑ ]</h2>
+    <div class="arrows"><button>‹</button><button>›</button></div>
+  </div>
+  <div class="track">
+    <div class="ed-card"><img src="https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=620&q=75&fit=crop" alt="" loading="lazy"/><div class="ed-ov"><p class="ed-eye">Wellness · Coup de cœur</p><p class="ed-title">Ton moment<br>bien-être</p></div><div class="ed-btn">›</div></div>
+    <div class="ed-card"><img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=620&q=75&fit=crop&crop=top" alt="" loading="lazy"/><div class="ed-ov"><p class="ed-eye">Modèle · Boisson signature</p><p class="ed-title">Pink Dragon<br>Nouveauté</p></div><div class="ed-btn">›</div></div>
+    <div class="ed-card"><img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=620&q=75&fit=crop" alt="" loading="lazy"/><div class="ed-ov"><p class="ed-eye">Shakes · Protéinés</p><p class="ed-title">Shake Mangue<br>Passion</p></div><div class="ed-btn">›</div></div>
+    <div class="ed-card"><img src="https://images.unsplash.com/photo-1509785307050-d4066910ec1e?w=620&q=75&fit=crop" alt="" loading="lazy"/><div class="ed-ov"><p class="ed-eye">Coffee · Martinique</p><p class="ed-title">Coffee glacé<br>maison</p></div><div class="ed-btn">›</div></div>
+    <div class="ed-card" style="border:2px dashed #ddd;background:#fafaf8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
+      <span style="font-size:32px;">📸</span>
+      <p style="font-size:10px;color:#bbb;text-align:center;line-height:1.6;">Ajouter une carte<br>depuis l'admin</p>
+    </div>
+  </div>
+</section>
+
+<!-- 3. COUPS DE CŒUR -->
+<div class="ann mod">✎ 3 — "Nos coups de cœur" — existant · photos boissons à venir</div>
+<section class="sec bg-off">
+  <div class="sec-head">
+    <h2>Nos coups de cœur</h2>
+    <a href="#">Voir toute la carte</a>
+  </div>
+  <div class="track">
+    <div class="prod-card"><div class="prod-img" style="background:linear-gradient(135deg,#f5ebe0,#e8d5c0);"><span style="font-size:44px;">🍓</span><div class="badge">Nouveauté</div><div class="add">+</div></div><div class="prod-body"><h3>PINK DRAGON</h3><p>21g protéines · 230 kcal</p><div class="price">14,00 €</div></div></div>
+    <div class="prod-card"><div class="prod-img" style="background:linear-gradient(135deg,#dce8f5,#c0d5e8);"><span style="font-size:44px;">💙</span><div class="add">+</div></div><div class="prod-body"><h3>BLUE LAGOON</h3><p>50 kcal</p><div class="price">10,00 €</div></div></div>
+    <div class="prod-card"><div class="prod-img" style="background:linear-gradient(135deg,#e8dce8,#d5c0e8);"><span style="font-size:44px;">✨</span><div class="badge">Coup de cœur</div><div class="add">+</div></div><div class="prod-body"><h3>COOKIE CREAM</h3><p>18g protéines · 220 kcal</p><div class="price">14,00 €</div></div></div>
+    <div class="prod-card"><div class="prod-img" style="background:linear-gradient(135deg,#dce8dc,#c0e0c0);"><span style="font-size:44px;">🌿</span><div class="add">+</div></div><div class="prod-body"><h3>GLOW MY SKIN</h3><p>30 kcal</p><div class="price">10,00 €</div></div></div>
+    <div class="prod-card"><div class="prod-img" style="background:linear-gradient(135deg,#f0e8d0,#e0d8c0);"><span style="font-size:44px;">☕</span><div class="add">+</div></div><div class="prod-body"><h3>HYDRA BOOST</h3><p>12 kcal</p><div class="price">10,00 €</div></div></div>
+  </div>
+</section>
+
+<!-- 4. ÓRA+ -->
+<div class="ann keep">◈ 4 — Óra+ strip — inchangé</div>
+<div style="background:#faf9f6; padding: 0 0 40px;">
+  <div class="ora"><p><strong>Óra+</strong> — 24,90€/mois · jusqu'à –50 % sur les boissons au bar.</p><a href="#">Découvrir Óra+ →</a></div>
+</div>
+
+<!-- 5. SPLIT MODÈLE + TABS -->
+<div class="ann new">✦ 5 — NOUVEAU — Split modèle + tabs (gammes boissons)</div>
+<section class="split-section">
+  <div class="split-head">
+    <h2>Choisis ton moment</h2>
+    <p>Chaque boisson PessÓra est pensée pour un instant précis. Quelle est ton envie ?</p>
+    <div class="split-tabs">
+      <div class="stab on">Wellness</div><div class="stab">Énergie</div><div class="stab">Shakes</div><div class="stab">Coffee</div>
+    </div>
+  </div>
+  <div class="split-grid">
+    <div class="split-main">
+      <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=900&q=80&fit=crop&crop=top" alt=""/>
+      <div class="split-copy"><p class="eye">Wellness · PessÓra</p><h3>Un concentré de<br>bien-être au naturel</h3></div>
+    </div>
+    <div class="split-side">
+      <div><img src="https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=500&q=75&fit=crop" alt=""/></div>
+      <div><img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=75&fit=crop" alt=""/></div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. NOS UNIVERS (gardé, titre à renommer) -->
+<div class="ann mod">✎ 6 — "Nos univers" — gardé · titre à renommer</div>
+<section class="univers-section">
+  <div class="u-head"><h2 style="font-style:italic;color:#d4a017;">[ Nouveau titre ]</h2><a href="#">Tout explorer</a></div>
+  <div class="univers-card">
+    <div class="uc-text"><p class="uc-eye">Nutrition</p><p class="uc-title">Shakes<br><em>& gauffres</em></p></div>
+  </div>
+  <div class="utabs"><div class="utab on">Nutrition</div><div class="utab">Communauté</div><div class="utab">Bien-être</div></div>
+</section>
+
+<!-- 7. TUILES GAMMES PRODUITS -->
+<div class="ann new">✦ 7 — NOUVEAU — Tuiles 3 gammes produits : Wellness · Sport · Skin</div>
+<section class="gammes-section">
+  <div class="g-head"><h2>Nos gammes</h2><a href="#">Voir les produits</a></div>
+  <div class="gammes-grid">
+    <div class="g-tile"><img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=75&fit=crop" alt="" loading="lazy"/><div class="g-label">Wellness</div><div class="g-sub">Compléments nutrition</div><div class="g-arrow">›</div></div>
+    <div class="g-tile"><img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&q=75&fit=crop" alt="" loading="lazy"/><div class="g-label">Sport</div><div class="g-sub">Performance & récupération</div><div class="g-arrow">›</div></div>
+    <div class="g-tile"><img src="https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=600&q=75&fit=crop" alt="" loading="lazy"/><div class="g-label">Skin</div><div class="g-sub">Beauté & éclat</div><div class="g-arrow">›</div></div>
+  </div>
+</section>
+
+<!-- 8. CARROUSEL PRODUITS PAR GAMME (NOUVEAU) -->
+<div class="ann new">✦ 8 — NOUVEAU — Carrousel produits par gamme (sous les tuiles)</div>
+<section class="gpc-section">
+  <div class="gpc-head">
+    <div class="gpc-tabs">
+      <div class="gpc-tab on">Wellness</div>
+      <div class="gpc-tab">Sport</div>
+      <div class="gpc-tab">Skin</div>
+    </div>
+  </div>
+  <div class="track">
+    <!-- Wellness products avec placeholders photo -->
+    <div class="gp-card"><div class="gp-img" style="background:linear-gradient(135deg,#e8f5e0,#d0e8c0);"><span style="font-size:36px;">🌿</span></div><div class="gp-body"><h3>Aloe Vera</h3><p>Concentré d'aloé vera pour l'hydratation</p><div class="price">60€</div></div></div>
+    <div class="gp-card"><div class="gp-img" style="background:linear-gradient(135deg,#f5e8e0,#e8d0c0);"><span style="font-size:36px;">✨</span></div><div class="gp-body"><h3>Collagène</h3><p>Collagène marin pour peau, ongles</p><div class="price">85€</div></div></div>
+    <div class="gp-card"><div class="gp-img" style="background:linear-gradient(135deg,#e0e8f5,#c0d0e8);"><span style="font-size:36px;">🍃</span></div><div class="gp-body"><h3>Thé Detox</h3><p>Mélange détoxifiant pour drainer</p><div class="price">45€</div></div></div>
+    <div class="gp-card"><div class="gp-img" style="background:linear-gradient(135deg,#f5f0e0,#e8e0c0);"><span style="font-size:36px;">💊</span></div><div class="gp-body"><h3>Complex Vitamine</h3><p>Complexe multivitaminé quotidien</p><div class="price">35€</div></div></div>
+    <div class="gp-card"><div class="gp-img" style="background:linear-gradient(135deg,#e8e0f5,#d0c0e8);"><span style="font-size:36px;">🔬</span></div><div class="gp-body"><h3>Minéral Complex</h3><p>Minéraux essentiels pour l'équilibre</p><div class="price">45€</div></div></div>
+    <div class="placeholder-photo"><span>📸</span><p>Tes photos<br>produits<br>ici</p></div>
+  </div>
+</section>
+
+<!-- 9. AVIS -->
+<div class="ann keep">◈ 9 — Avis clients — inchangé</div>
+<section class="rev-section">
+  <div class="rv-head">
+    <h2>Avis clients</h2>
+    <div style="text-align:right;"><div style="font-size:30px;font-weight:300;">4,9<span style="font-size:16px;color:#aaa">/5</span></div><div style="font-size:13px;color:#c9a84c;">★★★★★</div><div style="font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:#aaa;margin-top:2px;">Avis Google</div></div>
+  </div>
+  <div class="rv-grid">
+    <div class="rv-card">"Un accueil chaleureux, des boissons fantastiques ! Mention spéciale pour le Pink Dragon."<div class="rv-meta">Roxane M. — Il y a 3 semaines</div></div>
+    <div class="rv-card">"L'accueil est parfait, les gérants sont gentils, souriants et à l'écoute. Prenez l'abonnement !"<div class="rv-meta">Pauline F. — Il y a 2 mois</div></div>
+    <div class="rv-card">"On a été très bien accueillis. Très cute pour un moment entre amis."<div class="rv-meta">Imane R. — Il y a 1 mois</div></div>
+  </div>
+</section>
+
+<!-- 10. ÉVÉNEMENTS -->
+<div class="ann mod">✎ 10 — Événements — marges réduites</div>
+<section class="events">
+  <p class="eye">Événements</p>
+  <h2>Rejoins la<br><em>communauté Pessóra</em></h2>
+  <a href="#">Voir les événements</a>
+</section>
+
+<footer>
+  <div class="ft">
+    <div><div class="ft-logo">PessÓra</div><p style="font-size:11px;color:#555;font-weight:300;">Bar protéiné & bien-être · Martinique</p></div>
+    <div><h4>Sur le site</h4><a href="#">La Carte</a><a href="#">Nos Produits</a><a href="#">Événements</a><a href="#">Bilan</a></div>
+    <div><h4>Espace membre</h4><a href="#">Óra+</a><a href="#">Connexion</a></div>
+  </div>
+</footer>
+
+</body>
+</html>

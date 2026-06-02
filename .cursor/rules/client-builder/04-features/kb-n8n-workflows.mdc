@@ -1,0 +1,276 @@
+---
+description: Workflows n8n Karibloom - patterns standard pour chatbot, notifications commandes, reçus PDF, confirmations réservations. Architecture fire-and-forget, sécurité par shared secret, callbacks Next.js sécurisés. Référence : DALCIELO + DIAMANTNOIR.
+globs: "**/app/api/**/*.ts,**/.env*"
+alwaysApply: false
+---
+
+# Workflows n8n — Karibloom
+
+> n8n tourne sur `kenneson.app.n8n.cloud`. Tous les projets Karibloom s'appuient sur le même compte n8n — seules les routes changent par client.
+
+---
+
+## 1. Convention de nommage des webhooks
+
+**Format URL :** `https://kenneson.app.n8n.cloud/webhook/[client]-[action]`
+
+| Client | Action | URL complète |
+|--------|--------|-------------|
+| dalcielo | chatbot | `https://kenneson.app.n8n.cloud/webhook/celiobot` |
+| dalcielo | receipt | `https://kenneson.app.n8n.cloud/webhook/receipt-pizza-dal-cielo` |
+| diamantnoir | listing-import | `https://kenneson.app.n8n.cloud/webhook/diamant-noir-listing-import` |
+| [client] | chatbot | `https://kenneson.app.n8n.cloud/webhook/[client]bot` |
+| [client] | receipt | `https://kenneson.app.n8n.cloud/webhook/receipt-[client]` |
+| [client] | booking-confirm | `https://kenneson.app.n8n.cloud/webhook/booking-confirm-[client]` |
+| [client] | notify-admin | `https://kenneson.app.n8n.cloud/webhook/notify-admin-[client]` |
+
+**Variables d'environnement standard :**
+
+```bash
+# .env.local
+N8N_CHATBOT_WEBHOOK_URL=https://kenneson.app.n8n.cloud/webhook/[client]bot
+N8N_RECEIPT_WEBHOOK_URL=https://kenneson.app.n8n.cloud/webhook/receipt-[client]
+N8N_BOOKING_CONFIRM_WEBHOOK_URL=https://kenneson.app.n8n.cloud/webhook/booking-confirm-[client]
+N8N_NOTIFY_ADMIN_WEBHOOK_URL=https://kenneson.app.n8n.cloud/webhook/notify-admin-[client]
+
+# Secret partagé (n8n → Next.js uniquement, pas Next.js → n8n)
+N8N_CALLBACK_SECRET=un-secret-long-32-chars-min
+```
+
+---
+
+## 2. Pattern fire-and-forget (Next.js → n8n)
+
+**Règle absolue :** les appels n8n ne bloquent JAMAIS la réponse utilisateur. On fire, on catch, on continue.
+
+```ts
+// Pattern standard — à copier dans toute Server Action ou Route Handler
+async function notifyN8n(webhookUrl: string, payload: Record<string, unknown>) {
+  if (!webhookUrl) return; // Webhook non configuré = silencieux
+
+  fetch(webhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(10_000), // 10s max, jamais bloquant
+  }).catch((err) => {
+    console.error(`[n8n] Webhook failed (${webhookUrl.split("/").pop()}):`, err.message);
+  });
+  // Pas de await — on ne bloque pas la réponse
+}
+```
+
+**Usage :**
+
+```ts
+// Après validation d'une commande
+notifyN8n(process.env.N8N_RECEIPT_WEBHOOK_URL ?? "", { token: order.token });
+
+// Après confirmation d'une réservation
+notifyN8n(process.env.N8N_BOOKING_CONFIRM_WEBHOOK_URL ?? "", { bookingId });
+
+// Notification admin
+notifyN8n(process.env.N8N_NOTIFY_ADMIN_WEBHOOK_URL ?? "", {
+  type: "new_booking",
+  bookingId,
+  guestName,
+  villaName,
+});
+```
+
+---
+
+## 3. Payloads standards par workflow
+
+### Chatbot (`/api/chat`)
+
+**Next.js → n8n :**
+```json
+{
+  "message": "string",
+  "history": [{ "role": "user|assistant", "content": "string" }],
+  "sessionId": "string (optionnel)"
+}
+```
+
+**n8n → Next.js :**
+```json
+{ "response": "string" }
+```
+Fallback : lire `data.response ?? data.output ?? data.text` (n8n peut renvoyer différents champs selon le nœud).
+
+### Reçu PDF (`N8N_RECEIPT_WEBHOOK_URL`)
+
+**Next.js → n8n :**
+```json
+{ "token": "order-token-uuid" }
+```
+
+n8n génère le PDF, puis **rappelle** Next.js via `POST /api/orders/[token]/receipt-pdf` (voir Section 5).
+
+### Confirmation réservation (`N8N_BOOKING_CONFIRM_WEBHOOK_URL`)
+
+**Next.js → n8n :**
+```json
+{
+  "bookingId": "uuid",
+  "guestEmail": "string",
+  "guestName": "string",
+  "villaName": "string",
+  "startDate": "ISO8601",
+  "endDate": "ISO8601",
+  "totalPrice": 0
+}
+```
+
+n8n envoie l'email de confirmation via Resend/SMTP.
+
+### Notification admin (`N8N_NOTIFY_ADMIN_WEBHOOK_URL`)
+
+**Next.js → n8n :**
+```json
+{
+  "type": "new_booking | new_order | new_lead",
+  "bookingId": "uuid (si booking)",
+  "orderId": "uuid (si order)",
+  "guestName": "string",
+  "summary": "string (court résumé pour notif Telegram/WhatsApp)"
+}
+```
+
+---
+
+## 4. Sécurité des appels Next.js → n8n
+
+### Option A — secret dans l'en-tête (recommandé pour imports/actions sensibles)
+
+```ts
+const webhookSecret = process.env.LISTING_IMPORT_N8N_WEBHOOK_SECRET;
+const headers: Record<string, string> = { "Content-Type": "application/json" };
+if (webhookSecret) headers["X-Webhook-Secret"] = webhookSecret;
+
+await fetch(process.env.LISTING_IMPORT_N8N_WEBHOOK_URL!, {
+  method: "POST",
+  headers,
+  body: JSON.stringify(payload),
+});
+```
+
+Dans n8n : nœud **Webhook** → onglet **Authentication** → **Header Auth** avec `X-Webhook-Secret`.
+
+### Option B — fire-and-forget sans secret (notifications non critiques)
+
+Acceptable pour les notifications chatbot et emails de confirmation. Si intercepté, aucune donnée sensible n'est exposée.
+
+---
+
+## 5. Callbacks n8n → Next.js (n8n appelle votre API)
+
+Quand n8n a fini un traitement long (génération PDF, traitement image), il rappelle Next.js. Ces endpoints doivent être **sécurisés par secret partagé**.
+
+### Pattern : `POST /api/orders/[token]/receipt-pdf`
+
+```ts
+// app/api/orders/[token]/receipt-pdf/route.ts
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ token: string }> }
+) {
+  // 1. Vérifier le secret partagé
+  const secret = process.env.N8N_CALLBACK_SECRET;
+  if (!secret) return NextResponse.json({ error: "Not configured" }, { status: 500 });
+
+  const provided =
+    req.headers.get("x-webhook-secret") ??
+    req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+
+  if (provided !== secret) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { token } = await params;
+
+  // 2. Recevoir le PDF (binaire)
+  const pdfBuffer = await req.arrayBuffer();
+  if (pdfBuffer.byteLength === 0) {
+    return NextResponse.json({ error: "Empty PDF" }, { status: 400 });
+  }
+
+  // 3. Uploader dans Supabase Storage
+  const supabase = supabaseAdmin();
+  const { error } = await supabase.storage
+    .from("receipts")
+    .upload(`${token}.pdf`, pdfBuffer, {
+      contentType: "application/pdf",
+      upsert: true,
+    });
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/receipts/${token}.pdf`;
+
+  // 4. Mettre à jour la commande
+  await supabase
+    .from("orders")
+    .update({ receipt_pdf_url: publicUrl })
+    .eq("token", token);
+
+  return NextResponse.json({ ok: true, receipt_pdf_url: publicUrl });
+}
+```
+
+**Dans `middleware.ts`** — exempter les callbacks n8n du CSRF :
+
+```ts
+const CSRF_EXEMPT = [
+  "/api/webhooks/",       // Stripe
+  "/api/auth/",           // JWT
+  "/api/orders/",         // Callbacks n8n (receipt-pdf, etc.)
+  "/api/notify-",         // Webhooks admin notification
+  "/api/send-",           // Webhooks confirmation
+];
+```
+
+---
+
+## 6. Variables d'environnement complètes
+
+```bash
+# Outbound — Next.js appelle n8n
+N8N_CHATBOT_WEBHOOK_URL=https://kenneson.app.n8n.cloud/webhook/[client]bot
+N8N_RECEIPT_WEBHOOK_URL=https://kenneson.app.n8n.cloud/webhook/receipt-[client]
+N8N_BOOKING_CONFIRM_WEBHOOK_URL=https://kenneson.app.n8n.cloud/webhook/booking-confirm-[client]
+N8N_NOTIFY_ADMIN_WEBHOOK_URL=https://kenneson.app.n8n.cloud/webhook/notify-admin-[client]
+
+# Secret pour actions sensibles (n8n vérifie X-Webhook-Secret)
+N8N_IMPORT_WEBHOOK_SECRET=secret-32-chars-min
+
+# Inbound — n8n appelle Next.js
+N8N_CALLBACK_SECRET=autre-secret-32-chars-min   # Header x-webhook-secret
+```
+
+Tous ces env vars sont **server-only** (pas de `NEXT_PUBLIC_`).
+
+---
+
+## 7. Checklist déploiement n8n (nouveau client)
+
+```
+□ Créer le webhook n8n pour le chatbot → copier l'URL dans N8N_CHATBOT_WEBHOOK_URL
+□ Créer le workflow receipt si e-commerce → N8N_RECEIPT_WEBHOOK_URL
+□ Créer le workflow booking-confirm si réservation → N8N_BOOKING_CONFIRM_WEBHOOK_URL
+□ Activer le webhook dans n8n (mode "Production", pas "Test")
+□ Configurer N8N_CALLBACK_SECRET et le renseigner dans le nœud n8n correspondant
+□ Exempter les routes callback du CSRF dans middleware.ts
+□ Tester : envoyer un payload test depuis n8n → vérifier la réponse
+□ Tester : déclencher depuis Next.js → vérifier les logs n8n
+```
+
+---
+
+## Lien avec les autres règles
+
+- `kb-chatbot.mdc` : implémentation complète du `KaribotWidget` + `/api/chat`
+- `kb-stripe.mdc` : `checkout.session.completed` → fire n8n receipt
+- `kb-security-baseline.mdc` : CSRF exempt pour les callbacks n8n
+- `kb-naming-conventions.mdc` : format des env vars `N8N_*`

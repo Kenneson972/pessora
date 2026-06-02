@@ -1,0 +1,361 @@
+- generic [ref=e1]:
+  - heading "Capsules de Café & Machines Espresso | Nespresso" [level=1] [ref=e2]
+  - link "Ignorer et accéder au contenu" [ref=e3] [cursor=pointer]:
+    - /url: "#a11y-main-area"
+  - generic [ref=e4]:
+    - banner "main header" [ref=e5]:
+      - generic [ref=e6]: Entête de page
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - generic [ref=e10]:
+            - generic [ref=e11]:
+              - text: "Votre cadeau de bienvenue : un Tumbler offert sur l'app dès 100 capsules. Code :"
+              - strong [ref=e12]: APP2026*
+            - link "J'en profite" [ref=e13] [cursor=pointer]:
+              - /url: https://nespres.so/fr/NewAppGWP
+            - generic [ref=e15] [cursor=pointer]: 
+          - generic [ref=e16]:
+            - link "Home" [ref=e17] [cursor=pointer]:
+              - /url: /fr/fr/
+              - img "Home" [ref=e18]
+            - generic [ref=e19]:
+              - button "Bonjour, une envie café ?" [ref=e22] [cursor=pointer]:
+                - img [ref=e23]
+                - text: Bonjour, une envie café ?
+              - button "Connectez-vous" [ref=e26] [cursor=pointer]:
+                - generic [ref=e27]: 
+                - text: Connectez-vous
+              - img [ref=e33] [cursor=pointer]
+              - generic [ref=e39]:
+                - heading "Panier déroulant" [level=2] [ref=e40]
+                - button "VOTRE PANIER ( contient 0)" [ref=e41] [cursor=pointer]:
+                  - generic [ref=e42]: 
+                  - text: VOTRE PANIER (
+                  - generic [ref=e43]: contient
+                  - text: 0)
+        - generic [ref=e45]:
+          - heading "Menu principal" [level=3] [ref=e46]
+          - generic [ref=e47]: Vous êtes dans le menu de navigation
+          - generic [ref=e48]: Vous pouvez ouvrir un sous-menu s'il existe avec la touche située après le lien.
+          - navigation [ref=e50]:
+            - list [ref=e51]:
+              - listitem [ref=e52]:
+                - link "Café" [ref=e53] [cursor=pointer]:
+                  - /url: /fr/fr/order/capsules/original
+                  - generic [ref=e56]: Café
+                - button "Ouvrir le sous-menu Café" [ref=e58] [cursor=pointer]
+              - listitem [ref=e59]:
+                - link "Machines" [ref=e60] [cursor=pointer]:
+                  - /url: https://www.nespresso.com/fr/fr/order/machines/original
+                  - generic [ref=e63]: Machines
+                - button "Ouvrir le sous-menu Machines" [ref=e65] [cursor=pointer]
+              - listitem [ref=e66]:
+                - link "Accessoires" [ref=e67] [cursor=pointer]:
+                  - /url: /fr/fr/accessories
+                  - generic [ref=e70]: Accessoires
+                - button "Ouvrir le sous-menu Accessoires" [ref=e72] [cursor=pointer]
+              - listitem [ref=e73]:
+                - link "Offres" [ref=e74] [cursor=pointer]:
+                  - /url: /fr/fr/promotions
+                  - generic [ref=e77]: Offres
+                - button "Ouvrir le sous-menu Offres" [ref=e79] [cursor=pointer]
+              - listitem [ref=e80]:
+                - link "Expériences" [ref=e81] [cursor=pointer]:
+                  - /url: https://www.nespresso.com/fr/fr/programme?
+                  - generic [ref=e84]: Expériences
+                - button "Ouvrir le sous-menu Expériences" [ref=e86] [cursor=pointer]
+              - listitem [ref=e87]:
+                - link "Découvrir Nespresso" [ref=e88] [cursor=pointer]:
+                  - /url: https://www.nespresso.com/fr/fr/services
+                  - generic [ref=e91]: Découvrir Nespresso
+                - button "Ouvrir le sous-menu Découvrir Nespresso" [ref=e93] [cursor=pointer]
+              - listitem [ref=e94]:
+                - link "Assistance" [ref=e95] [cursor=pointer]:
+                  - /url: https://www.nespresso.com/fr/fr/service-customer-care
+                  - generic [ref=e98]: Assistance
+                - button "Ouvrir le sous-menu Assistance" [ref=e100] [cursor=pointer]
+              - listitem [ref=e101]:
+                - link "Professionnel Ce lien s'ouvrira dans une nouvelle fenêtre" [ref=e102] [cursor=pointer]:
+                  - /url: https://www.nespresso.com/pro/fr/fr/
+                  - generic [ref=e105]: Professionnel
+                  - generic [ref=e106]: Ce lien s'ouvrira dans une nouvelle fenêtre
+                - button "Ouvrir le sous-menu Professionnel" [ref=e108] [cursor=pointer]
+            - text: 
+    - main [ref=e109]:
+      - generic [ref=e110]: Vous vous trouvez au niveau du contenu principal
+    - contentinfo [ref=e112]:
+      - generic [ref=e113]:
+        - heading "Pied de page" [level=2] [ref=e114]
+        - generic [ref=e116]:
+          - generic [ref=e120]:
+            - heading "Paiement 100% sécurisé" [level=2] [ref=e121]
+            - list [ref=e122]:
+              - listitem [ref=e123]:
+                - generic [ref=e124]:
+                  - img [ref=e126]
+                  - generic [ref=e133]: Mastercard
+              - listitem [ref=e134]:
+                - generic [ref=e135]:
+                  - img [ref=e137]
+                  - generic [ref=e144]: Visa
+              - listitem [ref=e145]:
+                - generic [ref=e146]:
+                  - img [ref=e148]
+                  - generic [ref=e155]: Paypal
+              - listitem [ref=e156]:
+                - generic [ref=e157]:
+                  - img [ref=e159]
+                  - generic [ref=e164]: Apple pay
+              - listitem [ref=e165]:
+                - generic [ref=e166]:
+                  - img [ref=e168]
+                  - generic [ref=e177]: Google pay
+          - generic [ref=e181]:
+            - heading "Bottom page links" [level=2] [ref=e182]
+            - generic [ref=e183]:
+              - heading "Nos produits" [level=3] [ref=e184]
+              - list [ref=e185]:
+                - listitem [ref=e186]:
+                  - link "Capsules Compostable" [ref=e187] [cursor=pointer]:
+                    - /url: https://www.nespresso.com/fr/fr/order/capsules/original/#collection-compostable-original
+                - listitem [ref=e188]:
+                  - link "Capsules de café" [ref=e189] [cursor=pointer]:
+                    - /url: https://www.nespresso.com/fr/fr/order/capsules/original
+                - listitem [ref=e190]:
+                  - link "Machine à café" [ref=e191] [cursor=pointer]:
+                    - /url: "https://www.nespresso.com/fr/fr/order/machines/original  "
+                - listitem [ref=e192]:
+                  - link "Accessoires" [ref=e193] [cursor=pointer]:
+                    - /url: https://www.nespresso.com/fr/fr/order/accessories/original
+                - listitem [ref=e194]:
+                  - link "Machines reconditionnées" [ref=e195] [cursor=pointer]:
+                    - /url: https://www.nespresso.com/fr/fr/machines-reconditionnees-relove
+                - listitem [ref=e196]:
+                  - link "Abonnement machines" [ref=e197] [cursor=pointer]:
+                    - /url: "https://www.nespresso.com/fr/fr/abonnement-machine#/  "
+                - listitem [ref=e198]:
+                  - link "Abonnement café" [ref=e199] [cursor=pointer]:
+                    - /url: https://www.nespresso.com/fr/fr/abonnement-cafe
+                - listitem [ref=e200]:
+                  - link "Nos idées cadeaux" [ref=e201] [cursor=pointer]:
+                    - /url: https://www.nespresso.com/fr/fr/nos-idees-cadeaux
+            - generic [ref=e202]:
+              - heading "Notre marque" [level=3] [ref=e203]
+              - list [ref=e204]:
+                - listitem [ref=e205]:
+                  - link "À propos de Nespresso" [ref=e206] [cursor=pointer]:
+                    - /url: https://www.nespresso.com/fr/fr/a-propos
+                - listitem [ref=e207]:
+                  - link "Le Nespresso Club" [ref=e208] [cursor=pointer]:
+                    - /url: https://www.nespresso.com/fr/fr/programme
+                - listitem [ref=e209]:
+                  - link "Une histoire de café" [ref=e210] [cursor=pointer]:
+                    - /url: https://www.nespresso.com/fr/fr/une-histoire-de-cafe
+                - listitem [ref=e211]:
+                  - link "Dernières actualités" [ref=e212] [cursor=pointer]:
+                    - /url: https://www.nespresso.com/fr/fr/nos-dernieres-actualites
+                - listitem [ref=e213]:
+                  - link "Durabilité" [ref=e214] [cursor=pointer]:
+                    - /url: https://www.nespresso.com/fr/fr/positive-cup
+                - listitem [ref=e215]:
+                  - link "Nos caractéristiques environnementales" [ref=e216] [cursor=pointer]:
+                    - /url: https://www.nespresso.com/ecom/medias/sys_master/public/50818854289438/TEMPLATEQCE-JUIL25.pdf
+                - listitem [ref=e217]:
+                  - link "Nespresso Professionnel" [ref=e218] [cursor=pointer]:
+                    - /url: https://www.nespresso.com/pro/fr/fr/
+                - listitem [ref=e219]:
+                  - link "Black Friday Nespresso" [ref=e220] [cursor=pointer]:
+                    - /url: https://www.nespresso.com/fr/fr/black-friday
+                - listitem [ref=e221]:
+                  - link "Promotions Nespresso" [ref=e222] [cursor=pointer]:
+                    - /url: https://www.nespresso.com/fr/fr/promotions
+            - generic [ref=e223]:
+              - heading "Assistance" [level=3] [ref=e224]
+              - list [ref=e225]:
+                - listitem [ref=e226]:
+                  - link "FAQ" [ref=e227] [cursor=pointer]:
+                    - /url: "https://www.nespresso.com/fr/fr/service-faq "
+                - listitem [ref=e228]:
+                  - link "Connexion et créer un compte" [ref=e229] [cursor=pointer]:
+                    - /url: https://www.nespresso.com/fr/fr/secure/login
+                - listitem [ref=e230]:
+                  - link "Suivi de livraison" [ref=e231] [cursor=pointer]:
+                    - /url: https://www.nespresso.com/fr/fr/services-track-and-trace-suivi
+                - listitem [ref=e232]:
+                  - link "Assistance machine" [ref=e233] [cursor=pointer]:
+                    - /url: https://www.nespresso.com/fr/fr/service-assistance-machine
+                - listitem [ref=e234]:
+                  - link "Entretien machine" [ref=e235] [cursor=pointer]:
+                    - /url: https://www.nespresso.com/fr/fr/assistance-machine#/
+                - listitem [ref=e236]:
+                  - link "Services Nespresso" [ref=e237] [cursor=pointer]:
+                    - /url: https://www.nespresso.com/fr/fr/service-customer-care
+            - generic [ref=e238]:
+              - heading "Contact" [level=3] [ref=e239]
+              - list [ref=e240]:
+                - listitem [ref=e241]:
+                  - link "Discutez avec nous" [ref=e242] [cursor=pointer]:
+                    - /url: "#live-chat"
+                    - img [ref=e244]
+                    - generic [ref=e248]: Discutez avec nous
+                - listitem [ref=e249]:
+                  - link "Service client 0800 55 52 53" [ref=e250] [cursor=pointer]:
+                    - /url: tel:+330800555253
+                    - img [ref=e252]
+                    - generic [ref=e255]: Service client
+                    - generic [ref=e256]: 0800 55 52 53
+                  - generic [ref=e257]: Disponible du lundi au samedi de 8h à 20h
+                - listitem [ref=e258]:
+                  - link "Sourd et malentendants" [ref=e259] [cursor=pointer]:
+                    - /url: https://www.nespresso.com/fr/fr/accessibilite-service-clients
+                    - img [ref=e261]
+                    - generic [ref=e265]: Sourd et malentendants
+                  - generic [ref=e266]: Nos spécialistes sont à votre disposition pour vous aider.
+          - generic [ref=e270]:
+            - heading "Découvrez notre application" [level=2] [ref=e271]
+            - list [ref=e272]:
+              - listitem [ref=e273]:
+                - link "Apple" [ref=e274] [cursor=pointer]:
+                  - /url: https://apps.apple.com/fr/app/nespresso-boutique/id1609639566
+                  - img [ref=e276]
+                  - generic [ref=e278]: Apple
+              - listitem [ref=e279]:
+                - link "Android" [ref=e280] [cursor=pointer]:
+                  - /url: https://play.google.com/store/apps/details?id=com.nestle.nespresso.nespresso&hl=fr
+                  - img [ref=e282]
+                  - generic [ref=e285]: Android
+          - generic [ref=e289]:
+            - generic [ref=e290]:
+              - generic [ref=e291]:
+                - link "Go to country location page Website country location is France" [ref=e292] [cursor=pointer]:
+                  - /url: /fr/fr/country
+                  - img [ref=e293]
+                - generic [ref=e294]:
+                  - button "Language Français" [ref=e295] [cursor=pointer]:
+                    - generic [ref=e296]: Français
+                  - generic:
+                    - generic:
+                      - img
+              - generic [ref=e297]:
+                - list [ref=e299]:
+                  - listitem [ref=e300]:
+                    - link "Contact" [ref=e301] [cursor=pointer]:
+                      - /url: https://www.nespresso.com/fr/fr/service-customer-care
+                  - listitem [ref=e302]:
+                    - link "CGV" [ref=e303] [cursor=pointer]:
+                      - /url: https://www.nespresso.com/ecom/medias/sys_master/public/46238606196766/07.10.2025-CGV-NESPRESSO-B2C.pdf
+                  - listitem [ref=e304]:
+                    - link "Points de vente" [ref=e305] [cursor=pointer]:
+                      - /url: https://www.nespresso.com/boutiques-fr/nous-trouver
+                  - listitem [ref=e306]:
+                    - link "Carrières" [ref=e307] [cursor=pointer]:
+                      - /url: https://www.nestle.com/jobs/search-jobs?keyword=Nespresso&country=FR&location=&career_area=All
+                  - listitem [ref=e308]:
+                    - link "Espace presse" [ref=e309] [cursor=pointer]:
+                      - /url: https://www.nespresso.com/fr/fr/espace-presse
+                  - listitem [ref=e310]:
+                    - link "Nos engagements RSE" [ref=e311] [cursor=pointer]:
+                      - /url: https://www.nespresso.com/entreprise/
+                  - listitem [ref=e312]:
+                    - link "Glossaire" [ref=e313] [cursor=pointer]:
+                      - /url: https://www.nespresso.com/fr/fr/glossary
+                  - listitem [ref=e314]:
+                    - link "Plan du site" [ref=e315] [cursor=pointer]:
+                      - /url: https://www.nespresso.com/fr/fr/plan-du-site
+                - list [ref=e317]:
+                  - listitem [ref=e318]:
+                    - link "Mentions légales" [ref=e319] [cursor=pointer]:
+                      - /url: https://www.nespresso.com/fr/fr/legal
+                  - listitem [ref=e320]:
+                    - link "Rétractation" [ref=e321] [cursor=pointer]:
+                      - /url: https://www.nespresso.com/ecom/medias/sys_master/public/30164876328990/Formulaire-de-retractation-2024.pdf?
+                  - listitem [ref=e322]:
+                    - button "Gestion des cookies" [ref=e323] [cursor=pointer]
+                  - listitem [ref=e324]:
+                    - link "Politique cookies" [ref=e325] [cursor=pointer]:
+                      - /url: https://www.nespresso.com/fr/fr/cookies
+                  - listitem [ref=e326]:
+                    - link "Accessibilité" [ref=e327] [cursor=pointer]:
+                      - /url: https://www.nespresso.com/fr/fr/page-accessibilite?
+                  - listitem [ref=e328]:
+                    - link "Protection des données" [ref=e329] [cursor=pointer]:
+                      - /url: https://www.nespresso.com/fr/fr/politique-protection-des-donnees-personnelles
+            - generic [ref=e330]:
+              - generic [ref=e331]:
+                - paragraph [ref=e332]: Suivez-nous
+                - list [ref=e333]:
+                  - listitem [ref=e334]:
+                    - link "Facebook" [ref=e335] [cursor=pointer]:
+                      - /url: https://www.facebook.com/Nespresso.FR
+                      - img [ref=e337]
+                  - listitem [ref=e339]:
+                    - link "Instagram" [ref=e340] [cursor=pointer]:
+                      - /url: https://www.instagram.com/nespresso/
+                      - img [ref=e342]
+                  - listitem [ref=e344]:
+                    - link "LinkedIn" [ref=e345] [cursor=pointer]:
+                      - /url: https://www.linkedin.com/company/nestl-nespresso
+                      - img [ref=e347]
+              - link "Haut de la page" [ref=e350] [cursor=pointer]:
+                - /url: javascript:void(0)
+                - img [ref=e352]
+                - text: Haut de la page
+              - generic [ref=e354]:
+                - link "Page d'accueil" [ref=e355] [cursor=pointer]:
+                  - /url: https://www.nespresso.com/fr/fr
+                  - img [ref=e357]
+                - paragraph [ref=e359]:
+                  - generic [ref=e360]: Copyright
+                  - text: Nestlé Nespresso S.A. 2026
+          - list [ref=e365]:
+            - listitem [ref=e366]:
+              - link "Mastercard" [ref=e367] [cursor=pointer]:
+                - /url: https://www.nespresso.com/fr/fr/nos-engagements
+                - img "Mastercard" [ref=e368]
+        - generic [ref=e379]:
+          - generic:
+            - generic [ref=e380]:
+              - generic [ref=e381]: CRÉONS UN LIEN PRIVILIÉGÉ
+              - generic [ref=e382]:
+                - generic [ref=e383]: Recevez par email des offres personnalisées et avantages exclusifs réservés aux Membres du Club Nespresso, ainsi que les nouveautés et collaborations.
+                - generic [ref=e385] [cursor=pointer]:
+                  - checkbox "Je souhaite recevoir des e-mails de la Famille Nespresso concernant des offres exclusives et des nouveaux cafés*."
+                  - generic [ref=e387]:
+                    - text: Je souhaite recevoir des e-mails de la
+                    - generic [ref=e388]: Famille Nespresso
+                    - text: concernant des offres exclusives et des nouveaux cafés*.
+                - generic [ref=e390] [cursor=pointer]: JE M'INSCRIS
+                - generic [ref=e391]:
+                  - text: "* Vous pouvez vous désinscrire de la newsletter à tout moment dans la rubrique Mon Compte. Vous trouverez plus d’informations dans notre"
+                  - link "politique de confidentialité" [ref=e392] [cursor=pointer]:
+                    - /url: https://www.nespresso.com/fr/fr/politique-protection-des-donnees-personnelles
+                  - text: .
+            - generic [ref=e393]:
+              - generic [ref=e394]:
+                - text: MERCI,
+                - text: VOTRE INSCRIPTION EST ENREGISTRÉE
+              - generic [ref=e395]:
+                - text: Vous recevrez prochainement nos communications.
+                - text: A bientôt !
+  - alert [ref=e397]
+  - alert [ref=e398]
+  - region "Bannière de cookies" [active] [ref=e400]:
+    - alertdialog "Nous avons besoin de votre consentement pour vous offrir du contenu personnalisé" [ref=e401]:
+      - generic [ref=e402]:
+        - generic [ref=e404]:
+          - heading "Nous avons besoin de votre consentement pour vous offrir du contenu personnalisé" [level=2] [ref=e405]
+          - generic [ref=e406]:
+            - paragraph [ref=e407]: "Lorsque vous visitez notre site, nous ou nos partenaires pouvons utiliser des cookies et autres traceurs, si vous y consentez, aux fins suivantes :"
+            - list [ref=e408]:
+              - listitem [ref=e409]: Pour le bon fonctionnement de notre site (chargement du contenu, authentification, etc.)
+              - listitem [ref=e410]: Pour effectuer une analyse d'audience
+              - listitem [ref=e411]: Pour personnaliser le contenu en fonction de vos centres d'intérêt
+              - listitem [ref=e412]: Pour vous permettre d'utiliser notre module de chat en ligne
+            - paragraph [ref=e413]: Pour en savoir plus, vous pouvez consulter notre Politique de Cookies, ainsi que notre Politique de Confidentialité, ou définir vos préférences en cliquant sur « Je personnalise » ou à tout moment en cliquant sur le lien « Paramètres de confidentialité » de notre site internet.
+            - link "Pour en savoir plus sur la protection de votre vie privée, s'ouvre dans un nouvel onglet" [ref=e414] [cursor=pointer]:
+              - /url: https://www.nespresso.com/fr/fr/cookies
+              - text: Plus d'information
+        - generic [ref=e416]:
+          - button "Autoriser tous les cookies" [ref=e418] [cursor=pointer]
+          - button "Paramètres des cookies" [ref=e419] [cursor=pointer]
+        - button "Continuer sans accepter" [ref=e421] [cursor=pointer]

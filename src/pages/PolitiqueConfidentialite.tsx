@@ -25,8 +25,8 @@ const PolitiqueConfidentialite = () => {
             <p className="text-[13px] font-light leading-relaxed text-black/60">
               <strong className="font-normal text-black/75">PessÓra</strong> — C.C. La Véranda – Cluny, 97200 Fort-de-France,
               Martinique. Contact :{' '}
-              <a href="mailto:pessora.mq@gmail.com" className="text-editorial-link-underline">
-                pessora.mq@gmail.com
+              <a href="mailto:pessora.fr@gmail.com" className="text-editorial-link-underline">
+                pessora.fr@gmail.com
               </a>
               .
             </p>
@@ -98,8 +98,8 @@ const PolitiqueConfidentialite = () => {
               Vous disposez d’un droit d’accès, de rectification, d’effacement, de limitation, d’opposition et de
               portabilité (lorsque applicable), et du retrait du consentement à tout moment pour les traitements qui
               s’y fondent. Contact :{' '}
-              <a href="mailto:pessora.mq@gmail.com" className="text-editorial-link-underline">
-                pessora.mq@gmail.com
+              <a href="mailto:pessora.fr@gmail.com" className="text-editorial-link-underline">
+                pessora.fr@gmail.com
               </a>
               . Vous pouvez introduire une réclamation auprès de la CNIL (
               <a href="https://www.cnil.fr" className="text-editorial-link-underline" target="_blank" rel="noopener noreferrer">

@@ -1,0 +1,488 @@
+- generic [ref=e3]:
+  - link "Aller au contenu" [ref=e4] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=e5]:
+    - generic [ref=e6]:
+      - link "Pessóra" [ref=e7] [cursor=pointer]:
+        - /url: /
+        - img "Pessóra" [ref=e8]
+      - generic [ref=e9]:
+        - link "Connexion" [ref=e10] [cursor=pointer]:
+          - /url: /connexion
+          - img [ref=e11]
+        - button "Panier, vide" [ref=e15] [cursor=pointer]:
+          - img
+        - button "Ouvrir le menu" [ref=e16] [cursor=pointer]:
+          - generic [ref=e18]:
+            - img
+  - main [ref=e19]:
+    - generic [ref=e92]:
+      - generic [ref=e97]:
+        - paragraph [ref=e98]:
+          - generic [ref=e99]: Plus qu'une boisson
+          - generic [ref=e100]: un style de vie
+        - paragraph [ref=e101]: Performance | Protein bar | Nutricosmetics
+        - button "Voir le menu" [ref=e103] [cursor=pointer]:
+          - generic [ref=e104]: Menu
+          - img
+      - generic [ref=e106]:
+        - generic [ref=e107]:
+          - heading "À la une" [level=2] [ref=e108]
+          - generic [ref=e109]:
+            - button "Précédent" [ref=e110] [cursor=pointer]:
+              - img
+            - button "Suivant" [ref=e111] [cursor=pointer]:
+              - img
+        - generic [ref=e112]:
+          - link "Photo à venir Wellness · Coup de cœur Ton moment bien-être ›" [ref=e114] [cursor=pointer]:
+            - /url: /menu?gamme=wellness
+            - generic [ref=e115]:
+              - generic [ref=e117]: Photo à venir
+              - generic [ref=e118]:
+                - paragraph [ref=e119]: Wellness · Coup de cœur
+                - paragraph [ref=e120]: Ton moment bien-être
+              - generic [ref=e121]: ›
+          - link "Photo à venir Wellness · Coup de cœur Ton moment bien-être ›" [ref=e123] [cursor=pointer]:
+            - /url: /menu?gamme=wellness
+            - generic [ref=e124]:
+              - generic [ref=e126]: Photo à venir
+              - generic [ref=e127]:
+                - paragraph [ref=e128]: Wellness · Coup de cœur
+                - paragraph [ref=e129]: Ton moment bien-être
+              - generic [ref=e130]: ›
+          - link "Photo à venir Shakes · Protéinés Shake Mangue Passion ›" [ref=e132] [cursor=pointer]:
+            - /url: /menu?gamme=shakes
+            - generic [ref=e133]:
+              - generic [ref=e135]: Photo à venir
+              - generic [ref=e136]:
+                - paragraph [ref=e137]: Shakes · Protéinés
+                - paragraph [ref=e138]: Shake Mangue Passion
+              - generic [ref=e139]: ›
+          - link "Photo à venir Shakes · Protéinés Shake Mangue Passion ›" [ref=e141] [cursor=pointer]:
+            - /url: /menu?gamme=shakes
+            - generic [ref=e142]:
+              - generic [ref=e144]: Photo à venir
+              - generic [ref=e145]:
+                - paragraph [ref=e146]: Shakes · Protéinés
+                - paragraph [ref=e147]: Shake Mangue Passion
+              - generic [ref=e148]: ›
+          - link "Photo à venir Coffee · Martinique Coffee glacé maison ›" [ref=e150] [cursor=pointer]:
+            - /url: /menu?gamme=coffee
+            - generic [ref=e151]:
+              - generic [ref=e153]: Photo à venir
+              - generic [ref=e154]:
+                - paragraph [ref=e155]: Coffee · Martinique
+                - paragraph [ref=e156]: Coffee glacé maison
+              - generic [ref=e157]: ›
+          - link "Photo à venir Coffee · Martinique Coffee glacé maison ›" [ref=e159] [cursor=pointer]:
+            - /url: /menu?gamme=coffee
+            - generic [ref=e160]:
+              - generic [ref=e162]: Photo à venir
+              - generic [ref=e163]:
+                - paragraph [ref=e164]: Coffee · Martinique
+                - paragraph [ref=e165]: Coffee glacé maison
+              - generic [ref=e166]: ›
+      - generic [ref=e169]:
+        - generic [ref=e170]:
+          - paragraph [ref=e171]: Bien-être · PessÓra
+          - heading "Un concentré de bien-être au naturel" [level=3] [ref=e172]
+        - img "Un concentré de bien-être au naturel" [ref=e174]
+      - region "Nos coups de cœur" [ref=e175]:
+        - generic [ref=e176]:
+          - heading "Nos coups de cœur" [level=2] [ref=e178]
+          - generic [ref=e180]:
+            - article [ref=e181]:
+              - generic [ref=e182]:
+                - generic [ref=e183]:
+                  - status "Nouveauté":
+                    - generic: Nouveauté
+                  - img "PINK DRAGON" [ref=e184]
+                  - 'link "Voir la fiche : PINK DRAGON" [ref=e185] [cursor=pointer]':
+                    - /url: /menu/pink-dragon
+                  - button "Personnaliser et ajouter PINK DRAGON au panier" [ref=e186] [cursor=pointer]:
+                    - img
+                - link "PINK DRAGON FRUITÉ & BEAUTÉ · 25G PROTÉINES · 250 KCAL 14,00 €" [ref=e188] [cursor=pointer]:
+                  - /url: /menu/pink-dragon
+                  - heading "PINK DRAGON" [level=3] [ref=e189]
+                  - paragraph [ref=e190]: FRUITÉ & BEAUTÉ · 25G PROTÉINES · 250 KCAL
+                  - paragraph [ref=e191]: 14,00 €
+            - article [ref=e192]:
+              - generic [ref=e193]:
+                - generic [ref=e194]:
+                  - status "Nouveauté":
+                    - generic: Nouveauté
+                  - img "HYDRA BOOST LITCHI" [ref=e195]
+                  - 'link "Voir la fiche : HYDRA BOOST LITCHI" [ref=e196] [cursor=pointer]':
+                    - /url: /menu/hydra-boost-litchi
+                  - button "Personnaliser et ajouter HYDRA BOOST LITCHI au panier" [ref=e197] [cursor=pointer]:
+                    - img
+                - link "HYDRA BOOST LITCHI HYDRATATION PROFONDE & RÉCUPÉRATION · 40 KCAL 10,00 €" [ref=e199] [cursor=pointer]:
+                  - /url: /menu/hydra-boost-litchi
+                  - heading "HYDRA BOOST LITCHI" [level=3] [ref=e200]
+                  - paragraph [ref=e201]: HYDRATATION PROFONDE & RÉCUPÉRATION · 40 KCAL
+                  - paragraph [ref=e202]: 10,00 €
+            - article [ref=e203]:
+              - generic [ref=e204]:
+                - generic [ref=e205]:
+                  - status "Coup de cœur":
+                    - generic: Coup de cœur
+                  - img "COOKIE CREAM" [ref=e206]
+                  - 'link "Voir la fiche : COOKIE CREAM" [ref=e207] [cursor=pointer]':
+                    - /url: /menu/cookie-cream
+                  - button "Personnaliser et ajouter COOKIE CREAM au panier" [ref=e208] [cursor=pointer]:
+                    - img
+                - link "COOKIE CREAM GOURMANDISE PURE · 30G PROTÉINES · 330 KCAL 14,00 €" [ref=e210] [cursor=pointer]:
+                  - /url: /menu/cookie-cream
+                  - heading "COOKIE CREAM" [level=3] [ref=e211]
+                  - paragraph [ref=e212]: GOURMANDISE PURE · 30G PROTÉINES · 330 KCAL
+                  - paragraph [ref=e213]: 14,00 €
+            - article [ref=e214]:
+              - generic [ref=e215]:
+                - generic [ref=e216]:
+                  - img "PROTEIN CHOC" [ref=e217]
+                  - 'link "Voir la fiche : PROTEIN CHOC" [ref=e218] [cursor=pointer]':
+                    - /url: /menu/choco-prot
+                  - button "Personnaliser et ajouter PROTEIN CHOC au panier" [ref=e219] [cursor=pointer]:
+                    - img
+                - link "PROTEIN CHOC LE CLASSIQUE EFFICACE · 25G PROTÉINES · 250 KCAL 14,00 €" [ref=e221] [cursor=pointer]:
+                  - /url: /menu/choco-prot
+                  - heading "PROTEIN CHOC" [level=3] [ref=e222]
+                  - paragraph [ref=e223]: LE CLASSIQUE EFFICACE · 25G PROTÉINES · 250 KCAL
+                  - paragraph [ref=e224]: 14,00 €
+            - article [ref=e225]:
+              - generic [ref=e226]:
+                - generic [ref=e227]:
+                  - img "CARAMEL GLACÉ" [ref=e228]
+                  - 'link "Voir la fiche : CARAMEL GLACÉ" [ref=e229] [cursor=pointer]':
+                    - /url: /menu/caramel-glace
+                  - button "Personnaliser et ajouter CARAMEL GLACÉ au panier" [ref=e230] [cursor=pointer]:
+                    - img
+                - link "CARAMEL GLACÉ LE COUP DE FOUET GOURMAND · 25G PROTÉINES · 250 KCAL 14,00 €" [ref=e232] [cursor=pointer]:
+                  - /url: /menu/caramel-glace
+                  - heading "CARAMEL GLACÉ" [level=3] [ref=e233]
+                  - paragraph [ref=e234]: LE COUP DE FOUET GOURMAND · 25G PROTÉINES · 250 KCAL
+                  - paragraph [ref=e235]: 14,00 €
+            - article [ref=e236]:
+              - generic [ref=e237]:
+                - generic [ref=e238]:
+                  - img "BLUE LAGOON" [ref=e239]
+                  - 'link "Voir la fiche : BLUE LAGOON" [ref=e240] [cursor=pointer]':
+                    - /url: /menu/blue-lagoon
+                  - button "Personnaliser et ajouter BLUE LAGOON au panier" [ref=e241] [cursor=pointer]:
+                    - img
+                - link "BLUE LAGOON L'ÉLECTROCHOC FRAIS POUR SE RÉVEILLER · 50 KCAL 10,00 €" [ref=e243] [cursor=pointer]:
+                  - /url: /menu/blue-lagoon
+                  - heading "BLUE LAGOON" [level=3] [ref=e244]
+                  - paragraph [ref=e245]: L'ÉLECTROCHOC FRAIS POUR SE RÉVEILLER · 50 KCAL
+                  - paragraph [ref=e246]: 10,00 €
+            - article [ref=e247]:
+              - generic [ref=e248]:
+                - generic [ref=e249]:
+                  - img "GLAM MATCHA" [ref=e250]
+                  - 'link "Voir la fiche : GLAM MATCHA" [ref=e251] [cursor=pointer]':
+                    - /url: /menu/glam-matcha
+                  - button "Personnaliser et ajouter GLAM MATCHA au panier" [ref=e252] [cursor=pointer]:
+                    - img
+                - link "GLAM MATCHA L'OPTION ZEN & FRUITÉE · 21G PROTÉINES · 210 KCAL 14,00 €" [ref=e254] [cursor=pointer]:
+                  - /url: /menu/glam-matcha
+                  - heading "GLAM MATCHA" [level=3] [ref=e255]
+                  - paragraph [ref=e256]: L'OPTION ZEN & FRUITÉE · 21G PROTÉINES · 210 KCAL
+                  - paragraph [ref=e257]: 14,00 €
+            - article [ref=e258]:
+              - generic [ref=e259]:
+                - generic [ref=e260]:
+                  - img "GLOW MY SKIN" [ref=e261]
+                  - 'link "Voir la fiche : GLOW MY SKIN" [ref=e262] [cursor=pointer]':
+                    - /url: /menu/glow-my-skin
+                  - button "Personnaliser et ajouter GLOW MY SKIN au panier" [ref=e263] [cursor=pointer]:
+                    - img
+                - link "GLOW MY SKIN LE COCKTAIL BEAUTÉ PAR EXCELLENCE · 30 KCAL 10,00 €" [ref=e265] [cursor=pointer]:
+                  - /url: /menu/glow-my-skin
+                  - heading "GLOW MY SKIN" [level=3] [ref=e266]
+                  - paragraph [ref=e267]: LE COCKTAIL BEAUTÉ PAR EXCELLENCE · 30 KCAL
+                  - paragraph [ref=e268]: 10,00 €
+            - article [ref=e269]:
+              - generic [ref=e270]:
+                - generic [ref=e271]:
+                  - img "SPICY MANGO" [ref=e272]
+                  - 'link "Voir la fiche : SPICY MANGO" [ref=e273] [cursor=pointer]':
+                    - /url: /menu/spicy-mango
+                  - button "Personnaliser et ajouter SPICY MANGO au panier" [ref=e274] [cursor=pointer]:
+                    - img
+                - link "SPICY MANGO LE BOOST TROPICAL ET PUISSANT · 50 KCAL 10,00 €" [ref=e276] [cursor=pointer]:
+                  - /url: /menu/spicy-mango
+                  - heading "SPICY MANGO" [level=3] [ref=e277]
+                  - paragraph [ref=e278]: LE BOOST TROPICAL ET PUISSANT · 50 KCAL
+                  - paragraph [ref=e279]: 10,00 €
+            - article [ref=e280]:
+              - generic [ref=e281]:
+                - generic [ref=e282]:
+                  - generic [ref=e284]: ☕
+                  - 'link "Voir la fiche : ESPRESSO" [ref=e285] [cursor=pointer]':
+                    - /url: /menu/espresso
+                  - button "Personnaliser et ajouter ESPRESSO au panier" [ref=e286] [cursor=pointer]:
+                    - img
+                - link "ESPRESSO LE CLASSIQUE ITALIEN · 5 KCAL 2,50 €" [ref=e288] [cursor=pointer]:
+                  - /url: /menu/espresso
+                  - heading "ESPRESSO" [level=3] [ref=e289]
+                  - paragraph [ref=e290]: LE CLASSIQUE ITALIEN · 5 KCAL
+                  - paragraph [ref=e291]: 2,50 €
+            - article [ref=e292]:
+              - generic [ref=e293]:
+                - generic [ref=e294]:
+                  - img "IMMUNE PARADISE" [ref=e295]
+                  - 'link "Voir la fiche : IMMUNE PARADISE" [ref=e296] [cursor=pointer]':
+                    - /url: /menu/immune-paradise
+                  - button "Personnaliser et ajouter IMMUNE PARADISE au panier" [ref=e297] [cursor=pointer]:
+                    - img
+                - link "IMMUNE PARADISE CONTRIBUE AU FONCTIONNEMENT DU SYSTÈME IMMUNITAIRE · 35 KCAL 10,00 €" [ref=e299] [cursor=pointer]:
+                  - /url: /menu/immune-paradise
+                  - heading "IMMUNE PARADISE" [level=3] [ref=e300]
+                  - paragraph [ref=e301]: CONTRIBUE AU FONCTIONNEMENT DU SYSTÈME IMMUNITAIRE · 35 KCAL
+                  - paragraph [ref=e302]: 10,00 €
+            - article [ref=e303]:
+              - generic [ref=e304]:
+                - generic [ref=e305]:
+                  - generic [ref=e307]: ☕
+                  - 'link "Voir la fiche : CAFÉ LONG" [ref=e308] [cursor=pointer]':
+                    - /url: /menu/cafe-long
+                  - button "Personnaliser et ajouter CAFÉ LONG au panier" [ref=e309] [cursor=pointer]:
+                    - img
+                - link "CAFÉ LONG POUR PRENDRE SON TEMPS · 10 KCAL 4,00 €" [ref=e311] [cursor=pointer]:
+                  - /url: /menu/cafe-long
+                  - heading "CAFÉ LONG" [level=3] [ref=e312]
+                  - paragraph [ref=e313]: POUR PRENDRE SON TEMPS · 10 KCAL
+                  - paragraph [ref=e314]: 4,00 €
+          - paragraph [ref=e315]:
+            - link "Voir toute la carte" [ref=e316] [cursor=pointer]:
+              - /url: /menu
+      - complementary [ref=e319]:
+        - generic [ref=e320]:
+          - paragraph [ref=e321]: Óra+ — 24,90€/ mois · jusqu’à −50 % sur les boissons.
+          - paragraph [ref=e322]: Bilan & événements prioritaires.
+        - link "Découvrir Óra+" [ref=e323] [cursor=pointer]:
+          - /url: /ora-plus
+          - text: Découvrir Óra+
+          - img [ref=e324]
+      - generic [ref=e327]:
+        - generic [ref=e328]:
+          - heading "Choisis ton moment" [level=2] [ref=e329]
+          - generic [ref=e330]:
+            - button "Wellness" [ref=e331]: Wellness
+            - button "Shakes" [ref=e333]
+            - button "Énergie" [ref=e334]
+            - button "Coffee" [ref=e335]
+        - generic [ref=e336]:
+          - generic [ref=e337]:
+            - img "Wellness · PessÓra" [ref=e339]
+            - generic [ref=e340]:
+              - paragraph [ref=e341]: Wellness · PessÓra
+              - heading "Un concentré de bien-être au naturel" [level=3] [ref=e342]
+              - button "Voir la gamme" [ref=e343] [cursor=pointer]
+          - generic [ref=e344]:
+            - img "Wellness boisson 1" [ref=e347]
+            - img "Wellness boisson 2" [ref=e350]
+      - generic [ref=e352]:
+        - generic [ref=e354]:
+          - heading "Nos univers" [level=2] [ref=e356]
+          - link "Tout explorer" [ref=e357] [cursor=pointer]:
+            - /url: /menu
+        - region "Nos univers" [ref=e358]:
+          - button "Univers précédent" [ref=e359] [cursor=pointer]:
+            - img
+          - button "Univers suivant" [ref=e360] [cursor=pointer]:
+            - img
+          - button "Shakes & gauffres" [ref=e362] [cursor=pointer]:
+            - generic [ref=e364]:
+              - paragraph [ref=e365]: Shakes
+              - generic [ref=e366]:
+                - heading "Shakes & gauffres" [level=3] [ref=e367]
+                - text: Découvrir
+          - tablist "Sélection univers" [ref=e370]:
+            - tab "Shakes" [selected] [ref=e371] [cursor=pointer]
+            - tab "Communauté" [ref=e372] [cursor=pointer]
+            - tab "Bien-être" [ref=e373] [cursor=pointer]
+      - generic [ref=e375]:
+        - generic [ref=e377]:
+          - heading "Nos gammes" [level=2] [ref=e379]
+          - link "Voir les produits" [ref=e380] [cursor=pointer]:
+            - /url: /nos-produits
+        - generic [ref=e381]:
+          - button "Voir la gamme Gamme Wellness" [ref=e382]:
+            - img "Gamme Wellness" [ref=e383]
+            - generic [ref=e385]: Wellness
+            - generic [ref=e386]:
+              - generic [ref=e387]: Compléments nutrition
+              - img [ref=e389]
+          - button "Voir la gamme Gamme Sport" [ref=e391]:
+            - img "Gamme Sport" [ref=e392]
+            - generic [ref=e394]: Sport
+            - generic [ref=e395]:
+              - generic [ref=e396]: Performance & récupération
+              - img [ref=e398]
+          - button "Voir la gamme Gamme Skin" [ref=e400]:
+            - img "Gamme Skin" [ref=e401]
+            - generic [ref=e403]: Skin
+            - generic [ref=e404]:
+              - generic [ref=e405]: Beauté & éclat
+              - img [ref=e407]
+        - generic [ref=e410]:
+          - generic [ref=e411]:
+            - button "Wellness" [ref=e412]: Wellness
+            - button "Sport" [ref=e414]
+            - button "Skin" [ref=e415]
+          - generic [ref=e417]:
+            - generic [ref=e418]:
+              - generic [ref=e420]: Photo à venir
+              - generic [ref=e421]:
+                - paragraph [ref=e422]: Aloe Vera
+                - paragraph [ref=e423]: 60€
+            - generic [ref=e424]:
+              - generic [ref=e426]: Photo à venir
+              - generic [ref=e427]:
+                - paragraph [ref=e428]: Collagène
+                - paragraph [ref=e429]: 85€
+            - generic [ref=e430]:
+              - generic [ref=e432]: Photo à venir
+              - generic [ref=e433]:
+                - paragraph [ref=e434]: Thé Detox
+                - paragraph [ref=e435]: 45€
+            - generic [ref=e436]:
+              - generic [ref=e438]: Photo à venir
+              - generic [ref=e439]:
+                - paragraph [ref=e440]: Fibres
+                - paragraph [ref=e441]: 45€
+            - generic [ref=e442]:
+              - generic [ref=e444]: Photo à venir
+              - generic [ref=e445]:
+                - paragraph [ref=e446]: Complex Vitamine
+                - paragraph [ref=e447]: 35€
+            - generic [ref=e448]:
+              - generic [ref=e450]: Photo à venir
+              - generic [ref=e451]:
+                - paragraph [ref=e452]: Minéral Complex
+                - paragraph [ref=e453]: 45€
+      - generic [ref=e455]:
+        - generic [ref=e456]:
+          - heading "Avis clients" [level=2] [ref=e460]
+          - generic [ref=e461]:
+            - generic [ref=e462]: 4,9
+            - generic [ref=e463]: avis Google
+        - generic [ref=e464]:
+          - generic [ref=e466]:
+            - paragraph [ref=e467]: "\"Un accueil exceptionnel. Mention spéciale Pink Dragon.\""
+            - paragraph [ref=e468]: Jimmy CACLIN
+          - generic [ref=e470]:
+            - paragraph [ref=e471]: "\"Parfait, souriants, à l'écoute. Prenez l'abonnement !\""
+            - paragraph [ref=e472]: Pauline Fournaise
+          - generic [ref=e474]:
+            - paragraph [ref=e475]: "\"Spot chill et cute pour un moment entre copines.\""
+            - paragraph [ref=e476]: Imane Rossy
+          - generic [ref=e478]:
+            - paragraph [ref=e479]: "\"Excellent, prix abordables. Je recommande.\""
+            - paragraph [ref=e480]: Marine Davidas
+          - generic [ref=e482]:
+            - paragraph [ref=e483]: "\"Très beau cadre, boisson excellente !\""
+            - paragraph [ref=e484]: stacey bajoc
+          - generic [ref=e486]:
+            - paragraph [ref=e487]: "\"Une pépite ! Personnel adorable et à l'écoute.\""
+            - paragraph [ref=e488]: ali hrs
+          - generic [ref=e490]:
+            - paragraph [ref=e491]: "\"Très bon accueil, c'est délicieux.\""
+            - paragraph [ref=e492]: Marc LABRANCHE
+        - generic [ref=e493]:
+          - generic [ref=e494]:
+            - button "Aller à l'avis 1" [ref=e495] [cursor=pointer]
+            - button "Aller à l'avis 2" [ref=e496] [cursor=pointer]
+            - button "Aller à l'avis 3" [ref=e497] [cursor=pointer]
+            - button "Aller à l'avis 4" [ref=e498] [cursor=pointer]
+            - button "Aller à l'avis 5" [ref=e499] [cursor=pointer]
+            - button "Aller à l'avis 6" [pressed] [ref=e500] [cursor=pointer]
+            - button "Aller à l'avis 7" [ref=e501] [cursor=pointer]
+          - link "Voir tous les avis Google" [ref=e502] [cursor=pointer]:
+            - /url: https://www.google.com/search?client=opera&hs=H1C&sca_esv=56156ec590014018&sxsrf=ANbL-n4M_77SXayiye1HuusR8lMFQ17FOQ:1776686580449&uds=ALYpb_ncDc7jTlmw6Mmq7NjuX5c-CO3QXtih0Z-GxTvpLw07F18AWMIsp0puggHgxLLuE0YKl2tv6Owjqg--4B5gwSY4NDykPDV67m0v7sLGMx3eySLXN26iskqV-u-Nh7yFXddCEHRr9UMaC6QOz0xuPZkI053h-yci1u-9RkUEgBZdpMIE1B6G-BbqpRhbL8fivnH3p9mR&q=PESSORA+%E2%80%93+Bar+Prot%C3%A9in%C3%A9+%26+Bien-%C3%AAtre+Avis&si=AL3DRZEsmMGCryMMFSHJ3StBhOdZ2-6yYkXd_doETEE1OR-qOSdDjYFxVTSIIF6fEO1xJQKufcphlYZUKqSLLJ1AJahQ1a9xurISvYOZeZNvcfaUJCNBa5tvZNi0vtbp6Ynln02zSAdDOUPAJsTbUxY35i7edL_VN2SasFCf628-3CIQqkLZoxY%3D&hl=fr-FR&sa=X&ved=2ahUKEwim2YSksfyTAxW6k2oFHcfvH-4Q_4MLegQIPhAO&biw=1452&bih=857&dpr=2
+      - generic [ref=e505]:
+        - heading "Rejoins la communauté Pessóra" [level=2] [ref=e506]:
+          - text: Rejoins la
+          - emphasis [ref=e507]: communauté Pessóra
+        - link "Événements" [ref=e508] [cursor=pointer]:
+          - /url: /evenements
+  - contentinfo [ref=e25]:
+    - generic [ref=e28]:
+      - region "Marque Pessóra" [ref=e29]:
+        - generic [ref=e30]:
+          - generic [ref=e31]:
+            - img "Pessóra" [ref=e32]
+            - paragraph [ref=e33]: Bar protéiné · Fort-de-France, Martinique
+          - generic [ref=e34]:
+            - link "Pessóra sur Instagram (ouvre un nouvel onglet)" [ref=e35] [cursor=pointer]:
+              - /url: https://instagram.com/pessora.mq
+              - img [ref=e36]
+            - link "Contacter Pessóra sur WhatsApp (ouvre un nouvel onglet)" [ref=e39] [cursor=pointer]:
+              - /url: https://wa.me/596696000000
+              - img [ref=e40]
+      - generic [ref=e42]:
+        - generic [ref=e43]:
+          - paragraph [ref=e44]: Menu
+          - navigation "Menu" [ref=e45]:
+            - link "Shakes" [ref=e46] [cursor=pointer]:
+              - /url: /menu
+            - link "Boissons énergie" [ref=e47] [cursor=pointer]:
+              - /url: /menu
+            - link "Carte complète" [ref=e48] [cursor=pointer]:
+              - /url: /menu
+        - generic [ref=e49]:
+          - paragraph [ref=e50]: Espace
+          - navigation "Espace" [ref=e51]:
+            - link "Óra+" [ref=e52] [cursor=pointer]:
+              - /url: /ora-plus
+            - link "Événements" [ref=e53] [cursor=pointer]:
+              - /url: /evenements
+            - link "Bilan Bien-être" [ref=e54] [cursor=pointer]:
+              - /url: /bilan-bien-etre
+      - region "Contact et réseaux" [ref=e55]:
+        - generic [ref=e56]:
+          - paragraph [ref=e57]: Nous rejoindre
+          - navigation "Contact et réseaux" [ref=e58]:
+            - link "Instagram" [ref=e60] [cursor=pointer]:
+              - /url: https://instagram.com/pessora.mq
+            - generic [ref=e61]:
+              - generic [ref=e62]: ·
+              - link "WhatsApp" [ref=e63] [cursor=pointer]:
+                - /url: https://wa.me/596696000000
+            - generic [ref=e64]:
+              - generic [ref=e65]: ·
+              - link "Fort-de-France" [ref=e66] [cursor=pointer]:
+                - /url: /contact
+            - generic [ref=e67]:
+              - generic [ref=e68]: ·
+              - link "Partenariats" [ref=e69] [cursor=pointer]:
+                - /url: /contact-partenariat
+      - region "Newsletter" [ref=e70]:
+        - generic [ref=e71]:
+          - heading "Newsletter" [level=3] [ref=e72]
+          - form "Newsletter" [ref=e73]:
+            - generic [ref=e74]:
+              - generic [ref=e75]: Adresse e-mail pour la newsletter
+              - textbox "Adresse e-mail pour la newsletter Adresse e-mail pour la newsletter" [ref=e76]:
+                - /placeholder: Votre e-mail
+              - button "S’inscrire à la newsletter" [ref=e77] [cursor=pointer]:
+                - img
+            - generic [ref=e79] [cursor=pointer]:
+              - checkbox "J’accepte de recevoir la newsletter et j’ai pris connaissance de la politique de confidentialité." [ref=e81]
+              - generic [ref=e82]:
+                - text: J’accepte de recevoir la newsletter et j’ai pris connaissance de la
+                - link "politique de confidentialité" [ref=e83]:
+                  - /url: /politique-confidentialite
+                - text: .
+    - generic [ref=e85]:
+      - generic [ref=e86]: © 2026 Pessóra · Fort-de-France
+      - generic [ref=e87]:
+        - link "Mentions légales" [ref=e88] [cursor=pointer]:
+          - /url: /mentions-legales
+        - link "Confidentialité" [ref=e89] [cursor=pointer]:
+          - /url: /politique-confidentialite
+        - button "Cookies" [ref=e90]
+        - link "CGV" [ref=e91] [cursor=pointer]:
+          - /url: /cgv
+  - button "Ouvrir Pessobot" [ref=e509] [cursor=pointer]

@@ -21,6 +21,9 @@ alwaysApply: true
 | `kb-core-ui-ux.mdc` | Exigences permanentes : qualité visuelle, accessibilité, responsive |
 | `kb-workflow-orchestration.mdc` | Comportement agent : phases, vérification, leçons apprises |
 | `kb-action-documentation.mdc` | Journal global (ACTIONS_LOG) + journal de session |
+| `kb-cursor-prompts.mdc` | Workflow prompts : écrire les prompts par lots AVANT d'exécuter, bibliothèque de prompts réutilisables |
+| `kb-git-workflow.mdc` | Commits conventionnels `type(scope):`, `.gitignore` standard Next.js, nommage branches, worktrees (**alwaysApply**) |
+| `kb-env-setup.mdc` | `.env.example` commité vs `.env.local` secret, préfixes `NEXT_PUBLIC_`/`VITE_`, validation `lib/env.ts`, promotion dev→prod (**alwaysApply**) |
 
 ---
 
@@ -45,7 +48,8 @@ alwaysApply: true
 
 | Fichier | Rôle |
 |---|---|
-| `kb-architecture.mdc` | Structure dossiers Next.js 15 — `app/`, route groups, `components/`, `lib/`, `hooks/`, `types/`, `supabase/` |
+| `kb-architecture.mdc` | Structure dossiers Next.js 15 — `app/`, route groups **obligatoires**, `lib/supabase/`, `supabase/migrations/` |
+| `kb-naming-conventions.mdc` | Conventions de nommage — routes URL standards, `image_url`/`image_urls`, migrations, env vars, stores Zustand (**alwaysApply**) |
 | `kb-components.mdc` | Server vs Client, composition, Hero, Section, Card, Form — patterns TSX |
 | `kb-styling.mdc` | CSS Variables, Tailwind, glassmorphism, shimmer |
 | `kb-data-model.mdc` | Supabase (dynamique) + `content/*.ts` (marketing statique) — remplace `servicesData.js` |
@@ -61,9 +65,14 @@ alwaysApply: true
 
 | Fichier | Rôle |
 |---|---|
-| `kb-supabase.mdc` | 3 clients (browser/server/admin), env vars, RLS, migrations, Storage, Realtime, types |
+| `kb-security-baseline.mdc` | **P0 — à créer AVANT toute feature** : 5 fichiers obligatoires (CSRF, rateLimit, adminAuth, auditLog, middleware) + headers sécurité |
+| `kb-supabase.mdc` | 3 clients `@supabase/ssr` (browser/server/admin), RLS, migrations `supabase/migrations/`, Storage, Realtime, types |
 | `kb-auth.mdc` | Auth dual (password admin/proprio + magic link tenant), RBAC, middleware, layouts protégés |
 | `kb-api-routes.mdc` | Route Handlers vs Server Actions, Zod, rate limit, CSRF, webhooks signés |
+| `kb-stripe.mdc` | Stripe Checkout Session, webhook signé idempotent, Customer Portal, événements `checkout.session.completed` |
+| `kb-n8n-workflows.mdc` | Workflows n8n — chatbot, receipt PDF, booking-confirm, notify-admin. Pattern fire-and-forget + callbacks sécurisés |
+| `kb-resend.mdc` | Emails transactionnels Resend — `lib/resend.ts`, templates HTML inline, lead/booking/order confirmation, Resend vs n8n |
+| `kb-chatbot.mdc` | KaribotWidget n8n — composant `<KaribotWidget>` + route `/api/chat`, déploiement < 30 min |
 
 > La règle `kb-backend.mdc` (PHP + Express + MySQL) a été supprimée — remplacée par ce trio.
 
@@ -149,3 +158,24 @@ Refonte profonde vers Next.js 15 App Router. Règles ajoutées ou réécrites :
 - **Supprimées** : `stack-react-spa` (SPA obsolète), `kb-backend` (PHP/Express obsolète), doublons racine
 
 Voir `AUDIT_REPORT.md` pour le détail de la refonte.
+
+---
+
+## Nouveautés V3 (juin 2026)
+
+Standardisation inter-projets — issues identifiées en analysant PESSORA, DALCIELO, DIAMANTNOIR :
+
+- **Créées** :
+  - `01-core/kb-cursor-prompts.mdc` — workflow prompts-first (pratique DIAMANTNOIR formalisée)
+  - `03-architecture/kb-naming-conventions.mdc` — routes URL standards, `image_url`/`image_urls`, migrations, env vars
+  - `04-features/kb-security-baseline.mdc` — 5 fichiers P0 à créer avant toute feature (référence DALCIELO)
+  - `04-features/kb-chatbot.mdc` — `KaribotWidget` réutilisable (PESSORA + DALCIELO + DIAMANTNOIR = même pattern)
+  - `04-features/kb-stripe.mdc` — Checkout Session, webhook signé idempotent, Customer Portal (référence DIAMANTNOIR)
+  - `04-features/kb-n8n-workflows.mdc` — fire-and-forget patterns, payloads standards, callbacks sécurisés (référence DALCIELO + DIAMANTNOIR)
+  - `04-features/kb-resend.mdc` — emails transactionnels Resend, templates HTML inline, Resend vs n8n
+  - `01-core/kb-git-workflow.mdc` — commits conventionnels, .gitignore standard, branches, fix `.env.example` gitignored (DIAMANTNOIR)
+  - `01-core/kb-env-setup.mdc` — .env.example commité, préfixes, lib/env.ts validation, promotion dev→prod
+- **Amendées** :
+  - `02-stack/kb-stack-selection.mdc` — exception PESSORA (Vite SPA) documentée
+  - `03-architecture/kb-architecture.mdc` — route groups obligatoires multi-rôle, `lib/supabase/` subfolder, anti-pattern LayoutSwitch
+  - `04-features/kb-supabase.mdc` — 3 clients `@supabase/ssr` (pattern DIAMANTNOIR), migrations convention unique

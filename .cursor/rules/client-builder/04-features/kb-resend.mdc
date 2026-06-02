@@ -1,0 +1,299 @@
+---
+description: Emails transactionnels Karibloom via Resend - lib/resend.ts singleton, templates HTML inline, cas d'usage (confirmation, reset, lead, reçu). Référence : DIAMANTNOIR (villa-submissions/confirm). Server-only, jamais côté client.
+globs: "**/lib/resend*.ts,**/app/api/**/*.ts"
+alwaysApply: false
+---
+
+# Emails transactionnels — Resend
+
+> Resend est le service email standard Karibloom. Pour les emails longs (reçus PDF, newsletters) préférer n8n qui a plus de souplesse. Resend = emails courts déclenchés depuis Next.js directement.
+
+---
+
+## 1. Setup
+
+```bash
+npm install resend
+```
+
+```bash
+# .env.local
+RESEND_API_KEY=re_...           # server-only, JAMAIS NEXT_PUBLIC_
+RESEND_FROM_EMAIL=noreply@[domaine-client].fr
+RESEND_FROM_NAME=[Nom Client]
+```
+
+**`lib/resend.ts` — singleton serveur-only :**
+
+```ts
+// lib/resend.ts
+import { Resend } from "resend";
+
+if (!process.env.RESEND_API_KEY) {
+  console.warn("[resend] RESEND_API_KEY manquante — emails désactivés");
+}
+
+export const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null;
+
+export const FROM = `${process.env.RESEND_FROM_NAME ?? "Karibloom"} <${process.env.RESEND_FROM_EMAIL ?? "noreply@karibloom.fr"}>`;
+```
+
+Ne jamais importer `resend` dans un fichier `"use client"`. Uniquement dans Route Handlers et Server Actions.
+
+---
+
+## 2. Pattern standard d'envoi
+
+```ts
+import { resend, FROM } from "@/lib/resend";
+
+async function sendEmail(to: string, subject: string, html: string) {
+  if (!resend) {
+    console.warn("[resend] Email non envoyé (API key manquante):", subject);
+    return { ok: false };
+  }
+
+  const { error } = await resend.emails.send({ from: FROM, to: [to], subject, html });
+
+  if (error) {
+    console.error("[resend] Échec envoi:", error.message);
+    return { ok: false, error: error.message };
+  }
+
+  return { ok: true };
+}
+```
+
+---
+
+## 3. Templates HTML inline
+
+### Style de base partagé (copier dans chaque template)
+
+```ts
+const BASE_STYLE = `font-family:Georgia,serif;max-width:520px;margin:0 auto;color:#1a1a1a`;
+const MUTED = `font-size:12px;color:#94a3b8`;
+const BODY = `font-size:15px;line-height:1.7;color:#334155`;
+const HR = `border:none;border-top:1px solid #e2e8f0;margin:24px 0`;
+```
+
+### Confirmation de réservation
+
+```ts
+export function bookingConfirmationHtml(data: {
+  guestName: string;
+  villaName: string;
+  startDate: string;
+  endDate: string;
+  totalPrice: number;
+  clientName: string;
+}) {
+  return `
+    <div style="${BASE_STYLE}">
+      <h2 style="font-weight:400">${data.clientName}</h2>
+      <p style="${BODY}">Bonjour ${data.guestName},</p>
+      <p style="${BODY}">
+        Votre réservation pour <strong>${data.villaName}</strong> est confirmée.
+      </p>
+      <table style="width:100%;border-collapse:collapse;margin:16px 0">
+        <tr>
+          <td style="${BODY};padding:8px 0;border-bottom:1px solid #f1f5f9">Arrivée</td>
+          <td style="${BODY};padding:8px 0;border-bottom:1px solid #f1f5f9;text-align:right"><strong>${data.startDate}</strong></td>
+        </tr>
+        <tr>
+          <td style="${BODY};padding:8px 0;border-bottom:1px solid #f1f5f9">Départ</td>
+          <td style="${BODY};padding:8px 0;border-bottom:1px solid #f1f5f9;text-align:right"><strong>${data.endDate}</strong></td>
+        </tr>
+        <tr>
+          <td style="${BODY};padding:8px 0">Total</td>
+          <td style="${BODY};padding:8px 0;text-align:right"><strong>${data.totalPrice.toLocaleString("fr-FR")} €</strong></td>
+        </tr>
+      </table>
+      <hr style="${HR}" />
+      <p style="${MUTED}">
+        ${data.clientName} — cet email a été envoyé automatiquement, merci de ne pas y répondre.
+      </p>
+    </div>
+  `;
+}
+```
+
+### Confirmation de commande (e-commerce)
+
+```ts
+export function orderConfirmationHtml(data: {
+  customerName: string;
+  orderToken: string;
+  items: { name: string; qty: number; price: number }[];
+  total: number;
+  trackingUrl: string;
+  clientName: string;
+}) {
+  const rows = data.items
+    .map(
+      (i) => `
+      <tr>
+        <td style="${BODY};padding:8px 0;border-bottom:1px solid #f1f5f9">${i.name} ×${i.qty}</td>
+        <td style="${BODY};padding:8px 0;border-bottom:1px solid #f1f5f9;text-align:right">${(i.price * i.qty).toFixed(2)} €</td>
+      </tr>`
+    )
+    .join("");
+
+  return `
+    <div style="${BASE_STYLE}">
+      <h2 style="font-weight:400">${data.clientName}</h2>
+      <p style="${BODY}">Merci ${data.customerName}, votre commande est confirmée.</p>
+      <table style="width:100%;border-collapse:collapse;margin:16px 0">
+        ${rows}
+        <tr>
+          <td style="${BODY};padding:8px 0;font-weight:600">Total</td>
+          <td style="${BODY};padding:8px 0;text-align:right;font-weight:600">${data.total.toFixed(2)} €</td>
+        </tr>
+      </table>
+      <a href="${data.trackingUrl}"
+         style="display:inline-block;margin-top:16px;padding:12px 24px;background:#1a1a1a;color:#fff;text-decoration:none;border-radius:4px;font-size:14px">
+        Suivre ma commande
+      </a>
+      <hr style="${HR}" />
+      <p style="${MUTED}">
+        Référence : ${data.orderToken}<br />
+        ${data.clientName} — ne pas répondre à cet email.
+      </p>
+    </div>
+  `;
+}
+```
+
+### Notification lead (formulaire de contact)
+
+```ts
+export function leadNotificationHtml(data: {
+  name: string;
+  email: string;
+  phone?: string;
+  message: string;
+  source?: string;
+  clientName: string;
+}) {
+  return `
+    <div style="${BASE_STYLE}">
+      <h2 style="font-weight:400">Nouveau contact — ${data.clientName}</h2>
+      <table style="width:100%;border-collapse:collapse;margin:16px 0">
+        <tr><td style="${BODY};padding:6px 0"><strong>Nom</strong></td><td style="${BODY};padding:6px 0">${data.name}</td></tr>
+        <tr><td style="${BODY};padding:6px 0"><strong>Email</strong></td><td style="${BODY};padding:6px 0"><a href="mailto:${data.email}">${data.email}</a></td></tr>
+        ${data.phone ? `<tr><td style="${BODY};padding:6px 0"><strong>Téléphone</strong></td><td style="${BODY};padding:6px 0">${data.phone}</td></tr>` : ""}
+        ${data.source ? `<tr><td style="${BODY};padding:6px 0"><strong>Source</strong></td><td style="${BODY};padding:6px 0">${data.source}</td></tr>` : ""}
+      </table>
+      <p style="${BODY};background:#f8fafc;padding:16px;border-left:3px solid #e2e8f0">${data.message}</p>
+    </div>
+  `;
+}
+```
+
+---
+
+## 4. Usage dans un Route Handler
+
+```ts
+// app/api/contact/route.ts
+import { resend, FROM } from "@/lib/resend";
+import { leadNotificationHtml } from "@/lib/emails/templates";
+
+export async function POST(req: Request) {
+  const { name, email, phone, message } = await req.json();
+
+  // 1. Notifier le client (admin)
+  await resend?.emails.send({
+    from: FROM,
+    to: [process.env.ADMIN_EMAIL ?? "contact@client.fr"],
+    subject: `Nouveau contact de ${name}`,
+    html: leadNotificationHtml({ name, email, phone, message, clientName: "Mon Client" }),
+  });
+
+  // 2. Accuser réception au visiteur (optionnel)
+  await resend?.emails.send({
+    from: FROM,
+    to: [email],
+    subject: "Nous avons bien reçu votre message",
+    html: `<p style="font-family:Georgia,serif;font-size:15px;color:#334155">
+      Bonjour ${name},<br /><br />
+      Nous avons bien reçu votre message et vous recontacterons sous 48h.<br /><br />
+      À bientôt.
+    </p>`,
+  });
+
+  return Response.json({ ok: true });
+}
+```
+
+---
+
+## 5. Organisation des fichiers
+
+```
+lib/
+  resend.ts           ← singleton + FROM constant
+  emails/
+    templates.ts      ← tous les templates HTML (bookingConfirmationHtml, etc.)
+```
+
+Un seul fichier `templates.ts` jusqu'à 5-6 templates. Au-delà, scinder par domaine :
+
+```
+lib/emails/
+  booking.ts
+  order.ts
+  lead.ts
+```
+
+---
+
+## 6. Quand utiliser Resend vs n8n
+
+| Cas | Resend direct | n8n |
+|-----|--------------|-----|
+| Confirmation immédiate simple | ✅ | |
+| Notification admin (lead, contact) | ✅ | |
+| Reset mot de passe | ✅ (via Supabase Auth) | |
+| Reçu PDF avec pièce jointe | | ✅ |
+| Email avec logique métier complexe | | ✅ |
+| Newsletter / séquence marketing | | ✅ |
+| Email déclenché par un cron n8n | | ✅ |
+
+---
+
+## 7. Reset mot de passe — Supabase Auth
+
+Supabase Auth envoie le reset password via son propre SMTP par défaut. Pour utiliser Resend à la place, configurer dans le dashboard Supabase → **Auth** → **SMTP Settings** avec les credentials Resend :
+
+```
+Host: smtp.resend.com
+Port: 465
+Username: resend
+Password: re_...
+Sender email: noreply@[domaine-client].fr
+```
+
+---
+
+## 8. Checklist
+
+```
+□ npm install resend
+□ lib/resend.ts créé
+□ RESEND_API_KEY dans .env.local (server-only)
+□ RESEND_FROM_EMAIL configuré avec un domaine vérifié dans le dashboard Resend
+□ Domaine vérifié dans Resend (DNS TXT + DKIM)
+□ Templates dans lib/emails/templates.ts
+□ Test : envoyer un email de test vers une vraie adresse avant livraison
+```
+
+---
+
+## Lien avec les autres règles
+
+- `kb-n8n-workflows.mdc` : reçus PDF et emails complexes → préférer n8n
+- `kb-forms.mdc` : formulaire de contact → déclenche `leadNotificationHtml`
+- `kb-stripe.mdc` : `checkout.session.completed` → confirmation via n8n ou Resend selon complexité

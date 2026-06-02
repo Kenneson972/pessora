@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audit texte — Home PESSÓRA</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f4f0; padding: 32px; color: #111; }
+  h1 { font-size: 20px; font-weight: 300; margin-bottom: 6px; }
+  .intro { font-size: 13px; color: #777; margin-bottom: 32px; }
+
+  .item {
+    background: #fff; border-radius: 8px; margin-bottom: 16px;
+    overflow: hidden; border: 1px solid #eee;
+  }
+  .item-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px; border-bottom: 1px solid #f0ede6;
+  }
+  .item-zone { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+  .badge {
+    font-size: 10px; padding: 3px 10px; border-radius: 20px; font-weight: 500;
+  }
+  .badge-cut { background: #fee2e2; color: #c0392b; }
+  .badge-trim { background: #fef3c7; color: #92620a; }
+  .badge-keep { background: #d1fae5; color: #065f46; }
+
+  .item-body { padding: 16px 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .before, .after { border-radius: 6px; padding: 12px 14px; font-size: 12px; line-height: 1.6; }
+  .before { background: #fef2f2; border: 1px solid #fecaca; }
+  .before .label { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #c0392b; margin-bottom: 6px; font-weight: 600; }
+  .after { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .after .label { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #065f46; margin-bottom: 6px; font-weight: 600; }
+  .strike { text-decoration: line-through; color: #aaa; }
+  .reason { font-size: 11px; color: #888; padding: 0 18px 14px; font-style: italic; }
+</style>
+</head>
+<body>
+
+<h1>Audit texte — Home</h1>
+<p class="intro">4 zones à corriger pour un résultat plus minimaliste</p>
+
+<!-- 1 -->
+<div class="item">
+  <div class="item-header">
+    <span class="item-zone">1 — Carrousel "Nos coups de cœur"</span>
+    <span class="badge badge-trim">Alléger</span>
+  </div>
+  <div class="item-body">
+    <div class="before">
+      <div class="label">Actuellement</div>
+      <strong>NOS COUPS DE CŒUR</strong><br>
+      <span class="strike">SÉLECTION MAISON · RECETTES COURANTES</span>
+    </div>
+    <div class="after">
+      <div class="label">Proposé</div>
+      <strong>Nos coups de cœur</strong><br>
+      <em style="color:#aaa;font-size:11px;">← supprimer le sous-titre à droite</em>
+    </div>
+  </div>
+  <p class="reason">Le sous-titre "SÉLECTION MAISON · RECETTES COURANTES" n'apporte rien — le titre seul suffit.</p>
+</div>
+
+<!-- 2 -->
+<div class="item">
+  <div class="item-header">
+    <span class="item-zone">2 — Cartes produits (macros)</span>
+    <span class="badge badge-trim">Alléger</span>
+  </div>
+  <div class="item-body">
+    <div class="before">
+      <div class="label">Actuellement</div>
+      <strong>PINK DRAGON</strong><br>
+      <span class="strike">FRUITÉ & BEAUTÉ · 21G PROTÉINES · 230 KCAL</span><br>
+      14,00 €<br>
+      <span class="strike" style="color:#bfa07a;">Óra+ dès 14 €</span>
+    </div>
+    <div class="after">
+      <div class="label">Proposé</div>
+      <strong>Pink Dragon</strong><br>
+      21g protéines · 230 kcal<br>
+      14,00 €<br>
+      <em style="color:#aaa;font-size:11px;">← supprimer "Óra+ dès X€" sur la Home</em>
+    </div>
+  </div>
+  <p class="reason">La ligne Óra+ sur chaque carte alourdit visuellement. Elle a sa place sur la page Menu où l'achat se décide.</p>
+</div>
+
+<!-- 3 -->
+<div class="item">
+  <div class="item-header">
+    <span class="item-zone">3 — Section "Nos univers" (carrousel texte)</span>
+    <span class="badge badge-cut">Supprimer</span>
+  </div>
+  <div class="item-body">
+    <div class="before">
+      <div class="label">Actuellement</div>
+      Section entière : "Nos univers" + carrousel<br>
+      <span class="strike">Nutrition → Shakes & Gauffres</span><br>
+      <span class="strike">Communauté → Événements</span><br>
+      <span class="strike">Bien-être → Bilan 30 min</span><br>
+      <em style="color:#ccc;font-size:11px;">Cartes avec fond couleur uni, aucune photo</em>
+    </div>
+    <div class="after">
+      <div class="label">Proposé</div>
+      <strong>Remplacé par :</strong><br>
+      → Section 2 : Split modèle + tabs gammes<br>
+      → Section 3 : Tuiles 4 gammes avec photos<br>
+      <em style="color:#065f46;font-size:11px;">Même information, rendue en images</em>
+    </div>
+  </div>
+  <p class="reason">Les nouvelles sections photos couvrent exactement ce rôle — avec des visuels. La section texte seule est redondante et trop vide.</p>
+</div>
+
+<!-- 4 -->
+<div class="item">
+  <div class="item-header">
+    <span class="item-zone">4 — CTA Événements (bloc typographique)</span>
+    <span class="badge badge-trim">Réduire</span>
+  </div>
+  <div class="item-body">
+    <div class="before">
+      <div class="label">Actuellement</div>
+      <em style="color:#aaa;font-size:10px;">ÉVÉNEMENTS</em><br>
+      <strong style="font-size:16px;">Rejoins la<br><em>communauté Pessóra</em></strong><br>
+      <br>VOIR LES ÉVÉNEMENTS<br>
+      <em style="color:#ccc;font-size:10px;">~full viewport height, fond blanc vide</em>
+    </div>
+    <div class="after">
+      <div class="label">Proposé</div>
+      Réduire les paddings de moitié<br>
+      <strong>py-[104px] → py-[48px]</strong><br>
+      <em style="color:#065f46;font-size:11px;">Même typographie, moins d'espace vide</em><br><br>
+      <em style="color:#aaa;font-size:10px;">Option : ajouter une photo de fond en transparence</em>
+    </div>
+  </div>
+  <p class="reason">Le bloc prend presque un écran entier avec du blanc vide. Réduire les marges suffit — la typo reste impactante.</p>
+</div>
+
+<div style="margin-top:24px;padding:16px;background:#fff;border-radius:8px;border:1px solid #eee;">
+  <p style="font-size:13px;color:#555;">Ces 4 ajustements + les 3 nouvelles sections photos donnent une page Home beaucoup plus aérée et visuelle. OK pour tout ça ?</p>
+</div>
+
+</body>
+</html>

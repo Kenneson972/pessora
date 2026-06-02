@@ -1,0 +1,198 @@
+---
+description: Conventions de nommage Karibloom - routes, champs images, migrations, variables env, stores Zustand. Standardisé à partir des 3 projets PESSORA/DALCIELO/DIAMANTNOIR. À suivre sur TOUS les projets pour permettre le copier-coller entre projets.
+globs: "**/*"
+alwaysApply: true
+---
+
+# Conventions de Nommage — Karibloom
+
+> **Pourquoi ce fichier ?** PESSORA, DALCIELO et DIAMANTNOIR ont des nommages différents pour les mêmes concepts — `/mon-espace` vs `/mon-compte` vs `/espace-client`, migrations dans 3 endroits différents, etc. Ce fichier fixe le standard définitif. Le copier-coller entre projets devient possible.
+
+---
+
+## 1. Routes URL (français, kebab-case)
+
+| Segment | Route standard | ❌ À ne plus utiliser |
+|---------|---------------|----------------------|
+| Espace client (auth) | `/espace-client` | `/mon-espace`, `/mon-compte`, `/account` |
+| Tableau de bord propriétaire | `/dashboard` | `/tableau-de-bord`, `/proprio` |
+| Back-office admin | `/admin` | `/back-office`, `/gestion` |
+| Connexion | `/connexion` | `/login`, `/se-connecter` |
+| Inscription | `/inscription` | `/register`, `/signup` |
+| Réinitialisation mdp | `/reinitialisation-mot-de-passe` | `/reset-password`, `/forgot` |
+| CGV | `/cgv` | `/conditions`, `/terms` |
+| Mentions légales | `/mentions-legales` | `/legal`, `/mentions` |
+| Politique confidentialité | `/confidentialite` | `/privacy`, `/rgpd` |
+| Cookies | `/cookies` | `/cookie-policy` |
+| Contact | `/contact` | ✓ standard |
+| À propos | `/qui-sommes-nous` | `/about`, `/a-propos` |
+| Succès paiement | `/succes` | `/success`, `/merci` |
+| Annulation paiement | `/annulation` | `/cancel`, `/echec` |
+
+**Route groups Next.js (obligatoires sur tout projet multi-rôle) :**
+```
+app/
+  (marketing)/    → pages publiques
+  (espace-client)/→ auth required — layout avec sidebar client
+  (dashboard)/    → admin/proprio — layout avec sidebar back-office
+  (auth)/         → /connexion, /inscription, /reinitialisation-mot-de-passe
+  api/            → Route Handlers
+```
+
+---
+
+## 2. Champs images (Supabase)
+
+Règle universelle : **toujours les deux champs** sur toute entité avec image.
+
+```sql
+-- Sur chaque table avec image
+image_url    TEXT        -- Image principale (LCP, og:image, carte) — string unique
+image_urls   TEXT[]      -- Galerie complète (carousel, admin upload) — array
+
+-- Exemples
+ALTER TABLE products ADD COLUMN image_url TEXT;
+ALTER TABLE products ADD COLUMN image_urls TEXT[] DEFAULT '{}';
+
+ALTER TABLE villas ADD COLUMN image_url TEXT;
+ALTER TABLE villas ADD COLUMN image_urls TEXT[] DEFAULT '{}';
+```
+
+En TypeScript :
+```ts
+type Product = {
+  image_url: string | null;   // principal — toujours défini si le produit a une image
+  image_urls: string[];       // galerie — peut être vide
+};
+```
+
+Synchronisation : quand `image_urls` change, mettre à jour `image_url = image_urls[0] ?? null`.
+
+---
+
+## 3. Migrations Supabase
+
+**Format standard :** `supabase/migrations/YYYYMMDDHHMMSS_description_courte.sql`
+
+```
+supabase/migrations/
+  20260301120000_create_orders.sql
+  20260315090000_add_image_urls_to_products.sql
+  20260401000000_create_admin_audit_log.sql
+  20260501000000_create_profiles.sql
+```
+
+Règles :
+- Toujours dans `supabase/migrations/` (compatible CLI `supabase db push`)
+- Timestamp = date réelle d'écriture (pas de numéro séquentiel)
+- Toutes les migrations doivent être **idempotentes** : `IF NOT EXISTS`, `IF EXISTS`, `ON CONFLICT DO NOTHING`
+- Une migration = un périmètre (ne pas mélanger plusieurs features dans un fichier)
+- Jamais de `DROP TABLE` sans backup documenté
+
+❌ Ne plus faire :
+```
+database/supabase/001_create_orders.sql    (DALCIELO — hors dossier CLI standard)
+database/mysql/001_create_orders.sql       (MySQL interdit)
+```
+
+---
+
+## 4. Variables d'environnement
+
+**Préfixes :**
+- `NEXT_PUBLIC_*` → exposé dans le bundle JS (visible par tout le monde). À utiliser uniquement pour des valeurs non secrètes.
+- Sans préfixe → server-only (RSC, Route Handlers, Server Actions, middleware)
+
+**Liste standard :**
+```bash
+# Supabase (obligatoire)
+NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+SUPABASE_SERVICE_ROLE_KEY=eyJ...            # JAMAIS NEXT_PUBLIC_
+
+# Stripe (si paiement)
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_...
+STRIPE_SECRET_KEY=sk_...                    # JAMAIS NEXT_PUBLIC_
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# Auth admin (si backoffice)
+ADMIN_PIN=votre-pin-secret                  # JAMAIS NEXT_PUBLIC_ en prod
+
+# n8n / chatbot
+N8N_CHATBOT_WEBHOOK_URL=https://...         # server-only (proxy via /api/chat)
+N8N_ORDER_NOTIFY_WEBHOOK_URL=https://...
+N8N_RECEIPT_WEBHOOK_URL=https://...
+
+# Email (si transactionnel)
+RESEND_API_KEY=re_...
+
+# App URL
+NEXT_PUBLIC_SITE_URL=https://client.fr
+NEXT_PUBLIC_APP_URL=https://client.fr       # alias si besoin
+```
+
+---
+
+## 5. Stores Zustand
+
+```
+lib/stores/
+  cart.store.ts          # panier
+  user.store.ts          # session/auth côté client
+  orders.store.ts        # commandes (admin realtime)
+  products.store.ts      # catalogue (admin)
+  bookings.store.ts      # réservations (admin)
+  notifications.store.ts # toasts / badges
+```
+
+Règles :
+- Un store = un domaine
+- Fichier nommé `[domaine].store.ts` (pas `[domaine]Store.ts` — kebab-case)
+- Zustand `create<T>()` avec `immer` pour les mutations complexes
+- Les stores n'appellent **jamais** directement Supabase — ils reçoivent les données via des hooks ou Server Actions
+
+---
+
+## 6. Composants et fichiers TSX
+
+```
+kebab-case.tsx           → tous les fichiers
+PascalCase               → export du composant à l'intérieur
+type FooProps = { ... }  → type (pas interface) pour les props
+```
+
+Exemples :
+```
+components/booking/booking-card.tsx   → export default BookingCard
+components/ui/price-display.tsx       → export default PriceDisplay
+lib/stores/cart.store.ts              → export const useCartStore
+lib/actions/create-booking.action.ts  → export async function createBookingAction
+hooks/use-cart.ts                     → export function useCart
+```
+
+---
+
+## 7. Server Actions
+
+- Fichier : `lib/actions/[domaine].actions.ts` ou `app/[route]/actions.ts` (colocalisé)
+- Suffixe obligatoire : `Action` — `createBookingAction`, `updateProfileAction`
+- Toujours côté serveur : `"use server"` en tête de fichier
+- Retour standard : `{ ok: true, data?: T }` ou `{ ok: false, error: string }`
+
+---
+
+## 8. Nommage Admin
+
+| Concept | Nom standard |
+|---------|-------------|
+| Page admin overview | `/admin` |
+| API auth admin | Header `x-admin-pin` |
+| Fonction guard | `requireAdminWithRateLimit(req)` |
+| Log audit | `logAdminAction(action, details, ip)` |
+| Table Supabase audit | `admin_audit_log` |
+
+---
+
+## Résumé en une ligne
+
+> **Routes en français kebab-case** · **`image_url` + `image_urls` toujours les deux** · **Migrations `supabase/migrations/YYYYMMDDHHMMSS_*.sql`** · **Stores `[domaine].store.ts`** · **Actions suffixe `Action`**

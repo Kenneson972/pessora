@@ -1,0 +1,35 @@
+- main [ref=e4]:
+  - generic [ref=e10]:
+    - complementary [ref=e11]
+    - main [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - link "Retour au site" [ref=e17] [cursor=pointer]:
+            - /url: /
+            - img [ref=e18]
+            - text: Retour au site
+          - link "Pessóra" [ref=e20] [cursor=pointer]:
+            - /url: /
+            - img "Pessóra" [ref=e21]
+        - heading "Connexion" [level=1] [ref=e22]
+        - paragraph [ref=e23]: Accédez à votre espace membre
+        - generic [ref=e24]:
+          - generic [ref=e25]:
+            - generic [ref=e26]: Adresse e-mail
+            - generic [ref=e27]:
+              - img
+              - textbox "Adresse e-mail" [ref=e28]:
+                - /placeholder: vous@exemple.com
+          - generic [ref=e29]:
+            - generic [ref=e30]:
+              - generic [ref=e31]: Mot de passe
+              - button "Mot de passe oublié ?" [ref=e32]
+            - generic [ref=e33]:
+              - img
+              - textbox "Mot de passe" [ref=e34]:
+                - /placeholder: ••••••••
+          - button "Se connecter" [ref=e35]
+        - paragraph [ref=e36]:
+          - text: Pas encore membre ?
+          - link "Créer un compte" [ref=e37] [cursor=pointer]:
+            - /url: /inscription

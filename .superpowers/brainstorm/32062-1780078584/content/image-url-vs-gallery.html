@@ -1,0 +1,33 @@
+<h2>Images produit — quelle architecture ?</h2>
+<p class="subtitle">Le champ <code>image_url</code> existe déjà en DB. Comment intégrer la galerie multi-images ?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Deux concepts séparés</h3>
+      <p><strong>image_url</strong> = image principale (hero, panier, carrousel)</p>
+      <p><strong>gallery[]</strong> = images supplémentaires affichées en mini-grid sous le hero</p>
+      <p class="label">+ Simple · aucune migration des données existantes<br>− L'admin gère deux zones d'upload distinctes</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>gallery[0] = image principale (avec sync image_url)</h3>
+      <p><strong>gallery[0]</strong> devient le hero. Le code met à jour <code>image_url</code> automatiquement pour le backward compat.</p>
+      <p>Une seule zone de gestion dans l'admin. La première image de la galerie est toujours le hero.</p>
+      <p class="label">+ UX unifiée · backward compat transparente<br>− Un peu plus de logique de sync</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>gallery[] remplace image_url complètement</h3>
+      <p>Suppression de <code>image_url</code>. Tout le code de lecture bascule sur <code>gallery[0]</code>.</p>
+      <p class="label">+ Architecture propre à terme<br>− Migration lourde, tous les fichiers qui lisent image_url à mettre à jour</p>
+    </div>
+  </div>
+</div>

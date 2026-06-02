@@ -1,0 +1,49 @@
+<h2>Galerie sur les pages publiques</h2>
+<p class="subtitle">Quand un produit a plusieurs images, comment les afficher sur DrinkDetail / GammeProductDetail ?</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Thumbnails cliquables sous le hero</h3>
+      <div style="display:flex;gap:8px;align-items:flex-start;margin:10px 0">
+        <div style="width:80px;height:100px;background:#e5e5e5;border-radius:2px;border:2px solid #333;flex-shrink:0"></div>
+        <div style="display:flex;flex-direction:column;gap:6px;padding-top:4px">
+          <div style="display:flex;gap:6px">
+            <div style="width:28px;height:36px;background:#d4d4d4;border-radius:2px;border:1.5px solid #333"></div>
+            <div style="width:28px;height:36px;background:#e5e5e5;border-radius:2px"></div>
+            <div style="width:28px;height:36px;background:#e5e5e5;border-radius:2px"></div>
+          </div>
+          <p style="font-size:10px;color:#666;margin:0">Clic sur thumbnail → remplace l'image principale</p>
+        </div>
+      </div>
+      <p class="label">+ Classique e-commerce · visible d'emblée<br>− Prend de la place si peu d'images</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Galerie en dessous du bloc infos</h3>
+      <div style="margin:10px 0">
+        <div style="width:100%;height:40px;background:#e5e5e5;border-radius:2px;margin-bottom:6px"></div>
+        <div style="display:flex;gap:6px">
+          <div style="flex:1;height:50px;background:#d4d4d4;border-radius:2px"></div>
+          <div style="flex:1;height:50px;background:#e5e5e5;border-radius:2px"></div>
+          <div style="flex:1;height:50px;background:#e5e5e5;border-radius:2px"></div>
+        </div>
+        <p style="font-size:10px;color:#666;margin-top:4px">Section "Photos du produit" après le hero split</p>
+      </div>
+      <p class="label">+ Ne perturbe pas le hero · galerie plus grande<br>− Nécessite de scroller pour voir</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Pas d'affichage public — admin seulement</h3>
+      <p>La galerie sert uniquement à l'admin pour gérer plusieurs photos. Sur la page publique, seule <code>image_url</code> (le hero) est affiché.</p>
+      <p class="label">+ Zéro changement sur les pages publiques<br>− Les images supplémentaires ne servent à rien pour les clients</p>
+    </div>
+  </div>
+</div>

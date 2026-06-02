@@ -4,7 +4,7 @@ import { z } from 'npm:zod@3';
 import { checkRateLimit } from '../_shared/rate-limiter.ts';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': Deno.env.get("ALLOWED_ORIGIN") ?? "https://www.pessora.mq",
+  'Access-Control-Allow-Origin': Deno.env.get("ALLOWED_ORIGIN") ?? "https://www.pessora.fr",
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
@@ -63,8 +63,8 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'PessÓra <noreply@pessora.mq>',
-        to: Deno.env.get("ADMIN_EMAIL") ?? "pessora.mq@gmail.com",
+        from: 'PessÓra <noreply@pessora.fr>',
+        to: Deno.env.get("ADMIN_EMAIL") ?? "pessora.fr@gmail.com",
         reply_to: email,
         subject: `[PessÓra Contact] ${typeLabels[type] ?? 'Information'} — ${name}`,
         text: `Nouveau message depuis le formulaire de contact PessÓra

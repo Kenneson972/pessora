@@ -1,0 +1,171 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - link "Aller au contenu" [ref=e4] [cursor=pointer]:
+      - /url: "#main-content"
+    - banner [ref=e5]:
+      - generic [ref=e6]:
+        - link "Pessóra" [ref=e7] [cursor=pointer]:
+          - /url: /
+          - img "Pessóra" [ref=e8]
+        - generic [ref=e9]:
+          - link "Connexion" [ref=e10] [cursor=pointer]:
+            - /url: /connexion
+            - img [ref=e11]
+          - button "Panier, vide" [ref=e15] [cursor=pointer]:
+            - img
+          - button "Ouvrir le menu" [ref=e16] [cursor=pointer]:
+            - generic [ref=e18]:
+              - img
+    - main [ref=e19]:
+      - generic [ref=e108]:
+        - heading "La carte" [level=1] [ref=e109]
+        - radiogroup "Filtrer par gamme" [ref=e112]:
+          - radio "Tout" [ref=e113]
+          - radio "Wellness" [ref=e114]
+          - radio "Énergie" [ref=e115]
+          - radio "Shakes" [ref=e116]
+          - radio "Coffee" [checked] [active] [ref=e117]
+        - complementary [ref=e120]:
+          - generic [ref=e121]:
+            - paragraph [ref=e122]: Óra+ — 24,90€/ mois · jusqu’à −50 % sur les boissons.
+            - paragraph [ref=e123]: Bilan & événements prioritaires.
+          - link "Découvrir Óra+" [ref=e124] [cursor=pointer]:
+            - /url: /ora-plus
+            - text: Découvrir Óra+
+            - img [ref=e125]
+        - generic [ref=e130]:
+          - link "Voir CAFÉ LONG" [ref=e701] [cursor=pointer]:
+            - /url: /menu/cafe-long
+            - generic [ref=e702]:
+              - generic [ref=e704]: ☕
+              - generic [ref=e705]:
+                - generic [ref=e706]: Coffee
+                - generic [ref=e707]:
+                  - heading "CAFÉ LONG" [level=3] [ref=e708]
+                  - generic [ref=e709]:
+                    - generic [ref=e710]: 4€
+                    - generic [ref=e711]: Óra+ dès 4 €
+                - paragraph [ref=e712]: 10 kcal
+                - button "Ajouter" [ref=e716]:
+                  - img [ref=e717]
+                  - text: Ajouter
+          - link "Voir ESPRESSO" [ref=e721] [cursor=pointer]:
+            - /url: /menu/espresso
+            - generic [ref=e722]:
+              - generic [ref=e724]: ☕
+              - generic [ref=e725]:
+                - generic [ref=e726]: Coffee
+                - generic [ref=e727]:
+                  - heading "ESPRESSO" [level=3] [ref=e728]
+                  - generic [ref=e729]:
+                    - generic [ref=e730]: 2.5€
+                    - generic [ref=e731]: Óra+ dès 2,50 €
+                - paragraph [ref=e732]: 5 kcal
+                - button "Ajouter" [ref=e736]:
+                  - img [ref=e737]
+                  - text: Ajouter
+        - generic [ref=e413]:
+          - generic [ref=e414]:
+            - paragraph [ref=e415]: Bilan Bien-être
+            - heading "30 minutes offertes" [level=3] [ref=e416]:
+              - text: 30 minutes
+              - emphasis [ref=e417]: offertes
+          - link "Réserver mon bilan" [ref=e418] [cursor=pointer]:
+            - /url: /bilan-bien-etre
+    - contentinfo [ref=e25]:
+      - generic [ref=e28]:
+        - region "Marque Pessóra" [ref=e29]:
+          - generic [ref=e30]:
+            - generic [ref=e31]:
+              - img "Pessóra" [ref=e32]
+              - paragraph [ref=e33]: Bar protéiné · Fort-de-France, Martinique
+            - generic [ref=e34]:
+              - link "Pessóra sur Instagram (ouvre un nouvel onglet)" [ref=e35] [cursor=pointer]:
+                - /url: https://instagram.com/pessora.mq
+                - img [ref=e36]
+              - link "Contacter Pessóra sur WhatsApp (ouvre un nouvel onglet)" [ref=e39] [cursor=pointer]:
+                - /url: https://wa.me/596696000000
+                - img [ref=e40]
+        - generic [ref=e42]:
+          - generic [ref=e43]:
+            - region "Navigation menu" [ref=e44]:
+              - paragraph [ref=e45]: Sur le site
+              - generic [ref=e46]:
+                - paragraph [ref=e47]: Menu
+                - navigation "Menu" [ref=e48]:
+                  - link "Shakes" [ref=e49] [cursor=pointer]:
+                    - /url: /menu
+                  - link "Boissons énergie" [ref=e50] [cursor=pointer]:
+                    - /url: /menu
+                  - link "Carte complète" [ref=e51] [cursor=pointer]:
+                    - /url: /menu
+            - region "Newsletter" [ref=e52]:
+              - generic [ref=e53]:
+                - heading "Newsletter" [level=3] [ref=e54]
+                - form "Newsletter" [ref=e55]:
+                  - generic [ref=e56]:
+                    - generic [ref=e57]: Adresse e-mail pour la newsletter
+                    - textbox "Adresse e-mail pour la newsletter Adresse e-mail pour la newsletter" [ref=e58]:
+                      - /placeholder: Votre e-mail
+                    - button "S’inscrire à la newsletter" [ref=e59] [cursor=pointer]:
+                      - img
+                  - generic [ref=e61] [cursor=pointer]:
+                    - checkbox "J’accepte de recevoir la newsletter et j’ai pris connaissance de la politique de confidentialité." [ref=e63]
+                    - generic [ref=e64]:
+                      - text: J’accepte de recevoir la newsletter et j’ai pris connaissance de la
+                      - link "politique de confidentialité" [ref=e65]:
+                        - /url: /politique-confidentialite
+                      - text: .
+          - generic [ref=e66]:
+            - region "Espace membres et services" [ref=e67]:
+              - generic [ref=e68]:
+                - paragraph [ref=e69]: Espace
+                - navigation "Espace" [ref=e70]:
+                  - link "Óra+" [ref=e71] [cursor=pointer]:
+                    - /url: /ora-plus
+                  - link "Événements" [ref=e72] [cursor=pointer]:
+                    - /url: /evenements
+                  - link "Bilan Bien-être" [ref=e73] [cursor=pointer]:
+                    - /url: /bilan-bien-etre
+            - region "Contact et réseaux" [ref=e75]:
+              - generic [ref=e76]:
+                - paragraph [ref=e77]: Nous rejoindre
+                - navigation "Contact et réseaux" [ref=e78]:
+                  - link "Instagram" [ref=e80] [cursor=pointer]:
+                    - /url: https://instagram.com/pessora.mq
+                  - generic [ref=e81]:
+                    - generic [ref=e82]: ·
+                    - link "WhatsApp" [ref=e83] [cursor=pointer]:
+                      - /url: https://wa.me/596696000000
+                  - generic [ref=e84]:
+                    - generic [ref=e85]: ·
+                    - link "Fort-de-France" [ref=e86] [cursor=pointer]:
+                      - /url: /contact
+                  - generic [ref=e87]:
+                    - generic [ref=e88]: ·
+                    - link "Partenariats" [ref=e89] [cursor=pointer]:
+                      - /url: /contact-partenariat
+      - generic [ref=e91]:
+        - generic [ref=e92]: © 2026 Pessóra · Fort-de-France
+        - generic [ref=e93]:
+          - link "Mentions légales" [ref=e94] [cursor=pointer]:
+            - /url: /mentions-legales
+          - link "Confidentialité" [ref=e95] [cursor=pointer]:
+            - /url: /politique-confidentialite
+          - button "Cookies" [ref=e96]
+          - link "CGV" [ref=e97] [cursor=pointer]:
+            - /url: /cgv
+    - button "Ouvrir Pessobot" [ref=e419] [cursor=pointer]
+  - dialog "Cookies & données" [ref=e98]:
+    - generic [ref=e99]:
+      - generic [ref=e100]:
+        - paragraph [ref=e101]: Cookies & données
+        - paragraph [ref=e102]:
+          - text: Nous utilisons des cookies et le stockage local pour le panier et, avec votre accord, des mesures d’audience. Consultez notre
+          - link "politique de confidentialité" [ref=e103] [cursor=pointer]:
+            - /url: /politique-confidentialite
+          - text: .
+      - generic [ref=e104]:
+        - button "Personnaliser" [ref=e105]
+        - button "Nécessaires uniquement" [ref=e106]
+        - button "Tout accepter" [ref=e107]

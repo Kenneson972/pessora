@@ -113,24 +113,37 @@ alwaysApply: false
 └── .env.local                   # JAMAIS commit
 ```
 
-## 2. Route groups — quand les utiliser
+## 2. Route groups — obligatoires sur tout projet multi-rôle
 
 Les route groups `(nom)` n'apparaissent **pas** dans l'URL. Ils servent à :
 
 - Isoler un **layout** (Header marketing vs Sidebar dashboard)
-- Appliquer un **guard** commun (`(account)/layout.tsx` vérifie la session)
+- Appliquer un **guard** commun (`(espace-client)/layout.tsx` vérifie la session)
 - Scinder des **bundles client** (le dashboard n'embarque pas les providers marketing)
 
+**Règle :** `(espace-client)`, `(dashboard)` et `(auth)` sont **obligatoires** sur tout projet avec plusieurs rôles. Ne pas gérer les layouts via un composant `LayoutSwitch.tsx` côté client — c'est un anti-pattern hérité de DALCIELO (voir Section 13).
+
+Noms de route groups standardisés (voir `kb-naming-conventions.mdc`) :
+
+```
+app/
+  (marketing)/      → pages publiques (Header + Footer marketing)
+  (espace-client)/  → auth required — layout sidebar client
+  (dashboard)/      → admin/proprio — layout sidebar back-office
+  (auth)/           → /connexion, /inscription, /reinitialisation-mot-de-passe
+  api/              → Route Handlers
+```
+
 ```tsx
-// app/(account)/layout.tsx
+// app/(espace-client)/layout.tsx
 import { redirect } from 'next/navigation';
-import { createServerSupabase } from '@/lib/supabase-server';
+import { createServerClient } from '@/lib/supabase/server';
 import { AccountSidebar } from '@/components/account/AccountSidebar';
 
-export default async function AccountLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createServerSupabase();
+export default async function EspaceClientLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/login');
+  if (!user) redirect('/connexion');
 
   return (
     <div className="grid lg:grid-cols-[240px_1fr]">
@@ -202,11 +215,11 @@ Règle : **une page n'importe jamais un composant vendor directement**. Elle pas
 
 | Fichier | Côté | Clé | Usage |
 |---|---|---|---|
-| `lib/supabase.ts` | Browser (Client Components) | `anon` | Hooks, realtime, interactions temps réel |
-| `lib/supabase-server.ts` | Server (RSC, Route Handlers, Server Actions) | `anon` + cookies | Lecture authentifiée, mutations user |
-| `lib/supabase-admin.ts` | Server-only | `service_role` | Webhooks Stripe, tâches cron, migrations runtime |
+| `lib/supabase/client.ts` | Browser (Client Components) | `anon` | Hooks, realtime, interactions temps réel |
+| `lib/supabase/server.ts` | Server (RSC, Route Handlers, Server Actions) | `anon` + cookies | Lecture authentifiée, mutations user |
+| `lib/supabase/admin.ts` | Server-only | `service_role` | Webhooks Stripe, tâches cron, migrations runtime |
 
-`supabase-admin.ts` ne doit **jamais** être importé depuis un fichier qui finit dans un bundle client. Voir `kb-supabase.mdc` pour les implémentations.
+`lib/supabase/admin.ts` ne doit **jamais** être importé depuis un fichier qui finit dans un bundle client. Voir `kb-supabase.mdc` pour les implémentations `@supabase/ssr`.
 
 ## 6. `hooks/` — client par défaut
 
@@ -242,11 +255,11 @@ Les composants importent **`@/types/domain`**, jamais `database.types` directeme
 
 ## 8. `supabase/` — migrations et edge functions
 
-- `migrations/` : une migration = un fichier SQL horodaté, **ne jamais éditer une migration déjà poussée**. On ajoute une nouvelle migration corrective.
+- `migrations/` : **seul chemin valide** — `supabase/migrations/YYYYMMDDHHMMSS_description.sql`. Ne jamais placer les migrations dans `database/`, `sql/`, ou à la racine. Ne jamais éditer une migration déjà poussée — ajouter une nouvelle migration corrective.
 - `seed.sql` : données de dev locales uniquement.
 - `functions/` : Edge Functions Deno pour webhooks longue durée, emails transactionnels, tâches hors requête.
 
-Voir `kb-supabase.mdc` pour les détails RLS.
+Voir `kb-supabase.mdc` pour les détails RLS et `kb-naming-conventions.mdc` pour le format exact de nommage.
 
 ## 9. `middleware.ts` — à la racine
 
@@ -321,11 +334,13 @@ Toujours importer via `@/...`. Les chemins relatifs `../../../` sont **interdits
 - Logique métier ou fetch Supabase dans `app/*/page.tsx` — extraire dans `lib/data/<domain>.ts` ou Server Action.
 - Import direct `@chakra-ui/react`, `@heroui/react` dans une page — toujours passer par `components/ui/`.
 - `"use client"` sur un layout qui n'en a pas besoin (tout le sous-arbre devient client).
-- `supabase-admin.ts` importé depuis un composant.
+- `lib/supabase/admin.ts` importé depuis un composant.
 - Fichier qui dépasse 500 lignes — scinder par sous-composant ou extraire un hook.
 - Dossier `features/` parallèle à `components/` — doublon qui casse la règle d'import.
 - Migrations éditées après push — toujours ajouter une nouvelle migration.
 - `any` ou `@ts-ignore` — passer par `unknown` + narrowing, ou corriger le type généré.
+- **`LayoutSwitch.tsx`** (anti-pattern DALCIELO) — gérer les layouts multi-rôle via un composant client qui switche conditionnellement. Utiliser les route groups Next.js à la place : `(espace-client)/layout.tsx` et `(dashboard)/layout.tsx` sont les seuls points de vérification de session.
+- Migrations dans `database/supabase/`, `sql/`, ou à la racine — uniquement `supabase/migrations/YYYYMMDDHHMMSS_*.sql`.
 
 ## 14. Checklist nouveau module
 

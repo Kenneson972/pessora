@@ -4,7 +4,7 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 function buildCorsHeaders(origin: string | null): Record<string, string> {
-  const allowed = Deno.env.get('ALLOWED_ORIGIN') || 'https://www.pessora.mq';
+  const allowed = Deno.env.get('ALLOWED_ORIGIN') || 'https://www.pessora.fr';
   const isLocalhost = origin != null &&
     (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'));
   return {

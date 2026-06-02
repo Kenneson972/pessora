@@ -1,0 +1,191 @@
+---
+description: Gestion des variables d'environnement Karibloom - .env.local vs .env.example, Vercel env vars, promotion dev→staging→prod, validation au démarrage. S'applique à tous les projets Next.js et Vite.
+globs: "**/.env*,**/next.config.*,**/vite.config.*"
+alwaysApply: true
+---
+
+# Variables d'Environnement — Karibloom
+
+---
+
+## 1. Les trois fichiers
+
+| Fichier | Commité | Usage |
+|---------|---------|-------|
+| `.env.example` | ✅ **oui** | Documentation — clés vides, commentaires, référence pour l'équipe |
+| `.env.local` | ❌ **jamais** | Secrets réels en développement local |
+| `.env.production` | ❌ **jamais** | Ne pas créer — les secrets prod vont dans Vercel |
+
+**Règle absolue :** si un fichier `.env` contient une vraie valeur secrète, il ne doit jamais être commité.
+
+---
+
+## 2. Préfixes Next.js
+
+```bash
+NEXT_PUBLIC_*   → bundlé dans le JS client (visible par tout le monde)
+                  OK pour : Supabase URL, anon key, Stripe publishable key, site URL
+
+Sans préfixe    → server-only (RSC, Route Handlers, Server Actions, middleware)
+                  Obligatoire pour : SUPABASE_SERVICE_ROLE_KEY, STRIPE_SECRET_KEY,
+                                    STRIPE_WEBHOOK_SECRET, ADMIN_PIN, RESEND_API_KEY,
+                                    N8N_*, RECEIPT_UPLOAD_SECRET
+```
+
+**Anti-patterns interdits :**
+```bash
+NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY=  ❌ compromet toute la base
+NEXT_PUBLIC_STRIPE_SECRET_KEY=          ❌ compromet les paiements
+NEXT_PUBLIC_ADMIN_PIN=                  ❌ toléré uniquement en dev local, JAMAIS en prod
+```
+
+---
+
+## 3. Préfixes Vite (PESSORA exception)
+
+```bash
+VITE_*          → équivalent de NEXT_PUBLIC_* pour Vite
+                  OK pour : VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY
+
+Sans préfixe    → server-only (Supabase Edge Functions, scripts Node)
+```
+
+---
+
+## 4. Validation au démarrage (Next.js)
+
+Créer `lib/env.ts` pour valider les variables critiques au boot :
+
+```ts
+// lib/env.ts
+function requireEnv(key: string): string {
+  const value = process.env[key];
+  if (!value) {
+    throw new Error(`[env] Variable manquante : ${key}`);
+  }
+  return value;
+}
+
+// Appelé au démarrage — crashe tôt si config incomplète
+export const env = {
+  supabase: {
+    url: requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    anonKey: requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+    serviceRoleKey: requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
+  },
+  stripe: {
+    secretKey: process.env.STRIPE_SECRET_KEY ?? "",       // optionnel si pas de paiement
+    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
+    publishableKey: requireEnv("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"),
+  },
+  resend: {
+    apiKey: process.env.RESEND_API_KEY ?? "",             // optionnel si pas d'email direct
+  },
+  admin: {
+    pin: process.env.ADMIN_PIN ?? process.env.NEXT_PUBLIC_ADMIN_PIN ?? "", // dev only fallback
+  },
+  app: {
+    url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  },
+} as const;
+```
+
+Usage dans les Route Handlers :
+
+```ts
+import { env } from "@/lib/env";
+// Plus besoin de `process.env.STRIPE_SECRET_KEY ?? ""` — on utilise env.stripe.secretKey
+```
+
+---
+
+## 5. Promotion dev → staging → prod
+
+### Dev local (`.env.local`)
+
+```bash
+# Toujours utiliser les clés TEST Stripe en dev
+STRIPE_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+
+# Toujours utiliser le projet Supabase de dev (pas celui de prod)
+NEXT_PUBLIC_SUPABASE_URL=https://[projet-dev].supabase.co
+
+# Admin PIN simple en dev
+ADMIN_PIN=1234
+```
+
+### Vercel (staging + prod)
+
+Configurer les env vars dans **Vercel Dashboard → Project → Settings → Environment Variables**.
+
+| Variable | Dev (Vercel) | Preview | Production |
+|----------|-------------|---------|------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | projet-dev | projet-staging | projet-prod |
+| `STRIPE_SECRET_KEY` | `sk_test_...` | `sk_test_...` | `sk_live_...` |
+| `ADMIN_PIN` | simple | aléatoire | fort (32 chars min) |
+
+**Jamais les clés `_live_` Stripe sur une branche de preview.**
+
+Générer un PIN fort :
+```bash
+openssl rand -hex 16
+```
+
+---
+
+## 6. Variables spécifiques par type de projet
+
+### Vitrine simple
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+RESEND_API_KEY=
+RESEND_FROM_EMAIL=
+NEXT_PUBLIC_SITE_URL=
+N8N_CHATBOT_WEBHOOK_URL=
+```
+
+### E-commerce (+ Stripe + commandes)
+```bash
+# + tout ce qui précède
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+ADMIN_PIN=
+N8N_RECEIPT_WEBHOOK_URL=
+N8N_CALLBACK_SECRET=
+```
+
+### Réservation (+ booking + Stripe)
+```bash
+# + tout ce qui précède (e-commerce)
+N8N_BOOKING_CONFIRM_WEBHOOK_URL=
+N8N_NOTIFY_ADMIN_WEBHOOK_URL=
+```
+
+---
+
+## 7. Checklist env vars (nouveau projet)
+
+```
+□ .env.example créé avec toutes les variables + commentaires
+□ .env.example commité dans git
+□ .env.local dans .gitignore
+□ .env.example PAS dans .gitignore
+□ Aucune clé _live_ en dev local
+□ SUPABASE_SERVICE_ROLE_KEY sans préfixe NEXT_PUBLIC_
+□ ADMIN_PIN sans préfixe NEXT_PUBLIC_ en prod
+□ Variables Vercel configurées pour prod (clés live)
+□ lib/env.ts créé avec validation au démarrage
+```
+
+---
+
+## Lien avec les autres règles
+
+- `kb-naming-conventions.mdc` : liste complète des noms de variables standards
+- `kb-security-baseline.mdc` : checklist P0 sécurité des secrets
+- `kb-git-workflow.mdc` : `.env.local` jamais commité, `.env.example` toujours commité
+- `kb-stripe.mdc` : clés test vs live selon l'environnement

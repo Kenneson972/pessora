@@ -1,0 +1,183 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "Pessóra" [ref=e4] [cursor=pointer]:
+        - /url: "#"
+      - generic [ref=e5]:
+        - button "Mon Espace" [ref=e6] [cursor=pointer]
+        - generic [ref=e7]:
+          - img [ref=e8]
+          - generic [ref=e10]: "2"
+    - navigation [ref=e11]:
+      - link "Shakes" [ref=e12] [cursor=pointer]:
+        - /url: "#"
+      - link "Gauffres" [ref=e13] [cursor=pointer]:
+        - /url: "#"
+      - link "Événements" [ref=e14] [cursor=pointer]:
+        - /url: "#"
+      - link "Bilan" [ref=e15] [cursor=pointer]:
+        - /url: "#"
+      - link "Run Club" [ref=e16] [cursor=pointer]:
+        - /url: "#"
+      - link "Réserver" [ref=e17] [cursor=pointer]:
+        - /url: "#"
+  - generic [ref=e18]:
+    - generic [ref=e21]: Photo lifestyle · modèle qui boit un Pink Dragon
+    - generic [ref=e22]:
+      - generic [ref=e23]: Nouveauté
+      - heading "Le goût de la performance" [level=1] [ref=e24]:
+        - text: Le goût
+        - emphasis [ref=e25]: de la performance
+      - paragraph [ref=e26]: Des shakes protéinés qui ont du style. La Martinique n'a jamais eu aussi soif de bien-être.
+      - button "→" [ref=e27] [cursor=pointer]
+  - generic [ref=e28]:
+    - generic [ref=e29]:
+      - heading "Nos univers" [level=2] [ref=e30]:
+        - text: Nos
+        - emphasis [ref=e31]: univers
+      - link "Tout explorer" [ref=e32] [cursor=pointer]:
+        - /url: "#"
+    - generic [ref=e33]:
+      - generic [ref=e37] [cursor=pointer]:
+        - generic [ref=e38]: Bien-être
+        - generic [ref=e39]:
+          - text: Bilan
+          - text: 30 min
+        - generic [ref=e40]: →
+      - generic [ref=e44] [cursor=pointer]:
+        - generic [ref=e45]: Énergie
+        - generic [ref=e46]:
+          - text: Shakes
+          - text: "& Gauffres"
+        - generic [ref=e47]: →
+      - generic [ref=e51] [cursor=pointer]:
+        - generic [ref=e52]: Communauté
+        - generic [ref=e53]:
+          - text: Run Club
+          - text: Événements
+        - generic [ref=e54]: →
+      - generic [ref=e58] [cursor=pointer]:
+        - generic [ref=e59]: Performance
+        - generic [ref=e60]:
+          - text: Formule 1
+          - text: 950g
+        - generic [ref=e61]: →
+  - generic [ref=e62]:
+    - generic [ref=e63]:
+      - generic [ref=e64]:
+        - heading "Découvrez nos shakes" [level=2] [ref=e65]:
+          - text: Découvrez
+          - emphasis [ref=e66]: nos shakes
+        - paragraph [ref=e67]: Des recettes signature, pensées pour vos objectifs
+      - link "Voir la carte complète" [ref=e68] [cursor=pointer]:
+        - /url: "#"
+    - generic [ref=e69]:
+      - generic [ref=e70] [cursor=pointer]:
+        - generic [ref=e71]: Nouveau
+        - generic [ref=e73]: Pink Dragon
+        - generic [ref=e74]: Fruité & Beauté
+        - generic [ref=e75]:
+          - generic [ref=e76]: 21g protéines
+          - generic [ref=e77]: ·
+          - generic [ref=e78]: 230 kcal
+        - generic [ref=e79]: 14,00 €
+        - button "+" [ref=e80]
+      - generic [ref=e81] [cursor=pointer]:
+        - generic [ref=e82]: Best-seller
+        - generic [ref=e84]: Blue Lagoon
+        - generic [ref=e85]: L'électrochoc frais
+        - generic [ref=e86]:
+          - generic [ref=e87]: 50 kcal
+          - generic [ref=e88]: ·
+          - generic [ref=e89]: 0% sucre
+        - generic [ref=e90]: 10,00 €
+        - button "+" [ref=e91]
+      - generic [ref=e92] [cursor=pointer]:
+        - generic [ref=e93]: Protéiné
+        - generic [ref=e95]: Cookie Cream
+        - generic [ref=e96]: Gourmandise pure
+        - generic [ref=e97]:
+          - generic [ref=e98]: 18g protéines
+          - generic [ref=e99]: ·
+          - generic [ref=e100]: 220 kcal
+        - generic [ref=e101]: 14,00 €
+        - button "+" [ref=e102]
+      - generic [ref=e103] [cursor=pointer]:
+        - generic [ref=e104]: Sans lactose
+        - generic [ref=e106]: Glam Matcha
+        - generic [ref=e107]: Antioxydant & Énergie
+        - generic [ref=e108]:
+          - generic [ref=e109]: 15g protéines
+          - generic [ref=e110]: ·
+          - generic [ref=e111]: 180 kcal
+        - generic [ref=e112]: 12,00 €
+        - button "+" [ref=e113]
+  - generic [ref=e116]:
+    - generic [ref=e117]: Événements
+    - heading "Rejoins la communauté Pessóra" [level=2] [ref=e118]:
+      - text: Rejoins la
+      - emphasis [ref=e119]: communauté Pessóra
+    - paragraph [ref=e120]: Run Club, pop-ups, ateliers nutrition — retrouve ton crew chaque semaine.
+    - button "Voir les événements →" [ref=e121] [cursor=pointer]
+  - generic [ref=e122]:
+    - generic [ref=e123]:
+      - heading "Nos actualités" [level=2] [ref=e124]:
+        - text: Nos
+        - emphasis [ref=e125]: actualités
+      - link "Tout voir" [ref=e126] [cursor=pointer]:
+        - /url: "#"
+    - generic [ref=e127]:
+      - generic [ref=e130] [cursor=pointer]:
+        - generic [ref=e131]: Run Club
+        - generic [ref=e132]:
+          - text: Prochaine session
+          - text: samedi 17 mai
+        - generic [ref=e133]: →
+      - generic [ref=e136] [cursor=pointer]:
+        - generic [ref=e137]: Nouveau
+        - generic [ref=e138]:
+          - text: La gamme Wellness
+          - text: s'agrandit
+        - generic [ref=e139]: →
+  - generic [ref=e141]:
+    - generic [ref=e142]:
+      - generic [ref=e143]: "4.9"
+      - generic [ref=e144]: ★★★★★
+      - generic [ref=e145]: +120 avis Google
+    - generic [ref=e146]: "\"Un accueil exceptionnel, des boissons extraordinaires, des gaufres fantastiques !\""
+  - contentinfo [ref=e147]:
+    - generic [ref=e148]:
+      - generic [ref=e149]:
+        - generic [ref=e150]: Pessóra
+        - paragraph [ref=e151]: Le 1er Bar Protéiné & Bien-Être de Martinique. Plus qu'une boisson, un style de vie.
+      - generic [ref=e152]:
+        - heading "Menu" [level=4] [ref=e153]
+        - link "Shakes" [ref=e154] [cursor=pointer]:
+          - /url: "#"
+        - link "Gauffres" [ref=e155] [cursor=pointer]:
+          - /url: "#"
+        - link "Compléments" [ref=e156] [cursor=pointer]:
+          - /url: "#"
+        - link "Offres" [ref=e157] [cursor=pointer]:
+          - /url: "#"
+      - generic [ref=e158]:
+        - heading "Espace" [level=4] [ref=e159]
+        - link "Mon profil" [ref=e160] [cursor=pointer]:
+          - /url: "#"
+        - link "Abonnement" [ref=e161] [cursor=pointer]:
+          - /url: "#"
+        - link "Historique" [ref=e162] [cursor=pointer]:
+          - /url: "#"
+        - link "Bilans" [ref=e163] [cursor=pointer]:
+          - /url: "#"
+      - generic [ref=e164]:
+        - heading "Contact" [level=4] [ref=e165]
+        - link "Instagram" [ref=e166] [cursor=pointer]:
+          - /url: "#"
+        - link "Email" [ref=e167] [cursor=pointer]:
+          - /url: "#"
+        - link "Fort-de-France" [ref=e168] [cursor=pointer]:
+          - /url: "#"
+    - generic [ref=e169]:
+      - generic [ref=e170]: © 2026 Pessóra — Tous droits réservés
+      - generic [ref=e171]: CGV · Mentions légales · Politique de confidentialité

@@ -5,7 +5,7 @@ import Stripe from 'npm:stripe@14'
 import { checkRateLimit } from '../_shared/rate-limiter.ts'
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': Deno.env.get("ALLOWED_ORIGIN") ?? "https://www.pessora.mq",
+  'Access-Control-Allow-Origin': Deno.env.get("ALLOWED_ORIGIN") ?? "https://www.pessora.fr",
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 

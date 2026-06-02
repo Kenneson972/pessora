@@ -9,7 +9,7 @@ interface DemoAuthWrapperProps {
   children: ReactNode;
 }
 
-const DEMO_EMAIL = import.meta.env.VITE_DEMO_EMAIL ?? 'demo@pessora.mq';
+const DEMO_EMAIL = import.meta.env.VITE_DEMO_EMAIL ?? 'demo@pessora.fr';
 const DEMO_PASSWORD = import.meta.env.VITE_DEMO_PASSWORD ?? 'demo123';
 
 const DemoAuthWrapper = ({ children }: DemoAuthWrapperProps) => {

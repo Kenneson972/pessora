@@ -8,4 +8,4 @@ Disallow: /demo-espace
 Disallow: /mockup-luxe
 Disallow: /mockup-croquis-gerant
 
-Sitemap: https://pessora.mq/sitemap.xml
+Sitemap: https://pessora.fr/sitemap.xml
