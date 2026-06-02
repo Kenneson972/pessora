@@ -98,7 +98,7 @@ export default function SuiviCommande() {
               animate={{ rotate: 360 }}
               transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
             >
-              <Sparkles size={32} strokeWidth={1.2} className="text-sapin/60" />
+              <Sparkles size={32} strokeWidth={1.2} className="text-sapin/60" aria-hidden="true" />
             </motion.div>
           </div>
           <p className="font-display text-[18px] text-black">Chargement de votre commande…</p>
@@ -112,7 +112,7 @@ export default function SuiviCommande() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-surface-warm">
         <div className="text-center">
-          <p className="mb-6 text-[15px] text-black/60">{error ?? 'Commande introuvable.'}</p>
+          <p className="mb-6 text-[15px] text-black/60" role="alert">{error ?? 'Commande introuvable.'}</p>
           <Link
             to="/menu"
             className="inline-flex h-12 min-h-[44px] items-center rounded-full bg-sapin px-8 text-[11px] font-medium uppercase tracking-[0.1em] text-white hover:bg-sapin/90 transition-colors"
