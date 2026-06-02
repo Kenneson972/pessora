@@ -1,3 +1,4 @@
+// Inspire de DALCIELO : priming audio sur premiere interaction utilisateur
 let newOrderAudio: HTMLAudioElement | null = null;
 let paidAudio: HTMLAudioElement | null = null;
 let muted = false;
@@ -5,13 +6,28 @@ let unlocked = false;
 
 function unlockAudio() {
   if (unlocked || typeof window === 'undefined') return;
+
   newOrderAudio = new Audio('/sounds/new-order.mp3');
   paidAudio = new Audio('/sounds/order-paid.mp3');
+
+  // Prime les deux pistes : lecture silencieuse pour debloquer l'autoplay
+  [newOrderAudio, paidAudio].forEach((a) => {
+    if (!a) return;
+    a.volume = 0;
+    a.play().then(() => {
+      a.pause();
+      a.currentTime = 0;
+      a.volume = 1;
+    }).catch(() => {});
+  });
+
   unlocked = true;
 }
 
 if (typeof window !== 'undefined') {
   document.addEventListener('click', unlockAudio, { once: true });
+  document.addEventListener('touchstart', unlockAudio, { once: true });
+  document.addEventListener('keydown', unlockAudio, { once: true });
 }
 
 export function setMuted(v: boolean) {
@@ -22,16 +38,13 @@ export function isMuted(): boolean {
   return muted;
 }
 
-function playWithFallback(audio: HTMLAudioElement | null) {
+function playSound(audio: HTMLAudioElement | null) {
   if (muted) return;
-  if (audio) {
-    try {
-      audio.currentTime = 0;
-      audio.play().catch(() => playWebAudioTone());
-    } catch {
-      playWebAudioTone();
-    }
-  } else {
+  if (!audio) { playWebAudioTone(); return; }
+  try {
+    audio.currentTime = 0;
+    audio.play().catch(() => playWebAudioTone());
+  } catch {
     playWebAudioTone();
   }
 }
@@ -56,9 +69,9 @@ function playWebAudioTone() {
 }
 
 export function playNewOrderSound() {
-  playWithFallback(newOrderAudio);
+  playSound(newOrderAudio);
 }
 
 export function playPaidSound() {
-  playWithFallback(paidAudio);
+  playSound(paidAudio);
 }
