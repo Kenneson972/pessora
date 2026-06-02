@@ -166,6 +166,8 @@ export interface Database {
           user_id: string | null
           total: number
           status: 'pending' | 'paid' | 'preparing' | 'ready' | 'completed' | 'cancelled'
+          order_type: 'bar' | 'gamme'
+          scheduled_pickup_date: string | null
           pickup_time: string | null
           picked_up_at: string | null
           stripe_payment_intent_id: string | null
@@ -175,7 +177,10 @@ export interface Database {
           client_phone: string | null
           created_at: string
         }
-        Insert: Omit<Database['public']['Tables']['orders']['Row'], 'id' | 'created_at'>
+        Insert: Omit<Database['public']['Tables']['orders']['Row'], 'id' | 'created_at'> & {
+          order_type?: 'bar' | 'gamme'
+          scheduled_pickup_date?: string | null
+        }
         Update: Partial<Pick<Database['public']['Tables']['orders']['Row'], 'status'>>
         Relationships: []
       }
