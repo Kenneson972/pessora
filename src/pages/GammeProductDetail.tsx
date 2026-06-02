@@ -16,6 +16,7 @@ import { useGammeProduct } from '../hooks/useGammeProduct';
 import { useGammeCatalog } from '../hooks/useGammeCatalog';
 import { toSlug } from '../lib/toSlug';
 import { barInfo } from '../data/infoData';
+import { SPOON_MAP } from '../data/spoonMap';
 import { useCart } from '../store/cartStore';
 import type { GammeProduct } from '../types/database';
 
@@ -50,7 +51,6 @@ const GammeProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [spoonSelected, setSpoonSelected] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
-  const SPOON_PRICE = 1;
   const [productOverride, setProductOverride] = useState<GammeProduct | null>(null);
 
   const { product: dbProduct, loading, error } = useGammeProduct(rangeId, slug);
@@ -119,23 +119,23 @@ const GammeProductDetail = () => {
   const displayPrice = product.price_alt !== null
     ? `${formatEur(product.price)}€ / ${formatEur(product.price_alt)}€`
     : `${formatEur(product.price)}€`;
-  const totalPrice = spoonUnitPrice * quantity;
+  const totalPrice = product.price * quantity;
 
   const RangeIcon = RANGE_ICONS[rangeId!] ?? Sparkles;
 
-  const spoonUnitPrice = spoonSelected ? product.price + SPOON_PRICE : product.price;
-  const spoonOptionLabels = spoonSelected ? ['Cuillère doseuse'] : [] as string[];
+  const spoonInfo = product.slug ? SPOON_MAP[product.slug] : undefined;
+  const spoonOptionLabels = spoonSelected && spoonInfo ? [spoonInfo.label] : [] as string[];
 
   const handleAddToCart = () => {
     addLine({
       productId: product.id,
       name: product.name,
-      unitPrice: spoonUnitPrice,
+      unitPrice: product.price,
       barBasePublic: product.price,
       quantity,
       category: rangeId!,
       source: 'gamme',
-      optionsKey: spoonSelected ? 'spoon:1' : 'default',
+      optionsKey: spoonSelected && spoonInfo ? 'spoon:0' : 'default',
       optionLabels: spoonOptionLabels,
       image: product.image_url || product.name.charAt(0),
     });
@@ -237,19 +237,25 @@ const GammeProductDetail = () => {
                 </span>
               </div>
 
-              {/* Option cuillère doseuse */}
-              <label className="mb-6 flex cursor-pointer items-center gap-3 rounded-[2px] border border-noir/[0.08] bg-sapin-subtle px-4 py-3 transition-colors hover:border-sapin/30">
-                <input
-                  type="checkbox"
-                  checked={spoonSelected}
-                  onChange={(e) => setSpoonSelected(e.target.checked)}
-                  className="h-4 w-4 accent-sapin"
-                />
-                <span className="flex-1 text-[12px] text-black/75">
-                  Avec cuillère doseuse
-                </span>
-                <span className="text-[12px] font-medium text-sapin">+{SPOON_PRICE}€</span>
-              </label>
+              {/* Option cuillère doseuse — offerte, uniquement si le produit a une cuillère assignée */}
+              {spoonInfo && (
+                <label className="mb-6 flex cursor-pointer items-center gap-3 rounded-[2px] border border-noir/[0.08] bg-sapin-subtle px-4 py-3 transition-colors hover:border-sapin/30">
+                  <input
+                    type="checkbox"
+                    checked={spoonSelected}
+                    onChange={(e) => setSpoonSelected(e.target.checked)}
+                    className="h-4 w-4 accent-sapin"
+                  />
+                  <span className="flex-1 text-[12px] text-black/75">
+                    {spoonInfo.label}
+                  </span>
+                  <span
+                    className="inline-block h-4 w-4 rounded-full border border-black/10 shrink-0"
+                    style={{ backgroundColor: spoonInfo.color }}
+                    title={spoonInfo.label}
+                  />
+                </label>
+              )}
 
               {/* Quantité + CTA */}
               <div className="mb-6 flex flex-col items-stretch gap-4 sm:flex-row sm:items-center">
