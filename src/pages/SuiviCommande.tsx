@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Clock, CreditCard, ChefHat, CheckCircle, Package } from 'lucide-react';
+import { Clock, CreditCard, ChefHat, CheckCircle, Package, UserPlus } from 'lucide-react';
 import { PageShell } from '../components/layout/PageShell';
 import { supabase } from '../lib/supabaseClient';
 import type { OrderWithItems } from '../hooks/useOrders';
@@ -113,6 +113,7 @@ export default function SuiviCommande() {
   const currentIdx = STEPS.findIndex((s) => s.key === order.status);
   const items = order.order_items ?? [];
   const itemNames = items.map((it) => `${it.quantity}× ${it.product_name}`).join(', ');
+  const isGuest = !!token;
 
   return (
     <div className="min-h-screen bg-white">
@@ -208,7 +209,31 @@ export default function SuiviCommande() {
               </div>
             )}
 
-            <div className="mt-12 text-center">
+            {isGuest && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="mt-10 rounded-[2px] border border-sapin/15 bg-sapin-subtle p-6 text-center"
+              >
+                <UserPlus size={28} strokeWidth={1.3} className="mx-auto mb-3 text-sapin" />
+                <p className="mb-1 text-[14px] font-medium text-black">
+                  Gardez un œil sur toutes vos commandes
+                </p>
+                <p className="mb-5 text-[12px] font-light text-black/50">
+                  Créez votre compte gratuitement pour suivre votre historique, recevoir des offres exclusives et accéder à Óra+.
+                </p>
+                <Link
+                  to="/inscription"
+                  className="inline-flex h-11 min-h-[44px] items-center gap-2 rounded-full bg-sapin px-8 text-[10px] font-medium uppercase tracking-[0.1em] text-white hover:bg-sapin/90 transition-colors"
+                >
+                  <UserPlus size={14} strokeWidth={1.5} />
+                  Créer mon compte
+                </Link>
+              </motion.div>
+            )}
+
+            <div className="mt-8 text-center">
               <Link
                 to="/menu"
                 className="inline-flex h-11 min-h-[44px] items-center rounded-full border border-noir/15 px-6 text-[10px] uppercase tracking-[0.1em] text-black/55 hover:border-noir/30 hover:text-black"
