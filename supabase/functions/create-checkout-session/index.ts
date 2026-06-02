@@ -140,8 +140,13 @@ serve(async (req) => {
     }
 
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
+    const reqOrigin = req.headers.get('origin');
+    const isLocalhostOrigin = reqOrigin && (reqOrigin.startsWith('http://localhost:') || reqOrigin.startsWith('http://127.0.0.1:'));
     const rawSiteUrl = Deno.env.get('SITE_URL');
-    const siteUrl = (rawSiteUrl && rawSiteUrl.startsWith('http') ? rawSiteUrl : 'https://www.pessora.mq').replace(/\/+$/, '');
+    const siteUrl = (isLocalhostOrigin
+      ? reqOrigin
+      : (rawSiteUrl && rawSiteUrl.startsWith('http') ? rawSiteUrl : 'https://www.pessora.mq')
+    ).replace(/\/+$/, '');
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
