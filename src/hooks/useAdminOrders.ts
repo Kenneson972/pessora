@@ -66,7 +66,15 @@ export function useAdminOrders(filterStatus: OrderFilterStatus = 'all') {
         { event: 'UPDATE', schema: 'public', table: 'orders', filter: 'status=eq.paid' },
         (payload) => {
           if (payload.old.status === 'pending' && payload.new.status === 'paid') {
-            setPaidAlert(payload.new as OrderWithItems);
+            const paidOrder = payload.new as OrderWithItems;
+            setPaidAlert(paidOrder);
+            setOrders((prev) => {
+              const exists = prev.some((o) => o.id === paidOrder.id);
+              if (exists) {
+                return prev.map((o) => (o.id === paidOrder.id ? paidOrder : o));
+              }
+              return [paidOrder, ...prev];
+            });
           }
         }
       )

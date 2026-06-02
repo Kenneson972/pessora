@@ -56,7 +56,7 @@ function CardItem({ card }: { card: { id: string; eyebrow: string; title: string
 }
 
 export function HomeFeaturedCarousel({ title }: { title: string }) {
-  const { cards, loading } = useFeaturedCarousel();
+  const { cards, loading, enabled } = useFeaturedCarousel();
   const scrollerRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const headerAnim = useFadeUpWhenVisible();
@@ -68,7 +68,7 @@ export function HomeFeaturedCarousel({ title }: { title: string }) {
     scrollerRef.current?.scrollBy({ left: dir * 324, behavior: 'smooth' });
   }, []);
 
-  if (!loading && cards.length === 0) return null;
+  if (!loading && (!enabled || cards.length === 0)) return null;
 
   const items = loading
     ? Array.from({ length: 4 }).map((_, i) => ({ id: `placeholder-${i}`, eyebrow: 'Chargement…', title: '—', image_url: null, link_to: null }))

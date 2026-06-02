@@ -42,8 +42,14 @@ END;
 $$;
 
 -- Job pg_cron pour nettoyer périodiquement (toutes les 5 minutes)
-SELECT cron.schedule(
-  'cleanup-rate-limits',
-  '*/5 * * * *',
-  $$ DELETE FROM public.rate_limits WHERE reset_at < NOW() $$
-);
+-- Uniquement si pg_cron est activé
+DO $do$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
+    PERFORM cron.schedule(
+      'cleanup-rate-limits',
+      '*/5 * * * *',
+      $sql$ DELETE FROM public.rate_limits WHERE reset_at < NOW() $sql$
+    );
+  END IF;
+END $do$;

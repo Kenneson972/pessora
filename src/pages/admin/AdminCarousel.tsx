@@ -21,6 +21,8 @@ export default function AdminCarousel() {
   const [deleteTarget, setDeleteTarget] = useState<HomeCarouselCard | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [featuredEnabled, setFeaturedEnabled] = useState(true);
+  const [toggling, setToggling] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Drag & drop state
@@ -34,16 +36,35 @@ export default function AdminCarousel() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data, error: e } = await (supabase as any)
-      .from('home_carousel_cards')
-      .select('*')
-      .order('position', { ascending: true });
-    if (e) setError(e.message);
-    else { setCards(data ?? []); setError(null); }
+    const [{ data: cardsData, error: cardsErr }, { data: settingsData }] = await Promise.all([
+      (supabase as any)
+        .from('home_carousel_cards')
+        .select('*')
+        .order('position', { ascending: true }),
+      (supabase as any)
+        .from('home_featured_settings')
+        .select('active')
+        .maybeSingle(),
+    ]);
+    if (cardsErr) setError(cardsErr.message);
+    else { setCards(cardsData ?? []); setError(null); }
+    setFeaturedEnabled(settingsData?.active ?? true);
     setLoading(false);
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  const toggleFeatured = async () => {
+    setToggling(true);
+    const next = !featuredEnabled;
+    const { error: e } = await (supabase as any)
+      .from('home_featured_settings')
+      .update({ active: next, updated_at: new Date().toISOString() })
+      .eq('id', 1);
+    if (!e) setFeaturedEnabled(next);
+    else setError(e.message);
+    setToggling(false);
+  };
 
   const openCreate = () => {
     setEditing(null);
@@ -159,6 +180,30 @@ export default function AdminCarousel() {
       />
 
       {error && <AdminErrorAlert message={error} onRetry={() => setError(null)} />}
+
+      {/* Toggle global "À la une" */}
+      <div className="flex items-center justify-between rounded-[6px] border border-noir/[0.08] bg-white p-3 mt-5">
+        <div>
+          <p className="text-[12px] font-medium text-black">Section "À la une"</p>
+          <p className="text-[10px] text-black/45">
+            {featuredEnabled ? 'Visible sur la page d\'accueil' : 'Masquée sur la page d\'accueil'}
+          </p>
+        </div>
+        <button
+          onClick={toggleFeatured}
+          disabled={toggling}
+          className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors disabled:opacity-50 ${
+            featuredEnabled ? 'bg-sapin' : 'bg-noir/20'
+          }`}
+          aria-label={featuredEnabled ? 'Désactiver À la une' : 'Activer À la une'}
+        >
+          <span
+            className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
+              featuredEnabled ? 'translate-x-4' : 'translate-x-0'
+            }`}
+          />
+        </button>
+      </div>
 
       {loading ? (
         <p className="text-sm text-black/45 mt-6">Chargement…</p>

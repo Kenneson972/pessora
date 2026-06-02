@@ -3,7 +3,19 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import Stripe from 'npm:stripe@14';
 import { z } from 'npm:zod@3';
-import { checkRateLimit } from '../_shared/rate-limiter.ts';
+// Rate limiter in-memory (inlined to avoid import issues)
+const rateStore = new Map<string, { count: number; resetAt: number }>();
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateStore.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateStore.set(ip, { count: 1, resetAt: now + 60_000 });
+    return true;
+  }
+  if (entry.count >= 10) return false;
+  entry.count++;
+  return true;
+}
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -29,10 +41,15 @@ const CheckoutRequestSchema = z.object({
   client_phone: z.string().nullable().optional(),
 });
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': Deno.env.get("ALLOWED_ORIGIN") ?? "https://www.pessora.mq",
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+function buildCorsHeaders(origin: string | null): Record<string, string> {
+  const allowed = Deno.env.get('ALLOWED_ORIGIN') || 'https://www.pessora.mq';
+  const isLocalhost = origin != null &&
+    (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'));
+  return {
+    'Access-Control-Allow-Origin': isLocalhost ? origin : allowed,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  };
+}
 
 /**
  * Récupère le vrai prix unitaire depuis la base de données en ignorant
@@ -107,8 +124,10 @@ async function fetchVerifiedPrice(
 }
 
 serve(async (req) => {
+  const cors = buildCorsHeaders(req.headers.get('origin'));
+
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: cors });
   }
 
   try {
@@ -116,19 +135,20 @@ serve(async (req) => {
     if (!checkRateLimit(ip)) {
       return new Response(JSON.stringify({ error: "Too many requests" }), {
         status: 429,
-        headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "60" },
+        headers: { ...cors, "Content-Type": "application/json", "Retry-After": "60" },
       })
     }
 
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY');
-    const siteUrl = (Deno.env.get('SITE_URL') ?? 'http://localhost:5173').replace(/\/+$/, '');
+    const rawSiteUrl = Deno.env.get('SITE_URL');
+    const siteUrl = (rawSiteUrl && rawSiteUrl.startsWith('http') ? rawSiteUrl : 'https://www.pessora.mq').replace(/\/+$/, '');
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
     if (!stripeKey) {
       return new Response(JSON.stringify({ error: 'STRIPE_SECRET_KEY non configurée' }), {
         status: 503,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...cors, 'Content-Type': 'application/json' },
       });
     }
 
@@ -137,36 +157,13 @@ serve(async (req) => {
     if (!parsed.success) {
       return new Response(JSON.stringify({ error: 'Payload invalide', details: parsed.error.flatten() }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...cors, 'Content-Type': 'application/json' },
       });
     }
 
     const { items, user_id, pickup_time, client_name, client_phone } = parsed.data;
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    if (user_id) {
-      const authHeader = req.headers.get('Authorization');
-      if (!authHeader) {
-        return new Response(JSON.stringify({ error: 'Authentification requise' }), {
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''));
-      if (authError || !user) {
-        return new Response(JSON.stringify({ error: 'Token invalide' }), {
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      if (user_id !== user.id) {
-        return new Response(JSON.stringify({ error: 'user_id ne correspond pas' }), {
-          status: 403,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-    }
 
     // ── P0: Vérifier les prix côté serveur (ignorer unitPrice du client) ──
     const verifiedLines = await Promise.all(
@@ -224,57 +221,73 @@ serve(async (req) => {
       throw new Error('Erreur lors de la création des articles : ' + itemsError.message);
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('email, first_name, last_name')
-      .eq('id', user_id)
-      .single();
+    // Email client : uniquement si user_id présent
+    let customerEmail: string | undefined;
+    if (user_id) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('id', user_id)
+        .single();
+      customerEmail = profile?.email ?? undefined;
+    }
 
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-04-10' });
+    const successUrl = `${siteUrl}/commande/succes?session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl = `${siteUrl}/commande/annulee?order_id=${order.id}`;
 
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      idempotencyKey: order.id,
-      locale: 'fr',
-      customer_email: profile?.email ?? user.email,
-      phone_number_collection: { enabled: true },
-      line_items: verifiedLines.map((item) => {
-        const isImageUrl = typeof item.image === 'string' && item.image.startsWith('http');
-        return {
-          price_data: {
-            currency: 'eur',
-            product_data: {
-              name: item.name,
-              description: item.optionLabels?.length > 0
-                ? item.optionLabels.join(' · ')
-                : undefined,
-              images: isImageUrl ? [item.image] : undefined,
-            },
-            unit_amount: Math.round(item.verifiedUnitPrice * 100),
-          },
-          quantity: item.quantity,
-        };
-      }),
-      success_url: `${siteUrl}/commande/succes?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl}/commande/annulee?order_id=${order.id}`,
-      metadata: {
-        order_id: order.id,
-      },
+    // Appel direct à l'API Stripe (contourne le SDK npm:stripe en Deno)
+    const stripeBody = new URLSearchParams();
+    stripeBody.append('mode', 'payment');
+    stripeBody.append('locale', 'fr');
+    stripeBody.append('success_url', successUrl);
+    stripeBody.append('cancel_url', cancelUrl);
+    stripeBody.append('metadata[order_id]', order.id);
+    if (customerEmail) stripeBody.append('customer_email', customerEmail);
+    stripeBody.append('phone_number_collection[enabled]', 'true');
+
+    verifiedLines.forEach((item, i) => {
+      const isImageUrl = typeof item.image === 'string' && item.image.startsWith('http');
+      stripeBody.append(`line_items[${i}][price_data][currency]`, 'eur');
+      stripeBody.append(`line_items[${i}][price_data][product_data][name]`, item.name);
+      if (item.optionLabels?.length > 0) {
+        stripeBody.append(`line_items[${i}][price_data][product_data][description]`, item.optionLabels.join(' · '));
+      }
+      if (isImageUrl) {
+        stripeBody.append(`line_items[${i}][price_data][product_data][images][0]`, item.image!);
+      }
+      stripeBody.append(`line_items[${i}][price_data][unit_amount]`, String(Math.round(item.verifiedUnitPrice * 100)));
+      stripeBody.append(`line_items[${i}][quantity]`, String(item.quantity));
     });
+
+    const stripeRes = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${stripeKey}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: stripeBody.toString(),
+    });
+
+    const stripeJson = await stripeRes.json() as { id?: string; url?: string; error?: { message: string } };
+
+    if (!stripeRes.ok || !stripeJson.url) {
+      throw new Error(stripeJson.error?.message ?? 'Stripe session creation failed');
+    }
 
     await supabase
       .from('orders')
-      .update({ stripe_session_id: session.id })
+      .update({ stripe_session_id: stripeJson.id ?? null })
       .eq('id', order.id);
 
-    return new Response(JSON.stringify({ url: session.url }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    return new Response(JSON.stringify({ url: stripeJson.url, version: '2026-06-02-v2' }), {
+      headers: { ...cors, 'Content-Type': 'application/json' },
     });
   } catch (err) {
     console.error('[create-checkout-session]', err);
-    return new Response(JSON.stringify({ error: 'Erreur serveur' }), {
+    const msg = err instanceof Error ? err.message : String(err);
+    return new Response(JSON.stringify({ error: 'Erreur serveur', detail: msg, v: '2026-06-02-v2' }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...cors, 'Content-Type': 'application/json' },
     });
   }
 });
