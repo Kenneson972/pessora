@@ -97,6 +97,13 @@ export default function ModeBar() {
     auditLog({ action: 'order.status_change', entity_type: 'order', entity_id: orderId, details: { new_status: 'ready' } });
   };
 
+  const handleMarkCompleted = async (orderId: string) => {
+    setLocalOrders((prev) => prev.filter((o) => o.id !== orderId));
+    setCurrentIndex((prev) => (prev < orders.length - 1 ? prev + 1 : 0));
+    await (supabase as any).from('orders').update({ status: 'completed', picked_up_at: new Date().toISOString() }).eq('id', orderId);
+    auditLog({ action: 'order.status_change', entity_type: 'order', entity_id: orderId, details: { new_status: 'completed' } });
+  };
+
   const handleNext = () => {
     setCurrentIndex((prev) => (prev < orders.length - 1 ? prev + 1 : 0));
   };
@@ -286,31 +293,28 @@ export default function ModeBar() {
                 <div className="flex flex-col sm:flex-row gap-3">
                   {current.status === 'paid' ? (
                     <>
-                      <button
-                        onClick={() => handleStartPrep(current.id)}
-                        className="flex-1 min-h-[56px] bg-sapin hover:bg-sapin/85 active:bg-sapin/70 text-white py-4 rounded-2xl font-bold text-lg transition-colors"
-                      >
+                      <button onClick={() => handleStartPrep(current.id)} className="flex-1 min-h-[56px] bg-sapin hover:bg-sapin/85 active:bg-sapin/70 text-white py-4 rounded-2xl font-bold text-lg transition-colors">
                         Commencer la préparation
                       </button>
-                      <button
-                        onClick={handleNext}
-                        className="min-h-[56px] bg-white/[0.06] hover:bg-white/[0.10] active:bg-white/[0.15] text-white px-6 rounded-2xl font-bold text-lg transition-colors flex items-center justify-center gap-2"
-                      >
+                      <button onClick={handleNext} className="min-h-[56px] bg-white/[0.06] hover:bg-white/[0.10] active:bg-white/[0.15] text-white px-6 rounded-2xl font-bold text-lg transition-colors flex items-center justify-center gap-2">
+                        Suivante <ChevronRight size={20} />
+                      </button>
+                    </>
+                  ) : current.status === 'ready' ? (
+                    <>
+                      <button onClick={() => handleMarkCompleted(current.id)} className="flex-1 min-h-[56px] bg-sapin hover:bg-sapin/85 active:bg-sapin/70 text-white py-4 rounded-2xl font-bold text-lg transition-colors">
+                        Marquer comme RETIRÉE
+                      </button>
+                      <button onClick={handleNext} className="min-h-[56px] bg-white/[0.06] hover:bg-white/[0.10] active:bg-white/[0.15] text-white px-6 rounded-2xl font-bold text-lg transition-colors flex items-center justify-center gap-2">
                         Suivante <ChevronRight size={20} />
                       </button>
                     </>
                   ) : (
                     <>
-                      <button
-                        onClick={() => handleMarkReady(current.id)}
-                        className="flex-1 min-h-[56px] bg-sapin hover:bg-sapin/85 active:bg-sapin/70 text-white py-4 rounded-2xl font-bold text-lg transition-colors"
-                      >
+                      <button onClick={() => handleMarkReady(current.id)} className="flex-1 min-h-[56px] bg-sapin hover:bg-sapin/85 active:bg-sapin/70 text-white py-4 rounded-2xl font-bold text-lg transition-colors">
                         Marquer comme PRÊTE
                       </button>
-                      <button
-                        onClick={handleNext}
-                        className="min-h-[56px] bg-white/[0.06] hover:bg-white/[0.10] active:bg-white/[0.15] text-white px-6 rounded-2xl font-bold text-lg transition-colors flex items-center justify-center gap-2"
-                      >
+                      <button onClick={handleNext} className="min-h-[56px] bg-white/[0.06] hover:bg-white/[0.10] active:bg-white/[0.15] text-white px-6 rounded-2xl font-bold text-lg transition-colors flex items-center justify-center gap-2">
                         Suivante <ChevronRight size={20} />
                       </button>
                     </>

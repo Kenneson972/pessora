@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
 
+declare module '@heroui-pro/react';
+
 interface ImportMetaEnv {
   readonly VITE_PESSOBOT_WEBHOOK_URL?: string;
   readonly VITE_PESSOBOT_SIGNATURE?: string;
