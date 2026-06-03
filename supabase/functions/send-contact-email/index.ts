@@ -64,7 +64,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         from: 'PessÓra <noreply@pessora.fr>',
-        to: Deno.env.get("ADMIN_EMAIL") ?? "Pessora.mq@gmail.com",
+        to: Deno.env.get("ADMIN_EMAIL") ?? "pessora.fr@gmail.com",
         reply_to: email,
         subject: `[PessÓra Contact] ${typeLabels[type] ?? 'Information'} — ${name}`,
         text: `Nouveau message depuis le formulaire de contact PessÓra
