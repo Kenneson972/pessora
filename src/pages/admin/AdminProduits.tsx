@@ -563,7 +563,7 @@ const AdminProduits = () => {
               <Modal.Body className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
                 <AdminProductEditorForm
                   key={editProduct?.id ?? duplicateFrom?.id ?? 'create'}
-                  mode="create"
+                  mode={editProduct ? 'edit' : 'create'}
                   initial={editorInitial}
                   onSave={async (formState) => {
                     if (editProduct) await handleUpdate(formState);
