@@ -26,6 +26,7 @@ export default function SuiviCommande() {
     document.title = 'Suivi commande — PessÓra';
   }, []);
 
+  // Étape 1 : fetch initial (token ou orderId)
   useEffect(() => {
     if (!orderId && !token) {
       setError('Aucune commande spécifiée.');
@@ -66,24 +67,30 @@ export default function SuiviCommande() {
         });
     }
 
-    const trackId = orderId ?? token!;
-    const filter = orderId ? `id=eq.${orderId}` : undefined;
+    return () => { cancelled = true; };
+  }, [orderId, token]);
+
+  // Étape 2 : Realtime — une fois l'order connu (avec filtre strict par id)
+  useEffect(() => {
+    if (!order) return;
+
     const channel = supabase
-      .channel(`order-${trackId.substring(0, 36)}`)
+      .channel(`order-${order.id}`)
       .on(
         'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'orders', filter },
+        { event: 'UPDATE', schema: 'public', table: 'orders', filter: `id=eq.${order.id}` },
         (payload: { new: Record<string, unknown> }) => {
+          // Double vérification : le payload correspond bien à cet order
+          if (payload.new.id !== order.id) return;
           setOrder((prev) => (prev ? { ...prev, ...payload.new } as OrderWithItems : prev));
         }
       )
       .subscribe();
 
     return () => {
-      cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [orderId, token]);
+  }, [order?.id]);
 
   if (loading) {
     return (
