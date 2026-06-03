@@ -51,28 +51,6 @@ const GammeProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [spoonSelected, setSpoonSelected] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
-  const [pickupDate, setPickupDate] = useState('');
-  const [pickupTime, setPickupTime] = useState('');
-
-  // Date min = aujourd'hui + 1 jour
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const minDate = tomorrow.toISOString().split('T')[0];
-  const maxDate = new Date(Date.now() + 60 * 86400000).toISOString().split('T')[0];
-
-  // Bloque le dimanche (0 = dimanche)
-  const isSunday = (dateStr: string) => {
-    const d = new Date(dateStr + 'T12:00:00');
-    return d.getDay() === 0;
-  };
-
-  // Créneaux 9h-18h par 30 min
-  const TIME_SLOTS = Array.from({ length: 19 }, (_, i) => {
-    const h = 9 + Math.floor(i / 2);
-    const m = i % 2 === 0 ? '00' : '30';
-    return `${String(h).padStart(2, '0')}:${m}`;
-  });
-
   const [productOverride, setProductOverride] = useState<GammeProduct | null>(null);
 
   const { product: dbProduct, loading, error } = useGammeProduct(rangeId, slug);
@@ -149,10 +127,6 @@ const GammeProductDetail = () => {
   const spoonOptionLabels = spoonSelected && spoonInfo ? [spoonInfo.label] : [] as string[];
 
   const handleAddToCart = () => {
-    const scheduledPickupDate = pickupDate && pickupTime
-      ? new Date(`${pickupDate}T${pickupTime}:00`).toISOString()
-      : undefined;
-
     addLine({
       productId: product.id,
       name: product.name,
@@ -164,7 +138,6 @@ const GammeProductDetail = () => {
       optionsKey: spoonSelected && spoonInfo ? 'spoon:0' : 'default',
       optionLabels: spoonOptionLabels,
       image: product.image_url || product.name.charAt(0),
-      scheduledPickupDate,
     });
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 2000);
@@ -284,48 +257,11 @@ const GammeProductDetail = () => {
                 </label>
               )}
 
-              {/* Sélecteur date/heure de retrait */}
-              <div className="mb-6 rounded-[2px] border border-noir/[0.08] bg-sapin-subtle p-4">
-                <p className="mb-3 text-[9px] font-normal uppercase tracking-[0.2em] text-black/40">
-                  Date de retrait (min. J+1)
+              {/* Délai indicatif */}
+              <div className="mb-6 rounded-[2px] border border-noir/[0.06] bg-sapin-subtle px-4 py-3 text-center">
+                <p className="text-[12px] text-black/60">
+                  Retrait en boutique sous <span className="font-medium text-black">7 &agrave; 10 jours</span> apr&egrave;s commande
                 </p>
-                <div className="flex gap-3">
-                  <input
-                    type="date"
-                    value={pickupDate}
-                    min={minDate}
-                    max={maxDate}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      if (isSunday(val)) {
-                        const d = new Date(val + 'T12:00:00');
-                        d.setDate(d.getDate() + 1);
-                        setPickupDate(d.toISOString().split('T')[0]);
-                        return;
-                      }
-                      setPickupDate(val);
-                    }}
-                    className="flex-1 rounded-[2px] border border-noir/10 px-3 py-2.5 text-[13px] text-black bg-white"
-                    required
-                  />
-                  <select
-                    value={pickupTime}
-                    onChange={(e) => setPickupTime(e.target.value)}
-                    className="rounded-[2px] border border-noir/10 px-3 py-2.5 text-[13px] text-black bg-white"
-                    required
-                    disabled={!pickupDate}
-                  >
-                    <option value="">Heure</option>
-                    {TIME_SLOTS.map((t) => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
-                </div>
-                {pickupDate && pickupTime && (
-                  <p className="mt-2 text-[11px] text-black/50">
-                    Retrait le {new Date(pickupDate + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} à {pickupTime}
-                  </p>
-                )}
               </div>
 
               {/* Quantité + CTA */}
@@ -366,7 +302,7 @@ const GammeProductDetail = () => {
                   variant="primary"
                   fullWidth
                   onPress={handleAddToCart}
-                  isDisabled={loading || (!pickupDate || !pickupTime)}
+                  isDisabled={loading}
                   className="flex h-12 min-h-12 flex-1 items-center justify-center gap-3 rounded-full bg-noir text-[10px] font-normal uppercase tracking-[0.12em] text-white hover:bg-anthracite"
                 >
                   {justAdded ? (
