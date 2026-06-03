@@ -120,7 +120,7 @@ export function AdminOrderCard({ order, onStatusUpdate, onDeleteOrder }: AdminOr
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {action && (
+            {action && order.order_type !== 'gamme' && (
               <button
                 type="button"
                 onClick={() => action.next === 'completed' ? setConfirmCompleted(true) : onStatusUpdate(order.id, action.next)}
