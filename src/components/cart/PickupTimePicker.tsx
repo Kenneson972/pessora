@@ -73,31 +73,25 @@ export function PickupTimePicker({ businessHours, value, onChange }: PickupTimeP
 
   if (slots.length === 0) {
     return (
-      <div className="px-5 py-4 md:px-6 border-t border-noir/[0.06]">
-        <div className="flex items-center gap-2 mb-3">
-          <Clock size={13} strokeWidth={1.3} className="text-sapin/45" />
-          <span className="text-[9px] font-normal uppercase tracking-[0.2em] text-black/45">
-            Créneau de retrait
-          </span>
+      <div className="px-4 py-2.5 md:px-5 border-t border-noir/[0.06]">
+        <div className="flex items-center gap-1.5 mb-1">
+          <Clock size={11} strokeWidth={1.3} className="text-sapin/45" />
+          <span className="text-[8px] font-normal uppercase tracking-[0.16em] text-black/45">Créneau de retrait</span>
         </div>
-        <p className="text-[11px] font-light text-black/40">
-          {new Date().getDay() === 0
-            ? "Le bar est fermé le dimanche. Vous pouvez commander pour demain."
-            : "Aucun créneau disponible aujourd'hui. Vous pouvez commander pour demain."}
+        <p className="text-[10px] font-light text-black/40">
+          {new Date().getDay() === 0 ? "Fermé le dimanche." : "Aucun créneau aujourd'hui."}
         </p>
       </div>
     );
   }
 
   return (
-    <div className="px-5 py-4 md:px-6 border-t border-noir/[0.06]">
-      <div className="flex items-center gap-2 mb-3">
-        <Clock size={13} strokeWidth={1.3} className="text-sapin/45" />
-        <span className="text-[9px] font-normal uppercase tracking-[0.2em] text-black/45">
-          Créneau de retrait
-        </span>
+    <div className="px-4 py-2.5 md:px-5 border-t border-noir/[0.06]">
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <Clock size={11} strokeWidth={1.3} className="text-sapin/45" />
+        <span className="text-[8px] font-normal uppercase tracking-[0.16em] text-black/45">Créneau de retrait</span>
       </div>
-      <div className="flex flex-wrap gap-1.5 max-h-[120px] overflow-y-auto">
+      <div className="flex flex-wrap gap-1 max-h-[80px] overflow-y-auto">
         {slots.map((slot) => {
           const selected = value === slot.value;
           return (
@@ -106,7 +100,7 @@ export function PickupTimePicker({ businessHours, value, onChange }: PickupTimeP
               type="button"
               disabled={slot.disabled}
               onClick={() => onChange(slot.value)}
-              className={`min-h-[28px] px-2 py-0.5 rounded-[2px] text-[10px] font-normal transition-colors ${
+              className={`min-h-[24px] px-1.5 py-0 rounded-[2px] text-[9px] font-normal transition-colors ${
                 selected
                   ? 'bg-sapin text-white'
                   : slot.disabled

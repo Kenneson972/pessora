@@ -5,8 +5,6 @@ import { Sheet } from '@heroui-pro/react';
 import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
 import { useCart } from '../../store/cartStore';
 import { barInfo } from '../../data/infoData';
-import { categoryNames } from '../../data/menuData';
-import type { MenuItem } from '../../data/menuData';
 import { formatEurFr } from '../../lib/oraPricing';
 import { displayBarLineUnit } from '../../lib/cartDisplayPrice';
 import { useIsOraPlus } from '../../hooks/useIsOraPlus';
@@ -84,7 +82,7 @@ export function CartDrawer() {
               />
             </Sheet.Header>
 
-            <Sheet.Body className="min-h-0 flex-1 overflow-y-auto px-5 py-5 md:px-6">
+            <Sheet.Body className="min-h-0 flex-1 overflow-y-auto px-4 py-3 md:px-5">
               {items.length === 0 ? (
                 <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center">
                   <p className="text-[11px] font-light leading-relaxed text-black/45">
@@ -102,17 +100,17 @@ export function CartDrawer() {
                   </Link>
                 </div>
               ) : (
-                <ul className="flex flex-col gap-5">
+                <ul className="flex flex-col gap-3">
                   {items.map((line) => {
                     const lineUnit = displayBarLineUnit(line, isOraPlus);
                     return (
                     <li
                       key={`${line.productId}-${line.optionsKey}`}
-                      className="border-b border-noir/[0.05] pb-5 last:border-0 last:pb-0"
+                      className="border-b border-noir/[0.05] pb-3 last:border-0 last:pb-0"
                     >
-                      <div className="flex gap-4">
+                      <div className="flex gap-3">
                         <div
-                          className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-noir/[0.08] bg-surface-product-well text-[22px]"
+                          className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-[2px] border border-noir/[0.08] bg-surface-product-well text-[18px]"
                           aria-hidden
                         >
                           {line.image && (line.image.startsWith('http') || line.image.startsWith('/')) ? (
@@ -122,78 +120,39 @@ export function CartDrawer() {
                           )}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-[11px] font-normal uppercase tracking-[0.12em] text-black">
-                            {line.name}
-                          </p>
-                          <p className="mt-0.5 text-[9px] uppercase tracking-[0.14em] text-black/35">
-                            {categoryNames[line.category as MenuItem['category']] ?? line.category}
-                          </p>
-                          <ul className="mt-2 space-y-0.5">
-                            {line.optionLabels.map((label, idx) => (
-                              <li
-                                key={`${line.optionsKey}-${idx}`}
-                                className="text-[10px] font-light text-black/50"
-                              >
-                                {label}
-                              </li>
-                            ))}
-                          </ul>
-                          <div className="mt-3 flex items-center justify-between gap-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="text-[12px] font-medium text-black truncate">{line.name}</p>
+                              {line.optionLabels.length > 0 && (
+                                <p className="mt-0.5 text-[10px] text-black/45 truncate">{line.optionLabels.join(' · ')}</p>
+                              )}
+                            </div>
+                            <span className="shrink-0 text-[13px] font-normal tabular-nums text-black">
+                              {formatEurFr(lineUnit * line.quantity)}
+                            </span>
+                          </div>
+                          <div className="mt-2 flex items-center gap-2">
                             <div className="inline-flex items-center rounded-full border border-noir/[0.1]">
                               <Button
-                                type="button"
-                                variant="ghost"
-                                isIconOnly
-                                size="sm"
+                                type="button" variant="ghost" isIconOnly size="sm"
                                 aria-label={`Diminuer ${line.name}`}
-                                className="h-11 w-11 min-w-11"
-                                onPress={() =>
-                                  updateQuantity(
-                                    line.productId,
-                                    line.optionsKey,
-                                    line.quantity - 1,
-                                  )
-                                }
-                              >
-                                <Minus className="h-3.5 w-3.5" strokeWidth={1.35} />
-                              </Button>
-                              <span className="w-7 text-center text-[12px] text-black">
-                                {line.quantity}
-                              </span>
+                                className="h-8 w-8 min-w-8"
+                                onPress={() => updateQuantity(line.productId, line.optionsKey, line.quantity - 1)}
+                              ><Minus className="h-3 w-3" strokeWidth={1.35} /></Button>
+                              <span className="w-6 text-center text-[12px] text-black">{line.quantity}</span>
                               <Button
-                                type="button"
-                                variant="ghost"
-                                isIconOnly
-                                size="sm"
+                                type="button" variant="ghost" isIconOnly size="sm"
                                 aria-label={`Augmenter ${line.name}`}
-                                className="h-11 w-11 min-w-11"
-                                onPress={() =>
-                                  updateQuantity(
-                                    line.productId,
-                                    line.optionsKey,
-                                    line.quantity + 1,
-                                  )
-                                }
-                              >
-                                <Plus className="h-3.5 w-3.5" strokeWidth={1.35} />
-                              </Button>
+                                className="h-8 w-8 min-w-8"
+                                onPress={() => updateQuantity(line.productId, line.optionsKey, line.quantity + 1)}
+                              ><Plus className="h-3 w-3" strokeWidth={1.35} /></Button>
                             </div>
-                            <div className="flex items-center gap-3">
-                              <span className="text-[12px] font-normal tabular-nums text-black">
-                                {formatEurFr(lineUnit * line.quantity)}
-                              </span>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                isIconOnly
-                                size="sm"
-                                aria-label={`Retirer ${line.name} du panier`}
-                                className="text-black/35 hover:text-black"
-                                onPress={() => removeLine(line.productId, line.optionsKey)}
-                              >
-                                <Trash2 className="h-4 w-4" strokeWidth={1.25} />
-                              </Button>
-                            </div>
+                            <Button
+                              type="button" variant="ghost" isIconOnly size="sm"
+                              aria-label={`Retirer ${line.name}`}
+                              className="ml-auto h-8 w-8 text-black/25 hover:text-red-500"
+                              onPress={() => removeLine(line.productId, line.optionsKey)}
+                            ><Trash2 className="h-3.5 w-3.5" strokeWidth={1.25} /></Button>
                           </div>
                         </div>
                       </div>
@@ -212,20 +171,20 @@ export function CartDrawer() {
                 onChange={setPickupTime}
               />
               {isGuest && (
-                <div className="flex flex-col gap-2 pb-2 px-5 md:px-6">
+                <div className="flex gap-2 px-4 pb-2 md:px-5">
                   <input
                     type="text"
                     placeholder="Votre nom"
                     value={guestName}
                     onChange={(e) => setGuestName(e.target.value)}
-                    className="h-11 min-h-[44px] w-full rounded-full border border-noir/[0.12] bg-white px-5 text-[12px] text-black placeholder:text-black/30 outline-none focus:border-noir/30"
+                    className="h-10 min-h-[40px] w-full rounded-full border border-noir/[0.12] bg-white px-4 text-[12px] text-black placeholder:text-black/30 outline-none focus:border-noir/30"
                   />
                   <input
                     type="tel"
                     placeholder="06 XX XX XX XX"
                     value={guestPhone}
                     onChange={(e) => setGuestPhone(e.target.value)}
-                    className="h-11 min-h-[44px] w-full rounded-full border border-noir/[0.12] bg-white px-5 text-[12px] text-black placeholder:text-black/30 outline-none focus:border-noir/30"
+                    className="h-10 min-h-[40px] w-full rounded-full border border-noir/[0.12] bg-white px-4 text-[12px] text-black placeholder:text-black/30 outline-none focus:border-noir/30"
                   />
                   {guestName && !guestNameValid && (
                     <p className="text-[9px] text-red-400">2 caractères minimum</p>
@@ -235,49 +194,32 @@ export function CartDrawer() {
                   )}
                 </div>
               )}
-              <Sheet.Footer className="flex flex-col border-t border-noir/[0.06] bg-white px-5 py-3 md:px-6">
-                <div className="mb-3 flex items-baseline justify-between gap-4">
-                  <span className="text-[9px] font-normal uppercase tracking-[0.18em] text-black/45">
-                    Total
-                  </span>
-                  <span className="text-[18px] font-light tabular-nums tracking-tight text-black">
-                    {formatEurFr(total)}
-                  </span>
+              <Sheet.Footer className="flex flex-col border-t border-noir/[0.06] bg-white px-4 py-2 md:px-5">
+                <div className="mb-1 flex items-baseline justify-between gap-3">
+                  <span className="text-[8px] font-normal uppercase tracking-[0.16em] text-black/40">Total</span>
+                  <span className="text-[15px] font-normal tabular-nums text-black">{formatEurFr(total)}</span>
                 </div>
-
                 {!barStatus.loading && (
-                  <p className="mb-2 text-center text-[10px] font-light text-black/35">
-                    {barStatus.isOpen
-                      ? `⏱ ~${barStatus.estimatedWaitMinutes} min d'attente estimée`
-                      : '🔴 Bar fermé — commande différée'}
-                  </p>
+                  <p className="mb-1 text-[9px] text-black/35 text-center">{barStatus.isOpen ? `⏱ ~${barStatus.estimatedWaitMinutes} min` : '🔴 Bar fermé'}</p>
                 )}
-                {checkoutError && (
-                  <p className="mb-3 text-[10px] text-red-500">{checkoutError}</p>
-                )}
+                {checkoutError && <p className="mb-1 text-[9px] text-red-500">{checkoutError}</p>}
 
                 {gammeBlockedGuest ? (
-                  <div className="mb-3 rounded-[2px] border border-sapin/20 bg-sapin-subtle p-4 text-center">
-                    <p className="mb-2 text-[13px] font-medium text-black">
-                      Créez un compte pour commander
-                    </p>
-                    <p className="mb-4 text-[11px] text-black/50">
-                      Les produits des gammes Herbalife nécessitent un compte pour le suivi de votre commande.
-                    </p>
+                  <div className="mb-1 rounded-[2px] border border-sapin/15 bg-sapin-subtle px-3 py-2 text-center">
+                    <p className="mb-0.5 text-[12px] font-medium text-black">Créez un compte pour commander</p>
+                    <p className="mb-1.5 text-[10px] text-black/50">Les gammes nécessitent un compte pour le suivi.</p>
                     <Link
                       to="/inscription"
-                      className="inline-flex h-11 min-h-[44px] items-center gap-2 rounded-full bg-sapin px-6 text-[10px] font-medium uppercase tracking-[0.1em] text-white hover:bg-sapin/90 transition-colors"
+                      className="inline-flex h-8 min-h-[36px] items-center gap-1 rounded-full bg-sapin px-4 text-[9px] font-medium uppercase tracking-[0.1em] text-white hover:bg-sapin/90 transition-colors"
                       onClick={closeCart}
                     >
                       Créer mon compte
                     </Link>
                   </div>
                 ) : (
-                  <p className="mb-2 text-[10px] font-light leading-relaxed text-black/40">
-                    Paiement sécurisé en ligne via Stripe.
-                  </p>
+                  <p className="text-[8px] text-black/30 text-center">Paiement sécurisé Stripe</p>
                 )}
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-1">
                   {hasItems && (
                     <Button
                       type="button"
@@ -285,7 +227,7 @@ export function CartDrawer() {
                       onPress={checkout}
                       className={cn(
                         focusRing,
-                        'flex h-12 min-h-12 w-full items-center justify-center rounded-full bg-sapin text-[10px] font-normal uppercase tracking-[0.12em] text-white transition-colors hover:bg-sapin/85',
+                        'flex h-10 min-h-10 w-full items-center justify-center rounded-full bg-sapin text-[10px] font-normal uppercase tracking-[0.12em] text-white transition-colors hover:bg-sapin/85',
                       )}
                     >
                       {isCheckingOut ? 'Redirection…' : 'Payer ma commande'}
@@ -293,19 +235,13 @@ export function CartDrawer() {
                   )}
                   <a
                     href={telHref}
-                    className={cn(
-                      focusRing,
-                      'flex items-center justify-center min-h-[44px] rounded-full text-[10px] font-normal uppercase tracking-[0.14em] text-black/55 transition-colors hover:text-black',
-                    )}
+                    className={cn(focusRing, 'flex items-center justify-center min-h-[36px] rounded-full text-[9px] font-normal uppercase tracking-[0.12em] text-black/50 transition-colors hover:text-black')}
                   >
                     Appeler le bar
                   </a>
                   <button
                     type="button"
-                    className={cn(
-                      focusRing,
-                      'inline-flex items-center justify-center min-h-[44px] rounded-full text-[9px] uppercase tracking-[0.14em] text-black/35 hover:text-black/55',
-                    )}
+                    className={cn(focusRing, 'inline-flex items-center justify-center min-h-[36px] rounded-full text-[8px] uppercase tracking-[0.12em] text-black/30 hover:text-black/50')}
                     onClick={() => {
                       if (confirmClear) { clearCart(); setPickupTime(''); setGuestName(''); setGuestPhone(''); setConfirmClear(false); }
                       else { setConfirmClear(true); setTimeout(() => setConfirmClear(false), 3000); }
