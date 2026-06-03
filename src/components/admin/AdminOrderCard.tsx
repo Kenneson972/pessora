@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CupSoda, ChevronDown, ChevronUp, Phone, Trash2, User } from 'lucide-react';
+import { ChevronDown, ChevronUp, Phone, Trash2, User } from 'lucide-react';
 import { cn } from '@heroui/react';
 import type { OrderWithItems } from '../../hooks/useOrders';
 import { ConfirmDialog } from '../dashboard/ConfirmDialog';
@@ -63,40 +63,37 @@ export function AdminOrderCard({ order, onStatusUpdate, onDeleteOrder }: AdminOr
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="flex w-full items-center gap-3 px-5 py-4 text-left"
+        className="flex w-full items-start gap-3 px-5 py-4 text-left"
       >
-        <div className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-[2px] bg-noir/[0.05]">
-          <CupSoda size={18} strokeWidth={1.35} className="text-black/45" />
+        <div className={`flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-[2px] text-[20px] ${order.order_type === 'gamme' ? 'bg-purple-50' : 'bg-noir/[0.05]'}`}>
+          {order.order_type === 'gamme' ? '🥗' : '🥤'}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[13px] font-medium text-black">{itemNames || '—'}</p>
-          <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[10.5px] text-black/45">
-            <span className="font-medium text-black/60">{order.client_name || order.user_id?.slice(0, 8) || 'Client'}</span>
-            {order.client_phone && <span>{order.client_phone}</span>}
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[14px] font-bold text-black">{order.client_name || 'Client'}</span>
+            {order.client_phone && <span className="text-[12px] text-black/50">{order.client_phone}</span>}
+          </div>
+          <p className="text-[12px] text-black/60 truncate mb-1">{itemNames || '—'}</p>
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[10px] text-black/35">
+            <span>N° {order.id.slice(0, 8)}</span>
             <span>{dateLabel}</span>
             <span>{order.order_type === 'gamme' && order.scheduled_pickup_date
-  ? `Retrait ${new Date(order.scheduled_pickup_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })} à ${new Date(order.scheduled_pickup_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
-  : `Retrait ${pickupLabel}`}</span>
-            <span>{order.total.toFixed(2).replace('.', ',')}€</span>
+              ? `Retrait ${new Date(order.scheduled_pickup_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })} à ${new Date(order.scheduled_pickup_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`
+              : `Retrait ${pickupLabel}`}
+            </span>
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <span className={cn('inline-block rounded-[2px] px-2 py-1 text-[9px] font-medium uppercase tracking-[0.12em]', STATUS_BADGE_CLASS[order.status] ?? 'bg-noir/[0.04] text-black/40')}>
-            {STATUS_LABELS[order.status] ?? order.status}
-          </span>
-          <span className={cn(
-            'inline-block rounded-[2px] px-2 py-1 text-[9px] font-medium uppercase tracking-[0.12em]',
-            order.order_type === 'gamme'
-              ? 'bg-purple-50 text-purple-700 border border-purple-200'
-              : 'bg-noir/[0.04] text-black/40'
-          )}>
-            {order.order_type === 'gamme' ? 'Gamme' : 'Bar'}
-          </span>
-          {expanded ? (
-            <ChevronUp size={14} strokeWidth={1.3} className="text-black/35" />
-          ) : (
-            <ChevronDown size={14} strokeWidth={1.3} className="text-black/35" />
-          )}
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <span className="text-[15px] font-bold tabular-nums text-black">{order.total.toFixed(2).replace('.', ',')}€</span>
+          <div className="flex items-center gap-1.5">
+            <span className={cn('inline-block rounded-[2px] px-1.5 py-0.5 text-[8px] font-medium uppercase tracking-[0.1em]', STATUS_BADGE_CLASS[order.status] ?? 'bg-noir/[0.04] text-black/40')}>
+              {STATUS_LABELS[order.status] ?? order.status}
+            </span>
+            <span className={cn('inline-block rounded-[2px] px-1.5 py-0.5 text-[8px] font-medium uppercase tracking-[0.1em]', order.order_type === 'gamme' ? 'bg-purple-50 text-purple-700 border border-purple-200' : 'bg-noir/[0.04] text-black/40')}>
+              {order.order_type === 'gamme' ? 'Gamme' : 'Bar'}
+            </span>
+          </div>
+          {expanded ? <ChevronUp size={14} strokeWidth={1.3} className="text-black/35 mt-1" /> : <ChevronDown size={14} strokeWidth={1.3} className="text-black/35 mt-1" />}
         </div>
       </button>
 
