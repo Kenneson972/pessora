@@ -7,7 +7,7 @@ import { supabase } from '../../lib/supabaseClient';
 import { auditLog } from '../../lib/auditLog';
 import type { OrderWithItems } from '../../hooks/useOrders';
 
-const GAMME_STATUSES = ['paid', 'preparing', 'ready', 'confirmed'];
+const GAMME_STATUSES = ['pending', 'paid', 'preparing', 'ready', 'confirmed'];
 
 function formatDateFr(date: Date): string {
   return date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
