@@ -25,6 +25,7 @@ export default function RetraitsGamme() {
     return d;
   });
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
+  const [unscheduled, setUnscheduled] = useState<OrderWithItems[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchOrders = useCallback(async () => {
@@ -47,7 +48,20 @@ export default function RetraitsGamme() {
     setLoading(false);
   }, [selectedDate]);
 
-  useEffect(() => { fetchOrders(); }, [fetchOrders]);
+  // Commandes gamme sans date de retrait (à planifier)
+  const fetchUnscheduled = useCallback(async () => {
+    const { data, error } = await (supabase as any)
+      .from('orders')
+      .select('*, order_items(*)')
+      .eq('order_type', 'gamme')
+      .in('status', GAMME_STATUSES)
+      .is('scheduled_pickup_date', null)
+      .order('created_at', { ascending: false });
+
+    if (!error) setUnscheduled(data ?? []);
+  }, []);
+
+  useEffect(() => { fetchOrders(); fetchUnscheduled(); }, [fetchOrders, fetchUnscheduled]);
 
   useEffect(() => { document.title = 'Retraits Gamme — Admin PessÓra'; }, []);
 
@@ -108,14 +122,61 @@ export default function RetraitsGamme() {
 
       {/* Liste des retraits */}
       <div className="p-4 md:p-6 max-w-3xl mx-auto">
+
+        {/* À planifier */}
+        {unscheduled.length > 0 && (
+          <div className="mb-8">
+            <div className="mb-4 flex items-center gap-2">
+              <span className="inline-block h-2 w-2 rounded-full bg-amber-400" />
+              <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-amber-400/80">
+                {unscheduled.length} commande{unscheduled.length > 1 ? 's' : ''} &agrave; planifier
+              </p>
+            </div>
+            <div className="space-y-3">
+              {unscheduled.map((order) => {
+                const items = order.order_items ?? [];
+                return (
+                  <div key={order.id} className="rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.08] p-5 md:p-6 border border-amber-500/20">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h3 className="text-lg font-bold mb-1">{order.client_name || 'Client'}</h3>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-white/45">
+                          {order.client_phone && (
+                            <span className="flex items-center gap-1.5"><Phone size={13} strokeWidth={1.3} />{order.client_phone}</span>
+                          )}
+                          <span>Pas de date de retrait</span>
+                          <span className="font-mono text-xs text-white/25">#{order.id.slice(0, 8)}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5 mb-5">
+                      {items.map((item, i) => (
+                        <div key={item.id ?? i} className="flex justify-between text-sm">
+                          <span className="text-white/70">{item.quantity}&times; {item.product_name}</span>
+                          <span className="tabular-nums text-white/50">{(item.price_at_time * item.quantity).toFixed(2).replace('.', ',')}&euro;</span>
+                        </div>
+                      ))}
+                      <div className="flex justify-between border-t border-white/[0.08] pt-2 mt-2">
+                        <span className="text-sm font-medium text-white/60">Total</span>
+                        <span className="text-sm font-bold tabular-nums">{order.total.toFixed(2).replace('.', ',')}&euro;</span>
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-amber-400/60">Choisissez une date de retrait et d&eacute;placez-la dans la section du jour.</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <p className="text-center text-white/30 text-sm py-12">Chargement…</p>
-        ) : orders.length === 0 ? (
+        ) : orders.length === 0 && unscheduled.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16">
             <Package size={48} strokeWidth={1} className="text-white/10 mb-4" />
-            <p className="text-white/30 text-sm">Aucun retrait prévu ce jour</p>
+            <p className="text-white/30 text-sm">Aucun retrait pr&eacute;vu</p>
           </div>
-        ) : (
+        ) : orders.length > 0 && (
           <AnimatePresence mode="wait">
             <div className="space-y-4">
               {orders.map((order) => {
