@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Clock, CreditCard, ChefHat, CheckCircle, Package, UserPlus, Sparkles, Copy, Check, CalendarCheck, PartyPopper, MapPin } from 'lucide-react';
 import { PageShell } from '../components/layout/PageShell';
 import { supabase } from '../lib/supabaseClient';
+import { useAuth } from '../contexts/AuthContext';
 import type { OrderWithItems } from '../hooks/useOrders';
 
 const BAR_STEPS = [
@@ -74,7 +75,11 @@ export default function SuiviCommande() {
           if (payload.new.id !== order.id) return;
           setOrder((prev) => (prev ? { ...prev, ...payload.new } as OrderWithItems : prev));
         }).subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const interval = setInterval(async () => {
+      const { data } = await (supabase as any).from('orders').select('*, order_items(*)').eq('id', order.id).single();
+      if (data) setOrder(data as OrderWithItems);
+    }, 5000);
+    return () => { supabase.removeChannel(channel); clearInterval(interval); };
   }, [order?.id]);
 
   if (loading) {
@@ -109,7 +114,8 @@ export default function SuiviCommande() {
   const currentIdx = STEPS.findIndex((s) => s.key === order.status);
   const items = order.order_items ?? [];
   const itemNames = items.map((it) => `${it.quantity}× ${it.product_name}`).join(', ');
-  const isGuest = !!token;
+  const { isAuthenticated } = useAuth();
+  const isGuest = !!token && !isAuthenticated;
   const isDone = order.status === 'completed';
   const CurrentIcon = currentIdx >= 0 && currentIdx < STEPS.length ? STEPS[currentIdx].icon : Package;
 
