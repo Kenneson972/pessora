@@ -11,17 +11,18 @@ import { oraMemberUnitPrice } from '../../lib/oraPricing';
 interface Props {
   item: MenuItem | null;
   onClose: () => void;
+  initialSize?: 'small' | 'medium' | 'large';
 }
 
 const focusRing =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sapin/30 focus-visible:ring-offset-2';
 
-export function DrinkOptionsModal({ item, onClose }: Props) {
+export function DrinkOptionsModal({ item, onClose, initialSize = 'medium' }: Props) {
   const addLine = useCart((s) => s.addLine);
   const [selectedMilk, setSelectedMilk] = useState(milkOptions[0]?.id ?? 'avoine');
   const [selectedBoosters, setSelectedBoosters] = useState<string[]>([]);
   const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState<'small' | 'medium' | 'large'>('medium');
+  const [selectedSize, setSelectedSize] = useState<'small' | 'medium' | 'large'>(initialSize);
   const [justAdded, setJustAdded] = useState(false);
   const { isOraPlus, effectiveUnitPrice } = useIsOraPlus();
 
@@ -30,7 +31,7 @@ export function DrinkOptionsModal({ item, onClose }: Props) {
       setSelectedMilk(milkOptions[0]?.id ?? 'avoine');
       setSelectedBoosters([]);
       setQuantity(1);
-      setSelectedSize('medium');
+      setSelectedSize(initialSize);
       setJustAdded(false);
     }
   }, [item?.id]);

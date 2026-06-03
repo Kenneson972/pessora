@@ -373,7 +373,7 @@ const Menu = () => {
         </div>
       </div>
 
-      <DrinkOptionsModal item={optionsItem} onClose={() => setOptionsItem(null)} />
+      <DrinkOptionsModal item={optionsItem} onClose={() => setOptionsItem(null)} initialSize={optionsItem ? selectedSizes[optionsItem.id] : undefined} />
 
       {/* Bilan CTA — fond large avec contenu contraint */}
       <div className="bg-surface-muted px-4 md:px-10 lg:px-[72px]">
