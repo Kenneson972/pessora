@@ -85,14 +85,13 @@ export default function CommandeAnnulee() {
               Aucun montant n'a été débité. Vous pouvez reprendre votre panier à tout moment.
             </p>
             <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-              <button
-                type="button"
-                onClick={() => navigate(-1)}
+              <Link
+                to="/menu"
                 className="inline-flex h-12 min-h-12 items-center justify-center gap-2 rounded-full border border-noir/15 px-8 text-[10px] font-normal uppercase tracking-[0.1em] text-black/55 transition-colors hover:border-noir/30 hover:text-black"
               >
                 <ArrowLeft size={14} strokeWidth={1.3} aria-hidden />
-                Retour
-              </button>
+                Retour au menu
+              </Link>
               <Link
                 to="/menu"
                 className="inline-flex h-12 min-h-12 items-center justify-center rounded-full bg-sapin px-8 text-[10px] font-normal uppercase tracking-[0.12em] text-white transition-colors hover:bg-sapin/85"
