@@ -48,17 +48,19 @@ export function PickupTimePicker({ businessHours, value, onChange }: PickupTimeP
       const range = getTodayRange(businessHours);
       if (!range) { setSlots([]); return; }
 
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
       const result: Slot[] = [];
 
-      const startMinutes = range.start * 60;
-      const endMinutes = range.end * 60;
+      const startMinutes = Math.ceil(range.start * 60 / SLOT_INTERVAL) * SLOT_INTERVAL;
+      const endMinutes = range.end * 60 - 15;
 
       for (let m = startMinutes; m <= endMinutes; m += SLOT_INTERVAL) {
         const h = Math.floor(m / 60);
         const min = m % 60;
         const label = `${h}h${min > 0 ? min : ''}`;
         const valueStr = `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
-        const disabled = false; // désactivé pour tests de paiement
+        const disabled = (h * 60 + min) <= currentMinutes + 10;
         result.push({ label, value: valueStr, disabled });
       }
       setSlots(result);
