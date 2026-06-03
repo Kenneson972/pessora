@@ -48,8 +48,15 @@ export function productRowToMenuItem(p: Product): MenuItem | null {
   }
   const rawBadges = p.badges ?? [];
   const badges = rawBadges.filter((b): b is NonNullable<MenuItem['badges']>[number] =>
-    b === 'vegan' || b === 'glutenfree' || b === 'vitamins'
-  );
+    b === 'vegan' || b === 'glutenfree' || b === 'vitamins' || b === 'nouveaute' || b === 'coup_de_coeur'
+  ) as NonNullable<MenuItem['badges']>[number][];
+  // carousel_badge admin (Nouveauté / Coup de cœur) → badge affiché sur la carte
+  const cb = p.carousel_badge;
+  if (cb === 'nouveaute' && !badges.includes('nouveaute')) {
+    (badges as string[]).push('nouveaute');
+  } else if (cb === 'coup-de-coeur' && !badges.includes('coup_de_coeur')) {
+    (badges as string[]).push('coup_de_coeur');
+  }
   return {
     id: p.slug ?? p.id,
     name: p.name,
