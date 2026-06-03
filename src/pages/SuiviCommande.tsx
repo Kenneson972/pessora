@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Clock, CreditCard, ChefHat, CheckCircle, Package, UserPlus, Sparkles } from 'lucide-react';
+import { Clock, CreditCard, ChefHat, CheckCircle, Package, UserPlus, Sparkles, Copy, Check } from 'lucide-react';
 import { PageShell } from '../components/layout/PageShell';
 import { supabase } from '../lib/supabaseClient';
 import type { OrderWithItems } from '../hooks/useOrders';
@@ -136,7 +136,18 @@ export default function SuiviCommande() {
   const itemNames = items.map((it) => `${it.quantity}× ${it.product_name}`).join(', ');
   const isGuest = !!token;
   const isDone = order.status === 'completed';
+  const [copied, setCopied] = useState(false);
   const CurrentIcon = currentIdx >= 0 && currentIdx < STEPS.length ? STEPS[currentIdx].icon : Package;
+
+  const copyTrackingLink = () => {
+    const url = token
+      ? `${window.location.origin}/suivi?token=${token}`
+      : `${window.location.origin}/suivi?order=${order.id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {});
+  };
 
   return (
     <div className="min-h-screen bg-surface-warm" style={{ backgroundImage: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(30,53,41,0.04), transparent 60%)' }}>
@@ -226,9 +237,17 @@ export default function SuiviCommande() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.45 }}
-              className="mt-1 font-mono text-[11px] text-black/50"
+              className="mt-1 flex items-center justify-center gap-2 font-mono text-[11px] text-black/50"
             >
               N° {order.id.slice(0, 8)}
+              <button
+                onClick={copyTrackingLink}
+                className="inline-flex items-center gap-1 rounded-full border border-noir/[0.1] px-2 py-0.5 text-[9px] text-black/40 hover:text-black hover:border-noir/25 transition-colors"
+                aria-label="Copier le lien de suivi"
+              >
+                {copied ? <Check size={11} strokeWidth={1.5} className="text-sapin" /> : <Copy size={11} strokeWidth={1.5} />}
+                {copied ? 'Copié' : 'Copier le lien'}
+              </button>
             </motion.p>
 
             {!isDone && order.status !== 'cancelled' && (
