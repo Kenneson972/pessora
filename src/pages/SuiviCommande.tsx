@@ -260,7 +260,6 @@ export default function SuiviCommande() {
 
             <div className="space-y-0" role="list" aria-label="Étapes de la commande">
               {STEPS.map((step, i) => {
-                const isActive = i <= currentIdx;
                 const isCurrent = i === currentIdx;
                 const isPast = i < currentIdx;
                 const StepIcon = step.icon;

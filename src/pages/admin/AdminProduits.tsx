@@ -444,7 +444,7 @@ const AdminProduits = () => {
     }
   }, [showForm]);
 
-  const editorMode = editProduct ? 'edit' : 'create';
+
   const editorTitle = editProduct
     ? `Modifier · ${editProduct.name ?? ''}`
     : duplicateFrom

@@ -19,7 +19,8 @@ type AuditAction =
   | 'gamme.delete'
   | 'slot.create'
   | 'slot.update'
-  | 'slot.delete';
+  | 'slot.delete'
+  | 'order.delete';
 
 interface AuditEntry {
   action: AuditAction;

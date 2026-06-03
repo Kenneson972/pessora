@@ -16,7 +16,7 @@ const AdminCommandes = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [orderType, setOrderType] = useState<OrderTypeFilter>('all');
   const [soundMuted, setSoundMuted] = useState(isMuted());
-  const { orders, loading, kpis, newOrderAlert, clearAlert, paidAlert, clearPaidAlert } = useAdminOrders(filterStatus);
+  const { orders, loading, newOrderAlert, clearAlert, paidAlert, clearPaidAlert } = useAdminOrders(filterStatus);
 
   const kpisFiltered = useMemo(() => ({
     paid: orders.filter((o) => o.status === 'paid' && (orderType === 'all' || o.order_type === orderType)).length,
