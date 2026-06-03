@@ -21,6 +21,7 @@ export default function SuiviCommande() {
   const [order, setOrder] = useState<OrderWithItems | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     document.title = 'Suivi commande — PessÓra';
@@ -136,7 +137,6 @@ export default function SuiviCommande() {
   const itemNames = items.map((it) => `${it.quantity}× ${it.product_name}`).join(', ');
   const isGuest = !!token;
   const isDone = order.status === 'completed';
-  const [copied, setCopied] = useState(false);
   const CurrentIcon = currentIdx >= 0 && currentIdx < STEPS.length ? STEPS[currentIdx].icon : Package;
 
   const copyTrackingLink = () => {
