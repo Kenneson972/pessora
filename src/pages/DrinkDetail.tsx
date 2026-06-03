@@ -66,7 +66,7 @@ const DrinkDetail = () => {
       <div className="min-h-screen bg-white">
         <PageShell className="py-12 lg:py-20">
           <div className="mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-2">
-            <div className="aspect-[3/4] animate-pulse rounded-[2px] bg-gray-100" />
+            <div className="aspect-[2/3] animate-pulse rounded-[2px] bg-gray-100" />
             <div className="space-y-5 pt-4">
               <div className="h-12 w-3/4 animate-pulse rounded-[2px] bg-gray-100" />
               <div className="h-4 w-full animate-pulse rounded-[2px] bg-gray-100" />
@@ -211,7 +211,7 @@ const DrinkDetail = () => {
 
           {/* LEFT — Product Visual */}
           <div className="mx-auto w-full max-w-lg space-y-6 lg:mx-0 lg:max-w-none">
-            <div className="relative mx-auto flex aspect-square w-full max-w-md items-center justify-center overflow-hidden rounded-[2px] bg-surface-product-well sm:max-w-lg lg:mx-0 lg:max-w-none">
+            <div className="relative mx-auto flex aspect-[2/3] w-full max-w-md items-center justify-center overflow-hidden rounded-[2px] bg-surface-product-well sm:max-w-lg lg:mx-0 lg:max-w-none">
               {drink.image_url ? (
                 <img
                   src={drink.image_url}
@@ -730,7 +730,7 @@ const DrinkDetail = () => {
                 const CrossIcon = CATEGORY_HERO_ICONS[item.category];
                 return (
                 <Link key={item.id} to={`/menu/${item.id}`} className="group block">
-                  <div className="bg-surface-muted rounded-[2px] aspect-[3/4] flex items-center justify-center mb-5 overflow-hidden relative">
+                  <div className="bg-surface-muted rounded-[2px] aspect-[2/3] flex items-center justify-center mb-5 overflow-hidden relative">
                     {item.image_url ? (
                       <img
                         src={item.image_url}
