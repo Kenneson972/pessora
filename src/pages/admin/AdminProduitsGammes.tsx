@@ -5,10 +5,12 @@ import { Tabs } from '@heroui/react';
 import { DashPageHeader } from '../../components/dashboard/primitives';
 import AdminProduits from './AdminProduits';
 import AdminGammes from './AdminGammes';
+import { AdminBoosters } from '../../components/admin/AdminBoosters';
 
 const TABS = [
   { id: 'produits', label: 'Produits' },
   { id: 'gammes', label: 'Gammes' },
+  { id: 'boosters', label: 'Boosters' },
 ] as const;
 
 type TabId = (typeof TABS)[number]['id'];
@@ -44,6 +46,9 @@ const AdminProduitsGammes = () => {
         </Tabs.Panel>
         <Tabs.Panel id="gammes">
           <AdminGammes />
+        </Tabs.Panel>
+        <Tabs.Panel id="boosters">
+          <AdminBoosters />
         </Tabs.Panel>
       </Tabs>
     </div>

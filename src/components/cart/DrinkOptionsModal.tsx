@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button, cn } from '@heroui/react';
 import { Sheet } from '@heroui-pro/react';
 import { Minus, Plus, Check } from 'lucide-react';
-import { boosters, milkOptions, type MenuItem } from '../../data/menuData';
+import { milkOptions, boosters as fallbackBoosters, type MenuItem, type Booster } from '../../data/menuData';
+import { supabase } from '../../lib/supabaseClient';
 import { useCart } from '../../store/cartStore';
 import { useIsOraPlus } from '../../hooks/useIsOraPlus';
 import { buildDrinkCartOptions } from '../../lib/cartLine';
@@ -24,7 +25,23 @@ export function DrinkOptionsModal({ item, onClose, initialSize = 'medium' }: Pro
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState<'small' | 'medium' | 'large'>(initialSize);
   const [justAdded, setJustAdded] = useState(false);
+  const [boosters, setBoosters] = useState<Booster[]>(fallbackBoosters);
   const { isOraPlus, effectiveUnitPrice } = useIsOraPlus();
+
+  useEffect(() => {
+    if (!item) return;
+    (supabase as any)
+      .from('boosters')
+      .select('*')
+      .eq('active', true)
+      .contains('categories', [item.category])
+      .order('sort_order')
+      .then(({ data }: { data: Booster[] | null }) => {
+        if (data?.length) setBoosters(data);
+        else setBoosters(fallbackBoosters);
+      })
+      .catch(() => setBoosters(fallbackBoosters));
+  }, [item?.category]);
 
   useEffect(() => {
     if (item) {
