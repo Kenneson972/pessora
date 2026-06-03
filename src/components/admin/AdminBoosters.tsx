@@ -18,7 +18,7 @@ const ALL_CATEGORIES = [
   { key: 'shakes', label: 'Shakes' },
 ];
 
-const EMPTY: Omit<Booster, 'id'> = { name: '', price: 100, description: '', categories: [], active: true, sort_order: 0 };
+const EMPTY: Omit<Booster, 'id'> = { name: '', price: 1, description: '', categories: [], active: true, sort_order: 0 };
 
 export function AdminBoosters() {
   const [boosters, setBoosters] = useState<Booster[]>([]);
@@ -45,7 +45,7 @@ export function AdminBoosters() {
     setSaving(true);
     const payload = {
       name: edit.name.trim(),
-      price: edit.price ?? 100,
+      price: edit.price ?? 1,
       description: edit.description || null,
       categories: edit.categories ?? [],
       active: edit.active ?? true,
@@ -137,7 +137,7 @@ function BoosterForm({ edit, setEdit, saving, onSave, onCancel, toggleCategory }
         className="w-full rounded-[2px] border border-noir/[0.12] px-3 py-2 text-[13px]" />
       <div className="flex gap-4 items-center">
         <label className="text-[11px] text-black/50">Prix (€) :</label>
-        <input type="number" value={edit.price ?? 100} onChange={e => setEdit({ ...edit, price: parseInt(e.target.value) || 0 })}
+        <input type="number" value={edit.price ?? 1} onChange={e => setEdit({ ...edit, price: parseInt(e.target.value) || 0 })}
           className="w-20 rounded-[2px] border border-noir/[0.12] px-3 py-2 text-[13px]" />
       </div>
       <div>
