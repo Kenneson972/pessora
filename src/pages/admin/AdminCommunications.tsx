@@ -66,6 +66,7 @@ const AdminCommunications = () => {
   const [commConfirmLoading, setCommConfirmLoading] = useState(false);
   const [nlSubject, setNlSubject] = useState('');
   const [nlBody, setNlBody] = useState('');
+  const [nlImage, setNlImage] = useState('');
   const [nlStatus, setNlStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [nlLastSent, setNlLastSent] = useState<{ subject: string; count: number; at: string } | null>(null);
   const [nlConfirmOpen, setNlConfirmOpen] = useState(false);
@@ -83,7 +84,7 @@ const AdminCommunications = () => {
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-          body: JSON.stringify({ subject: nlSubject.trim(), body: nlBody.trim() }),
+          body: JSON.stringify({ subject: nlSubject.trim(), body: nlBody.trim(), image_url: nlImage.trim() || undefined }),
         },
       );
       const json = await res.json();
@@ -92,6 +93,7 @@ const AdminCommunications = () => {
       setNlLastSent({ subject: nlSubject.trim(), count: json.count ?? subscribers.length, at: new Date().toISOString() });
       setNlSubject('');
       setNlBody('');
+      setNlImage('');
     } catch {
       setNlStatus('error');
     }
@@ -517,6 +519,23 @@ const AdminCommunications = () => {
                   disabled={nlStatus === 'sending'}
                   className="w-full rounded-[2px] border border-noir/[0.12] bg-surface-muted px-4 py-2.5 text-[13px] text-black placeholder:text-black/30 outline-none focus:border-noir/30"
                 />
+              </div>
+              <div>
+                <label htmlFor="nl-image" className="mb-1 block text-[9px] font-normal uppercase tracking-[0.18em] text-black/40">
+                  Image (URL, optionnel)
+                </label>
+                <input
+                  id="nl-image"
+                  type="url"
+                  value={nlImage}
+                  onChange={(e) => setNlImage(e.target.value)}
+                  placeholder="https://…"
+                  disabled={nlStatus === 'sending'}
+                  className="w-full rounded-[2px] border border-noir/[0.12] bg-surface-muted px-4 py-2.5 text-[13px] text-black placeholder:text-black/30 outline-none focus:border-noir/30"
+                />
+                {nlImage && (
+                  <img src={nlImage} alt="Aperçu" className="mt-2 max-h-32 rounded-[2px] object-cover" />
+                )}
               </div>
               <div>
                 <label htmlFor="nl-body" className="mb-1 block text-[9px] font-normal uppercase tracking-[0.18em] text-black/40">
