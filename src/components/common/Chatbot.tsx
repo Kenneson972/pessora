@@ -24,7 +24,7 @@ interface Message {
 }
 
 const QUICK_SUGGESTIONS = {
-  default: [‘Voir le menu’, ‘Horaires d’ouverture’, ‘Différence entre les boissons’, ‘Prendre un bilan’],
+  default: ['Voir le menu', 'Horaires d\'ouverture', 'Différence entre les boissons', 'Prendre un bilan'],
   menu: ['Wellness (Douceur)', 'Énergie Drink (Focus)', 'Shakes protéinés (Sport)', 'Prix des boissons'],
   health: ['Combien de protéines ?', 'Végétalien ?', 'Calories ?', 'Ingrédients'],
 };
@@ -287,7 +287,7 @@ const Chatbot = ({ embedded = false }: ChatbotProps) => {
   const getNextSuggestions = (response: string): string[] => {
     const lower = response.toLowerCase();
     if (lower.includes('bilan') || lower.includes('accompagnement personnalisé')) {
-      return ['Prendre un bilan', 'Voir le menu', 'Horaires d'ouverture'];
+      return ['Prendre un bilan', 'Voir le menu', 'Horaires d\'ouverture'];
     }
     if (lower.includes('menu') || lower.includes('gamme')) return QUICK_SUGGESTIONS.menu;
     if (lower.includes('protéine') || lower.includes('kcal')) return QUICK_SUGGESTIONS.health;
