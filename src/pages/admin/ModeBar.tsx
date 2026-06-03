@@ -42,7 +42,7 @@ export default function ModeBar() {
 
   // Filtrer : seulement paid + preparing
   const orders = localOrders.filter(
-    (o) => o.order_type === 'bar' && (o.status === 'paid' || o.status === 'preparing')
+    (o) => o.order_type === 'bar' && (o.status === 'paid' || o.status === 'preparing' || o.status === 'ready')
   );
 
   const [currentIndex, setCurrentIndex] = useState(0);

@@ -364,19 +364,17 @@ const Dashboard = () => {
                     const pickupLabel = order.pickup_time
                       ? new Date(order.pickup_time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
                       : null;
-                    const statusColor =
-                      order.status === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                      order.status === 'paid' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
-                      order.status === 'preparing' ? 'bg-sky-50 text-sky-700 border border-sky-200' :
-                      order.status === 'ready' ? 'bg-sapin/8 text-sapin border border-sapin/20' :
-                      'bg-noir/[0.05] text-black/45';
-                    const statusLabel =
-                      order.status === 'pending' ? 'En attente' :
-                      order.status === 'paid' ? 'Payée' :
-                      order.status === 'preparing' ? 'En préparation' :
-                      order.status === 'ready' ? 'Prêt' :
-                      order.status === 'completed' ? 'Retiré' :
-                      order.status === 'cancelled' ? 'Annulé' : order.status;
+                    const STATUS_MAP: Record<string, { color: string; label: string }> = {
+                      pending: { color: 'bg-amber-50 text-amber-700 border border-amber-200', label: 'En attente' },
+                      paid: { color: 'bg-blue-50 text-blue-700 border border-blue-200', label: 'Payée' },
+                      scheduled: { color: 'bg-purple-50 text-purple-700 border border-purple-200', label: 'Planifiée' },
+                      preparing: { color: 'bg-sky-50 text-sky-700 border border-sky-200', label: 'En préparation' },
+                      ready: { color: 'bg-sapin/8 text-sapin border border-sapin/20', label: 'Prêt' },
+                      completed: { color: 'bg-noir/[0.05] text-black/45', label: 'Retiré' },
+                      cancelled: { color: 'bg-red-50 text-red-600 border border-red-200', label: 'Annulé' },
+                    };
+                    const statusColor = STATUS_MAP[order.status]?.color ?? 'bg-noir/[0.05] text-black/45';
+                    const statusLabel = STATUS_MAP[order.status]?.label ?? order.status;
                     return (
                       <div
                         key={order.id}

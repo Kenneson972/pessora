@@ -73,23 +73,16 @@ export function useOrders() {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'orders', filter: `user_id=eq.${user.id}` },
-        (payload) => {
-          const newOrder = payload.new as OrderWithItems;
-          if (newOrder.user_id !== user.id) return; // safety check
-          setOrders((prev) => {
-            if (prev.some((o) => o.id === newOrder.id)) return prev;
-            return [newOrder, ...prev];
-          });
-        }
+        () => { fetchOrders(); }
       )
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'orders', filter: `user_id=eq.${user.id}` },
         (payload) => {
-          const updated = payload.new as OrderWithItems;
-          if (updated.user_id !== user.id) return; // safety check
+          const updated = payload.new as Record<string, unknown>;
+          if (updated.user_id !== user.id) return;
           setOrders((prev) =>
-            prev.map((o) => (o.id === updated.id ? { ...o, ...updated } as OrderWithItems : o))
+            prev.map((o) => (o.id === updated.id ? { ...o, ...updated, order_items: o.order_items } as OrderWithItems : o))
           );
         }
       )

@@ -5,14 +5,15 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { verifyAdmin } from '../_shared/verifyAdmin.ts'
 
+function getCorsHeaders(origin: string | null): Record<string, string> {
+  const allowed = Deno.env.get("ALLOWED_ORIGIN") ?? "https://www.pessora.fr";
+  const isLocalhost = origin != null && (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'));
+  return { 'Access-Control-Allow-Origin': isLocalhost ? origin : allowed, 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' };
+}
+
 const BodySchema = z.object({
   stripe_subscription_id: z.string().min(1),
 })
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': Deno.env.get("ALLOWED_ORIGIN") ?? "https://www.pessora.fr",
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: getCorsHeaders(req.headers.get("origin")) })

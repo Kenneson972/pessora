@@ -116,6 +116,7 @@ const History = () => {
                       const st = order.status;
                       if (st === 'pending') return <span className="text-[8px] font-normal uppercase tracking-[0.15em] text-amber-700 border border-amber-200 bg-amber-50 px-2.5 py-1 rounded-[2px]">Paiement en attente</span>;
                       if (st === 'paid') return <span className="text-[8px] font-normal uppercase tracking-[0.15em] text-blue-700 border border-blue-200 bg-blue-50 px-2.5 py-1 rounded-[2px]">Payée</span>;
+                      if (st === 'scheduled') return <span className="text-[8px] font-normal uppercase tracking-[0.15em] text-purple-700 border border-purple-200 bg-purple-50 px-2.5 py-1 rounded-[2px]">Planifiée</span>;
                       if (st === 'preparing') return <span className="text-[8px] font-normal uppercase tracking-[0.15em] text-sky-700 border border-sky-200 bg-sky-50 px-2.5 py-1 rounded-[2px]">En préparation</span>;
                       if (st === 'ready') return <span className="text-[8px] font-normal uppercase tracking-[0.15em] text-sapin border border-sapin/20 bg-sapin/8 px-2.5 py-1 rounded-[2px]">Prêt</span>;
                       if (st === 'completed') return <span className="text-[8px] font-normal uppercase tracking-[0.15em] text-black/45 border border-black/10 bg-noir/[0.04] px-2.5 py-1 rounded-[2px]">Retiré</span>;

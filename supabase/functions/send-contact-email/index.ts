@@ -3,10 +3,11 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { z } from 'npm:zod@3';
 import { checkRateLimit } from '../_shared/rate-limiter.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': Deno.env.get("ALLOWED_ORIGIN") ?? "https://www.pessora.fr",
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+function getCorsHeaders(origin: string | null): Record<string, string> {
+  const allowed = Deno.env.get("ALLOWED_ORIGIN") ?? "https://www.pessora.fr";
+  const isLocalhost = origin != null && (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'));
+  return { 'Access-Control-Allow-Origin': isLocalhost ? origin : allowed, 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' };
+}
 
 const ContactSchema = z.object({
   name: z.string().min(1, 'Nom requis'),

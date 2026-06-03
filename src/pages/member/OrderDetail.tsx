@@ -1,5 +1,5 @@
 import { Link, useParams, useLocation } from 'react-router-dom';
-import { ArrowLeft, Calendar, CupSoda, Clock, CreditCard, ChefHat, CheckCircle, Package } from 'lucide-react';
+import { ArrowLeft, Calendar, CupSoda, Clock, CreditCard, ChefHat, CheckCircle, Package, CalendarCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useOrders } from '../../hooks/useOrders';
 import { DashPageHeader } from '../../components/dashboard/primitives';
@@ -9,6 +9,7 @@ import { MemberPageSkeleton } from '../../components/member/MemberPageSkeleton';
 const STEPS = [
   { key: 'pending', label: 'Commande reçue', icon: Clock },
   { key: 'paid', label: 'Paiement confirmé', icon: CreditCard },
+  { key: 'scheduled', label: 'Planifiée', icon: CalendarCheck },
   { key: 'preparing', label: 'En préparation', icon: ChefHat },
   { key: 'ready', label: 'Prête !', icon: CheckCircle },
   { key: 'completed', label: 'Retirée', icon: Package },
