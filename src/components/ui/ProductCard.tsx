@@ -51,7 +51,7 @@ export const ProductCard = ({
         featured ? 'min-h-[280px] md:min-h-0' : '',
         wellClass,
       )}
-      style={{ aspectRatio: featured ? '3 / 4' : compact ? '4 / 3' : '3 / 4' }}
+      style={{ aspectRatio: featured ? '3 / 4' : compact ? '1 / 1' : '3 / 4' }}
     >
       {image ? (
         <img
