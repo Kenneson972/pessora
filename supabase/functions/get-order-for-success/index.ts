@@ -29,7 +29,7 @@ serve(async (req) => {
 
     const { data, error } = await supabase
       .from('orders')
-      .select('id, access_token, total, status, client_name')
+      .select('id, access_token, total, status, client_name, order_type')
       .eq('stripe_session_id', stripe_session_id)
       .single();
 

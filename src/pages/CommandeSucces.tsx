@@ -15,6 +15,7 @@ export default function CommandeSucces() {
   const sessionId = searchParams.get('session_id');
   const [token, setToken] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [orderType, setOrderType] = useState<string | null>(null);
 
   const clearCartRef = useRef(clearCart);
   clearCartRef.current = clearCart;
@@ -37,6 +38,7 @@ export default function CommandeSucces() {
       });
       if (cancelled || !data) return;
       if (data.access_token) setToken(data.access_token);
+      if (data.order_type) setOrderType(data.order_type);
       if (data.id) {
         setOrderId(data.id);
         // PATCH : passer la commande de pending → paid (idempotent)
@@ -87,9 +89,19 @@ export default function CommandeSucces() {
                 N° {token.slice(0, 8)}
               </p>
             )}
-            <p className="mx-auto mb-10 max-w-sm text-[13px] font-light leading-relaxed text-black/50">
-              Votre paiement a été validé. Votre commande est en cours de préparation.
-            </p>
+            {orderType === 'gamme' ? (
+              <div className="mx-auto mb-10 max-w-sm rounded-[2px] border border-sapin/15 bg-sapin-subtle p-4 text-center">
+                <p className="text-[18px] mb-2">🥗</p>
+                <p className="text-[13px] font-medium text-black">Votre commande gamme est confirmée !</p>
+                <p className="mt-2 text-[12px] font-light leading-relaxed text-black/50">
+                  L&apos;équipe PessÓra va planifier votre retrait. Vous recevrez la date et l&apos;heure sous 24h.
+                </p>
+              </div>
+            ) : (
+              <p className="mx-auto mb-10 max-w-sm text-[13px] font-light leading-relaxed text-black/50">
+                Votre paiement a été validé. Votre commande est en cours de préparation.
+              </p>
+            )}
             <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
               {(token || orderId) && (
                 <Link

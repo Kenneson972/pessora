@@ -37,7 +37,7 @@ serve(async (req) => {
       });
     }
 
-    const validStatuses = ['paid', 'cancelled'];
+    const validStatuses = ['paid', 'scheduled', 'preparing', 'ready', 'completed', 'cancelled'];
     if (!status || !validStatuses.includes(status)) {
       return new Response(JSON.stringify({ error: 'status invalide' }), {
         status: 400,

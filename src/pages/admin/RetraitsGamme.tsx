@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, ChevronLeft, ChevronRight, Package, Phone, Check, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Package, Phone, Check, AlertTriangle, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { motionInitial, motionTransition } from '../../lib/motionReveal';
 import { supabase } from '../../lib/supabaseClient';
 import { auditLog } from '../../lib/auditLog';
 import type { OrderWithItems } from '../../hooks/useOrders';
 
-const GAMME_STATUSES = ['pending', 'paid', 'preparing', 'ready', 'confirmed'];
+const GAMME_STATUSES = ['paid', 'scheduled', 'preparing', 'ready'];
 
 function formatDateFr(date: Date): string {
   return date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -225,76 +225,67 @@ export default function RetraitsGamme() {
         ) : orders.length > 0 && (
           <AnimatePresence mode="wait">
             <div className="space-y-4">
-              {orders.map((order) => {
+              {[...orders].sort((a, b) => {
+                const prio: Record<string, number> = { ready: 0, preparing: 1, scheduled: 2, paid: 3 };
+                return (prio[a.status] ?? 99) - (prio[b.status] ?? 99);
+              }).map((order) => {
                 const items = order.order_items ?? [];
                 const overdue = order.scheduled_pickup_date && isPast(order.scheduled_pickup_date) && order.status !== 'completed';
                 const hasSpoon = items.some((it) => it.product_name.toLowerCase().includes('cuillère'));
 
+                const statusBadge = order.status === 'scheduled' ? '📅 Planifié'
+                  : order.status === 'preparing' ? '👨‍🍳 En préparation'
+                  : order.status === 'ready' ? '✅ Prête'
+                  : null;
+                const statusBorder = order.status === 'scheduled' ? 'border-blue-500/40'
+                  : order.status === 'preparing' ? 'border-orange-500/40'
+                  : order.status === 'ready' ? 'border-sapin/50'
+                  : '';
+
+                const handleStartPrep = async (id: string) => {
+                  await (supabase as any).from('orders').update({ status: 'preparing' }).eq('id', id);
+                  fetchOrders();
+                };
+                const handleMarkReady = async (id: string) => {
+                  await (supabase as any).from('orders').update({ status: 'ready' }).eq('id', id);
+                  fetchOrders();
+                };
+
                 return (
-                  <motion.div
-                    key={order.id}
-                    initial={motionInitial(reduceMotion, { opacity: 0, y: 12 })}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -12 }}
-                    transition={motionTransition(reduceMotion, { duration: 0.2 })}
-                    className={`rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.08] p-5 md:p-6 ${
-                      overdue ? 'border-2 border-amber-500/50' : ''
-                    }`}
-                  >
-                    {/* En-tête carte */}
+                  <motion.div key={order.id} initial={motionInitial(reduceMotion, { opacity: 0, y: 12 })} animate={{ opacity: 1, y: 0 }} exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -12 }} transition={motionTransition(reduceMotion, { duration: 0.2 })}
+                    className={`rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.08] p-5 md:p-6 ${statusBorder} ${overdue ? 'border-2 border-amber-500/50' : ''}`}>
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <h3 className="text-lg font-bold">{order.client_name || 'Client'}</h3>
-                          {overdue && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-0.5 text-[10px] font-medium text-amber-400">
-                              <AlertTriangle size={12} strokeWidth={1.5} />
-                              En retard
-                            </span>
-                          )}
+                          {statusBadge && <span className="inline-flex items-center gap-1 rounded-full bg-white/[0.06] px-2.5 py-0.5 text-[10px] font-medium text-white/70">{statusBadge}</span>}
+                          {overdue && <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-0.5 text-[10px] font-medium text-amber-400"><AlertTriangle size={12} strokeWidth={1.5} />En retard</span>}
                         </div>
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-white/45">
-                          {order.client_phone && (
-                            <span className="flex items-center gap-1.5">
-                              <Phone size={13} strokeWidth={1.3} />
-                              {order.client_phone}
-                            </span>
-                          )}
-                          <span>
-                            Retrait {order.scheduled_pickup_date ? formatTime(order.scheduled_pickup_date) : '—'}
-                          </span>
+                          {order.client_phone && <span className="flex items-center gap-1.5"><Phone size={13} strokeWidth={1.3} />{order.client_phone}</span>}
+                          <span>Retrait {order.scheduled_pickup_date ? formatTime(order.scheduled_pickup_date) : '—'}</span>
                           <span className="font-mono text-xs text-white/25">#{order.id.slice(0, 8)}</span>
                         </div>
                       </div>
                     </div>
-
-                    {/* Items */}
                     <div className="space-y-1.5 mb-5">
                       {items.map((item, i) => (
-                        <div key={item.id ?? i} className="flex justify-between text-sm">
-                          <span className="text-white/70">{item.quantity}× {item.product_name}</span>
-                          <span className="tabular-nums text-white/50">
-                            {(item.price_at_time * item.quantity).toFixed(2).replace('.', ',')}€
-                          </span>
-                        </div>
+                        <div key={item.id ?? i} className="flex justify-between text-sm"><span className="text-white/70">{item.quantity}× {item.product_name}</span><span className="tabular-nums text-white/50">{(item.price_at_time * item.quantity).toFixed(2).replace('.', ',')}€</span></div>
                       ))}
-                      {hasSpoon && (
-                        <p className="text-[11px] text-purple-400/70 mt-1">✓ Cuillère doseuse incluse</p>
-                      )}
-                      <div className="flex justify-between border-t border-white/[0.08] pt-2 mt-2">
-                        <span className="text-sm font-medium text-white/60">Total</span>
-                        <span className="text-sm font-bold tabular-nums">{order.total.toFixed(2).replace('.', ',')}€</span>
-                      </div>
+                      {hasSpoon && <p className="text-[11px] text-purple-400/70 mt-1">✓ Cuillère doseuse incluse</p>}
+                      <div className="flex justify-between border-t border-white/[0.08] pt-2 mt-2"><span className="text-sm font-medium text-white/60">Total</span><span className="text-sm font-bold tabular-nums">{order.total.toFixed(2).replace('.', ',')}€</span></div>
                     </div>
-
-                    {/* Action */}
-                    <button
-                      onClick={() => handleMarkPickedUp(order.id)}
-                      className="w-full flex items-center justify-center gap-2 min-h-[48px] bg-sapin hover:bg-sapin/85 active:bg-sapin/70 text-white rounded-2xl font-bold text-sm transition-colors"
-                    >
-                      <Check size={18} strokeWidth={2} />
-                      Marquer comme remis
-                    </button>
+                    <div className="flex flex-col gap-2">
+                      {order.status === 'scheduled' && (
+                        <button onClick={() => handleStartPrep(order.id)} className="w-full flex items-center justify-center gap-2 min-h-[48px] bg-orange-500/20 hover:bg-orange-500/30 text-orange-300 rounded-2xl font-bold text-sm transition-colors">👨‍🍳 Lancer la préparation</button>
+                      )}
+                      {order.status === 'preparing' && (
+                        <button onClick={() => handleMarkReady(order.id)} className="w-full flex items-center justify-center gap-2 min-h-[48px] bg-sapin hover:bg-sapin/85 text-white rounded-2xl font-bold text-sm transition-colors"><CheckCircle size={18} strokeWidth={2} /> Marquer comme prête</button>
+                      )}
+                      {order.status === 'ready' && (
+                        <button onClick={() => handleMarkPickedUp(order.id)} className="w-full flex items-center justify-center gap-2 min-h-[48px] bg-sapin hover:bg-sapin/85 text-white rounded-2xl font-bold text-sm transition-colors"><Check size={18} strokeWidth={2} /> Marquer comme remis</button>
+                      )}
+                    </div>
                   </motion.div>
                 );
               })}

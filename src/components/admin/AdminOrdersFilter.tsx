@@ -8,7 +8,7 @@ const FILTER_TABS: { key: OrderFilterStatus; label: string }[] = [
   { key: 'all', label: 'Toutes' },
   { key: 'pending', label: 'En cours' },
   { key: 'paid', label: 'En attente' },
-  { key: 'confirmed', label: 'Confirmées' },
+  { key: 'scheduled', label: 'Planifiées' },
   { key: 'preparing', label: 'En prépa' },
   { key: 'ready', label: 'Prêtes' },
   { key: 'completed', label: 'Terminées' },

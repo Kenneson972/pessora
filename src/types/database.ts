@@ -165,7 +165,7 @@ export interface Database {
           id: string
           user_id: string | null
           total: number
-          status: 'pending' | 'paid' | 'confirmed' | 'preparing' | 'ready' | 'completed' | 'cancelled'
+          status: 'pending' | 'paid' | 'scheduled' | 'preparing' | 'ready' | 'completed' | 'cancelled'
           order_type: 'bar' | 'gamme'
           scheduled_pickup_date: string | null
           pickup_time: string | null

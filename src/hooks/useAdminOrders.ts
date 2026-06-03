@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import type { OrderWithItems } from './useOrders';
 
-export type OrderFilterStatus = 'all' | 'pending' | 'paid' | 'confirmed' | 'preparing' | 'ready' | 'completed';
+export type OrderFilterStatus = 'all' | 'pending' | 'paid' | 'scheduled' | 'preparing' | 'ready' | 'completed';
 
 const POLL_INTERVAL = 10_000; // 10s — fallback si Realtime decroche (inspire de DALCIELO)
 
