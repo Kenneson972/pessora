@@ -88,8 +88,8 @@ export const ProductCard = ({
         <div className="flex flex-shrink-0 flex-col items-end gap-0.5">
           <span className="text-editorial-price whitespace-nowrap">{price}</span>
           {oraMemberHint && (
-            <span className="whitespace-nowrap text-[9px] font-light tracking-[0.04em] text-gold-dim">
-              Óra+ dès {oraMemberHint}
+            <span className="whitespace-nowrap text-[9px] font-normal tracking-[0.04em] text-gold-dim">
+              {oraMemberHint} avec Óra+
             </span>
           )}
         </div>

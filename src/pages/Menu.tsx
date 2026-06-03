@@ -10,8 +10,7 @@ import { ProductCard } from '../components/ui/ProductCard';
 import { categoryNames, type MenuItem } from '../data/menuData';
 import { useMenuCatalog } from '../hooks/useMenuCatalog';
 import { useFadeUpWhenVisible, useStaggerReveal } from '../lib/motionReveal';
-import { formatEurFr } from '../lib/oraPricing';
-import { useIsOraPlus } from '../hooks/useIsOraPlus';
+import { formatEurFr, oraMemberUnitPrice } from '../lib/oraPricing';
 import { OraPlusTeaserStrip } from '../components/common/OraPlusTeaserStrip';
 import { DrinkOptionsModal } from '../components/cart/DrinkOptionsModal';
 
@@ -73,7 +72,6 @@ const Menu = () => {
   const [optionsItem, setOptionsItem] = useState<MenuItem | null>(null);
   const { container: staggerContainer, item: staggerItem } = useStaggerReveal();
   const fadeCta = useFadeUpWhenVisible();
-  const { effectiveUnitPrice } = useIsOraPlus();
 
   const searchQuery = (searchParams.get('q') ?? '').trim();
   const isSearchMode = searchQuery.length > 0;
@@ -174,7 +172,7 @@ const Menu = () => {
           name={menuItem.name}
           macros={formatMacros(menuItem)}
           price={`${effectivePrice}€`}
-          oraMemberHint={formatEurFr(effectiveUnitPrice(effectivePrice))}
+          oraMemberHint={formatEurFr(oraMemberUnitPrice(effectivePrice))}
           icon={menuItem.icon}
           image={menuItem.image_url}
           linkTo={`/menu/${menuItem.id}`}
