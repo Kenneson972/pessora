@@ -28,7 +28,7 @@ export const ImageCard = ({
   bgVideoSrc,
   bgVideoSrcWebm,
   bgVideoPosterSrc,
-  aspectRatio = 'aspect-[2/3]',
+  aspectRatio = 'aspect-[3/4]',
   variant = 'light',
   onPress,
 }: ImageCardProps) => {

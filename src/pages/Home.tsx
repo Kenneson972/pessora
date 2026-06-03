@@ -215,7 +215,7 @@ const Home = () => {
                     ? publicAssetWithCache('videos/communaute-v2-poster.webp')
                     : undefined
                 }
-                aspectRatio="aspect-[2/3]"
+                aspectRatio="aspect-[3/2] md:aspect-[21/8]"
                 onPress={() => navigate(active.path)}
               />
             </div>
