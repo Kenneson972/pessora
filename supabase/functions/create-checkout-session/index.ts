@@ -170,7 +170,8 @@ async function createOrder(
 
   const orderItems = params.lines.map((item) => ({
     order_id: order.id,
-    product_id: item.dbProductId ?? (UUID_RE.test(item.productId) ? item.productId : null),
+    // FK product_id → products.id (bar uniquement). Pour gamme → null.
+    product_id: params.order_type === 'gamme' ? null : (item.dbProductId ?? (UUID_RE.test(item.productId) ? item.productId : null)),
     product_name: item.name,
     quantity: item.quantity,
     price_at_time: item.verifiedUnitPrice,
