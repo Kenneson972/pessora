@@ -26,6 +26,10 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Stripe non configuré' }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
+
     const raw = await req.json().catch(() => ({}))
     const parsed = BodySchema.safeParse(raw)
     if (!parsed.success) {

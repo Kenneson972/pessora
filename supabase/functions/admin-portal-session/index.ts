@@ -21,7 +21,6 @@ serve(async (req) => {
   try {
     const { isAdmin, error } = await verifyAdmin(req)
     if (!isAdmin) return error!
-    if (!authResult.ok) return authResult.response
 
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
     if (!stripeKey) {

@@ -43,7 +43,7 @@ export default function ScrollFrameHero({
         setLoading(false);
         setReady(false);
       };
-      img.src = `/frames/frame_${pad(1)}.jpg`;
+      img.src = `/frames/frame_${pad(1)}.webp`;
       return () => {
         cancelled = true;
       };
@@ -57,7 +57,7 @@ export default function ScrollFrameHero({
           resolve(true);
         };
         img.onerror = () => resolve(false);
-        img.src = `/frames/frame_${pad(i)}.jpg`;
+        img.src = `/frames/frame_${pad(i)}.webp`;
       });
 
     let cancelled = false;
