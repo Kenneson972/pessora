@@ -43,9 +43,9 @@ export const homeDrinkShowcase: Record<HomeShowcaseGamme, HomeDrinkShowcaseEntry
     href: '/menu?gamme=shakes',
     placeholderClass: 'bg-gradient-to-b from-surface-muted to-[oklch(88%_0.02_55)]',
     images: {
-      large: '/home-showcase-pink-dragon.png',
-      stackedTop: '/home-showcase-pink-dragon-shake.png',
-      stackedBottom: '/home-showcase-pink-dragon-macro.png',
+      large: '/home-showcase-pink-dragon.webp',
+      stackedTop: '/home-showcase-pink-dragon-shake.webp',
+      stackedBottom: '/home-showcase-pink-dragon-macro.webp',
     },
   },
 };

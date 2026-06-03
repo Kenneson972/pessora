@@ -15,14 +15,14 @@ export type HomeCarouselEntry = {
  * Les libellés viennent de `menuData` ; ajoutez des `imageSrc` quand les visuels sont prêts.
  */
 export const homeProductCarousel: HomeCarouselEntry[] = [
-  { id: 'pink-dragon', badge: 'nouveaute', imageSrc: '/home-showcase-pink-dragon-shake.png' },
-  { id: 'blue-lagoon', imageSrc: '/home-showcase-blue-lagoon.png' },
+  { id: 'pink-dragon', badge: 'nouveaute', imageSrc: '/home-showcase-pink-dragon-shake.webp' },
+  { id: 'blue-lagoon', imageSrc: '/home-showcase-blue-lagoon.webp' },
   { id: 'hydra-boost-litchi' },
   { id: 'cookie-cream', badge: 'coup-de-coeur' },
   { id: 'choco-prot' },
   { id: 'caramel-glace' },
   { id: 'glam-matcha' },
-  { id: 'glow-my-skin', imageSrc: '/home-showcase-glow-my-skin.png' },
+  { id: 'glow-my-skin', imageSrc: '/home-showcase-glow-my-skin.webp' },
 ];
 
 const BADGE_LABEL: Record<HomeCarouselBadge, string> = {

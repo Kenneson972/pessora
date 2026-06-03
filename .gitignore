@@ -43,4 +43,8 @@ coverage
 
 # Git worktrees
 .worktrees/
+<<<<<<< Updated upstream
 docs/n8n/*.json
+=======
+.vercel
+>>>>>>> Stashed changes

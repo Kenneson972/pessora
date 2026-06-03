@@ -25,7 +25,7 @@ const UNIVERS = [
     bgClass: 'bg-surface-product-well',
     variant: 'light' as const,
     path: '/menu',
-    bgImage: '/images/univers-shakes.jpg',
+    bgImage: '/images/univers-shakes.webp',
   },
   {
     id: 'communaute',
@@ -44,7 +44,7 @@ const UNIVERS = [
     bgClass: 'bg-surface-muted',
     variant: 'light' as const,
     path: '/bilan-bien-etre',
-    bgImage: '/images/univers-bilan-30min.jpg',
+    bgImage: '/images/univers-bilan-30min.webp',
   },
 ] as const;
 
@@ -212,7 +212,7 @@ const Home = () => {
                 }
                 bgVideoPosterSrc={
                   active.eyebrow === 'Communauté'
-                    ? publicAssetWithCache('videos/communaute-v2-poster.jpg')
+                    ? publicAssetWithCache('videos/communaute-v2-poster.webp')
                     : undefined
                 }
                 aspectRatio="aspect-[3/2] md:aspect-[21/8]"

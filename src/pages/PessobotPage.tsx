@@ -6,7 +6,7 @@ import { PageShell, PAGE_GUTTER } from '../components/layout/PageShell';
 import { useFadeUpWhenVisible } from '../lib/motionReveal';
 
 /** Dimensions natives du fichier (export HD ~4K, même cadrage que le hero 21:9) */
-const HERO_IMG = '/images/pessobot-hero.png';
+const HERO_IMG = '/images/pessobot-hero.webp';
 const HERO_NATURAL_W = 4096;
 const HERO_NATURAL_H = 1738;
 

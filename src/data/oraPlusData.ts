@@ -63,7 +63,7 @@ export const oraPlusHero = {
   ] satisfies OraPlusMetric[],
   /** Image éditoriale du hero — reprend la collection existante, traitée en N&B */
   image: {
-    src: '/images/oraplus-hero.jpg',
+    src: '/images/oraplus-hero.webp',
     alt: 'Femme sportive buvant un smoothie Pessóra, banc extérieur',
   },
 } as const;

@@ -10,10 +10,10 @@ const Concept = () => {
   const { container, item, isReducedMotion } = useStaggerReveal();
   // TODO: remplacer par de vraies photos du bar PessÓra (uploader dans Supabase Storage ou /public)
   const conceptImages = [
-    '/logo-pessora.png',
-    '/logo-pessora.png',
-    '/logo-pessora.png',
-    '/logo-pessora.png',
+    '/logo-pessora.webp',
+    '/logo-pessora.webp',
+    '/logo-pessora.webp',
+    '/logo-pessora.webp',
   ];
 
   return (

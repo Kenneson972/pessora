@@ -13,9 +13,9 @@ const WEBHOOK_URL = import.meta.env.VITE_PESSOBOT_WEBHOOK_URL?.trim() || '';
 const WEBHOOK_SIGNATURE = import.meta.env.VITE_PESSOBOT_SIGNATURE ?? '';
 
 /** Mascotte officielle — avatars (FAB, header, bulles assistant) */
-const PESSOBOT_AVATAR = '/images/pessobot-mascot.png';
+const PESSOBOT_AVATAR = '/images/pessobot-mascot.webp';
 /** Photo lifestyle — fiche « Profil » uniquement */
-const PESSOBOT_VISUAL = '/images/pessobot-assistant.png';
+const PESSOBOT_VISUAL = '/images/pessobot-assistant.webp';
 
 interface Message {
   role: 'user' | 'assistant';

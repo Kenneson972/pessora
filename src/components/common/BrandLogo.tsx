@@ -1,7 +1,7 @@
 import { cn } from '@heroui/react';
 
 /** Logo monogramme Pessóra (PNG carré, fond transparent) */
-const LOGO_SRC = '/logo-pessora.png';
+const LOGO_SRC = '/logo-pessora.webp';
 
 export type BrandLogoProps = {
   className?: string;

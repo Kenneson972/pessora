@@ -136,10 +136,10 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 const PROGRAMME = [
-  { img: '/images/bilan/analyse-corporelle.jpg', title: 'Analyse corporelle', desc: 'Composition corporelle, IMC, masse musculaire et graisseuse' },
-  { img: '/images/bilan/bilan-nutritionnel.jpg', title: 'Bilan nutritionnel', desc: 'Habitudes alimentaires, apports, carences et recommandations personnalisées' },
-  { img: '/images/bilan/skincare.jpg', title: 'Skincare', desc: 'Analyse de peau, routine recommandée et produits adaptés à ton profil' },
-  { img: '/images/bilan/challenge-21j.jpg', title: 'Challenge 21 jours', desc: 'Programme personnalisé et objectifs concrets pour transformer tes habitudes' },
+  { img: '/images/bilan/analyse-corporelle.webp', title: 'Analyse corporelle', desc: 'Composition corporelle, IMC, masse musculaire et graisseuse' },
+  { img: '/images/bilan/bilan-nutritionnel.webp', title: 'Bilan nutritionnel', desc: 'Habitudes alimentaires, apports, carences et recommandations personnalisées' },
+  { img: '/images/bilan/skincare.webp', title: 'Skincare', desc: 'Analyse de peau, routine recommandée et produits adaptés à ton profil' },
+  { img: '/images/bilan/challenge-21j.webp', title: 'Challenge 21 jours', desc: 'Programme personnalisé et objectifs concrets pour transformer tes habitudes' },
 ];
 
 const inputClass =
