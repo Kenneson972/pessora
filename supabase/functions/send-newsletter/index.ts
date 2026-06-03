@@ -2,6 +2,7 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { z } from 'npm:zod@3';
+import { checkRateLimit } from '../_shared/rate-limiter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': Deno.env.get("ALLOWED_ORIGIN") ?? "https://www.pessora.fr",
@@ -32,6 +33,14 @@ serve(async (req) => {
   }
 
   try {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+    if (!checkRateLimit(ip)) {
+      return new Response(JSON.stringify({ error: "Too many requests" }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "60" },
+      });
+    }
+
     if (!await verifyAdmin(req)) {
       return new Response(JSON.stringify({ error: 'Non autorisé' }), {
         status: 403,
@@ -67,14 +76,20 @@ serve(async (req) => {
       .select('email')
       .order('created_at', { ascending: true });
 
-    if (dbError || !subscribers?.length) {
-      return new Response(JSON.stringify({ error: 'Aucun abonné à la newsletter' }), {
-        status: 404,
+    if (dbError) {
+      return new Response(JSON.stringify({ error: 'Erreur base de données' }), {
+        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const emails = subscribers.map((s) => s.email);
+    if (!subscribers?.length) {
+      return new Response(JSON.stringify({ success: true, count: 0 }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const emails = subscribers.map((s: { email: string }) => s.email);
 
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',

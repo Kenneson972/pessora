@@ -68,6 +68,7 @@ const AdminCommunications = () => {
   const [nlBody, setNlBody] = useState('');
   const [nlStatus, setNlStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [nlLastSent, setNlLastSent] = useState<{ subject: string; count: number; at: string } | null>(null);
+  const [nlConfirmOpen, setNlConfirmOpen] = useState(false);
 
   const closeCommConfirm = useCallback(() => setCommConfirm(null), []);
 
@@ -538,7 +539,7 @@ Nous sommes ravis de vous annoncer…"
               <div className="flex flex-wrap items-center gap-4">
                 <button
                   type="button"
-                  onClick={sendNewsletter}
+                  onClick={() => setNlConfirmOpen(true)}
                   disabled={!nlSubject.trim() || !nlBody.trim() || nlStatus === 'sending' || subscribers.length === 0}
                   className="inline-flex h-11 min-h-[44px] items-center gap-2 rounded-[2px] bg-sapin px-6 text-[10px] font-medium uppercase tracking-[0.1em] text-white hover:bg-sapin/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
@@ -620,6 +621,20 @@ Nous sommes ravis de vous annoncer…"
         </div>
       )}
       </div>
+
+      <ConfirmDialog
+        open={nlConfirmOpen}
+        title="Envoyer la newsletter ?"
+        description={`La newsletter "${nlSubject.trim()}" sera envoyée à ${subscribers.length} contact${subscribers.length !== 1 ? 's' : ''}. Cette action est irréversible.`}
+        confirmLabel="Envoyer"
+        loadingLabel="Envoi…"
+        loading={nlStatus === 'sending'}
+        onClose={() => setNlConfirmOpen(false)}
+        onConfirm={async () => {
+          setNlConfirmOpen(false);
+          await sendNewsletter();
+        }}
+      />
 
       <ConfirmDialog
         open={commConfirm !== null}
