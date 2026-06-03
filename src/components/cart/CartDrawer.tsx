@@ -48,6 +48,8 @@ export function CartDrawer() {
     return /^(?:\+596\d{9}|0\d{9}|596\d{9})$/.test(p);
   })();
   const guestFormValid = !isGuest || (guestNameValid && guestPhoneValid);
+  const hasGammeItems = items.some((x) => x.source === 'gamme');
+  const gammeBlockedGuest = isGuest && hasGammeItems;
   const telHref = `tel:${barInfo.contact.phone.replace(/\s/g, '').replace(/X/g, '')}`;
 
   const handleOpenChange = useCallback(
@@ -254,14 +256,32 @@ export function CartDrawer() {
                   <p className="mb-3 text-[10px] text-red-500">{checkoutError}</p>
                 )}
 
-                <p className="mb-2 text-[10px] font-light leading-relaxed text-black/40">
-                  Paiement sécurisé en ligne via Stripe.
-                </p>
+                {gammeBlockedGuest ? (
+                  <div className="mb-3 rounded-[2px] border border-sapin/20 bg-sapin-subtle p-4 text-center">
+                    <p className="mb-2 text-[13px] font-medium text-black">
+                      Créez un compte pour commander
+                    </p>
+                    <p className="mb-4 text-[11px] text-black/50">
+                      Les produits des gammes Herbalife nécessitent un compte pour le suivi de votre commande.
+                    </p>
+                    <Link
+                      to="/inscription"
+                      className="inline-flex h-11 min-h-[44px] items-center gap-2 rounded-full bg-sapin px-6 text-[10px] font-medium uppercase tracking-[0.1em] text-white hover:bg-sapin/90 transition-colors"
+                      onClick={closeCart}
+                    >
+                      Créer mon compte
+                    </Link>
+                  </div>
+                ) : (
+                  <p className="mb-2 text-[10px] font-light leading-relaxed text-black/40">
+                    Paiement sécurisé en ligne via Stripe.
+                  </p>
+                )}
                 <div className="flex flex-col gap-2">
                   {hasItems && (
                     <Button
                       type="button"
-                      isDisabled={isCheckingOut || !guestFormValid}
+                      isDisabled={isCheckingOut || !guestFormValid || gammeBlockedGuest}
                       onPress={checkout}
                       className={cn(
                         focusRing,
