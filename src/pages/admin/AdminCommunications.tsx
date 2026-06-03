@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, X, Pencil, Trash2, Loader2, Download, Mail, Megaphone } from 'lucide-react';
+import { Plus, X, Pencil, Trash2, Loader2, Download, Mail, Megaphone, Send } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import type { SiteAnnouncement, NewsletterSubscriber } from '../../types/database';
 import { ConfirmDialog } from '../../components/dashboard/ConfirmDialog';
@@ -64,8 +64,37 @@ const AdminCommunications = () => {
     { kind: 'announcement'; id: string } | { kind: 'subscriber'; id: string } | null
   >(null);
   const [commConfirmLoading, setCommConfirmLoading] = useState(false);
+  const [nlSubject, setNlSubject] = useState('');
+  const [nlBody, setNlBody] = useState('');
+  const [nlStatus, setNlStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [nlLastSent, setNlLastSent] = useState<{ subject: string; count: number; at: string } | null>(null);
 
   const closeCommConfirm = useCallback(() => setCommConfirm(null), []);
+
+  const sendNewsletter = async () => {
+    if (!nlSubject.trim() || !nlBody.trim()) return;
+    setNlStatus('sending');
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-newsletter`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+          body: JSON.stringify({ subject: nlSubject.trim(), body: nlBody.trim() }),
+        },
+      );
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? 'Erreur');
+      setNlStatus('sent');
+      setNlLastSent({ subject: nlSubject.trim(), count: json.count ?? subscribers.length, at: new Date().toISOString() });
+      setNlSubject('');
+      setNlBody('');
+    } catch {
+      setNlStatus('error');
+    }
+  };
 
   const loadAnnouncements = useCallback(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -465,6 +494,77 @@ const AdminCommunications = () => {
 
       {tab === 'newsletter' && (
         <div>
+          {/* Composer */}
+          <div className="mb-8 rounded-[2px] border border-noir/[0.08] bg-white p-6">
+            <div className="mb-4 flex items-center gap-2">
+              <Send size={16} strokeWidth={1.5} className="text-sapin" />
+              <h3 className="text-[12px] font-medium text-black">Envoyer une newsletter</h3>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="nl-subject" className="mb-1 block text-[9px] font-normal uppercase tracking-[0.18em] text-black/40">
+                  Sujet
+                </label>
+                <input
+                  id="nl-subject"
+                  type="text"
+                  value={nlSubject}
+                  onChange={(e) => setNlSubject(e.target.value)}
+                  placeholder="Nouveautés chez PessÓra…"
+                  maxLength={200}
+                  disabled={nlStatus === 'sending'}
+                  className="w-full rounded-[2px] border border-noir/[0.12] bg-surface-muted px-4 py-2.5 text-[13px] text-black placeholder:text-black/30 outline-none focus:border-noir/30"
+                />
+              </div>
+              <div>
+                <label htmlFor="nl-body" className="mb-1 block text-[9px] font-normal uppercase tracking-[0.18em] text-black/40">
+                  Message
+                </label>
+                <textarea
+                  id="nl-body"
+                  value={nlBody}
+                  onChange={(e) => setNlBody(e.target.value)}
+                  placeholder="Bonjour à tous,
+
+Nous sommes ravis de vous annoncer…"
+                  rows={8}
+                  maxLength={50000}
+                  disabled={nlStatus === 'sending'}
+                  className="w-full rounded-[2px] border border-noir/[0.12] bg-surface-muted px-4 py-2.5 text-[13px] leading-relaxed text-black placeholder:text-black/30 outline-none focus:border-noir/30 resize-y"
+                />
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4">
+                <button
+                  type="button"
+                  onClick={sendNewsletter}
+                  disabled={!nlSubject.trim() || !nlBody.trim() || nlStatus === 'sending' || subscribers.length === 0}
+                  className="inline-flex h-11 min-h-[44px] items-center gap-2 rounded-[2px] bg-sapin px-6 text-[10px] font-medium uppercase tracking-[0.1em] text-white hover:bg-sapin/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  {nlStatus === 'sending' ? (
+                    <><Loader2 size={14} className="animate-spin" /> Envoi à {subscribers.length} contact{subscribers.length !== 1 ? 's' : ''}…</>
+                  ) : (
+                    <><Send size={14} /> Envoyer à {subscribers.length} contact{subscribers.length !== 1 ? 's' : ''}</>
+                  )}
+                </button>
+
+                {nlStatus === 'sent' && (
+                  <p className="text-[12px] font-medium text-sapin">Envoyé avec succès ✓</p>
+                )}
+                {nlStatus === 'error' && (
+                  <p className="text-[12px] font-medium text-red-600">Erreur lors de l&apos;envoi. Réessayez.</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {nlLastSent && (
+            <div className="mb-6 rounded-[2px] border border-sapin/[0.15] bg-sapin-subtle px-5 py-3 text-[12px] text-black/60">
+              Dernier envoi : <span className="font-medium text-black">{nlLastSent.subject}</span> — {nlLastSent.count} destinataire{nlLastSent.count !== 1 ? 's' : ''} le {new Date(nlLastSent.at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
+            </div>
+          )}
+
           <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
             <p className="text-[12px] text-black/45">
               {subscribers.length} contact{subscribers.length !== 1 ? 's' : ''} — export CSV pour Mailchimp / Brevo / envoi manuel.
