@@ -24,7 +24,7 @@ interface Message {
 }
 
 const QUICK_SUGGESTIONS = {
-  default: ['Voir le menu', 'Horaires d’ouverture', 'Différence entre les boissons', 'Créer un compte'],
+  default: [‘Voir le menu’, ‘Horaires d’ouverture’, ‘Différence entre les boissons’, ‘Prendre un bilan’],
   menu: ['Wellness (Douceur)', 'Énergie Drink (Focus)', 'Shakes protéinés (Sport)', 'Prix des boissons'],
   health: ['Combien de protéines ?', 'Végétalien ?', 'Calories ?', 'Ingrédients'],
 };
@@ -220,7 +220,7 @@ const Chatbot = ({ embedded = false }: ChatbotProps) => {
       const welcomeMessage: Message = {
         role: 'assistant',
         content:
-          "Bienvenue chez PessÓra.\n\nJe suis PessoBot, votre interlocuteur nutrition.\nBesoin d'énergie, de récupération ou d'un conseil bien-être ?",
+          "Bienvenue chez PessÓra.\n\nJe suis PessoBot, l'assistant du bar.\nQue puis-je vous conseiller aujourd'hui ?",
         timestamp: new Date(),
       };
       setMessages([welcomeMessage]);
@@ -286,6 +286,9 @@ const Chatbot = ({ embedded = false }: ChatbotProps) => {
 
   const getNextSuggestions = (response: string): string[] => {
     const lower = response.toLowerCase();
+    if (lower.includes('bilan') || lower.includes('accompagnement personnalisé')) {
+      return ['Prendre un bilan', 'Voir le menu', 'Horaires d'ouverture'];
+    }
     if (lower.includes('menu') || lower.includes('gamme')) return QUICK_SUGGESTIONS.menu;
     if (lower.includes('protéine') || lower.includes('kcal')) return QUICK_SUGGESTIONS.health;
     return QUICK_SUGGESTIONS.default;
@@ -456,7 +459,7 @@ const Chatbot = ({ embedded = false }: ChatbotProps) => {
           <div>
             <h3 className="chatbot-title text-white">Pessobot</h3>
             <p className="chatbot-status transition-colors group-hover:text-white">
-              Expert nutrition · <span className="underline">Profil</span>
+              Assistant bar · <span className="underline">Profil</span>
             </p>
           </div>
         </Button>
@@ -683,7 +686,7 @@ const Chatbot = ({ embedded = false }: ChatbotProps) => {
                       profileInMiniPanel ? 'text-[12px] leading-snug' : 'text-[13px] sm:text-[14px]'
                     )}
                   >
-                    Je vous aide à choisir une boisson adaptée à vos objectifs — depuis la Martinique et au-delà.
+                    Je vous guide dans le menu PessÓra et réponds à vos questions sur les boissons, les horaires et l'abonnement Óra+.
                   </p>
 
                   <div

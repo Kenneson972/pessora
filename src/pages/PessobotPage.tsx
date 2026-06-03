@@ -20,18 +20,18 @@ const PessobotPage = () => {
 
   const features = [
     {
-      title: 'Expertise Sport',
-      desc: "Besoin d'un boost avant votre séance ou d'une récupération optimale ? PessoBot vous conseille le meilleur mix selon votre workout.",
+      title: 'Sport & Énergie',
+      desc: "Boost avant séance ou récupération après effort ? PessoBot vous oriente vers la bonne boisson parmi nos gammes Énergie et Shakes.",
       icon: Zap,
     },
     {
       title: 'Bien-être & Beauté',
-      desc: 'Collagène, antioxydants, vitamines... PessoBot connaît chaque ingrédient et ses bienfaits pour votre peau et votre vitalité.',
+      desc: 'Collagène, antioxydants, vitamines... Il vous explique les ingrédients et bienfaits de chaque produit, sans jamais inventer.',
       icon: Heart,
     },
     {
-      title: "Calculateur d'économies",
-      desc: "Il vous explique en détail les avantages de l'abonnement Óra+ et calcule vos économies selon votre consommation mensuelle.",
+      title: 'Óra+ & Bilan',
+      desc: "Il répond à vos questions sur l'abonnement Óra+ et vous redirige vers le Bilan Bien-Être si vous cherchez un accompagnement sur mesure.",
       icon: Sparkles,
     },
   ];
@@ -128,10 +128,10 @@ const PessobotPage = () => {
             className="font-display font-normal text-black leading-tight mb-4"
             style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px, 3vw, 44px)' }}
           >
-            Plus qu'un bot, un coach.
+            Votre guide boissons, en un message.
           </h2>
           <p className="text-[13px] font-light text-black/45 leading-relaxed max-w-2xl mx-auto">
-            PessoBot a été conçu pour simplifier votre nutrition. Il connaît nos produits sur le bout des doigts et vous guide vers l'expérience la plus personnalisée possible.
+            PessoBot connaît chaque boisson du bar sur le bout des doigts. Posez-lui une question sur le menu, les horaires ou l'abonnement Óra+ — il répond en quelques secondes.
           </p>
         </PageShell>
       </section>
