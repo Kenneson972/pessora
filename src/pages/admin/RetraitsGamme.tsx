@@ -17,6 +17,78 @@ function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
+function UnscheduledCard({ order, items, onScheduled }: { order: OrderWithItems; items: OrderWithItems['order_items']; onScheduled: () => void }) {
+  const [date, setDate] = useState('');
+  const [time, setTime] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const minDate = tomorrow.toISOString().split('T')[0];
+
+  const handleSchedule = async () => {
+    if (!date || !time) return;
+    setSaving(true);
+    const pickupDate = new Date(`${date}T${time}:00`).toISOString();
+    await (supabase as any).from('orders').update({ scheduled_pickup_date: pickupDate }).eq('id', order.id);
+    auditLog({ action: 'order.status_change', entity_type: 'order', entity_id: order.id, details: { scheduled_pickup_date: pickupDate } });
+    setSaving(false);
+    onScheduled();
+  };
+
+  return (
+    <div className="rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.08] p-5 md:p-6 border border-amber-500/20">
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <h3 className="text-lg font-bold mb-1">{order.client_name || 'Client'}</h3>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-white/45">
+            {order.client_phone && (
+              <span className="flex items-center gap-1.5"><Phone size={13} strokeWidth={1.3} />{order.client_phone}</span>
+            )}
+            <span className="font-mono text-xs text-white/25">#{order.id.slice(0, 8)}</span>
+          </div>
+        </div>
+      </div>
+      <div className="space-y-1.5 mb-5">
+        {items.map((item, i) => (
+          <div key={item.id ?? i} className="flex justify-between text-sm">
+            <span className="text-white/70">{item.quantity}&times; {item.product_name}</span>
+            <span className="tabular-nums text-white/50">{(item.price_at_time * item.quantity).toFixed(2).replace('.', ',')}&euro;</span>
+          </div>
+        ))}
+        <div className="flex justify-between border-t border-white/[0.08] pt-2 mt-2">
+          <span className="text-sm font-medium text-white/60">Total</span>
+          <span className="text-sm font-bold tabular-nums">{order.total.toFixed(2).replace('.', ',')}&euro;</span>
+        </div>
+      </div>
+      <div className="flex items-end gap-3">
+        <div>
+          <p className="mb-1.5 text-[9px] uppercase tracking-[0.14em] text-white/30">Date de retrait</p>
+          <input type="date" value={date} min={minDate} onChange={(e) => setDate(e.target.value)}
+            className="rounded-[2px] border border-white/[0.08] bg-white/[0.06] px-3 py-2 text-[13px] text-white" />
+        </div>
+        <div>
+          <p className="mb-1.5 text-[9px] uppercase tracking-[0.14em] text-white/30">Heure</p>
+          <select value={time} onChange={(e) => setTime(e.target.value)} disabled={!date}
+            className="rounded-[2px] border border-white/[0.08] bg-white/[0.06] px-3 py-2 text-[13px] text-white disabled:opacity-30">
+            <option value="">--</option>
+            {Array.from({ length: 19 }, (_, i) => {
+              const h = 9 + Math.floor(i / 2);
+              const m = i % 2 === 0 ? '00' : '30';
+              const v = `${String(h).padStart(2, '0')}:${m}`;
+              return <option key={v} value={v}>{v}</option>;
+            })}
+          </select>
+        </div>
+        <button onClick={handleSchedule} disabled={!date || !time || saving}
+          className="min-h-[38px] rounded-[2px] bg-sapin px-4 text-[10px] font-medium uppercase tracking-[0.1em] text-white hover:bg-sapin/85 disabled:opacity-30 transition-colors">
+          {saving ? '...' : 'Valider'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function RetraitsGamme() {
   const reduceMotion = useReducedMotion();
   const [selectedDate, setSelectedDate] = useState(() => {
@@ -136,33 +208,7 @@ export default function RetraitsGamme() {
               {unscheduled.map((order) => {
                 const items = order.order_items ?? [];
                 return (
-                  <div key={order.id} className="rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.08] p-5 md:p-6 border border-amber-500/20">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h3 className="text-lg font-bold mb-1">{order.client_name || 'Client'}</h3>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-white/45">
-                          {order.client_phone && (
-                            <span className="flex items-center gap-1.5"><Phone size={13} strokeWidth={1.3} />{order.client_phone}</span>
-                          )}
-                          <span>Pas de date de retrait</span>
-                          <span className="font-mono text-xs text-white/25">#{order.id.slice(0, 8)}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-1.5 mb-5">
-                      {items.map((item, i) => (
-                        <div key={item.id ?? i} className="flex justify-between text-sm">
-                          <span className="text-white/70">{item.quantity}&times; {item.product_name}</span>
-                          <span className="tabular-nums text-white/50">{(item.price_at_time * item.quantity).toFixed(2).replace('.', ',')}&euro;</span>
-                        </div>
-                      ))}
-                      <div className="flex justify-between border-t border-white/[0.08] pt-2 mt-2">
-                        <span className="text-sm font-medium text-white/60">Total</span>
-                        <span className="text-sm font-bold tabular-nums">{order.total.toFixed(2).replace('.', ',')}&euro;</span>
-                      </div>
-                    </div>
-                    <p className="text-[11px] text-amber-400/60">Choisissez une date de retrait et d&eacute;placez-la dans la section du jour.</p>
-                  </div>
+                  <UnscheduledCard key={order.id} order={order} items={items} onScheduled={() => { fetchOrders(); fetchUnscheduled(); }} />
                 );
               })}
             </div>
