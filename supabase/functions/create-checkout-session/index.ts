@@ -139,6 +139,7 @@ async function createOrder(
     client_phone: string | null,
     order_type: 'bar' | 'gamme',
     scheduled_pickup_date: string | null,
+    parent_payment_id?: string,
   },
 ): Promise<string> {
   const total = params.lines.reduce((sum, i) => sum + i.verifiedUnitPrice * i.quantity, 0);
@@ -158,6 +159,9 @@ async function createOrder(
   }
   if (params.order_type === 'gamme' && params.scheduled_pickup_date) {
     orderPayload.scheduled_pickup_date = params.scheduled_pickup_date;
+  }
+  if (params.parent_payment_id) {
+    orderPayload.parent_payment_id = params.parent_payment_id;
   }
 
   const { data: order, error } = await supabase
@@ -274,28 +278,19 @@ serve(async (req) => {
     let orderIds: string[] = [];
 
     if (barLines.length > 0 && gammeLines.length > 0) {
-      // Split : 2 orders, 1 Stripe
+      // Split : 2 orders, 1 Stripe, même parent_payment_id
+      const parentPaymentId = crypto.randomUUID();
       if (gammeLines.length > 0) {
         const gammeId = await createOrder(supabase, {
-          lines: gammeLines,
-          user_id,
-          pickup_time: null,
-          client_name,
-          client_phone,
-          order_type: 'gamme',
-          scheduled_pickup_date: gammePickupDate,
+          lines: gammeLines, user_id, pickup_time: null, client_name, client_phone,
+          order_type: 'gamme', scheduled_pickup_date: gammePickupDate, parent_payment_id: parentPaymentId,
         });
         orderIds.push(gammeId);
       }
       if (barLines.length > 0) {
         const barId = await createOrder(supabase, {
-          lines: barLines,
-          user_id,
-          pickup_time: orderPickupTime,
-          client_name,
-          client_phone,
-          order_type: 'bar',
-          scheduled_pickup_date: null,
+          lines: barLines, user_id, pickup_time: orderPickupTime, client_name, client_phone,
+          order_type: 'bar', scheduled_pickup_date: null, parent_payment_id: parentPaymentId,
         });
         orderIds.push(barId);
       }

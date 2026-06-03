@@ -31,16 +31,17 @@ serve(async (req) => {
       .from('orders')
       .select('id, access_token, total, status, client_name, order_type')
       .eq('stripe_session_id', stripe_session_id)
-      .single();
+      .order('order_type', { ascending: true });
 
-    if (error || !data) {
+    if (error || !data?.length) {
       return new Response(JSON.stringify({ error: 'Commande introuvable' }), {
         status: 404,
         headers: { ...cors, 'Content-Type': 'application/json' },
       });
     }
 
-    return new Response(JSON.stringify(data), {
+    // Retourne un tableau pour gérer le cas split (plusieurs orders par session)
+    return new Response(JSON.stringify(data.length === 1 ? data[0] : { orders: data }), {
       headers: { ...cors, 'Content-Type': 'application/json' },
     });
   } catch (err) {

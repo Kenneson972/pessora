@@ -16,6 +16,7 @@ export default function CommandeSucces() {
   const [token, setToken] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [orderType, setOrderType] = useState<string | null>(null);
+  const [splitOrders, setSplitOrders] = useState<Array<{ id: string; access_token: string; total: number; order_type: string }> | null>(null);
 
   const clearCartRef = useRef(clearCart);
   clearCartRef.current = clearCart;
@@ -37,14 +38,20 @@ export default function CommandeSucces() {
         body: { stripe_session_id: sessionId },
       });
       if (cancelled || !data) return;
+      // Cas split : plusieurs orders pour une session
+      if (data.orders) {
+        setSplitOrders(data.orders);
+        for (const o of data.orders) {
+          supabase.functions.invoke('update-order-status', { body: { orderId: o.id, status: 'paid' } }).catch(() => {});
+        }
+        return;
+      }
+      // Cas simple : 1 order
       if (data.access_token) setToken(data.access_token);
       if (data.order_type) setOrderType(data.order_type);
       if (data.id) {
         setOrderId(data.id);
-        // PATCH : passer la commande de pending → paid (idempotent)
-        supabase.functions.invoke('update-order-status', {
-          body: { orderId: data.id, status: 'paid' },
-        }).catch(() => {});
+        supabase.functions.invoke('update-order-status', { body: { orderId: data.id, status: 'paid' } }).catch(() => {});
       }
     })().catch(() => {});
     return () => { cancelled = true; };
@@ -102,6 +109,31 @@ export default function CommandeSucces() {
                 Votre paiement a été validé. Votre commande est en cours de préparation.
               </p>
             )}
+            {splitOrders && splitOrders.length > 0 && (
+              <div className="mx-auto mb-8 grid max-w-md gap-4 sm:grid-cols-2">
+                {splitOrders.map((o) => (
+                  <Link
+                    key={o.id}
+                    to={`/suivi-commande?token=${o.access_token}`}
+                    className="rounded-[2px] border border-noir/[0.08] bg-white p-5 text-left hover:border-sapin/30 transition-colors"
+                  >
+                    <p className="mb-1 text-[18px]">
+                      {o.order_type === 'gamme' ? '🥗' : '🥤'}
+                    </p>
+                    <p className="text-[13px] font-medium text-black">
+                      {o.order_type === 'gamme' ? 'Plateaux repas' : 'Boissons'}
+                    </p>
+                    <p className="mt-1 text-[12px] text-black/45">
+                      {o.total.toFixed(2).replace('.', ',')} €
+                    </p>
+                    <p className="mt-3 text-[10px] font-medium uppercase tracking-[0.1em] text-sapin">
+                      Suivre →
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            )}
+
             <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
               {(token || orderId) && (
                 <Link
