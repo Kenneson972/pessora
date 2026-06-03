@@ -17,7 +17,7 @@ const ContactSchema = z.object({
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: getCorsHeaders(req.headers.get("origin")) });
   }
 
   try {
@@ -25,7 +25,7 @@ serve(async (req) => {
     if (!checkRateLimit(ip)) {
       return new Response(JSON.stringify({ error: "Too many requests" }), {
         status: 429,
-        headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "60" },
+        headers: { ...getCorsHeaders(req.headers.get("origin")), "Content-Type": "application/json", "Retry-After": "60" },
       })
     }
 
@@ -34,7 +34,7 @@ serve(async (req) => {
     if (!parsed.success) {
       return new Response(JSON.stringify({ error: 'Données invalides', details: parsed.error.flatten() }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req.headers.get("origin")), 'Content-Type': 'application/json' },
       });
     }
 
@@ -45,7 +45,7 @@ serve(async (req) => {
       console.error('[send-contact-email] RESEND_API_KEY not configured');
       return new Response(JSON.stringify({ error: 'Service d\'envoi non configuré' }), {
         status: 503,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req.headers.get("origin")), 'Content-Type': 'application/json' },
       });
     }
 
@@ -83,18 +83,18 @@ ${message}`,
       console.error('[send-contact-email] Resend error:', res.status, errBody);
       return new Response(JSON.stringify({ error: 'Erreur lors de l\'envoi' }), {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...getCorsHeaders(req.headers.get("origin")), 'Content-Type': 'application/json' },
       });
     }
 
     return new Response(JSON.stringify({ success: true }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req.headers.get("origin")), 'Content-Type': 'application/json' },
     });
   } catch (err) {
     console.error('[send-contact-email]', err);
     return new Response(JSON.stringify({ error: 'Erreur serveur' }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req.headers.get("origin")), 'Content-Type': 'application/json' },
     });
   }
 });

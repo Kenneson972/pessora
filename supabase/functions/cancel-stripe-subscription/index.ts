@@ -15,7 +15,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+  if (req.method === 'OPTIONS') return new Response('ok', { headers: getCorsHeaders(req.headers.get("origin")) })
 
   try {
     const { isAdmin, error } = await verifyAdmin(req)
@@ -23,7 +23,7 @@ serve(async (req) => {
 
     const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
     if (!stripeKey) {
-      return new Response(JSON.stringify({ error: 'Stripe non configuré' }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      return new Response(JSON.stringify({ error: 'Stripe non configuré' }), { status: 503, headers: { ...getCorsHeaders(req.headers.get("origin")), 'Content-Type': 'application/json' } })
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
@@ -33,7 +33,7 @@ serve(async (req) => {
     const raw = await req.json().catch(() => ({}))
     const parsed = BodySchema.safeParse(raw)
     if (!parsed.success) {
-      return new Response(JSON.stringify({ error: 'stripe_subscription_id requis' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      return new Response(JSON.stringify({ error: 'stripe_subscription_id requis' }), { status: 400, headers: { ...getCorsHeaders(req.headers.get("origin")), 'Content-Type': 'application/json' } })
     }
 
     const stripe = new Stripe(stripeKey, { apiVersion: '2024-04-10' })
@@ -48,10 +48,10 @@ serve(async (req) => {
     if (dbErr) console.error('[cancel-stripe-subscription] DB sync failed:', dbErr.message)
 
     return new Response(JSON.stringify({ success: true, cancel_at: updated.cancel_at }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req.headers.get("origin")), 'Content-Type': 'application/json' },
     })
   } catch (err) {
     console.error('[cancel-stripe-subscription]', err)
-    return new Response(JSON.stringify({ error: 'Erreur serveur' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    return new Response(JSON.stringify({ error: 'Erreur serveur' }), { status: 500, headers: { ...getCorsHeaders(req.headers.get("origin")), 'Content-Type': 'application/json' } })
   }
 })
