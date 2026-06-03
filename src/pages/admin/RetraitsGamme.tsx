@@ -37,7 +37,7 @@ function UnscheduledCard({ order, items, onScheduled }: { order: OrderWithItems;
   };
 
   return (
-    <div className="rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.08] p-5 md:p-6 border border-amber-500/20">
+    <div className="rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.06] p-5 md:p-6 border border-amber-500/20">
       <div className="flex items-start justify-between mb-4">
         <div>
           <h3 className="text-lg font-bold mb-1">{order.client_name || 'Client'}</h3>
@@ -155,7 +155,7 @@ export default function RetraitsGamme() {
   const isPast = (iso: string) => new Date(iso) < new Date();
 
   return (
-    <div className="min-h-screen bg-noir text-white">
+    <div className="min-h-screen text-white" style={{ backgroundColor: 'oklch(13% 0.006 95)', backgroundImage: 'radial-gradient(ellipse 60% 50% at 50% -10%, oklch(19% 0.028 155 / 0.12), transparent 70%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.015) 1px, transparent 1px)', backgroundSize: '100% 100%, 40px 40px' }}>
       {/* Header */}
       <div className="flex items-center justify-between gap-4 border-b border-white/[0.06] px-4 py-3 md:px-6">
         <div className="flex items-center gap-3">
@@ -253,7 +253,7 @@ export default function RetraitsGamme() {
 
                 return (
                   <motion.div key={order.id} initial={motionInitial(reduceMotion, { opacity: 0, y: 12 })} animate={{ opacity: 1, y: 0 }} exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -12 }} transition={motionTransition(reduceMotion, { duration: 0.2 })}
-                    className={`rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.08] p-5 md:p-6 ${statusBorder} ${overdue ? 'border-2 border-amber-500/50' : ''}`}>
+                    className={`rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.06] p-5 md:p-6 ${statusBorder} ${overdue ? 'border-2 border-amber-500/50' : ''}`}>
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <div className="flex items-center gap-2 mb-1">

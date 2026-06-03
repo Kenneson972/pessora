@@ -112,7 +112,7 @@ export default function ModeBar() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-noir">
+      <div className="flex min-h-screen items-center justify-center bg-surface-admin">
         <p className="text-white/40 text-sm">Chargement…</p>
       </div>
     );
@@ -120,7 +120,7 @@ export default function ModeBar() {
 
   if (orders.length === 0) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-noir px-4">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-surface-admin px-4">
         <CupSoda size={64} strokeWidth={1} className="text-white/15 mb-6" />
         <p className="text-2xl font-bold text-white md:text-3xl">Aucune commande en cours</p>
         <p className="mt-3 text-base text-white/35">En attente de nouvelles commandes…</p>
@@ -150,7 +150,7 @@ export default function ModeBar() {
   const isOverdue = elapsedSeconds > OVERDUE_MINUTES * 60;
 
   return (
-    <div className="min-h-screen bg-noir text-white">
+    <div className="min-h-screen text-white" style={{ backgroundColor: 'oklch(13% 0.006 95)', backgroundImage: 'radial-gradient(ellipse 60% 50% at 50% -10%, oklch(19% 0.028 155 / 0.12), transparent 70%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.015) 1px, transparent 1px)', backgroundSize: '100% 100%, 40px 40px' }}>
       {/* Top bar */}
       <div className="flex items-center justify-between gap-4 border-b border-white/[0.06] px-4 py-3 md:px-6">
         <div className="flex items-center gap-3">
@@ -227,7 +227,7 @@ export default function ModeBar() {
               className="w-full max-w-lg"
             >
               {/* Carte commande */}
-              <div className="rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.08] p-6 md:p-8 border-2 border-sapin/60">
+              <div className="rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.06] p-6 md:p-8 border-2 border-sapin/60">
                 {/* Header */}
                 <div className="mb-6">
                   <h2 className="text-xl md:text-2xl font-bold mb-3">
@@ -327,7 +327,7 @@ export default function ModeBar() {
       </div>
 
       {/* Mobile bottom bar — liste rapide */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-noir border-t border-white/[0.06] px-3 py-2 flex gap-1.5 overflow-x-auto">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-surface-admin border-t border-white/[0.06] px-3 py-2 flex gap-1.5 overflow-x-auto">
         {orders.map((order, i) => (
           <button
             key={order.id}
