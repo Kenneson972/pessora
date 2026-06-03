@@ -1,0 +1,44 @@
+---
+description: Source de vérité client Karibloom — template/client.config.ts. Ne jamais coder en dur marque, contact, couleurs.
+globs:
+alwaysApply: true
+---
+
+# Règle — `client.config.ts` = source de vérité client
+
+Sur tout template Karibloom (STARTER / GROW / RISE / SCALE), **toute la donnée
+variable d'un client vit dans un seul fichier : `template/client.config.ts`**
+(objet `CLIENT`). C'est la source de vérité unique.
+
+## Ce que ça contient
+
+Marque (`brand`, `legalName`, `tagline`), coordonnées NAP (`address`, `phone`,
+`whatsapp`, `email`), `hours`, `socials`, `seo`, couleurs (`theme`), et les
+options métier propres au pack (menu/commande, membre/abonnement, booking/villas,
+faq…). Chaque champ à remplir est marqué `⟶ À CHANGER`.
+
+## Règles dures
+
+1. **Ne jamais coder en dur** un nom de marque, un téléphone, un email, une
+   adresse, une URL, une clé SEO ou une couleur dans un composant ou une page.
+   Toujours lire depuis `CLIENT` (`import CLIENT from '@/config/client.config'`
+   ou le chemin du repo).
+2. **Couleurs** : `CLIENT.theme` alimente les tokens CSS (`--brand-*`,
+   `--pdc-*`, `--color-*`, ou la palette `tailwind.config.ts` selon le repo).
+   Ne pas réécrire un hex en dur ailleurs.
+3. **Nouveau client** = on remplit `client.config.ts` + on suit `template/TEMPLATE.md`.
+   On ne touche pas à la logique (paiement, auth, booking, i18n).
+4. Si une string client traîne encore dans un fichier pivot
+   (`menuData.ts` / `infoData.ts` / `site-brand.ts`), la faire pointer vers
+   `CLIENT` plutôt que de dupliquer la valeur.
+
+## Mapping pack ↔ template
+
+| Pack | Base | Couche template |
+|---|---|---|
+| STARTER | scaffold one-page (Next.js) | `CLIENT BUILDER KARIBLOOM/template-starter/` |
+| GROW | Dal Cielo | `CLIENT KARIBLOOM/DALCIELO/template/` |
+| RISE | Pessora | `CLIENT KARIBLOOM/PESSORA/template/` |
+| SCALE | Diamant Noir | `CLIENT KARIBLOOM/DIAMANTNOIR/diamant-noir/template/` |
+
+> Règle d'or : **on remplit `client.config.ts`, on suit `TEMPLATE.md`. C'est tout.**
