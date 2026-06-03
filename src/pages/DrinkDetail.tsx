@@ -2,7 +2,7 @@ import { useParams, Link, Navigate, useNavigate } from 'react-router-dom';
 import { Button, Card } from '@heroui/react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  Plus, Minus, Check, Leaf, Wheat, Pill,
+  Plus, Minus, Check, Leaf, Wheat, Pill, Heart,
   ShoppingBag, ArrowRight,
   Sparkles, Dumbbell, Milk, Zap, Leaf as LeafIcon, Droplets,
   Coffee, Nut, Sprout,
@@ -133,6 +133,8 @@ const DrinkDetail = () => {
     vegan: { label: 'Vegan', icon: Leaf },
     glutenfree: { label: 'Sans Gluten', icon: Wheat },
     vitamins: { label: '25 Vitamines', icon: Pill },
+    nouveaute: { label: 'Nouveauté', icon: Sparkles },
+    coup_de_coeur: { label: 'Coup de cœur', icon: Heart },
   };
 
   const tabs: { id: TabId; label: string }[] = [

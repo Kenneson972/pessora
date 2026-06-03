@@ -14,7 +14,7 @@ export interface MenuItem {
   pitch: string;
   icon?: string;
   image_url?: string | null;
-  badges?: ('vegan' | 'glutenfree' | 'vitamins')[];
+  badges?: ('vegan' | 'glutenfree' | 'vitamins' | 'nouveaute' | 'coup_de_coeur')[];
   gallery?: string[];
 }
 
@@ -291,5 +291,7 @@ export const getCategoryIcon = (category: MenuItem['category']): string => {
 export const badgeLabels = {
   vegan: '🌱 Végan',
   glutenfree: '🌾 Sans Gluten',
-  vitamins: '💊 25 Vitamines & Minéraux'
+  vitamins: '💊 25 Vitamines & Minéraux',
+  nouveaute: '✨ Nouveauté',
+  coup_de_coeur: '💚 Coup de cœur',
 };

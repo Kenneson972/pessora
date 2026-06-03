@@ -22,6 +22,8 @@ interface ProductCardProps {
   density?: 'default' | 'compact';
   /** Contenu optionnel inséré après la description (ex. sélecteur de taille) */
   footer?: React.ReactNode;
+  /** Pastilles affichées sous le tag catégorie (ex. Nouveauté, Coup de cœur) */
+  badges?: { label: string; style: 'accent' | 'default' }[];
 }
 
 const linkBaseClass = 'group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-noir/20 focus-visible:ring-offset-2';
@@ -40,6 +42,7 @@ export const ProductCard = ({
   oraMemberHint,
   density = 'default',
   footer,
+  badges,
 }: ProductCardProps) => {
   const wellClass = bgClass ?? 'bg-surface-product-well';
   const compact = density === 'compact';
@@ -83,6 +86,23 @@ export const ProductCard = ({
       <span className="block text-[8px] font-normal uppercase tracking-[0.18em] text-sapin/45">
         {tag}
       </span>
+      {badges && badges.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {badges.map((b, i) => (
+            <span
+              key={i}
+              className={cn(
+                'inline-block rounded-[2px] px-2 py-0.5 text-[7px] font-medium uppercase tracking-[0.1em]',
+                b.style === 'accent'
+                  ? 'bg-sapin-subtle text-sapin border border-sapin/15'
+                  : 'bg-noir/[0.04] text-black/45 border border-noir/[0.08]',
+              )}
+            >
+              {b.label}
+            </span>
+          ))}
+        </div>
+      )}
       <div className="flex items-baseline justify-between gap-2 sm:gap-3">
         <Card.Title className="text-editorial-product-name min-w-0 flex-1 leading-snug">{name}</Card.Title>
         <div className="flex flex-shrink-0 flex-col items-end gap-0.5">

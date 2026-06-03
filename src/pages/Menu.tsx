@@ -7,7 +7,7 @@ import { ShoppingBag } from 'lucide-react';
 import { SectionTitle } from '../components/ui/SectionTitle';
 import { ItemListJsonLd } from '../components/seo/ProductJsonLd';
 import { ProductCard } from '../components/ui/ProductCard';
-import { categoryNames, type MenuItem } from '../data/menuData';
+import { categoryNames, badgeLabels, type MenuItem } from '../data/menuData';
 import { useMenuCatalog } from '../hooks/useMenuCatalog';
 import { useFadeUpWhenVisible, useStaggerReveal } from '../lib/motionReveal';
 import { formatEurFr, oraMemberUnitPrice } from '../lib/oraPricing';
@@ -178,6 +178,10 @@ const Menu = () => {
           linkTo={`/menu/${menuItem.id}`}
           density="compact"
           footer={cardFooter}
+          badges={menuItem.badges?.map((b) => ({
+            label: badgeLabels[b],
+            style: (b === 'nouveaute' || b === 'coup_de_coeur') ? 'accent' as const : 'default' as const,
+          }))}
         />
       </motion.div>
     );
