@@ -34,7 +34,20 @@ export function useAdminOrders(filterStatus: OrderFilterStatus = 'all') {
 
     const { data, error } = await query;
     if (error) return;
-    const fresh = (data ?? []) as OrderWithItems[];
+    let fresh = (data ?? []) as OrderWithItems[];
+
+    // Enrichir avec les noms des profils (pour les membres connectés)
+    const userIds = [...new Set(fresh.map((o: any) => o.user_id).filter(Boolean))];
+    if (userIds.length > 0) {
+      const { data: profiles } = await db.from('profiles').select('id, first_name').in('id', userIds);
+      if (profiles) {
+        const nameMap = new Map((profiles as any[]).map((p: any) => [p.id, p.first_name || null]));
+        fresh = fresh.map((o: any) => ({
+          ...o,
+          client_name: o.client_name || nameMap.get(o.user_id) || null,
+        }));
+      }
+    }
 
     // Detection des nouvelles commandes via polling (comme DALCIELO)
     if (!isFirstLoadRef.current) {
