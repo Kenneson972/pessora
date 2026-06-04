@@ -5,6 +5,25 @@ Format : `ISO` · `type` · résumé · fichiers · vérif.
 
 ---
 
+## 2026-06-04
+
+### 2026-06-04T · security · Audit flux commande/paiement — correctifs P0/P1
+
+- **Contexte** : exécution de `docs/prompts/cursor-audit-flux-commande-4juin.md` — audit complet du tunnel (panier → checkout → succès/suivi → admin → edge functions → Óra+). 4 explorations parallèles read-only, puis correctifs ciblés (pas de refacto), 1 commit par fix.
+
+- **Correctifs appliqués** :
+  - `security(orders)` — `update-order-status` et `delete-order` (SERVICE_ROLE) étaient **sans contrôle d'accès** : ajout `verifyAdmin` + audit log serveur sur delete. `CommandeSucces` ne marque plus `paid` côté client (webhook = source de vérité). Fichiers : `supabase/functions/{update-order-status,delete-order}/index.ts`, `src/pages/CommandeSucces.tsx`.
+  - `security(checkout)` — remise Óra+ -50% basée sur `user_id` du body sans vérif (fraude possible). `user_id` dérivé du JWT Authorization. Fichier : `supabase/functions/create-checkout-session/index.ts`.
+  - `fix(admin)` — camembert analytics « Par gamme » codé en dur (30/45/25) → vraie répartition Bar/Gamme depuis `order_type`. Fichier : `src/components/admin/AnalyticsDashboard.tsx`.
+  - `fix(suivi)` — lien copié `/suivi` → `/suivi-commande` (404). Fichier : `src/pages/SuiviCommande.tsx`.
+  - `fix(webhook)` — idempotence : retrait du marqueur `stripe_events_processed` en cas d'échec handler pour autoriser le retry Stripe. Fichier : `supabase/functions/stripe-webhook/index.ts`.
+
+- **Restant identifié (non corrigé, hors scope « ne rien casser »)** : date de retrait gamme à l'ajout (UI manquante), créneaux passés non désactivés, Realtime/polling invité cassés (RLS) sur SuiviCommande, KPI AdminCommandes (« En attente » compte `paid`, CA sur `created_at`), timer ModeBar depuis `created_at`, badge retard RetraitsGamme, total/lien suivi absents sur OrderDetail, `price_id` arbitraire sur create-subscription-session, cohérence `cancel_url` abonnement.
+
+- **Vérif** : `npx tsc --noEmit` OK ; `vitest` cartStore + checkout = 13 PASS ; lint OK ; 5 commits (`215cd42`, `04f1150`, `67a5893`, `0d3414b`, `4208ebf`).
+
+---
+
 ## 2026-05-24
 
 ### 2026-05-24T · ui · Refonte header fixe + unifi section layout + minimalisme index
