@@ -1,6 +1,7 @@
 // supabase/functions/delete-order/index.ts
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { verifyAdmin } from '../_shared/verifyAdmin.ts';
 
 function buildCorsHeaders(origin: string | null): Record<string, string> {
   const allowed = Deno.env.get('ALLOWED_ORIGIN') || 'https://www.pessora.fr';
@@ -25,6 +26,10 @@ serve(async (req) => {
       headers: { ...cors, 'Content-Type': 'application/json' },
     });
   }
+
+  // Suppression réservée aux admins (service role bypass RLS sinon ouvert)
+  const { isAdmin, user, error: authErr } = await verifyAdmin(req);
+  if (!isAdmin) return authErr!;
 
   try {
     const { orderId } = await req.json();
@@ -60,6 +65,17 @@ serve(async (req) => {
     if (orderErr) {
       throw new Error('Erreur suppression commande : ' + orderErr.message);
     }
+
+    // Audit serveur (best-effort, ne bloque jamais la suppression)
+    try {
+      await supabase.from('admin_audit_log').insert({
+        admin_id: user?.id ?? null,
+        action: 'order.delete',
+        entity_type: 'order',
+        entity_id: orderId,
+        details: null,
+      });
+    } catch (_) { /* log non bloquant */ }
 
     return new Response(JSON.stringify({ deleted: true }), {
       headers: { ...cors, 'Content-Type': 'application/json' },

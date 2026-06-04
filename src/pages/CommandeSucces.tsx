@@ -38,12 +38,11 @@ export default function CommandeSucces() {
         body: { stripe_session_id: sessionId },
       });
       if (cancelled || !data) return;
+      // Le passage pending → paid est géré exclusivement par le webhook Stripe
+      // (source de vérité). On ne mute jamais le statut depuis le client.
       // Cas split : plusieurs orders pour une session
       if (data.orders) {
         setSplitOrders(data.orders);
-        for (const o of data.orders) {
-          supabase.functions.invoke('update-order-status', { body: { orderId: o.id, status: 'paid' } }).catch(() => {});
-        }
         return;
       }
       // Cas simple : 1 order
@@ -51,7 +50,6 @@ export default function CommandeSucces() {
       if (data.order_type) setOrderType(data.order_type);
       if (data.id) {
         setOrderId(data.id);
-        supabase.functions.invoke('update-order-status', { body: { orderId: data.id, status: 'paid' } }).catch(() => {});
       }
     })().catch(() => {});
     return () => { cancelled = true; };

@@ -2,6 +2,7 @@
 // Endpoint PATCH — met à jour le statut d'une commande (service role bypass RLS)
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { verifyAdmin } from '../_shared/verifyAdmin.ts';
 
 function buildCorsHeaders(origin: string | null): Record<string, string> {
   const allowed = Deno.env.get('ALLOWED_ORIGIN') || 'https://www.pessora.fr';
@@ -26,6 +27,10 @@ serve(async (req) => {
       headers: { ...cors, 'Content-Type': 'application/json' },
     });
   }
+
+  // Mutation de statut réservée aux admins (service role bypass RLS sinon ouvert)
+  const { isAdmin, error: authErr } = await verifyAdmin(req);
+  if (!isAdmin) return authErr!;
 
   try {
     const { orderId, status } = await req.json();
