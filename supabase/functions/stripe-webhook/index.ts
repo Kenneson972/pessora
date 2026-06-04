@@ -143,6 +143,10 @@ serve(async (req) => {
     }
   } catch (err) {
     console.error('[stripe-webhook] handler error:', event.type, err)
+    // Le handler a échoué : retirer le marqueur d'idempotence pour que le retry
+    // Stripe puisse retraiter l'événement (sinon le duplicate key le skipperait
+    // et la commande resterait bloquée en pending malgré le paiement).
+    await supabase.from('stripe_events_processed').delete().eq('id', event.id)
     return new Response(JSON.stringify({ error: 'Handler error' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
