@@ -55,7 +55,7 @@ Vous n'avez rien à installer. Tout fonctionne dans le navigateur. Pour informat
 
 > **Note sur les comptes de démonstration.** En phase de développement, des adresses spéciales (`/demo-espace`) permettent de visiter l'espace membre sans se connecter, avec un faux compte (`demo@pessora.fr`). Ces adresses **ne fonctionnent qu'en développement** et sont désactivées sur le site en ligne.
 
-[SCREENSHOT: page d'accueil complète du site pessora.fr avec le menu de navigation en haut]
+![Page d'accueil complète](images/guide-01-accueil.png)
 
 ---
 
@@ -67,7 +67,7 @@ Cette partie décrit ce que vos clients voient et font sur le site. Utile pour l
 
 Le menu en haut de page donne accès à toutes les rubriques : Accueil, Le Concept, Menu, Nos Produits, Événements, Contact. Un **panier** (icône sac) est toujours visible en haut à droite, ainsi qu'un accès à la **connexion / l'espace membre**.
 
-[SCREENSHOT: barre de navigation du haut avec le logo, les liens de menu, l'icône panier et le bouton connexion]
+![Barre de navigation](images/guide-02-navbar.png)
 
 **Comportement attendu :** le menu reste affiché sur toutes les pages publiques. Sur mobile, il se replie en un bouton « hamburger » (trois traits) qui ouvre le menu.
 
@@ -83,7 +83,7 @@ La page Menu présente toutes les boissons du bar, classées par gamme (Wellness
 2. Choisir une gamme avec les filtres, ou faire défiler toute la carte.
 3. Cliquer sur une boisson pour ouvrir sa **fiche détaillée**.
 
-[SCREENSHOT: page Menu avec les filtres de gamme et la grille de boissons, dont une carte avec un badge "Coup de cœur"]
+![Page Menu](images/guide-03-menu.png)
 
 ### 2.3 Fiche d'une boisson et options
 
@@ -104,7 +104,7 @@ Pour les **membres Óra+ actifs**, le prix des boissons s'affiche avec la réduc
 2. Choisir taille, lait, boosters et quantité.
 3. Cliquer sur **Ajouter au panier**. Une confirmation s'affiche brièvement.
 
-[SCREENSHOT: fenêtre d'options d'une boisson avec le choix de taille, de lait, les boosters et le bouton "Ajouter au panier"]
+![Options boisson](images/guide-04-drink-options.png)
 
 ### 2.4 La gamme de produits (compléments, nutrition)
 
@@ -121,7 +121,7 @@ Sur une fiche produit gamme, le client peut :
 
 > **Règle importante :** la gamme de produits est **réservée aux membres connectés**. Un visiteur non connecté peut mettre un produit gamme dans son panier, mais devra **créer un compte ou se connecter** pour finaliser la commande (le site le lui propose dans le panier). Cette règle est aussi vérifiée côté serveur, donc impossible à contourner.
 
-[SCREENSHOT: fiche d'un produit de la gamme avec la description, l'option cuillère doseuse et le bouton d'ajout au panier]
+![Fiche produit gamme](images/guide-05-gamme-produit.png)
 
 ### 2.5 Événements et inscriptions
 
@@ -137,7 +137,7 @@ Le client consulte les événements à venir (pop-ups, partenariats…), lit le 
 
 **Comportement attendu :** un événement n'apparaît en ligne que si vous l'avez marqué « Visible en ligne » dans l'admin, et le bouton d'inscription n'apparaît que si « Inscriptions ouvertes » est activé.
 
-[SCREENSHOT: page détail d'un événement avec la date, le lieu et le bouton "S'inscrire"]
+![Détail événement](images/guide-06-evenements.png)
 
 ### 2.6 Le panier
 
@@ -150,7 +150,7 @@ Dans le panier, le client peut :
 - **Vider tout le panier** (avec une confirmation) ;
 - Voir le **total**, le **temps d'attente estimé** et si le **bar est ouvert ou fermé**.
 
-[SCREENSHOT: panier latéral ouvert avec deux articles, les boutons +/- de quantité, le total et le bouton "Payer ma commande"]
+![Panier](images/guide-07-panier.png)
 
 ### 2.7 Commande sans compte (Guest Checkout)
 
@@ -163,7 +163,7 @@ Une fois ces champs valides, le bouton **Payer ma commande** s'active.
 
 > Rappel : seuls les **produits du bar** sont commandables sans compte. Si le panier contient un produit de la **gamme**, le site invite à créer un compte avant de payer.
 
-[SCREENSHOT: bas du panier avec les champs "Votre nom" et "06 XX XX XX XX" pour la commande invité]
+![Guest checkout](images/guide-08-guest-checkout.png)
 
 ### 2.8 Pick & Collect : choisir un créneau de retrait
 
@@ -173,7 +173,7 @@ Pour les **produits de la gamme**, le client n'a pas à choisir d'heure : c'est 
 
 **Comportement attendu :** si le panier contient des boissons et qu'aucun créneau n'est sélectionné, le paiement est bloqué avec le message « Veuillez sélectionner un créneau de retrait. »
 
-[SCREENSHOT: sélecteur de créneaux de retrait dans le panier, avec des horaires de 15 en 15 minutes]
+![Pick & Collect](images/guide-09-pick-collect.png)
 
 ### 2.9 Le paiement Stripe
 
@@ -181,7 +181,7 @@ Quand le client clique sur **Payer ma commande**, il est redirigé vers une page
 
 **Ce qui se passe en coulisses :** au moment de cliquer, le site crée la commande en base au statut « en attente de paiement », puis ouvre la page Stripe. Les prix sont **revérifiés côté serveur** (le site ne fait jamais confiance au prix affiché côté navigateur), ce qui empêche toute fraude sur les montants.
 
-[SCREENSHOT: page de paiement Stripe en français avec le récapitulatif de la commande et le formulaire de carte]
+![Paiement Stripe](images/guide-11-stripe-checkout.png)
 
 ### 2.10 Page de confirmation de commande
 
@@ -189,7 +189,7 @@ Adresse : `/commande/succes`
 
 Après un paiement réussi, le client revient sur une page de **confirmation**. Le panier est vidé automatiquement. La page affiche le récapitulatif et un **lien de suivi**. En cas de commande mixte (bar + gamme), les deux commandes issues du même paiement y sont affichées séparément.
 
-[SCREENSHOT: page "Commande confirmée" avec la coche verte et le lien vers le suivi de commande]
+![Commande confirmée](images/guide-12-confirmation.png)
 
 ### 2.11 Suivi de commande en temps réel
 
@@ -202,7 +202,7 @@ Les étapes affichées dépendent du type de commande :
 - **Bar :** Commande reçue → Paiement confirmé → En préparation → Prête → Retirée.
 - **Gamme :** Commande reçue → Paiement confirmé → Retrait planifié → En préparation → Prête → Retirée.
 
-[SCREENSHOT: page de suivi avec la timeline colorée des étapes de la commande]
+![Suivi de commande](images/guide-13-suivi-commande.png)
 
 ### 2.12 Annulation de commande
 
@@ -220,7 +220,7 @@ Pour annuler une commande **déjà payée**, le client contacte le bar : c'est v
 
 Avoir un compte permet de retrouver son historique, suivre ses commandes, gérer son abonnement Óra+ et commander la gamme.
 
-[SCREENSHOT: page de connexion avec les champs email / mot de passe et le lien d'inscription]
+![Connexion](images/guide-14-connexion.png)
 
 ### 2.14 Espace membre : tableau de bord
 
@@ -238,7 +238,7 @@ Une fois connecté, le client dispose d'un espace personnel avec un menu latéra
 | Profil | `/mon-espace/profil` | Coordonnées du compte |
 | PessoBot | `/mon-espace/pessobot` | L'assistant intégré dans l'espace |
 
-[SCREENSHOT: tableau de bord membre avec les indicateurs chiffrés et le menu latéral]
+![Dashboard membre](images/guide-17-dashboard-membre.png)
 
 ### 2.15 Bilan bien-être
 
@@ -246,13 +246,13 @@ Adresse : `/bilan-bien-etre`
 
 Le client choisit une **date disponible** dans un calendrier puis un **créneau**, et réserve son bilan. Les disponibilités proviennent des créneaux que vous ouvrez. Un encart invite à découvrir l'abonnement Óra+.
 
-[SCREENSHOT: page de prise de rendez-vous bilan avec le calendrier et les créneaux disponibles]
+![Bilan bien-être](images/guide-15-bilan.png)
 
 ### 2.16 PessoBot (l'assistant automatique)
 
 PessoBot est la **bulle de discussion** en bas à droite du site. Il répond aux questions courantes : horaires, adresse, différences entre les boissons, comment prendre un bilan, etc. Il s'adapte selon que le visiteur est un simple visiteur, un membre, ou un membre Óra+. Il peut aussi orienter le client vers le menu ou les événements.
 
-[SCREENSHOT: bulle PessoBot ouverte avec un message d'accueil et des suggestions rapides cliquables]
+![PessoBot](images/guide-16-pessobot.png)
 
 ### 2.17 Contact
 
@@ -260,7 +260,7 @@ Adresse : `/contact` (et `/contact-partenariat` pour les partenariats)
 
 Un **formulaire** permet d'envoyer un message au bar (transmis par e-mail). Les coordonnées (adresse, horaires, téléphone) y sont aussi affichées.
 
-[SCREENSHOT: page Contact avec le formulaire de message et les coordonnées du bar]
+![Contact](images/guide-10-contact.png)
 
 ---
 
@@ -276,7 +276,7 @@ L'espace de gestion est l'endroit où vous pilotez le bar au quotidien. Toutes l
 
 Le menu de l'admin donne accès à : Vue d'ensemble, Commandes, Mode Bar, Retraits Gamme, Produits & Gammes, Contenu, Communication, Membres, Événements, Bilans.
 
-[SCREENSHOT: écran de connexion admin puis vue d'ensemble avec le menu de gauche]
+![Connexion admin et vue d'ensemble](images/guide-18-admin-overview.png)
 
 ### 3.2 Vue d'ensemble (tableau de bord analytique)
 
@@ -289,7 +289,7 @@ C'est votre tableau de bord. Le panneau **Analytics** affiche, sur les **7 derni
 - les **produits les plus vendus** ;
 - la **répartition bar / gamme** (camembert).
 
-[SCREENSHOT: vue d'ensemble admin avec les graphiques de chiffre d'affaires, commandes et top produits]
+![Vue d'ensemble admin](images/guide-18-admin-overview.png)
 
 ---
 
@@ -326,7 +326,7 @@ Chaque commande est une **carte** dépliable (icône 🥤 pour le bar, 🥗 pour
 
 Vous pouvez aussi **supprimer** une commande (icône corbeille, avec confirmation). La suppression est tracée dans le journal d'audit.
 
-[SCREENSHOT: page Commandes avec les filtres en haut et une carte de commande bar dépliée montrant les boutons d'action]
+![Commandes admin](images/guide-20-admin-commandes.png)
 
 ---
 
@@ -350,7 +350,7 @@ Les actions :
 
 > En cas de coupure de la connexion temps réel, le Mode Bar **se resynchronise tout seul toutes les 10 secondes** : vous ne ratez aucune commande.
 
-[SCREENSHOT: Mode Bar plein écran sur fond sombre avec une commande, son minuteur et le bouton "Commencer la prépa"]
+![Mode Bar](images/guide-21-mode-bar.png)
 
 ---
 
@@ -378,7 +378,7 @@ Le pipeline complet de la gamme compte **6 étapes** côté client : en attente 
 
 > **Badge retard** : une commande dont la date de retrait planifiée est dépassée est signalée pour attirer votre attention.
 
-[SCREENSHOT: tableau Retraits Gamme à 4 colonnes avec une carte en cours de planification (champ date + heure + bouton OK)]
+![Retraits Gamme](images/guide-22-retraits-gamme.png)
 
 ---
 
@@ -396,7 +396,7 @@ Pourquoi ? Parce que les deux n'ont pas le même circuit : le bar se prépare to
 
 Sur la page de confirmation, le client voit lui aussi ses deux commandes séparément.
 
-[SCREENSHOT: page de confirmation client affichant deux commandes (une bar, une gamme) issues d'un même paiement]
+![Split order confirmation](images/guide-23-split-order.png)
 
 ---
 
@@ -415,25 +415,25 @@ Vous pouvez **ajouter, modifier, dupliquer et supprimer** des boissons, gérer l
 - **Édition du prix en un clic** : cliquez directement sur le prix dans la carte pour le modifier sur place.
 - **Duplication** : le bouton copier crée une nouvelle boisson pré-remplie (tout sauf le nom), pratique pour des variantes.
 
-[SCREENSHOT: onglet Produits avec la liste des boissons, l'édition de prix en ligne et le bouton dupliquer]
+![Produits admin](images/guide-24-produits.png)
 
 #### Produits de la gamme (compléments)
 
 Pour la gamme, vous gérez **l'ajout, la modification, la suppression, le stock, les images et l'adresse web (slug)** de chaque produit.
 
-[SCREENSHOT: onglet Gammes avec la fiche d'un produit en cours d'édition (image, stock, description)]
+![Gammes admin](images/guide-25-gammes.png)
 
 #### Galerie photos d'un produit
 
 Chaque produit peut avoir **plusieurs photos**. La galerie (`AdminProductGallery`) permet d'ajouter ou de retirer des images, qui s'affichent ensuite sur la fiche produit.
 
-[SCREENSHOT: gestionnaire de galerie d'un produit avec plusieurs vignettes photo]
+![Galerie produit](images/guide-26-galerie.png)
 
 #### Boosters
 
 L'onglet **Boosters** gère les suppléments payants des boissons : nom, prix, description, gammes concernées (Wellness / Énergie / Shakes), ordre d'affichage et activation. Ce sont eux qui apparaissent dans les options d'une boisson.
 
-[SCREENSHOT: onglet Boosters avec la liste des suppléments et le formulaire d'ajout]
+![Boosters admin](images/guide-27-boosters.png)
 
 ---
 
@@ -456,7 +456,7 @@ Vous **créez, modifiez et supprimez** les événements. Pour chaque événement
 
 **Galerie événement :** vous pouvez gérer les photos de l'événement.
 
-[SCREENSHOT: formulaire de création d'événement avec les champs date, lieu, accès, et les interrupteurs "Visible en ligne" / "Inscriptions ouvertes"]
+![Formulaire événement](images/guide-28-admin-evenements.png)
 
 ---
 
@@ -470,7 +470,7 @@ Cette page réunit deux outils :
 
 **Annonces du site** — vous créez des annonces qui s'affichent sur le site sous forme de **pop-up** ou de **bandeau**. Pour chaque annonce : type (Coup de projecteur / Promo / Événement / Alerte), titre, sous-titre, message, image, bouton (libellé + lien), prix éventuel, date d'expiration, priorité, fréquence d'affichage et activation.
 
-[SCREENSHOT: page Communication avec le composeur de newsletter et la liste des annonces du site]
+![Communication admin](images/guide-29-admin-communication.png)
 
 ---
 
@@ -485,7 +485,7 @@ Cette page comporte quatre onglets :
 - **Moments** — les sections « Choisis ton moment » (split gammes) de l'accueil.
 - **Bannière** — la bannière de la page d'accueil.
 
-[SCREENSHOT: page Contenu avec les onglets Infos bar / Carrousel / Moments / Bannière, sur l'onglet horaires]
+![Contenu admin](images/guide-30-admin-contenu.png)
 
 > **Statut du bar (ouvert/fermé) et temps d'attente.** Le site affiche en direct si le bar est **ouvert ou fermé** et le **temps d'attente estimé**, dans le panier. Cette information vient d'un réglage en base mis à jour en temps réel.
 
@@ -506,7 +506,7 @@ La liste des membres vous donne accès à chaque **fiche membre**. Sur une fiche
 
 Le statut des abonnements se synchronise automatiquement avec Stripe (paiement réussi, échec, résiliation).
 
-[SCREENSHOT: fiche d'un membre côté admin avec son abonnement Óra+ et l'historique de commandes]
+![Fiche membre admin](images/guide-31-admin-membres.png)
 
 ---
 
@@ -516,7 +516,7 @@ Adresse : `/admin/bilans`
 
 Vous gérez ici les **créneaux et réservations** de bilans bien-être proposés aux clients sur la page `/bilan-bien-etre`.
 
-[SCREENSHOT: page admin des bilans avec les créneaux et les réservations]
+![Bilans admin](images/guide-32-admin-bilans.png)
 
 ---
 
@@ -524,7 +524,7 @@ Vous gérez ici les **créneaux et réservations** de bilans bien-être proposé
 
 Le comportement de l'assistant PessoBot s'appuie sur les **infos bar** (horaires, adresse, menu) et sur un **flux automatisé** (n8n). Les réglages liés à PessoBot se trouvent côté **Infos bar**. PessoBot dispose d'une protection contre les abus (limite du nombre de messages) et peut consulter le menu et les événements à venir pour répondre.
 
-[SCREENSHOT: section de réglages PessoBot dans la page Infos bar]
+![PessoBot settings](images/guide-33-pessobot-settings.png)
 
 ---
 
