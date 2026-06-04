@@ -36,15 +36,17 @@ export function useAdminOrders(filterStatus: OrderFilterStatus = 'all') {
     if (error) return;
     let fresh = (data ?? []) as OrderWithItems[];
 
-    // Enrichir avec les noms des profils (pour les membres connectés)
+    // Enrichir avec les noms + e-mails des profils (pour les membres connectés)
     const userIds = [...new Set(fresh.map((o: any) => o.user_id).filter(Boolean))];
     if (userIds.length > 0) {
-      const { data: profiles } = await db.from('profiles').select('id, first_name').in('id', userIds);
+      const { data: profiles } = await db.from('profiles').select('id, first_name, email').in('id', userIds);
       if (profiles) {
         const nameMap = new Map((profiles as any[]).map((p: any) => [p.id, p.first_name || null]));
+        const emailMap = new Map((profiles as any[]).map((p: any) => [p.id, p.email || null]));
         fresh = fresh.map((o: any) => ({
           ...o,
           client_name: o.client_name || nameMap.get(o.user_id) || null,
+          client_email: emailMap.get(o.user_id) ?? null,
         }));
       }
     }

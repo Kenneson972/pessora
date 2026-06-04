@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronDown, ChevronUp, Phone, Trash2, User } from 'lucide-react';
+import { ChevronDown, ChevronUp, Mail, Phone, Trash2, User } from 'lucide-react';
 import { cn } from '@heroui/react';
 import type { OrderWithItems } from '../../hooks/useOrders';
 import { ConfirmDialog } from '../dashboard/ConfirmDialog';
@@ -73,6 +73,12 @@ export function AdminOrderCard({ order, onStatusUpdate, onDeleteOrder }: AdminOr
             <span className="text-[14px] font-bold text-black">{order.client_name || 'Client'}</span>
             {order.client_phone && <span className="text-[12px] text-black/50">{order.client_phone}</span>}
           </div>
+          {order.client_email && (
+            <p className="mb-1 flex items-center gap-1 text-[11px] text-black/45">
+              <Mail size={11} strokeWidth={1.4} className="shrink-0 text-black/30" aria-hidden />
+              <span className="truncate">{order.client_email}</span>
+            </p>
+          )}
           <p className="text-[12px] text-black/60 truncate mb-1">{itemNames || '—'}</p>
           <p className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[10px] text-black/35">
             <span>N° {order.id.slice(0, 8)}</span>
@@ -142,10 +148,22 @@ export function AdminOrderCard({ order, onStatusUpdate, onDeleteOrder }: AdminOr
               </span>
             )}
             {order.client_phone && (
-              <span className="flex items-center gap-1 text-[11px] text-black/55">
+              <a
+                href={`tel:${order.client_phone}`}
+                className="flex items-center gap-1 text-[11px] text-black/55 hover:text-noir transition-colors"
+              >
                 <Phone size={12} strokeWidth={1.3} className="text-black/30" />
                 {order.client_phone}
-              </span>
+              </a>
+            )}
+            {order.client_email && (
+              <a
+                href={`mailto:${order.client_email}`}
+                className="flex items-center gap-1 text-[11px] text-black/55 hover:text-noir transition-colors"
+              >
+                <Mail size={12} strokeWidth={1.3} className="text-black/30" />
+                {order.client_email}
+              </a>
             )}
             {order.user_id && (
               <Link

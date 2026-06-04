@@ -5,6 +5,7 @@ import type { SiteAnnouncement, NewsletterSubscriber } from '../../types/databas
 import { ConfirmDialog } from '../../components/dashboard/ConfirmDialog';
 import { DashPageHeader } from '../../components/dashboard/primitives';
 import { DASH_MAIN_PAD } from '../../components/dashboard/layoutClasses';
+import { AdminErrorAlert } from '../../components/dashboard/AdminErrorAlert';
 
 type AnnouncementType = SiteAnnouncement['type'];
 
@@ -55,6 +56,7 @@ const AdminCommunications = () => {
   const [announcements, setAnnouncements] = useState<SiteAnnouncement[]>([]);
   const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | 'new' | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
@@ -106,7 +108,8 @@ const AdminCommunications = () => {
       .select('*')
       .order('priority', { ascending: true })
       .order('created_at', { ascending: false });
-    if (!error && data) setAnnouncements(data as SiteAnnouncement[]);
+    if (error) { setLoadError('Impossible de charger les popups. Vérifiez votre connexion.'); return; }
+    setAnnouncements((data ?? []) as SiteAnnouncement[]);
   }, []);
 
   const loadSubscribers = useCallback(async () => {
@@ -115,11 +118,13 @@ const AdminCommunications = () => {
       .from('newsletter_subscribers')
       .select('*')
       .order('created_at', { ascending: false });
-    if (!error && data) setSubscribers(data as NewsletterSubscriber[]);
+    if (error) { setLoadError('Impossible de charger les abonnés. Vérifiez votre connexion.'); return; }
+    setSubscribers((data ?? []) as NewsletterSubscriber[]);
   }, []);
 
   const loadAll = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
     await Promise.all([loadAnnouncements(), loadSubscribers()]);
     setLoading(false);
   }, [loadAnnouncements, loadSubscribers]);
@@ -259,6 +264,7 @@ const AdminCommunications = () => {
         subtitle="Popups d’accueil et inscriptions newsletter."
       />
       <div className={DASH_MAIN_PAD}>
+      {loadError && !loading && <AdminErrorAlert message={loadError} onRetry={loadAll} />}
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div className="flex gap-1 rounded-[2px] border border-noir/[0.08] bg-white p-1">
           <button

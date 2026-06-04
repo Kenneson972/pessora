@@ -47,7 +47,13 @@ export default function ModeBar() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [now, setNow] = useState(new Date());
+  const [actionError, setActionError] = useState<string | null>(null);
   const prevCountRef = useRef(orders.length);
+
+  const showActionError = (msg: string) => {
+    setActionError(msg);
+    setTimeout(() => setActionError(null), 4000);
+  };
 
   // Sons sur nouvelles commandes
   useEffect(() => {
@@ -85,22 +91,28 @@ export default function ModeBar() {
   }, []);
 
   const handleStartPrep = async (orderId: string) => {
-    setLocalOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status: 'preparing' as const } : o)));
-    await (supabase as any).from('orders').update({ status: 'preparing' }).eq('id', orderId);
+    const prev = localOrders;
+    setLocalOrders((p) => p.map((o) => (o.id === orderId ? { ...o, status: 'preparing' as const, preparing_at: new Date().toISOString() } : o)));
+    const { error } = await (supabase as any).from('orders').update({ status: 'preparing' }).eq('id', orderId);
+    if (error) { setLocalOrders(prev); showActionError('Échec de la mise à jour. Réessayez.'); return; }
     auditLog({ action: 'order.status_change', entity_type: 'order', entity_id: orderId, details: { new_status: 'preparing' } });
   };
 
   const handleMarkReady = async (orderId: string) => {
-    setLocalOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status: 'ready' as const } : o)));
-    setCurrentIndex((prev) => (prev < orders.length - 1 ? prev + 1 : 0));
-    await (supabase as any).from('orders').update({ status: 'ready' }).eq('id', orderId);
+    const prev = localOrders;
+    setLocalOrders((p) => p.map((o) => (o.id === orderId ? { ...o, status: 'ready' as const } : o)));
+    setCurrentIndex((p) => (p < orders.length - 1 ? p + 1 : 0));
+    const { error } = await (supabase as any).from('orders').update({ status: 'ready' }).eq('id', orderId);
+    if (error) { setLocalOrders(prev); showActionError('Échec de la mise à jour. Réessayez.'); return; }
     auditLog({ action: 'order.status_change', entity_type: 'order', entity_id: orderId, details: { new_status: 'ready' } });
   };
 
   const handleMarkCompleted = async (orderId: string) => {
-    setLocalOrders((prev) => prev.filter((o) => o.id !== orderId));
-    setCurrentIndex((prev) => (prev < orders.length - 1 ? prev + 1 : 0));
-    await (supabase as any).from('orders').update({ status: 'completed', picked_up_at: new Date().toISOString() }).eq('id', orderId);
+    const prev = localOrders;
+    setLocalOrders((p) => p.filter((o) => o.id !== orderId));
+    setCurrentIndex((p) => (p < orders.length - 1 ? p + 1 : 0));
+    const { error } = await (supabase as any).from('orders').update({ status: 'completed', picked_up_at: new Date().toISOString() }).eq('id', orderId);
+    if (error) { setLocalOrders(prev); showActionError('Échec de la mise à jour. Réessayez.'); return; }
     auditLog({ action: 'order.status_change', entity_type: 'order', entity_id: orderId, details: { new_status: 'completed' } });
   };
 
@@ -144,8 +156,10 @@ export default function ModeBar() {
     : '—';
   const createdAtLabel = new Date(current.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
+  // Timer basé sur le passage en préparation (fallback created_at pour les commandes antérieures à la colonne)
+  const prepStart = current.preparing_at ?? current.created_at;
   const elapsedSeconds = current.status === 'preparing'
-    ? Math.floor((now.getTime() - new Date(current.created_at).getTime()) / 1000)
+    ? Math.floor((now.getTime() - new Date(prepStart).getTime()) / 1000)
     : 0;
   const isOverdue = elapsedSeconds > OVERDUE_MINUTES * 60;
 
@@ -170,6 +184,12 @@ export default function ModeBar() {
         </div>
         <p className="text-3xl font-bold tabular-nums text-sapin md:text-4xl">{clockDisplay}</p>
       </div>
+
+      {actionError && (
+        <div className="mx-4 mt-3 rounded-xl border border-red-500/40 bg-red-500/15 px-4 py-2 text-center text-sm font-medium text-red-300 md:mx-6" role="alert">
+          {actionError}
+        </div>
+      )}
 
       <div className="md:grid md:grid-cols-[200px_1fr] md:h-[calc(100vh-69px)]">
         {/* Sidebar — liste des commandes */}

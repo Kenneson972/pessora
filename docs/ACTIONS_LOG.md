@@ -7,6 +7,38 @@ Format : `ISO` · `type` · résumé · fichiers · vérif.
 
 ## 2026-06-04
 
+### 2026-06-04T · fix · Correctifs P1 audit admin (MRR, rollback mutations, timer, chargements silencieux)
+
+- **Contexte** : suite au tour admin, traitement des 4 points P1 identifiés (« Tout corriger »).
+- **Summary** :
+  - **KPI MRR** (`AdminOverview`) — le revenu mensuel comptait tous les abonnements. Désormais requête dédiée `subscriptions` filtrée `plan = 'ora_plus' AND status = 'active'`, MRR = `activeOraPlus × ORA_PLUS_PRICE`. Nouveau champ `OverviewStats.activeOraPlus`.
+  - **Rollback mutations commandes** — les mises à jour de statut/suppression ne vérifiaient pas l'erreur Supabase (UI désynchronisée en cas d'échec). Ajout : update optimiste + revert vers l'état précédent + toast d'échec (`AdminOverview`, `AdminCommandes`) et message d'erreur local pour la vue kiosque (`ModeBar`).
+  - **Timer Mode Bar** — délai calculé depuis `created_at` (faux si longue attente en `paid`). Nouvelle colonne `orders.preparing_at` + trigger `set_order_preparing_at` (BEFORE UPDATE OF status) ; `ModeBar` calcule l'écoulé depuis `preparing_at ?? created_at`. Migration `20260604130000_orders_preparing_at.sql`. Type `database.ts` mis à jour.
+  - **Chargements silencieux** (`AdminCommunications`, `AdminBilans`) — une erreur réseau ressemblait à « aucune donnée ». Ajout d'un état `loadError` capturé sur chaque requête + `AdminErrorAlert` avec bouton « Réessayer » en tête de contenu.
+- **Files** : `src/pages/admin/AdminOverview.tsx`, `src/pages/admin/AdminCommandes.tsx`, `src/pages/admin/ModeBar.tsx`, `src/pages/admin/AdminCommunications.tsx`, `src/pages/admin/AdminBilans.tsx`, `src/types/database.ts`, `supabase/migrations/20260604130000_orders_preparing_at.sql`
+- **Verify** : `tsc --noEmit` OK · lint OK (0) · `npm run build` OK · dev server `http://localhost:3000` (200).
+
+### 2026-06-04T · fix · Email membre invisible dans l'admin + visibilité contact
+
+- **Contexte** : « je ne vois pas tout le temps les mails des user » dans l'espace admin. Vérification en base (MCP Supabase, projet `tulhiipucrnyejheuitv`) : sur 3 profils, **2 avaient `profiles.email` vide** alors que `auth.users` possédait l'email. Toutes les vues admin lisent `profiles.email` → email invisible par intermittence.
+- **Cause racine** : `profiles.email` n'était pas fiable (comptes créés hors flux app / avant trigger / email modifié dans Auth). Le backfill historique (`20260421143000`) était un one-shot, et aucun trigger ne synchronisait `profiles.email` lors d'un changement d'email côté Auth.
+- **Summary** :
+  - **DB** : migration `20260604120000_sync_profiles_email.sql` (appliquée via MCP `apply_migration`) — backfill `profiles.email` depuis `auth.users` + fonction `sync_profile_email()` + trigger `on_auth_user_email_updated` (AFTER UPDATE OF email ON auth.users). Le trigger INSERT existant (`on_auth_user_created`) couvre déjà les nouveaux comptes. Vérif post-migration : 0 email vide.
+  - **Admin commandes** : `useAdminOrders` enrichit désormais `client_email` depuis profiles ; `AdminOrderCard` affiche l'email (en-tête + lien `mailto:` dans la zone contact, téléphone passé en `tel:`).
+  - **Admin overview** : la file « Commandes en cours » affiche le nom + e-mail du membre au lieu de `Client #uuid` tronqué.
+- **Files** : `supabase/migrations/20260604120000_sync_profiles_email.sql`, `src/hooks/useOrders.ts` (champ `client_email` optionnel), `src/hooks/useAdminOrders.ts`, `src/components/admin/AdminOrderCard.tsx`, `src/pages/admin/AdminOverview.tsx`
+- **Verify** : `npx tsc --noEmit` OK · `npm run build` OK · migration vérifiée en base (email_vide = 0).
+
+### 2026-06-04T · ui · Tour admin — fiche membre enrichie + page Retraits Gamme (contact)
+
+- **Contexte** : « j'aime pas les détails membres, la page gamme (retrait gamme kanban) ». Tour complet de l'espace admin (audit read-only, 10 entrées de nav).
+- **Summary** :
+  - **Fiche membre** (`AdminMemberDetail`) : nouvel en-tête profil scannable — e-mail proéminent (mailto + copie), téléphone (tel), badges plan/statut, et stats rapides (Commandes · Dépensé · Bilans). La longue pile de formulaires existante est conservée en dessous.
+  - **Retraits Gamme** (`RetraitsGamme`) : les cartes affichent désormais e-mail (mailto) + lien « Voir le membre » (la gamme étant réservée aux membres), via enrichissement profiles dans `fetchAll`.
+- **Files** : `src/pages/admin/AdminMemberDetail.tsx`, `src/pages/admin/RetraitsGamme.tsx`
+- **Verify** : `npx tsc --noEmit` OK · `npm run build` OK · dev server `http://localhost:3000`.
+- **Reste à arbitrer (audit admin, non appliqué)** : P1 KPI MRR (compte les plans `free`), mutations commandes sans rollback (`AdminOverview`/`AdminCommandes`/`ModeBar`), timer Mode Bar basé sur `created_at`, chargements silencieux (`AdminCommunications`/`AdminBilans`). À traiter sur validation.
+
 ### 2026-06-04T · security · Audit flux commande/paiement — correctifs P0/P1
 
 - **Contexte** : exécution de `docs/prompts/cursor-audit-flux-commande-4juin.md` — audit complet du tunnel (panier → checkout → succès/suivi → admin → edge functions → Óra+). 4 explorations parallèles read-only, puis correctifs ciblés (pas de refacto), 1 commit par fix.

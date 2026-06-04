@@ -8,9 +8,11 @@ import {
   DashBtn, DashRule, DashStatusBadge,
 } from '../../components/dashboard/primitives';
 import { DASH_MAIN_PAD } from '../../components/dashboard/layoutClasses';
+import { useAdminToast } from '../../components/admin/AdminToast';
 
 const ORA_PLUS_PRICE = 24.90;
 import { AnalyticsDashboard } from '../../components/admin/AnalyticsDashboard';
+import { auditLog } from '../../lib/auditLog';
 import type { OrderWithItems } from '../../hooks/useOrders';
 
 const STATUS_LABELS: Record<string, string> = {
@@ -40,6 +42,7 @@ interface OverviewStats {
   totalProducts: number;
   planFree: number;
   planOraPlus: number;
+  activeOraPlus: number;
 }
 
 interface EventRow {
@@ -63,6 +66,7 @@ interface ExpiredSub {
 const AdminOverview = () => {
   useEffect(() => { document.title = 'Admin — PessÓra'; }, []);
   const navigate = useNavigate();
+  const { toast } = useAdminToast();
   const [stats, setStats] = useState<OverviewStats>({
     totalMembers: 0,
     activeSubscriptions: 0,
@@ -71,6 +75,7 @@ const AdminOverview = () => {
     totalProducts: 0,
     planFree: 0,
     planOraPlus: 0,
+    activeOraPlus: 0,
   });
   const [events, setEvents] = useState<EventRow[]>([]);
   const [pendingOrders, setPendingOrders] = useState<OrderWithItems[]>([]);
@@ -107,7 +112,9 @@ const AdminOverview = () => {
         .limit(10),
       db.from('subscriptions').select('plan', { count: 'exact' }).eq('plan', 'free'),
       db.from('subscriptions').select('plan', { count: 'exact' }).eq('plan', 'ora_plus'),
-    ]).then(([membersRes, subsRes, newMembersRes, eventsRes, productsRes, ordersRes, expiredRes, freeRes, oraPlusRes]: [
+      // MRR = uniquement les abonnements Óra+ réellement actifs (un plan "free" ne génère pas de revenu)
+      db.from('subscriptions').select('id', { count: 'exact' }).eq('plan', 'ora_plus').eq('status', 'active'),
+    ]).then(async ([membersRes, subsRes, newMembersRes, eventsRes, productsRes, ordersRes, expiredRes, freeRes, oraPlusRes, activeOraPlusRes]: [
       { count: number | null },
       { count: number | null },
       { count: number | null },
@@ -115,6 +122,7 @@ const AdminOverview = () => {
       { count: number | null },
       { data: OrderWithItems[] | null },
       { data: Array<{ user_id: string; updated_at: string; profiles: { first_name: string | null; last_name: string | null; email: string | null } | null }> | null },
+      { count: number | null },
       { count: number | null },
       { count: number | null },
     ]) => {
@@ -148,9 +156,26 @@ const AdminOverview = () => {
         totalProducts: productsRes.count ?? 0,
         planFree,
         planOraPlus,
+        activeOraPlus: activeOraPlusRes.count ?? 0,
       });
       setEvents(evList);
-      setPendingOrders((ordersRes.data ?? []) as OrderWithItems[]);
+
+      // Enrichit la file commandes avec nom + e-mail du membre (sinon "Client #uuid")
+      let ordersList = (ordersRes.data ?? []) as OrderWithItems[];
+      const orderUserIds = [...new Set(ordersList.map((o) => o.user_id).filter(Boolean))] as string[];
+      if (orderUserIds.length > 0) {
+        const { data: op } = await db.from('profiles').select('id, first_name, last_name, email').in('id', orderUserIds);
+        if (op) {
+          const nameMap = new Map((op as any[]).map((p: any) => [p.id, [p.first_name, p.last_name].filter(Boolean).join(' ') || null]));
+          const emailMap = new Map((op as any[]).map((p: any) => [p.id, p.email || null]));
+          ordersList = ordersList.map((o) => ({
+            ...o,
+            client_name: o.client_name || (o.user_id ? nameMap.get(o.user_id) ?? null : null),
+            client_email: o.user_id ? emailMap.get(o.user_id) ?? null : null,
+          }));
+        }
+      }
+      setPendingOrders(ordersList);
       const expiredList = ((expiredRes as any).data ?? []).map((row: any) => ({
         userId: row.user_id,
         firstName: row.profiles?.first_name ?? null,
@@ -164,17 +189,24 @@ const AdminOverview = () => {
   }, []);
 
   const handleOrderAction = async (orderId: string, nextStatus: string) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase as any)
-      .from('orders')
-      .update({ status: nextStatus, ...(nextStatus === 'completed' ? { picked_up_at: new Date().toISOString() } : {}) })
-      .eq('id', orderId);
-    // Optimistic update
+    const previous = pendingOrders;
+    // Mise à jour optimiste
     setPendingOrders((prev) =>
       nextStatus === 'completed'
         ? prev.filter((o) => o.id !== orderId)
         : prev.map((o) => (o.id === orderId ? { ...o, status: nextStatus } as OrderWithItems : o)),
     );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any)
+      .from('orders')
+      .update({ status: nextStatus, ...(nextStatus === 'completed' ? { picked_up_at: new Date().toISOString() } : {}) })
+      .eq('id', orderId);
+    if (error) {
+      setPendingOrders(previous); // revert si l'update échoue (RLS, réseau)
+      toast('error', 'Échec de la mise à jour du statut.');
+      return;
+    }
+    auditLog({ action: 'order.status_change', entity_type: 'order', entity_id: orderId, details: { new_status: nextStatus } });
   };
 
   const L = loading;
@@ -239,7 +271,7 @@ const AdminOverview = () => {
                   <KPI.Title>MRR</KPI.Title>
                 </KPI.Header>
                 <KPI.Content>
-                  <KPI.Value maximumFractionDigits={2} value={L ? 0 : stats.activeSubscriptions * ORA_PLUS_PRICE} />
+                  <KPI.Value maximumFractionDigits={2} value={L ? 0 : stats.activeOraPlus * ORA_PLUS_PRICE} />
                 </KPI.Content>
               </KPI>
             </div>
@@ -337,8 +369,13 @@ const AdminOverview = () => {
                             <p className="text-[13px] font-medium truncate">{itemNames || '—'}</p>
                             <p className="text-[10.5px] text-black/45 mt-[2px]">
                               Retrait {pickupLabel} · {order.total.toFixed(2).replace('.', ',')}€
-                              {order.user_id ? ' · Client #' + order.user_id.slice(0, 8) : ''}
                             </p>
+                            {(order.client_name || order.client_email) && (
+                              <p className="text-[10.5px] text-black/40 mt-[2px] truncate">
+                                {order.client_name || 'Client'}
+                                {order.client_email ? ` · ${order.client_email}` : ''}
+                              </p>
+                            )}
                           </div>
                           <div className="flex items-center gap-3 shrink-0">
                             <span className={`text-[9px] font-medium uppercase tracking-[0.12em] px-2 py-1 rounded-[2px] ${

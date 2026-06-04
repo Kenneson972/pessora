@@ -1,7 +1,7 @@
 // src/pages/admin/AdminMemberDetail.tsx
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Copy, Mail } from 'lucide-react';
+import { ArrowLeft, Copy, Mail, Phone } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { auditLog } from '../../lib/auditLog';
 import { DASH_MAIN_PAD } from '../../components/dashboard/layoutClasses';
@@ -65,6 +65,20 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
     <h2 className="mb-4 font-display text-[18px] font-normal text-black" style={{ fontFamily: 'var(--font-display)' }}>
       {children}
     </h2>
+  );
+}
+
+function HeaderStat({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="text-center">
+      <p
+        className="font-display text-[22px] font-normal leading-none tabular-nums text-black"
+        style={{ fontFamily: 'var(--font-display)' }}
+      >
+        {value}
+      </p>
+      <p className="mt-1.5 text-[9px] font-normal uppercase tracking-[0.16em] text-black/35">{label}</p>
+    </div>
   );
 }
 
@@ -311,6 +325,13 @@ const AdminMemberDetail = () => {
     }
   };
 
+  const copyEmail = () => {
+    if (profile?.email) {
+      void navigator.clipboard.writeText(profile.email);
+      showToast('E-mail copié.');
+    }
+  };
+
   if (!memberId) {
     return (
       <div className={`${DASH_MAIN_PAD} mx-auto w-full max-w-[1400px]`}>
@@ -346,6 +367,13 @@ const AdminMemberDetail = () => {
   const displayName =
     `${profile?.first_name ?? ''} ${profile?.last_name ?? ''}`.trim() || profile?.email || 'Membre';
 
+  const ordersCount = orders.length;
+  const totalSpent = orders
+    .filter((o) => ['paid', 'scheduled', 'preparing', 'ready', 'completed'].includes(o.status))
+    .reduce((sum, o) => sum + (o.total ?? 0), 0);
+  const planLabel = subscription ? PLAN_LABEL[subscription.plan] ?? subscription.plan : 'Gratuit';
+  const subActive = subscription?.status === 'active';
+
   return (
     <div className={`${DASH_MAIN_PAD} mx-auto w-full max-w-[900px]`}>
       <Link
@@ -362,17 +390,83 @@ const AdminMemberDetail = () => {
       )}
 
       <header className="mb-10 border-b border-noir/[0.06] pb-8">
-        <h1
-          className="font-display text-[32px] font-normal leading-none text-black"
-          style={{ fontFamily: 'var(--font-display)' }}
-        >
-          {displayName}
-        </h1>
-        {profile?.role === 'admin' && (
-          <span className="mt-3 inline-block rounded-[2px] bg-noir/[0.07] px-2 py-1 text-[8px] font-normal uppercase tracking-[0.12em] text-black/55">
-            Admin
-          </span>
-        )}
+        <div className="flex flex-wrap items-start justify-between gap-x-8 gap-y-6">
+          <div className="min-w-0">
+            <h1
+              className="font-display text-[32px] font-normal leading-none text-black"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              {displayName}
+            </h1>
+
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <span
+                className={`rounded-full border px-2.5 py-0.5 text-[9px] font-normal uppercase tracking-[0.1em] ${
+                  subscription?.plan === 'ora_plus'
+                    ? 'border-indigo-200/80 bg-indigo-50/80 text-indigo-900/80'
+                    : 'border-noir/10 bg-noir/[0.03] text-black/45'
+                }`}
+              >
+                {planLabel}
+              </span>
+              {subscription && (
+                <span
+                  className={`rounded-[2px] px-2 py-0.5 text-[9px] font-normal uppercase tracking-[0.1em] ${
+                    subActive ? 'bg-sapin-subtle text-sapin' : 'bg-noir/[0.05] text-black/40'
+                  }`}
+                >
+                  {subActive ? 'Actif' : subscription.status}
+                </span>
+              )}
+              {profile?.role === 'admin' && (
+                <span className="rounded-[2px] bg-noir/[0.07] px-2 py-0.5 text-[8px] font-normal uppercase tracking-[0.12em] text-black/55">
+                  Admin
+                </span>
+              )}
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2">
+              {profile?.email ? (
+                <span className="flex min-w-0 items-center gap-1.5">
+                  <a
+                    href={`mailto:${profile.email}`}
+                    className="flex min-w-0 items-center gap-1.5 text-[13px] text-black/70 transition-colors hover:text-black"
+                  >
+                    <Mail size={14} strokeWidth={1.5} className="shrink-0 opacity-50" aria-hidden />
+                    <span className="truncate">{profile.email}</span>
+                  </a>
+                  <button
+                    type="button"
+                    onClick={copyEmail}
+                    aria-label="Copier l'e-mail"
+                    className="shrink-0 rounded-[2px] border border-noir/12 p-1 text-black/40 transition-colors hover:border-noir/25 hover:text-black"
+                  >
+                    <Copy size={11} strokeWidth={1.5} />
+                  </button>
+                </span>
+              ) : (
+                <span className="flex items-center gap-1.5 text-[13px] text-black/35">
+                  <Mail size={14} strokeWidth={1.5} className="shrink-0 opacity-40" aria-hidden /> —
+                </span>
+              )}
+              {profile?.phone && (
+                <a
+                  href={`tel:${profile.phone}`}
+                  className="flex items-center gap-1.5 text-[13px] text-black/60 transition-colors hover:text-black"
+                >
+                  <Phone size={14} strokeWidth={1.5} className="shrink-0 opacity-50" aria-hidden />
+                  {profile.phone}
+                </a>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-7 sm:gap-9">
+            <HeaderStat label="Commandes" value={ordersCount} />
+            <HeaderStat label="Dépensé" value={`${totalSpent.toFixed(2).replace('.', ',')}€`} />
+            <HeaderStat label="Bilans" value={bilans.length} />
+          </div>
+        </div>
       </header>
 
       {error && <p className="mb-4 text-[11px] text-red-500/90">{error}</p>}

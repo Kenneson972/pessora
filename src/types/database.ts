@@ -169,6 +169,7 @@ export interface Database {
           order_type: 'bar' | 'gamme'
           scheduled_pickup_date: string | null
           pickup_time: string | null
+          preparing_at: string | null
           picked_up_at: string | null
           stripe_payment_intent_id: string | null
           stripe_session_id: string | null

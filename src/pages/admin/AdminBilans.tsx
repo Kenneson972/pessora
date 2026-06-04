@@ -15,6 +15,7 @@ import { supabase } from '../../lib/supabaseClient';
 import { ConfirmDialog } from '../../components/dashboard/ConfirmDialog';
 import { DashPageHeader } from '../../components/dashboard/primitives';
 import { DASH_MAIN_PAD } from '../../components/dashboard/layoutClasses';
+import { AdminErrorAlert } from '../../components/dashboard/AdminErrorAlert';
 
 interface BilanSlot {
   id: string;
@@ -98,6 +99,7 @@ const AdminBilans = () => {
   const [bookings, setBookings] = useState<BilanBooking[]>([]);
   const [slots, setSlots] = useState<BilanSlot[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [filterStatut, setFilterStatut] = useState<string>('all');
 
   // Calendar state
@@ -118,27 +120,34 @@ const AdminBilans = () => {
 
   const fetchBookings = useCallback(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data } = await (supabase as any)
+    const { data, error } = await (supabase as any)
       .from('bilan_bookings')
       .select('*, bilan_slots(*)')
       .order('created_at', { ascending: false });
+    if (error) { setLoadError('Impossible de charger les demandes. Vérifiez votre connexion.'); return; }
     setBookings(data ?? []);
   }, []);
 
   const fetchSlots = useCallback(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data } = await (supabase as any)
+    const { data, error } = await (supabase as any)
       .from('bilan_slots')
       .select('*')
       .order('date', { ascending: true })
       .order('heure', { ascending: true });
+    if (error) { setLoadError('Impossible de charger les créneaux. Vérifiez votre connexion.'); return; }
     setSlots(data ?? []);
   }, []);
 
-  useEffect(() => {
+  const reloadAll = useCallback(() => {
     setLoading(true);
+    setLoadError(null);
     Promise.all([fetchBookings(), fetchSlots()]).finally(() => setLoading(false));
   }, [fetchBookings, fetchSlots]);
+
+  useEffect(() => {
+    reloadAll();
+  }, [reloadAll]);
 
   const updateStatut = async (id: string, statut: BilanBooking['statut']) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -251,6 +260,7 @@ const AdminBilans = () => {
         subtitle="Demandes de réservation, créneaux et historique."
       />
       <div className={DASH_MAIN_PAD}>
+        {loadError && !loading && <AdminErrorAlert message={loadError} onRetry={reloadAll} />}
         {/* Tabs */}
         <div className="flex gap-1 mb-6 border-b border-noir/[0.06]">
           {(['demandes', 'creneaux'] as const).map((t) => (

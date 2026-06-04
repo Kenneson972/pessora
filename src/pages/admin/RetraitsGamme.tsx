@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Package, Phone } from 'lucide-react';
+import { ArrowLeft, Mail, Package, Phone, User } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { auditLog } from '../../lib/auditLog';
 import type { OrderWithItems } from '../../hooks/useOrders';
@@ -11,6 +11,28 @@ const COLUMNS = [
   { key: 'preparing', label: 'En préparation', color: 'bg-orange-50 border-orange-200' },
   { key: 'ready', label: 'Prêtes', color: 'bg-green-50 border-green-200' },
 ];
+
+function ClientContact({ order }: { order: OrderWithItems }) {
+  return (
+    <div className="mb-2 space-y-0.5">
+      {order.client_phone && (
+        <a href={`tel:${order.client_phone}`} className="flex items-center gap-1 text-[11px] text-black/45 transition-colors hover:text-black/70">
+          <Phone size={11} strokeWidth={1.4} className="shrink-0" />{order.client_phone}
+        </a>
+      )}
+      {order.client_email && (
+        <a href={`mailto:${order.client_email}`} className="flex items-center gap-1 truncate text-[11px] text-black/45 transition-colors hover:text-black/70">
+          <Mail size={11} strokeWidth={1.4} className="shrink-0" /><span className="truncate">{order.client_email}</span>
+        </a>
+      )}
+      {order.user_id && (
+        <Link to={`/admin/membres/${order.user_id}`} className="inline-flex items-center gap-1 text-[10px] text-black/35 transition-colors hover:text-sapin">
+          <User size={10} strokeWidth={1.4} /> Voir le membre
+        </Link>
+      )}
+    </div>
+  );
+}
 
 function PaidCard({ order, items, onUpdate }: { order: OrderWithItems; items: OrderWithItems['order_items']; onUpdate: () => void }) {
   const [date, setDate] = useState(''); const [time, setTime] = useState(''); const [saving, setSaving] = useState(false);
@@ -23,7 +45,7 @@ function PaidCard({ order, items, onUpdate }: { order: OrderWithItems; items: Or
   return (
     <div className="rounded-[2px] border border-noir/[0.06] bg-white p-4 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
       <p className="text-[14px] font-bold text-black mb-1">{order.client_name || 'Client'}</p>
-      {order.client_phone && <p className="text-[11px] text-black/45 mb-2 flex items-center gap-1"><Phone size={11} />{order.client_phone}</p>}
+      <ClientContact order={order} />
       <div className="mb-3 space-y-0.5">{items.map((item, i) => (<p key={item.id ?? i} className="text-[12px] text-black/60">{item.quantity}× {item.product_name}</p>))}</div>
       <p className="text-[14px] font-bold tabular-nums text-black mb-3">{order.total.toFixed(2).replace('.', ',')}€</p>
       <div className="flex gap-1.5 mb-3">
@@ -46,8 +68,25 @@ export default function RetraitsGamme() {
   const fetchAll = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     const { data } = await (supabase as any).from('orders').select('*, order_items(*)').eq('order_type', 'gamme').in('status', ['paid', 'scheduled', 'preparing', 'ready']).order('created_at', { ascending: false });
+    let rows = (data ?? []) as OrderWithItems[];
+
+    // Enrichit avec nom + e-mail du membre (la gamme est réservée aux membres connectés)
+    const ids = [...new Set(rows.map((o) => o.user_id).filter(Boolean))] as string[];
+    if (ids.length > 0) {
+      const { data: profs } = await (supabase as any).from('profiles').select('id, first_name, last_name, email').in('id', ids);
+      if (profs) {
+        const nameMap = new Map((profs as any[]).map((p: any) => [p.id, [p.first_name, p.last_name].filter(Boolean).join(' ') || null]));
+        const emailMap = new Map((profs as any[]).map((p: any) => [p.id, p.email || null]));
+        rows = rows.map((o) => ({
+          ...o,
+          client_name: o.client_name || (o.user_id ? nameMap.get(o.user_id) ?? null : null),
+          client_email: o.user_id ? emailMap.get(o.user_id) ?? null : null,
+        }));
+      }
+    }
+
     const grouped: Record<string, OrderWithItems[]> = { paid: [], scheduled: [], preparing: [], ready: [] };
-    if (data) for (const o of data as OrderWithItems[]) { if (grouped[o.status]) grouped[o.status].push(o); }
+    for (const o of rows) { if (grouped[o.status]) grouped[o.status].push(o); }
     setOrders(grouped); if (!silent) setLoading(false);
   }, []);
 
@@ -110,7 +149,7 @@ export default function RetraitsGamme() {
                           </span>
                         )}
                         <p className="text-[14px] font-bold text-black mb-1">{order.client_name || 'Client'}</p>
-                        {order.client_phone && <p className="text-[11px] text-black/45 mb-2 flex items-center gap-1"><Phone size={11} />{order.client_phone}</p>}
+                        <ClientContact order={order} />
                         {order.scheduled_pickup_date && (
                           <p className={`text-[11px] font-medium mb-2 ${isOverdue ? 'text-red-600' : 'text-sapin'}`}>
                             🕐 {new Date(order.scheduled_pickup_date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} à {new Date(order.scheduled_pickup_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}

@@ -10,6 +10,8 @@ export interface OrderItemWithImage extends OrderItem {
 
 export interface OrderWithItems extends Order {
   order_items: OrderItemWithImage[];
+  /** Enrichi côté admin depuis profiles (membres connectés). Non persisté sur orders. */
+  client_email?: string | null;
 }
 
 const POLL_INTERVAL = 30_000; // 30s fallback si Realtime décroche
