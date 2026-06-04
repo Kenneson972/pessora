@@ -8,7 +8,10 @@ export function useCheckout(pickupTime: string, clientName: string, clientPhone:
   const items = useCart((s) => s.items);
 
   const checkout = async () => {
-    if (!pickupTime) {
+    // Le créneau de retrait ne concerne que le bar. Un panier 100 % gamme
+    // (date posée ensuite par le gérant) n'a pas besoin de créneau.
+    const hasBarItems = items.some((i) => i.source !== 'gamme');
+    if (hasBarItems && !pickupTime) {
       setError('Veuillez sélectionner un créneau de retrait.');
       return;
     }

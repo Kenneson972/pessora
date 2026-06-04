@@ -47,6 +47,7 @@ export function CartDrawer() {
   })();
   const guestFormValid = !isGuest || (guestNameValid && guestPhoneValid);
   const hasGammeItems = items.some((x) => x.source === 'gamme');
+  const hasBarItems = items.some((x) => x.source !== 'gamme');
   const gammeBlockedGuest = isGuest && hasGammeItems;
   const telHref = `tel:${barInfo.contact.phone.replace(/\s/g, '').replace(/X/g, '')}`;
 
@@ -165,11 +166,13 @@ export function CartDrawer() {
 
             {items.length > 0 && (
               <>
-              <PickupTimePicker
-                businessHours={barInfo.hours}
-                value={pickupTime}
-                onChange={setPickupTime}
-              />
+              {hasBarItems && (
+                <PickupTimePicker
+                  businessHours={barInfo.hours}
+                  value={pickupTime}
+                  onChange={setPickupTime}
+                />
+              )}
               {isGuest && (
                 <div className="flex gap-2 px-4 pb-2 md:px-5">
                   <input
