@@ -22,6 +22,17 @@ Format : `ISO` · `type` · résumé · fichiers · vérif.
 
 - **Vérif** : `npx tsc --noEmit` OK ; `vitest` cartStore + checkout = 13 PASS ; lint OK ; 5 commits (`215cd42`, `04f1150`, `67a5893`, `0d3414b`, `4208ebf`).
 
+### 2026-06-04T · feature/security · Cohérence flux gamme (logique métier confirmée)
+
+- **Contexte** : clarification métier — la date de retrait gamme est posée par le **gérant** (pas le client), et l'invité **ne peut pas** commander la gamme sans compte. Donc l'absence de date à la commande n'est pas un bug ; le seul vrai trou était le blocage gamme uniquement côté UI.
+
+- **Correctifs** :
+  - `security(checkout)` — gamme réservée aux membres : toute ligne gamme sans `user_id` (dérivé du JWT) → 401. `source` par défaut `'gamme'` → `'bar'` pour fiabiliser. Fichier : `supabase/functions/create-checkout-session/index.ts`. Commit `6ddb5a5`.
+  - `feat(admin)` — `RetraitsGamme` : abonnement Realtime + polling 30s + badge « En retard » si `scheduled_pickup_date` dépassée. Fichier : `src/pages/admin/RetraitsGamme.tsx`. Commit `bf25803`.
+  - `fix(cart)` — panier 100% gamme n'exige plus de créneau bar (PickupTimePicker + validation conditionnés à la présence d'une ligne bar). Fichiers : `src/components/cart/CartDrawer.tsx`, `src/hooks/useCheckout.ts`. Commit `eb7c032`.
+
+- **Vérif** : `npx tsc --noEmit` OK ; `vitest` 13 PASS ; lint OK.
+
 ---
 
 ## 2026-05-24
