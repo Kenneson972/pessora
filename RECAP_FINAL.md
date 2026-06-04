@@ -1,6 +1,6 @@
 # Récapitulatif Final — Site PessÓra
 
-Dernière mise à jour : **2 Juin 2026**
+Dernière mise à jour : **4 Juin 2026**
 
 ## Stack
 
@@ -168,6 +168,23 @@ Dernière mise à jour : **2 Juin 2026**
 
 ## Historique récent
 
+### 3-4 Juin 2026 — Séparation Bar/Gamme + Finitions
+- **Séparation bar/gamme** : order_type, scheduled_pickup_date, checkout split, 2 orders si mix
+- **RetraitsGamme Kanban** : 4 colonnes, date picker, cartes détaillées, design premium anthracite
+- **Guest checkout** : formulaire nom/téléphone, CTA invité masqué si connecté
+- **ModeBar** : filtre order_type bar uniquement, fond anthracite premium
+- **Newsletter admin** : edge function send-newsletter (Resend BCC), composer AdminCommunications
+- **Templates email** : redesign sapin #1E3529, contraste AA, logo PESSOV2, images lifestyle
+- **Images** : 122 fichiers convertis WebP, ratio images corrigés (carré 1:1 menu, portrait 2:3 boissons)
+- **Badges** : Nouveauté/Coup de cœur sur cartes Menu et fiche boisson
+- **PessoBot** : repositionné assistant bar, workflow n8n v4
+- **Favicon** : fix crop, redimensions, suppression résiduels
+- **Stripe** : doc go-live prête, webhook split orders, async_payment, CORS fix
+- **Sécurité** : JSON n8n retiré du repo, CSP unsafe-eval retiré
+- **SuiviCommande** : hero redesign, timeline colorée, CTA inscription invités, polling 5s
+- **Boissons** : badges, pastilles, booster admin CRUD, prix Óra+ calculé 50%
+- **SEO** : sitemap, JSON-LD, OG/Twitter, h1 visible
+
 ### 2 Juin 2026 — 13 commits
 - **Guest checkout** (nom + téléphone), CORS localhost
 - **Fix pending→paid** : page succès + webhook + admin polling 10s
@@ -187,12 +204,13 @@ Dernière mise à jour : **2 Juin 2026**
 
 ## En cours ⏳
 
-### Séparation commandes Bar vs Gamme (Cursor a buggé, à relancer)
-- Ajouter `order_type` (bar/gamme) + `scheduled_pickup_date` dans `orders`
-- Calendrier de retrait sur fiche produit gamme
-- Admin : filtrer ModeBar sur bar uniquement
-- Nouveau : `RetraitsGamme.tsx` — planning retraits gamme
-- Espace client : onglets séparés bar/gamme dans History.tsx
+### Stripe Live (bloqué — attend clés de la gérante)
+- Suivre `docs/stripe-live-deployment.md`
+- Clés nécessaires : `sk_live_...`, `whsec_...`, `price_...`
+- Edge functions à redéployer
+- Test paiement 1€
 
-### Prompt Cursor à relancer
-Se référer au prompt complet dans la discussion Telegram du 2 Juin (section "Séparer commandes bar et gamme").
+### PessoBot (à activer après go-live)
+- Workflow n8n prêt (v4)
+- Rate limiting Postgres en place
+- Tool calling : get_menu, get_upcoming_events
