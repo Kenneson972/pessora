@@ -24,7 +24,7 @@ export function AnalyticsDashboard() {
       const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString();
       const { data: orders } = await db
         .from('orders')
-        .select('id, total, created_at, order_items(product_name, quantity)')
+        .select('id, total, created_at, order_type, order_items(product_name, quantity)')
         .gte('created_at', sevenDaysAgo)
         .in('status', ['completed', 'ready', 'preparing', 'paid'])
         .order('created_at', { ascending: false })
@@ -47,17 +47,26 @@ export function AnalyticsDashboard() {
       const revenueMap: Record<string, number> = {};
       const hourlyMap: Record<string, number> = {};
       const productCount: Record<string, number> = {};
+      const typeCount: Record<string, number> = { bar: 0, gamme: 0 };
 
       for (const o of orders) {
         const d = new Date(o.created_at).toISOString().split('T')[0];
         const h = new Date(o.created_at).getHours().toString().padStart(2, '0') + 'h';
         revenueMap[d] = (revenueMap[d] || 0) + (o.total || 0);
         hourlyMap[h] = (hourlyMap[h] || 0) + 1;
+        const t = o.order_type === 'gamme' ? 'gamme' : 'bar';
+        typeCount[t] += 1;
 
         for (const item of o.order_items || []) {
           productCount[item.product_name] = (productCount[item.product_name] || 0) + item.quantity;
         }
       }
+
+      // Répartition réelle Bar / Gamme (on n'affiche que les types présents)
+      const gammeSplit = [
+        { name: 'Bar', value: typeCount.bar },
+        { name: 'Gamme', value: typeCount.gamme },
+      ].filter((s) => s.value > 0);
 
       setData({
         revenue7d: Object.entries(revenueMap).map(([date, montant]) => ({ date, montant })),
@@ -66,11 +75,7 @@ export function AnalyticsDashboard() {
           .sort(([, a], [, b]) => b - a)
           .slice(0, 5)
           .map(([name, count]) => ({ name, count })),
-        gammeSplit: [
-          { name: 'Wellness', value: 30 },
-          { name: 'Sport', value: 45 },
-          { name: 'Skin', value: 25 },
-        ],
+        gammeSplit,
       });
       setLoading(false);
     }
@@ -133,7 +138,7 @@ export function AnalyticsDashboard() {
 
       {/* Répartition gamme */}
       <div className="rounded-[2px] border border-noir/[0.06] bg-white p-5">
-        <h3 className="mb-4 text-[10px] font-normal uppercase tracking-[0.14em] text-black/40">Par gamme</h3>
+        <h3 className="mb-4 text-[10px] font-normal uppercase tracking-[0.14em] text-black/40">Bar / Gamme</h3>
         <ResponsiveContainer width="100%" height={200}>
           <PieChart>
             <Pie data={data.gammeSplit} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value">
