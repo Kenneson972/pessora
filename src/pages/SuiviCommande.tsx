@@ -120,7 +120,7 @@ export default function SuiviCommande() {
   const CurrentIcon = currentIdx >= 0 && currentIdx < STEPS.length ? STEPS[currentIdx].icon : Package;
 
   const copyTrackingLink = () => {
-    const url = token ? `${window.location.origin}/suivi?token=${token}` : `${window.location.origin}/suivi?order=${order.id}`;
+    const url = token ? `${window.location.origin}/suivi-commande?token=${token}` : `${window.location.origin}/suivi-commande?order=${order.id}`;
     navigator.clipboard.writeText(url).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }).catch(() => {});
   };
 
