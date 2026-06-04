@@ -100,7 +100,7 @@ async function fetchVerifiedPrice(
 
   let query = supabase
     .from('products')
-    .select(`slug, price, price_small, price_large`)
+    .select(`id, slug, price, price_small, price_large`)
     .eq('active', true);
 
   if (UUID_RE.test(item.productId)) {
@@ -124,7 +124,7 @@ async function fetchVerifiedPrice(
   }
 
   const verifiedUnitPrice = baseProductPrice + boosterCount;
-  return { verifiedUnitPrice, productId: null };
+  return { verifiedUnitPrice, productId: data.id };
 }
 
 type VerifiedLineItem = z.infer<typeof CartLineSchema> & { verifiedUnitPrice: number; dbProductId: string | null };

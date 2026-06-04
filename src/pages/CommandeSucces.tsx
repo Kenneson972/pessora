@@ -16,7 +16,7 @@ export default function CommandeSucces() {
   const [token, setToken] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [orderType, setOrderType] = useState<string | null>(null);
-  const [splitOrders, setSplitOrders] = useState<Array<{ id: string; access_token: string; total: number; order_type: string }> | null>(null);
+  const [splitOrders, setSplitOrders] = useState<Array<{ id: string; access_token: string; total: number; order_type: string; image_url: string | null }> | null>(null);
 
   const clearCartRef = useRef(clearCart);
   clearCartRef.current = clearCart;
@@ -117,14 +117,15 @@ export default function CommandeSucces() {
                     to={`/suivi-commande?token=${o.access_token}`}
                     className="rounded-[2px] border border-noir/[0.08] bg-white p-5 text-left hover:border-sapin/30 transition-colors"
                   >
-                    <p className="mb-1 text-[18px]">
-                      {o.order_type === 'gamme' ? '🥗' : '🥤'}
-                    </p>
+                    <div className="mb-3 h-16 w-16 rounded-[2px] overflow-hidden bg-noir/[0.04] flex items-center justify-center">
+                      {o.image_url ? (
+                        <img src={o.image_url} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <span className="text-[22px]">{o.order_type === 'gamme' ? '🥗' : '🥤'}</span>
+                      )}
+                    </div>
                     <p className="text-[13px] font-medium text-black">
                       {o.order_type === 'gamme' ? 'Plateaux repas' : 'Boissons'}
-                    </p>
-                    <p className="mt-1 text-[12px] text-black/45">
-                      {o.total.toFixed(2).replace('.', ',')} €
                     </p>
                     <p className="mt-3 text-[10px] font-medium uppercase tracking-[0.1em] text-sapin">
                       Suivre →

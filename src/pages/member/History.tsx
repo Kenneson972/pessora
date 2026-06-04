@@ -15,7 +15,7 @@ const History = () => {
   useEffect(() => { document.title = 'Mes commandes — PessÓra'; }, []);
   const { pathname } = useLocation();
   const prefix = pathname.startsWith('/demo-espace') ? '/demo-espace' : '/mon-espace';
-  const { orders, loading, error, totalThisMonth, topProducts } = useOrders();
+  const { orders, loading, error, topProducts } = useOrders();
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [orderTypeTab, setOrderTypeTab] = useState<'all' | 'bar' | 'gamme'>('all');
 
@@ -75,6 +75,7 @@ const History = () => {
           <div className="bg-white rounded-[2px] border border-noir/[0.06] overflow-hidden">
             {visibleOrders.map((order, index) => {
               const itemNames = order.order_items.map(i => i.product_name).join(', ');
+              const firstImage = order.order_items[0]?.image_url;
               const date = new Date(order.created_at).toLocaleDateString('fr-FR', {
                 day: 'numeric',
                 month: 'long',
@@ -87,13 +88,14 @@ const History = () => {
                     index < visibleOrders.length - 1 ? 'border-b border-noir/[0.05]' : ''
                   }`}
                 >
-                  <div
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[2px] ${
-                      order.status === 'pending' ? 'bg-gold-dim text-white' : 'bg-noir/[0.05] text-black/45'
-                    }`}
-                    aria-hidden
-                  >
-                    <CupSoda size={20} strokeWidth={1.35} />
+                  <div className="h-11 w-11 shrink-0 rounded-[2px] overflow-hidden bg-noir/[0.04]" aria-hidden>
+                    {firstImage ? (
+                      <img src={firstImage} alt="" className="h-full w-full object-cover" loading="lazy" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-black/30">
+                        <CupSoda size={20} strokeWidth={1.35} />
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex-1 space-y-1 min-w-0">
@@ -123,9 +125,6 @@ const History = () => {
                       if (st === 'cancelled') return <span className="text-[8px] font-normal uppercase tracking-[0.15em] text-red-600/60 border border-red-200 bg-red-50 px-2.5 py-1 rounded-[2px]">Annulé</span>;
                       return null;
                     })()}
-                    <p className="text-[15px] font-normal text-black">
-                      {order.total.toFixed(2).replace('.', ',')}€
-                    </p>
                     <ChevronRight size={15} strokeWidth={1.3} className="text-black/20 group-hover:translate-x-0.5 transition-transform duration-200" aria-hidden />
                   </div>
                 </Link>
@@ -151,27 +150,19 @@ const History = () => {
       <div className="lg:col-span-4 flex flex-col gap-4">
         <div className="bg-surface-muted rounded-[2px] p-8 border border-noir/[0.06]">
           <p className="text-[9px] font-normal uppercase tracking-[0.25em] text-black/50 mb-3">
-            Total ({monthLabel})
+            Activité ({monthLabel})
           </p>
           <p
             className="font-display font-normal text-noir leading-none mb-6"
             style={{ fontFamily: 'var(--font-display)', fontSize: '40px' }}
           >
-            {totalThisMonth.toFixed(2).replace('.', ',')}€
+            {orders.length}
           </p>
           <div className="border-t border-noir/[0.06] pt-5 flex flex-col gap-3">
             <div className="flex justify-between items-center">
               <span className="text-[11px] font-light text-black/45">Commandes</span>
               <span className="text-[13px] font-normal text-noir">{orders.length}</span>
             </div>
-            {orders.length > 0 && (
-              <div className="flex justify-between items-center">
-                <span className="text-[11px] font-light text-black/45">Moyenne</span>
-                <span className="text-[13px] font-normal text-noir">
-                  {(orders.reduce((s, o) => s + o.total, 0) / orders.length).toFixed(2).replace('.', ',')}€
-                </span>
-              </div>
-            )}
           </div>
         </div>
 

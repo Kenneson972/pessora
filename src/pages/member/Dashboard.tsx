@@ -358,6 +358,7 @@ const Dashboard = () => {
                 <div>
                   {orders.slice(0, 3).map((order, i) => {
                     const itemNames = order.order_items.map(item => item.product_name).join(', ');
+                    const firstImage = order.order_items[0]?.image_url;
                     const date = new Date(order.created_at).toLocaleDateString('fr-FR', {
                       day: 'numeric', month: 'short'
                     }).replace('.', '');
@@ -380,8 +381,14 @@ const Dashboard = () => {
                         key={order.id}
                         className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-[14px] gap-y-2 py-[14px] ${i > 0 ? 'border-t border-noir/[0.06]' : ''}`}
                       >
-                        <div className="w-[38px] h-[38px] rounded-[2px] bg-noir/[0.05] flex items-center justify-center flex-shrink-0">
-                          <CupSoda size={18} strokeWidth={1.35} className="text-black/45" />
+                        <div className="w-[38px] h-[38px] rounded-[2px] overflow-hidden bg-noir/[0.04] flex-shrink-0">
+                          {firstImage ? (
+                            <img src={firstImage} alt="" className="h-full w-full object-cover" loading="lazy" />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center">
+                              <CupSoda size={18} strokeWidth={1.35} className="text-black/45" />
+                            </div>
+                          )}
                         </div>
                         <div className="min-w-0">
                           <p className="truncate text-[13px] leading-snug">{itemNames || '—'}</p>
@@ -396,9 +403,6 @@ const Dashboard = () => {
                           </p>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="text-[14px] font-normal text-noir tabular-nums">
-                            {order.total.toFixed(2).replace('.', ',')}€
-                          </span>
                           <Link
                             to="/menu"
                             className="inline-flex items-center justify-center w-[32px] h-[32px] rounded-full border border-noir/15 text-black/40 hover:text-noir hover:border-noir/30 transition-colors"

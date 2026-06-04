@@ -29,7 +29,7 @@ serve(async (req) => {
 
     const { data, error } = await supabase
       .from('orders')
-      .select('id, access_token, total, status, client_name, order_type')
+      .select('id, access_token, total, status, client_name, order_type, order_items(*)')
       .eq('stripe_session_id', stripe_session_id)
       .order('order_type', { ascending: true });
 
@@ -40,8 +40,31 @@ serve(async (req) => {
       });
     }
 
+    // Récupère les images des produits bar (product_id → products.image_url)
+    const productIds = [...new Set(
+      data.flatMap((order: any) => order.order_items?.map((i: any) => i.product_id) ?? []).filter(Boolean),
+    )] as string[];
+
+    let imageMap = new Map<string, string | null>();
+    if (productIds.length > 0) {
+      const { data: products } = await supabase
+        .from('products')
+        .select('id, image_url')
+        .in('id', productIds);
+      if (products?.length) {
+        for (const p of products) imageMap.set(p.id, p.image_url);
+      }
+    }
+
+    // Ajoute l'image du premier produit pour chaque commande
+    const enriched = data.map((order: any) => {
+      const firstItem = order.order_items?.[0];
+      const imageUrl = firstItem?.product_id ? imageMap.get(firstItem.product_id) ?? null : null;
+      return { ...order, image_url: imageUrl };
+    });
+
     // Retourne un tableau pour gérer le cas split (plusieurs orders par session)
-    return new Response(JSON.stringify(data.length === 1 ? data[0] : { orders: data }), {
+    return new Response(JSON.stringify(data.length === 1 ? enriched[0] : { orders: enriched }), {
       headers: { ...cors, 'Content-Type': 'application/json' },
     });
   } catch (err) {

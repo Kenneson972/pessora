@@ -4,8 +4,12 @@ import { supabase } from '../lib/supabaseClient';
 import type { Order, OrderItem } from '../types/database';
 import { useAuth } from '../contexts/AuthContext';
 
+export interface OrderItemWithImage extends OrderItem {
+  image_url: string | null;
+}
+
 export interface OrderWithItems extends Order {
-  order_items: OrderItem[];
+  order_items: OrderItemWithImage[];
 }
 
 const POLL_INTERVAL = 30_000; // 30s fallback si Realtime décroche
@@ -31,9 +35,57 @@ export function useOrders() {
       setError('Impossible de charger vos commandes.');
     } else {
       const rows = (data ?? []) as OrderWithItems[];
-      if (import.meta.env.DEV) {
-        console.info('[useOrders] public.orders pour ce compte :', rows.length, 'ligne(s)');
+
+      // Initialise image_url à null pour tous les items
+      for (const order of rows) {
+        for (const item of order.order_items) {
+          (item as OrderItemWithImage).image_url = null;
+        }
       }
+
+      // Récupère les images bar (product_id → products.image_url)
+      const productIds = [...new Set(
+        rows.flatMap((o) => o.order_items.map((i) => i.product_id)).filter(Boolean),
+      )] as string[];
+
+      // Fallback nom pour les items sans product_id (commandes anciennes ou gamme)
+      const barNames = [...new Set(
+        rows.flatMap((o) => o.order_items.map((i) => !i.product_id && i.product_name ? i.product_name : null)).filter(Boolean),
+      )] as string[];
+
+      const [barRes, barNameRes, gammeRes] = await Promise.all([
+        productIds.length > 0
+          ? (supabase as any).from('products').select('id, image_url').in('id', productIds)
+          : Promise.resolve({ data: null }),
+        barNames.length > 0
+          ? (supabase as any).from('products').select('name, image_url').in('name', barNames)
+          : Promise.resolve({ data: null }),
+        barNames.length > 0
+          ? (supabase as any).from('gamme_products').select('name, image_url').in('name', barNames)
+          : Promise.resolve({ data: null }),
+      ]);
+
+      const imageMap = new Map<string, string | null>();
+      if (barRes.data?.length) {
+        for (const p of barRes.data as any[]) imageMap.set(`id:${p.id}`, p.image_url);
+      }
+      if (barNameRes.data?.length) {
+        for (const p of barNameRes.data as any[]) imageMap.set(`bar:${p.name}`, p.image_url);
+      }
+      if (gammeRes.data?.length) {
+        for (const p of gammeRes.data as any[]) imageMap.set(`gamme:${p.name}`, p.image_url);
+      }
+
+      for (const order of rows) {
+        for (const item of order.order_items) {
+          if (item.product_id) {
+            (item as OrderItemWithImage).image_url = imageMap.get(`id:${item.product_id}`) ?? null;
+          } else if (item.product_name) {
+            (item as OrderItemWithImage).image_url = imageMap.get(`bar:${item.product_name}`) ?? imageMap.get(`gamme:${item.product_name}`) ?? null;
+          }
+        }
+      }
+
       setOrders(rows);
     }
     setLoading(false);

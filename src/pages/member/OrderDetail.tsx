@@ -59,6 +59,7 @@ export default function OrderDetail() {
 
   const currentIdx = STEPS.findIndex((s) => s.key === order.status);
   const items = order.order_items ?? [];
+  const firstImage = (items[0] as any)?.image_url;
   const isDone = order.status === 'completed';
   const isCancelled = order.status === 'cancelled';
 
@@ -80,11 +81,16 @@ export default function OrderDetail() {
       <div className={DASH_MAIN_PAD}>
         {/* En-tête */}
         <div className="mb-6 flex flex-wrap items-center gap-4 border border-noir/[0.06] bg-white p-6 rounded-[2px]">
-          <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[2px] ${order.status === 'pending' ? 'bg-gold-dim text-white' : 'bg-noir/[0.05] text-black/45'}`} aria-hidden>
-            <CupSoda size={22} strokeWidth={1.35} />
+          <div className="h-12 w-12 shrink-0 rounded-[2px] overflow-hidden bg-noir/[0.04]" aria-hidden>
+            {firstImage ? (
+              <img src={firstImage} alt="" className="h-full w-full object-cover" loading="lazy" />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-black/30">
+                <CupSoda size={22} strokeWidth={1.35} />
+              </div>
+            )}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="font-display text-[22px] text-black tabular-nums">{order.total.toFixed(2).replace('.', ',')} €</p>
             <p className="mt-1 flex items-center gap-1.5 text-[11px] text-black/40">
               <Calendar size={12} strokeWidth={1.3} aria-hidden />
               {isDone ? <span className="text-sapin">Terminée</span>
@@ -151,12 +157,26 @@ export default function OrderDetail() {
         <div className="border border-noir/[0.06] bg-white rounded-[2px] overflow-hidden">
           <p className="text-[9px] font-normal uppercase tracking-[0.22em] text-black/35 px-6 pt-6 pb-2">Articles</p>
           <ul className="divide-y divide-black/[0.05]">
-            {items.map((item) => (
+            {items.map((item) => {
+              const itemImage = (item as any).image_url;
+              return (
               <li key={item.id} className="flex flex-wrap items-center justify-between gap-3 px-6 py-4">
-                <span className="text-[13px] text-black">{item.product_name}</span>
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="h-10 w-10 shrink-0 rounded-[2px] overflow-hidden bg-noir/[0.04]">
+                    {itemImage ? (
+                      <img src={itemImage} alt="" className="h-full w-full object-cover" loading="lazy" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-black/25">
+                        <CupSoda size={18} strokeWidth={1.35} />
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-[13px] text-black truncate">{item.product_name}</span>
+                </div>
                 <span className="text-[11px] tabular-nums text-black/45">{item.quantity} × {item.price_at_time.toFixed(2).replace('.', ',')} €</span>
               </li>
-            ))}
+              );
+            })}
           </ul>
         </div>
       </div>
