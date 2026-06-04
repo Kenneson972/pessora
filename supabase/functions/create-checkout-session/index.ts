@@ -29,8 +29,9 @@ const CartLineSchema = z.object({
   optionLabels: z.array(z.string()),
   image: z.string().optional(),
   barBasePublic: z.number().positive().optional(),
-  // default 'gamme' : compatibilité panier localStorage antérieur au champ source
-  source: z.enum(['bar', 'gamme']).optional().default('gamme'),
+  // default 'bar' : une ligne sans source explicite n'est jamais traitée comme
+  // gamme (la gamme est le chemin restreint réservé aux membres connectés).
+  source: z.enum(['bar', 'gamme']).optional().default('bar'),
   scheduledPickupDate: z.string().optional(),
 });
 
@@ -243,6 +244,16 @@ serve(async (req) => {
       const token = authHeader.replace('Bearer ', '');
       const { data: { user } } = await supabase.auth.getUser(token);
       user_id = user?.id ?? null;
+    }
+
+    // ── Règle métier : la gamme est réservée aux membres connectés. ──
+    // Le blocage UI (CartDrawer) ne suffit pas — on l'impose aussi côté serveur.
+    const hasGamme = items.some((i) => i.source === 'gamme');
+    if (hasGamme && !user_id) {
+      return new Response(
+        JSON.stringify({ error: 'Un compte est requis pour commander des produits de la gamme. Veuillez vous connecter.' }),
+        { status: 401, headers: { ...cors, 'Content-Type': 'application/json' } },
+      );
     }
 
     // ── P0: Vérifier les prix côté serveur (ignorer unitPrice du client) ──
