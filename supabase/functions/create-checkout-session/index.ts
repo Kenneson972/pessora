@@ -230,9 +230,20 @@ serve(async (req) => {
       });
     }
 
-    const { items, user_id, pickup_time, client_name, client_phone } = parsed.data;
+    const { items, pickup_time, client_name, client_phone } = parsed.data;
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // ── P0 anti-fraude : ne JAMAIS faire confiance au user_id du body. ──
+    // On dérive l'utilisateur du JWT Authorization (auto-attaché par supabase-js
+    // pour un membre connecté). Un invité n'a pas de token valide → user_id null.
+    let user_id: string | null = null;
+    const authHeader = req.headers.get('Authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user } } = await supabase.auth.getUser(token);
+      user_id = user?.id ?? null;
+    }
 
     // ── P0: Vérifier les prix côté serveur (ignorer unitPrice du client) ──
     const verifiedLines = await Promise.all(
