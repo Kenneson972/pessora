@@ -43,8 +43,12 @@ coverage
 
 # Git worktrees
 .worktrees/
-<<<<<<< Updated upstream
+
+# PessoBot
+PessoBot*.json
+
+# n8n
 docs/n8n/*.json
-=======
+
+# Vercel
 .vercel
->>>>>>> Stashed changes
