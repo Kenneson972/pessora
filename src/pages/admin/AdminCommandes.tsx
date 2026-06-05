@@ -8,6 +8,7 @@ import { AdminOrdersList } from '../../components/admin/AdminOrdersList';
 import { useAdminOrders, type OrderFilterStatus } from '../../hooks/useAdminOrders';
 import { playNewOrderSound, playPaidSound, setMuted, isMuted } from '../../lib/notificationSound';
 import { auditLog } from '../../lib/auditLog';
+import { useAdminToast } from '../../components/admin/AdminToast';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { supabase } from '../../lib/supabaseClient';
 
@@ -16,6 +17,7 @@ const AdminCommandes = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [orderType, setOrderType] = useState<OrderTypeFilter>('all');
   const [soundMuted, setSoundMuted] = useState(isMuted());
+  const { toast } = useAdminToast();
   const { orders, loading, newOrderAlert, clearAlert, paidAlert, clearPaidAlert } = useAdminOrders(filterStatus);
 
   const kpisFiltered = useMemo(() => ({
@@ -68,13 +70,18 @@ const AdminCommandes = () => {
 
   const handleStatusUpdate = async (orderId: string, nextStatus: string) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase as any)
+    const { error } = await (supabase as any)
       .from('orders')
       .update({
         status: nextStatus,
         ...(nextStatus === 'completed' ? { picked_up_at: new Date().toISOString() } : {}),
       })
       .eq('id', orderId);
+
+    if (error) {
+      toast('error', 'Échec de la mise à jour du statut.');
+      return;
+    }
 
     auditLog({
       action: 'order.status_change',
@@ -85,14 +92,19 @@ const AdminCommandes = () => {
   };
 
   const handleDeleteOrder = async (orderId: string) => {
-    await supabase.functions.invoke('delete-order', {
+    const { data, error } = await supabase.functions.invoke('delete-order', {
       body: { orderId },
     });
+    if (error || (data && (data as { error?: string }).error)) {
+      toast('error', 'Échec de la suppression de la commande.');
+      return;
+    }
     auditLog({
       action: 'order.delete',
       entity_type: 'order',
       entity_id: orderId,
     });
+    toast('success', 'Commande supprimée.');
   };
 
   const filteredOrders = orders.filter((o) => {
