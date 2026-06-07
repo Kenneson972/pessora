@@ -75,7 +75,6 @@ const Home = () => {
           className="absolute inset-0 z-0"
           mp4Src="/hero-video.mp4"
           webmSrc="/hero-video.webm"
-          poster="/hero-skin.webp"
         />
         {/* Overlay gradient */}
         <div
