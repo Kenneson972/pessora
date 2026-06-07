@@ -28,19 +28,30 @@ export function BarStatusProvider({ children }: { children: ReactNode }) {
       setStatus({ isOpen: data.is_open, estimatedWaitMinutes: data.estimated_wait_minutes, loading: false });
     });
 
-    // Realtime
-    const channel = supabase
-      .channel('bar-status')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'bar_status', filter: 'id=eq.1' },
-        (payload: { new: { is_open: boolean; estimated_wait_minutes: number } }) => {
-          setStatus({ isOpen: payload.new.is_open, estimatedWaitMinutes: payload.new.estimated_wait_minutes, loading: false });
-        }
-      )
-      .subscribe();
+    // Realtime — ne doit jamais faire planter l'app (Safari + CSP wss manquant = crash React sinon)
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    try {
+      channel = supabase
+        .channel('bar-status')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'bar_status', filter: 'id=eq.1' },
+          (payload: { new: { is_open: boolean; estimated_wait_minutes: number } }) => {
+            if (cancelled) return;
+            setStatus({ isOpen: payload.new.is_open, estimatedWaitMinutes: payload.new.estimated_wait_minutes, loading: false });
+          }
+        )
+        .subscribe((status) => {
+          if (cancelled) return;
+          if (status === 'CHANNEL_ERROR') {
+            setStatus((s) => ({ ...s, loading: false }));
+          }
+        });
+    } catch {
+      setStatus((s) => ({ ...s, loading: false }));
+    }
 
     return () => {
       cancelled = true;
-      supabase.removeChannel(channel);
+      if (channel) supabase.removeChannel(channel);
     };
   }, []);
 
