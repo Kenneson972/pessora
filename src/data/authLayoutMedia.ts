@@ -4,7 +4,7 @@
  */
 export const AUTH_LAYOUT_MEDIA = {
   /** MP4 recommandé pour Safari ; laisser null pour désactiver la vidéo */
-  videoMp4: null as string | null,
+  videoMp4: '/hero-video.mp4' as string | null,
   videoWebm: '/hero-video.webm' as string | null,
   poster: '/hero-skin.webp' as string | null,
 };

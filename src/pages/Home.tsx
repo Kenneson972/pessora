@@ -15,6 +15,7 @@ import { HomeGammesProductTiles } from '../components/home/HomeGammesProductTile
 import { HomeGammesProductCarousel } from '../components/home/HomeGammesProductCarousel';
 import { OraPlusTeaserStrip } from '../components/common/OraPlusTeaserStrip';
 import { publicAssetWithCache } from '../lib/publicAsset';
+import { BackgroundVideo } from '../components/common/BackgroundVideo';
 
 const UNIVERS = [
   {
@@ -70,15 +71,11 @@ const Home = () => {
         className="relative flex items-end overflow-hidden bg-noir"
         style={{ height: 'clamp(380px, 64svh, 680px)' }}
       >
-        {/* Vidéo background */}
-        <video
-          className="absolute inset-0 h-full w-full object-cover"
-          src="/hero-video.webm"
-          autoPlay
-          loop
-          muted
-          playsInline
-          aria-hidden="true"
+        <BackgroundVideo
+          className="absolute inset-0"
+          mp4Src="/hero-video.mp4"
+          webmSrc="/hero-video.webm"
+          poster="/hero-skin.webp"
         />
         {/* Overlay gradient */}
         <div

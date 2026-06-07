@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { Card, cn } from '@heroui/react';
+import { useVideoAutoplay } from '../../hooks/useVideoAutoplay';
 
 interface ImageCardProps {
   eyebrow: string;
@@ -33,19 +34,14 @@ export const ImageCard = ({
   onPress,
 }: ImageCardProps) => {
   const isDark = variant === 'dark';
-  const videoRef = useRef<HTMLVideoElement>(null);
   const prefersReducedMotion = useReducedMotion();
+  const videoEnabled = Boolean(bgVideoSrc) && !prefersReducedMotion;
+  const videoRef = useVideoAutoplay(videoEnabled);
   const [videoPlaying, setVideoPlaying] = useState(false);
 
   useEffect(() => {
     setVideoPlaying(false);
   }, [bgVideoSrc]);
-
-  useEffect(() => {
-    const el = videoRef.current;
-    if (!el || !bgVideoSrc || prefersReducedMotion) return;
-    void el.play().catch(() => {});
-  }, [bgVideoSrc, prefersReducedMotion]);
 
   const mediaBg =
     bgClass ??
@@ -112,12 +108,12 @@ export const ImageCard = ({
             loop
             playsInline
             preload="auto"
-            autoPlay={!prefersReducedMotion}
+            autoPlay={videoEnabled}
             aria-hidden
             onPlaying={() => setVideoPlaying(true)}
           >
-            {bgVideoSrcWebm ? <source src={bgVideoSrcWebm} type="video/webm" /> : null}
             <source src={bgVideoSrc} type="video/mp4" />
+            {bgVideoSrcWebm ? <source src={bgVideoSrcWebm} type="video/webm" /> : null}
           </video>
         </div>
       ) : (
