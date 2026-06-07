@@ -27,7 +27,7 @@ export const ImageCard = ({
   bgClass,
   bgImage,
   bgVideoSrc,
-  bgVideoSrcWebm,
+  bgVideoSrcWebm: _bgVideoSrcWebm,
   bgVideoPosterSrc,
   aspectRatio = 'aspect-[3/4]',
   variant = 'light',
@@ -36,7 +36,7 @@ export const ImageCard = ({
   const isDark = variant === 'dark';
   const prefersReducedMotion = useReducedMotion();
   const videoEnabled = Boolean(bgVideoSrc) && !prefersReducedMotion;
-  const videoRef = useVideoAutoplay(videoEnabled);
+  const videoRef = useVideoAutoplay(videoEnabled, { pauseWhenOffscreen: true });
   const [videoPlaying, setVideoPlaying] = useState(false);
 
   useEffect(() => {
@@ -87,7 +87,7 @@ export const ImageCard = ({
         )
       ) : bgVideoSrc ? (
         <div className="absolute inset-0 z-0 overflow-hidden transition-transform duration-700 ease-out group-hover:scale-[1.02]">
-          {bgVideoPosterSrc ? (
+          {bgVideoPosterSrc && !videoPlaying ? (
             <img
               src={bgVideoPosterSrc}
               alt={`Aperçu — ${eyebrow}`}
@@ -99,11 +99,8 @@ export const ImageCard = ({
           ) : null}
           <video
             ref={videoRef}
-            className={cn(
-              'pointer-events-none absolute inset-0 z-[1] h-full w-full object-cover transition-opacity duration-500 ease-out',
-              videoPlaying ? 'opacity-100' : 'opacity-0',
-            )}
-            poster={undefined}
+            className="pointer-events-none absolute inset-0 z-[1] h-full w-full object-cover"
+            src={bgVideoSrc}
             muted
             loop
             playsInline
@@ -111,10 +108,7 @@ export const ImageCard = ({
             autoPlay={videoEnabled}
             aria-hidden
             onPlaying={() => setVideoPlaying(true)}
-          >
-            <source src={bgVideoSrc} type="video/mp4" />
-            {bgVideoSrcWebm ? <source src={bgVideoSrcWebm} type="video/webm" /> : null}
-          </video>
+          />
         </div>
       ) : (
         <div

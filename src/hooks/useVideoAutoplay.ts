@@ -1,10 +1,16 @@
 import { useEffect, useRef } from 'react';
 
+type UseVideoAutoplayOptions = {
+  /** Met en pause hors viewport — désactivé par défaut (évite écran vide sur hero mobile). */
+  pauseWhenOffscreen?: boolean;
+};
+
 /**
  * Autoplay fiable mobile (iOS Safari) : muted + playsInline + retry sur canplay /
- * visibility / intersection. MP4 requis côté Safari (pas de WebM).
+ * visibility. MP4 requis côté Safari (pas de WebM).
  */
-export function useVideoAutoplay(enabled = true) {
+export function useVideoAutoplay(enabled = true, options: UseVideoAutoplayOptions = {}) {
+  const { pauseWhenOffscreen = false } = options;
   const ref = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -28,22 +34,25 @@ export function useVideoAutoplay(enabled = true) {
     el.addEventListener('loadeddata', tryPlay);
     document.addEventListener('visibilitychange', onVisibility);
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) tryPlay();
-        else el.pause();
-      },
-      { threshold: 0.08 },
-    );
-    observer.observe(el);
+    let observer: IntersectionObserver | undefined;
+    if (pauseWhenOffscreen) {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry?.isIntersecting) tryPlay();
+          else el.pause();
+        },
+        { threshold: 0.05 },
+      );
+      observer.observe(el);
+    }
 
     return () => {
       el.removeEventListener('canplay', tryPlay);
       el.removeEventListener('loadeddata', tryPlay);
       document.removeEventListener('visibilitychange', onVisibility);
-      observer.disconnect();
+      observer?.disconnect();
     };
-  }, [enabled]);
+  }, [enabled, pauseWhenOffscreen]);
 
   return ref;
 }

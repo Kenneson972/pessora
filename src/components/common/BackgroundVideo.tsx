@@ -2,7 +2,7 @@ import { cn } from '@heroui/react';
 import { useVideoAutoplay } from '../../hooks/useVideoAutoplay';
 
 type BackgroundVideoProps = {
-  /** MP4 en premier — obligatoire pour Safari iOS */
+  /** MP4 — obligatoire pour Safari iOS */
   mp4Src?: string | null;
   webmSrc?: string | null;
   poster?: string | null;
@@ -20,7 +20,8 @@ export function BackgroundVideo({
   onError,
 }: BackgroundVideoProps) {
   const ref = useVideoAutoplay(enabled);
-  const hasSource = Boolean(mp4Src || webmSrc);
+  const primarySrc = mp4Src ?? webmSrc ?? undefined;
+  const hasSource = Boolean(primarySrc);
 
   if (!enabled || !hasSource) {
     if (!poster) return null;
@@ -40,6 +41,7 @@ export function BackgroundVideo({
     <video
       ref={ref}
       className={cn('h-full w-full object-cover', className)}
+      src={primarySrc}
       muted
       loop
       playsInline
@@ -48,9 +50,6 @@ export function BackgroundVideo({
       poster={poster ?? undefined}
       aria-hidden
       onError={onError}
-    >
-      {mp4Src ? <source src={mp4Src} type="video/mp4" /> : null}
-      {webmSrc ? <source src={webmSrc} type="video/webm" /> : null}
-    </video>
+    />
   );
 }
