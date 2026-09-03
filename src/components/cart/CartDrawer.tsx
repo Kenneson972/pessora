@@ -242,6 +242,14 @@ export function CartDrawer() {
                   >
                     Appeler le bar
                   </a>
+                  <a
+                    href="https://www.easytavie.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(focusRing, 'flex items-center justify-center gap-1.5 min-h-[36px] rounded-full border border-noir/10 text-[9px] font-normal uppercase tracking-[0.12em] text-black/60 transition-colors hover:border-noir/25 hover:text-black')}
+                  >
+                    Livraison ? Commandez sur Easy Ta Vie
+                  </a>
                   <button
                     type="button"
                     className={cn(focusRing, 'inline-flex items-center justify-center min-h-[36px] rounded-full text-[8px] uppercase tracking-[0.12em] text-black/30 hover:text-black/50')}

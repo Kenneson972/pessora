@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { barInfo } from '../data/infoData';
-import { Mail, MapPin, Instagram, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Mail, MapPin, Instagram, ArrowRight, CheckCircle2, Truck } from 'lucide-react';
 import { useFadeUpWhenVisible, useStaggerReveal } from '../lib/motionReveal';
 import { Button, Card, Input, Label, TextArea, TextField, cn } from '@heroui/react';
 import { Segment } from '@heroui-pro/react';
@@ -142,6 +142,24 @@ const Contact = () => {
                       className="inline-flex items-center gap-2 text-[10px] font-normal uppercase tracking-[0.12em] text-black/55 transition-all hover:gap-3 hover:text-black"
                     >
                       Nous suivre <ArrowRight size={12} />
+                    </a>
+                  </div>
+                </motion.div>
+
+                <motion.div variants={item} className="group flex items-start gap-6">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-noir/[0.08] bg-white text-black transition-colors group-hover:bg-sapin group-hover:text-white">
+                    <Truck size={18} strokeWidth={1.5} />
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="text-[10px] font-normal uppercase tracking-[0.18em] text-black/40">Livraison</h4>
+                    <p className="text-[17px] font-light text-black">Commande en livraison via Easy Ta Vie</p>
+                    <a
+                      href="https://www.easytavie.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-[10px] font-normal uppercase tracking-[0.12em] text-black/55 transition-all hover:gap-3 hover:text-black"
+                    >
+                      Commander sur Easy Ta Vie <ArrowRight size={12} />
                     </a>
                   </div>
                 </motion.div>
