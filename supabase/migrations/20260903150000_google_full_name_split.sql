@@ -31,18 +31,18 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  full text;
+  full_name_value text;
   parts text[];
 BEGIN
-  full := NULLIF(TRIM(COALESCE(NEW.raw_user_meta_data->>'full_name', '')), '');
-  IF full IS NULL THEN
+  full_name_value := NULLIF(TRIM(COALESCE(NEW.raw_user_meta_data->>'full_name', '')), '');
+  IF full_name_value IS NULL THEN
     RETURN NEW;
   END IF;
   -- Ne pas écraser un first_name déjà fourni (signup email/mdp)
   IF NULLIF(TRIM(COALESCE(NEW.raw_user_meta_data->>'first_name', '')), '') IS NOT NULL THEN
     RETURN NEW;
   END IF;
-  parts := regexp_split_to_array(full, '\s+');
+  parts := regexp_split_to_array(full_name_value, '\s+');
   UPDATE public.profiles
   SET
     first_name = parts[1],
