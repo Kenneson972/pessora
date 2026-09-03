@@ -45,6 +45,8 @@ interface AuthContextType {
   isLoading: boolean;
   /** Retourne l'utilisateur chargé (profil + rôle) pour la redirection post-login. */
   login: (email: string, password: string) => Promise<User | null>;
+  /** Connexion Google OAuth : redirige vers Google, la session est reprise par onAuthStateChange. */
+  loginWithGoogle: () => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<void>;
@@ -252,6 +254,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (error) throw new Error(error.message);
   };
 
+  const loginWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/mon-espace` },
+    });
+    if (error) throw new Error(error.message);
+  };
+
   const logout = async () => {
     loginInProgress.current = false; // Release any pending guard
     await supabase.auth.signOut();
@@ -307,6 +317,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     isAdmin: user?.role === 'admin',
     isLoading,
     login,
+    loginWithGoogle,
     register,
     logout,
     updateProfile,
