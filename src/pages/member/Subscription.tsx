@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Check, Crown } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabaseClient';
@@ -37,7 +36,7 @@ const Subscription = () => {
   const handleManageSubscription = async () => {
     setPortalError(null);
     if (!subscription?.stripeSubscriptionId) {
-      window.location.assign('/ora-plus');
+      setPortalError('Aucun abonnement actif à gérer pour le moment.');
       return;
     }
     setPortalLoading(true);
@@ -77,16 +76,6 @@ const Subscription = () => {
       <DashPageHeader
         title="Mon abonnement"
         subtitle="Gérez votre plan et vos avantages exclusifs."
-        action={
-          !isOraPlusActive ? (
-          <Link
-            to="/ora-plus"
-            className="inline-flex items-center rounded-full border border-noir/15 px-4 py-[10px] text-[13px] font-medium text-black/55 hover:text-noir hover:border-noir/30 transition-colors"
-          >
-            Découvrir Óra+
-          </Link>
-          ) : null
-        }
       />
 
       <div className={DASH_MAIN_PAD}>
@@ -102,6 +91,7 @@ const Subscription = () => {
           </p>
         ) : null}
 
+        {isOraPlusActive ? (
         <div className="grid grid-cols-1 md:grid-cols-[7fr_5fr] gap-5">
           {/* Plan card */}
           <div className="bg-white rounded-[2px] border border-noir/[0.06] p-8 md:p-10">
@@ -170,6 +160,13 @@ const Subscription = () => {
             </div>
           </div>
         </div>
+        ) : (
+        <div className="bg-white rounded-[2px] border border-noir/[0.06] p-8 md:p-10">
+          <p className="text-[13px] font-light text-black/60 leading-relaxed">
+            Vous êtes sur le plan <span className="font-medium text-black/80">Gratuit</span>. Aucun abonnement actif pour le moment.
+          </p>
+        </div>
+        )}
       </div>
     </div>
   );

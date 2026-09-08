@@ -12,7 +12,6 @@ import { useAuth } from '../contexts/AuthContext';
 import type { BilanSlot } from '../types/database';
 import { useStaggerReveal } from '../lib/motionReveal';
 import { PageHero } from '../components/layout/PageHero';
-import { OraPlusTeaserStrip } from '../components/common/OraPlusTeaserStrip';
 
 const JOURS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 const MOIS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
@@ -256,9 +255,6 @@ const BilanBienEtre = () => {
 
       {/* Programme */}
       <section className="bg-white px-4 md:px-10 lg:px-[72px] py-[56px]">
-        <div className="mx-auto mb-10 max-w-3xl">
-          <OraPlusTeaserStrip variant="muted" />
-        </div>
         <motion.div
           className="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-[64px]"
           variants={container}

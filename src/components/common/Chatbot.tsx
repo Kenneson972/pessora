@@ -686,7 +686,7 @@ const Chatbot = ({ embedded = false }: ChatbotProps) => {
                       profileInMiniPanel ? 'text-[12px] leading-snug' : 'text-[13px] sm:text-[14px]'
                     )}
                   >
-                    Je vous guide dans le menu PessÓra et réponds à vos questions sur les boissons, les horaires et l'abonnement Óra+.
+                    Je vous guide dans le menu PessÓra et réponds à vos questions sur les boissons et les horaires.
                   </p>
 
                   <div

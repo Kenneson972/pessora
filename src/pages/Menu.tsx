@@ -10,8 +10,6 @@ import { ProductCard } from '../components/ui/ProductCard';
 import { categoryNames, badgeLabels, type MenuItem } from '../data/menuData';
 import { useMenuCatalog } from '../hooks/useMenuCatalog';
 import { useFadeUpWhenVisible, useStaggerReveal } from '../lib/motionReveal';
-import { formatEurFr, oraMemberUnitPrice } from '../lib/oraPricing';
-import { OraPlusTeaserStrip } from '../components/common/OraPlusTeaserStrip';
 import { DrinkOptionsModal } from '../components/cart/DrinkOptionsModal';
 
 function normalizeStr(s: string): string {
@@ -172,7 +170,6 @@ const Menu = () => {
           name={menuItem.name}
           macros={formatMacros(menuItem)}
           price={`${effectivePrice}€`}
-          oraMemberHint={formatEurFr(oraMemberUnitPrice(effectivePrice))}
           icon={menuItem.icon}
           image={menuItem.image_url}
           linkTo={`/menu/${menuItem.id}`}
@@ -292,12 +289,6 @@ const Menu = () => {
           </div>
         </div>
       )}
-
-      <div className="px-4 pb-5 md:px-10 lg:px-[72px]">
-        <div className="mx-auto max-w-7xl">
-          <OraPlusTeaserStrip variant="muted" />
-        </div>
-      </div>
 
       {/* Products — un seul grid unifié, le filtre onglet gère la catégorie */}
       <div className="px-4 pb-16 md:px-10 lg:px-[72px]">

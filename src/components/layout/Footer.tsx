@@ -17,7 +17,6 @@ const MENU_LINKS = [
   { label: 'Carte complète', to: '/menu' },
 ];
 const ESPACE_LINKS = [
-  { label: 'Óra+', to: '/ora-plus' },
   { label: 'Événements', to: '/evenements' },
   { label: 'Bilan Bien-être', to: '/bilan-bien-etre' },
 ];

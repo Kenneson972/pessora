@@ -58,7 +58,6 @@ const SuiviCommande = lazy(() => import('./pages/SuiviCommande'));
 const AdminCommunications = lazy(() => import('./pages/admin/AdminCommunications'));
 const AdminProduitsGammes = lazy(() => import('./pages/admin/AdminProduitsGammes'));
 const AdminContenu = lazy(() => import('./pages/admin/AdminContenu'));
-const OraPlus = lazy(() => import('./pages/OraPlus'));
 const EvenementDetail = lazy(() => import('./pages/EvenementDetail'));
 const BilanBienEtre = lazy(() => import('./pages/BilanBienEtre'));
 const LuxeMockup = lazy(() => import('./pages/LuxeMockup'));
@@ -171,7 +170,6 @@ function App() {
             <Route path="/nos-produits/:rangeId/:slug" element={<GammeProductDetail />} />
             <Route path="/nos-produits/:rangeId" element={<RangeDetail />} />
             <Route path="/pessobot" element={<PessobotPage />} />
-            <Route path="/ora-plus" element={<OraPlus />} />
             <Route path="/admin" element={
               <ProtectedAdminRoute>
                 <AdminLayout><AdminOverview /></AdminLayout>
