@@ -7,7 +7,6 @@ import { EmptyState, Segment } from '@heroui-pro/react';
 import { supabase } from '../lib/supabaseClient';
 import type { Event } from '../types/database';
 import { useStaggerReveal } from '../lib/motionReveal';
-import { OraPlusTeaserStrip } from '../components/common/OraPlusTeaserStrip';
 import { PageHero } from '../components/layout/PageHero';
 
 interface EventWithCount extends Event {
@@ -443,13 +442,6 @@ const Evenements = () => {
           )}
         </section>
       )}
-
-      {/* Teaser Óra+ — en bas, après la liste, pas en tête de page */}
-      <section className="border-t border-noir/[0.06] bg-white px-4 py-12 md:px-10 md:py-14 lg:px-[72px]">
-        <div className="mx-auto max-w-3xl">
-          <OraPlusTeaserStrip variant="muted" heading="Óra+ & événements" />
-        </div>
-      </section>
     </div>
   );
 };

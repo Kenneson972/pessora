@@ -247,7 +247,7 @@ export default function SuiviCommande() {
                 <div className="relative">
                   <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-white/15"><UserPlus size={28} strokeWidth={1.3} className="text-white" /></div>
                   <h2 className="mb-2 font-display text-[22px] font-normal text-white">Votre espace bien-être</h2>
-                  <p className="mb-6 text-[13px] font-light text-white/70">Suivez toutes vos commandes, découvrez Óra+ et recevez des offres exclusives.</p>
+                  <p className="mb-6 text-[13px] font-light text-white/70">Suivez toutes vos commandes et recevez des offres exclusives.</p>
                   <Link to="/inscription" className="inline-flex h-12 min-h-[44px] items-center gap-2 rounded-full bg-white px-8 text-[11px] font-bold uppercase tracking-[0.1em] text-sapin hover:bg-white/95 transition-colors">
                     <UserPlus size={15} strokeWidth={1.8} /> Créer mon compte gratuitement
                   </Link>

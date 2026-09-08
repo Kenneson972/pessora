@@ -16,8 +16,8 @@ interface ProductCardProps {
   icon?: string;
   /** Image produit (URL publique Supabase) — prioritaire sur l'emoji */
   image?: string | null;
-  /** Prix indicatif membre Óra+ (ex. « 5,00 € »), affiché sous le prix public */
-  oraMemberHint?: string;
+  /** Prix indicatif membre (ex. « 5,00 € »), affiché sous le prix public */
+  oraMemberHint?: never;
   /** Grille dense (ex. page Menu) : puits moins haut, picto plus petit */
   density?: 'default' | 'compact';
   /** Contenu optionnel inséré après la description (ex. sélecteur de taille) */
@@ -39,7 +39,6 @@ export const ProductCard = ({
   featured = false,
   icon,
   image,
-  oraMemberHint,
   density = 'default',
   footer,
   badges,
@@ -107,11 +106,6 @@ export const ProductCard = ({
         <Card.Title className="text-editorial-product-name min-w-0 flex-1 leading-snug">{name}</Card.Title>
         <div className="flex flex-shrink-0 flex-col items-end gap-0.5">
           <span className="text-editorial-price whitespace-nowrap">{price}</span>
-          {oraMemberHint && (
-            <span className="whitespace-nowrap text-[9px] font-normal tracking-[0.04em] text-gold-dim">
-              {oraMemberHint} avec Óra+
-            </span>
-          )}
         </div>
       </div>
       {macros && <p className="text-editorial-product-meta">{macros}</p>}

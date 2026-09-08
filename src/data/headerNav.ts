@@ -5,7 +5,6 @@ import {
   Home,
   Mail,
   Package,
-  Sparkles,
   UtensilsCrossed,
 } from 'lucide-react';
 
@@ -20,7 +19,6 @@ export const PRIMARY_NAV: {
   { label: 'Accueil', path: '/', icon: Home, matchExact: true },
   { label: 'La carte', path: '/menu', icon: UtensilsCrossed },
   { label: 'Produits', path: '/nos-produits', icon: Package },
-  { label: 'Óra+', path: '/ora-plus', icon: Sparkles },
   { label: 'Événements', path: '/evenements', icon: CalendarDays },
   { label: 'Bilan', path: '/bilan-bien-etre', icon: Heart },
   { label: 'Contact', path: '/contact', icon: Mail },

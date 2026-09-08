@@ -65,14 +65,6 @@ export const seoConfig: Record<string, PageSEOEntry> = {
     title: 'PessoBot | Expert Nutrition PessÓra',
     description: 'Posez vos questions au bot nutrition PessÓra. Conseils boissons, horaires, menu et bien-être.',
   },
-  '/ora-plus': {
-    title: 'Óra+ | Abonnement PessÓra',
-    description:
-      'Abonnement premium PessÓra : remises sur les boissons, bilan bien-être, événements prioritaires. Sans engagement.',
-    ogTitle: 'Óra+ — L\'abonnement bien-être',
-    ogDescription: 'Abonnement premium PessÓra : -50% sur les boissons, bilan bien-être offert, événements prioritaires. Sans engagement.',
-    ogType: 'website',
-  },
   '/connexion': {
     title: 'Connexion | Club PessÓra',
     description: 'Connectez-vous à votre espace membre PessÓra pour accéder à vos avantages.',

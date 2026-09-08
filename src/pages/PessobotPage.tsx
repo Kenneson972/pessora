@@ -30,8 +30,8 @@ const PessobotPage = () => {
       icon: Heart,
     },
     {
-      title: 'Óra+ & Bilan',
-      desc: "Il répond à vos questions sur l'abonnement Óra+ et vous redirige vers le Bilan Bien-Être si vous cherchez un accompagnement sur mesure.",
+      title: 'Bilan bien-être',
+      desc: "Il vous redirige vers le Bilan Bien-Être si vous cherchez un accompagnement sur mesure.",
       icon: Sparkles,
     },
   ];
@@ -94,7 +94,7 @@ const PessobotPage = () => {
                 <em className="italic text-white/60">Assistant nutrition</em>
               </h1>
               <p className="mb-10 max-w-md text-[12px] font-light leading-[1.7] text-white/[0.42]">
-                Conseils produits, horaires et Óra+ — ouvrez la bulle en bas à droite quand vous voulez.
+                Conseils produits et horaires — ouvrez la bulle en bas à droite quand vous voulez.
               </p>
 
               <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-10">
@@ -131,7 +131,7 @@ const PessobotPage = () => {
             Votre guide boissons, en un message.
           </h2>
           <p className="text-[13px] font-light text-black/45 leading-relaxed max-w-2xl mx-auto">
-            PessoBot connaît chaque boisson du bar sur le bout des doigts. Posez-lui une question sur le menu, les horaires ou l'abonnement Óra+ — il répond en quelques secondes.
+            PessoBot connaît chaque boisson du bar sur le bout des doigts. Posez-lui une question sur le menu ou les horaires — il répond en quelques secondes.
           </p>
         </PageShell>
       </section>

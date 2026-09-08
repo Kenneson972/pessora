@@ -6,7 +6,6 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   'nos-produits': 'Nos Produits',
   evenements: 'Événements',
   contact: 'Contact',
-  'ora-plus': 'Óra+',
   'mon-espace': 'Mon espace',
   'suivi-commande': 'Suivi de commande',
 };

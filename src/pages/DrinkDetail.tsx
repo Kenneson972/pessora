@@ -16,8 +16,6 @@ import { useMenuCatalog } from '../hooks/useMenuCatalog';
 import { useAuth } from '../contexts/AuthContext';
 import { DrinkDetailAdminEdit } from '../components/admin/DrinkDetailAdminEdit';
 import { ProductJsonLd } from '../components/seo/ProductJsonLd';
-import { formatEurFr, oraMemberUnitPrice, ORA_PLUS_MAX_DRINK_DISCOUNT } from '../lib/oraPricing';
-import { oraPlusPricing } from '../data/oraPlusData';
 
 type TabId = 'ingredients' | 'nutrition' | 'benefits';
 
@@ -114,9 +112,6 @@ const DrinkDetail = () => {
     const basePrice = sizeBasePrice * quantity;
     return (basePrice + boostersPrice).toFixed(2);
   };
-
-  /** Boisson à tarif membre max (−50 %) + boosters au prix bar */
-  const memberTotalEstimate = oraMemberUnitPrice(sizeBasePrice) * quantity + boostersPrice;
 
   const relatedDrinks = catalogItems
     .filter(item => item.category === drink.category && item.id !== drink.id)
@@ -325,49 +320,6 @@ const DrinkDetail = () => {
                     </span>
                   )}
                 </div>
-              </div>
-
-              <div className="mx-auto flex max-w-xl flex-col gap-2 rounded-[2px] border border-noir/[0.07] bg-surface-muted/80 px-3 py-2.5 sm:mx-0">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-[11px] font-light leading-snug text-black/60">
-                    <span className="font-medium text-black/75">Óra+</span>
-                    {' · '}
-                    dès {formatEurFr(oraMemberUnitPrice(sizeBasePrice))} la boisson
-                    <span className="text-black/40"> (max. −{Math.round(ORA_PLUS_MAX_DRINK_DISCOUNT * 100)}&nbsp;%)</span>
-                  </p>
-                  <Link
-                    to="/ora-plus"
-                    className="inline-flex shrink-0 items-center gap-1 text-[10px] font-normal uppercase tracking-[0.12em] text-noir underline-offset-2 hover:underline"
-                  >
-                    Abonnement {oraPlusPricing.price}/mois
-                    <ArrowRight size={12} strokeWidth={1.35} aria-hidden />
-                  </Link>
-                </div>
-                <details className="group border-t border-noir/[0.06] pt-2">
-                  <summary className="cursor-pointer list-none text-[10px] font-light text-black/40 transition-colors marker:content-none [&::-webkit-details-marker]:hidden">
-                    <span className="inline-flex items-center gap-1 underline-offset-2 group-open:underline">
-                      Détail du total indicatif membre
-                      <span className="text-[9px] text-black/30" aria-hidden>
-                        ▾
-                      </span>
-                    </span>
-                  </summary>
-                  <p className="mt-2 text-[11px] font-light leading-relaxed text-black/45">
-                    Prix public au verre. Avec Óra+, tarif boisson jusqu’à −
-                    {Math.round(ORA_PLUS_MAX_DRINK_DISCOUNT * 100)}&nbsp;% : total indicatif{' '}
-                    <span className="font-normal text-black/60 tabular-nums">
-                      {memberTotalEstimate.toLocaleString('fr-FR', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}{' '}
-                      €
-                    </span>
-                    {boostersPrice > 0 ? (
-                      <span className="text-black/35"> (boosters au prix bar)</span>
-                    ) : null}
-                    .
-                  </p>
-                </details>
               </div>
             </div>
 

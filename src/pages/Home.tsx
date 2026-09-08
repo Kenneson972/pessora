@@ -13,7 +13,6 @@ import { HomeSplitGammes } from '../components/home/HomeSplitGammes';
 import { HomeBanner } from '../components/home/HomeBanner';
 import { HomeGammesProductTiles } from '../components/home/HomeGammesProductTiles';
 import { HomeGammesProductCarousel } from '../components/home/HomeGammesProductCarousel';
-import { OraPlusTeaserStrip } from '../components/common/OraPlusTeaserStrip';
 import { publicAssetWithCache } from '../lib/publicAsset';
 import { BackgroundVideo } from '../components/common/BackgroundVideo';
 
@@ -135,12 +134,6 @@ const Home = () => {
 
       {/* ─── Boissons — carrousel coups de cœur ─── */}
       <HomeProductCarousel />
-
-      <section className="bg-white section-vertical-padding">
-        <div className="section-wrapper">
-          <OraPlusTeaserStrip variant="muted" />
-        </div>
-      </section>
 
       {/* ─── Split modèle + tabs gammes boissons ─── */}
       <HomeSplitGammes />
