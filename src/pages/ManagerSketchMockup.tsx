@@ -166,34 +166,6 @@ export default function ManagerSketchMockup() {
             </ul>
           </SketchCard>
 
-          {/* ── Rangée 2 : abo ORA+ | fiche produit ── */}
-          <SketchCard label="Parcours abonnement">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-[8px] font-normal uppercase tracking-[0.22em] text-black/38">Abonnement</p>
-                <h2 className="mt-1 font-display text-lg font-light text-black md:text-xl">Óra+</h2>
-              </div>
-              <div className="flex shrink-0 flex-col items-end gap-1 rounded-2xl border border-noir/[0.08] bg-surface-muted px-3 py-2 text-right">
-                <span className="text-lg font-light tabular-nums text-black/80">10</span>
-                <span className="text-lg font-light tabular-nums text-black/45">8</span>
-                <span className="text-[7px] font-normal uppercase tracking-[0.18em] text-black/35">Options</span>
-              </div>
-            </div>
-            <p className="mt-4 text-[11px] font-light text-black/45">
-              Champs indicatifs du croquis — à valider métier (prix / paliers).
-            </p>
-            <ul className="mt-5 space-y-2.5 border-t border-noir/[0.05] pt-5 text-[11px] font-light text-black/55">
-              {['Nom', 'Prénom', 'Numéro', 'Contrat abonnement', 'Paiement régulier', 'CGV', 'Protection des données'].map(
-                (row) => (
-                  <li key={row} className="flex items-center justify-between border-b border-noir/[0.04] pb-2 last:border-0">
-                    <span>{row}</span>
-                    <span className="h-1.5 w-24 max-w-[40%] rounded-full bg-noir/[0.06]" aria-hidden />
-                  </li>
-                )
-              )}
-            </ul>
-          </SketchCard>
-
           <SketchCard label="Fiche produit">
             <h2 className="font-display text-xl font-light tracking-tight text-black md:text-2xl">Spicy Mango</h2>
             <p className="mt-2 text-[10px] font-normal uppercase tracking-[0.18em] text-black/38">Exemple type menu</p>
@@ -267,10 +239,6 @@ export default function ManagerSketchMockup() {
           Maquette de lecture pour le gérant — routes réelles :{' '}
           <Link to="/" className="underline underline-offset-2 hover:text-black">
             Accueil
-          </Link>
-          {' · '}
-          <Link to="/ora-plus" className="underline underline-offset-2 hover:text-black">
-            Óra+
           </Link>
           {' · '}
           <Link to="/bilan-bien-etre" className="underline underline-offset-2 hover:text-black">
