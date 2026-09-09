@@ -27,6 +27,7 @@
 ## Environnement
 - Repo `Kenneson972/pessora`, branche de travail : `feat/tests-paiement-stripe` (celle où ce fichier est poussé).
 - Stack : Vite SPA + Supabase (edge functions) — `npm run dev` pour le local.
+- ⚠️ **Test E2E = passer par le SITE HÉBERGÉ (pessora.fr, déjà en mode TEST)** : en local, le webhook Stripe ne revient pas (les edge functions locales ne reçoivent pas les callbacks du projet hébergé) → la commande resterait « payée sans confirmation » = FAUSSE anomalie. Un test local doit être marqué « partiel, webhook non vérifiable en local » dans le rapport.
 - Stripe TEST : carte `4242 4242 4242 4242` (exp. future, CVC quelconque).
 - Le site est noindex → zéro impact SEO.
 
