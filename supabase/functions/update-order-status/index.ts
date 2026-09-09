@@ -3,19 +3,10 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { verifyAdmin } from '../_shared/verifyAdmin.ts';
-
-function buildCorsHeaders(origin: string | null): Record<string, string> {
-  const allowed = Deno.env.get('ALLOWED_ORIGIN') || 'https://www.pessora.fr';
-  const isLocalhost = origin != null &&
-    (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'));
-  return {
-    'Access-Control-Allow-Origin': isLocalhost ? origin : allowed,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  };
-}
+import { getCorsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
-  const cors = buildCorsHeaders(req.headers.get('origin'));
+  const cors = getCorsHeaders(req.headers.get('origin'));
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: cors });

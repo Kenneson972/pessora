@@ -4,18 +4,15 @@ import Stripe from 'npm:stripe@14'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { z } from 'npm:zod@3'
 import { verifyAdmin } from '../_shared/verifyAdmin.ts'
+import { getCorsHeaders } from '../_shared/cors.ts'
 
 const BodySchema = z.object({
   stripe_customer_id: z.string().min(1),
   return_url: z.string().url(),
 })
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': Deno.env.get("ALLOWED_ORIGIN") ?? "https://www.pessora.fr",
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req.headers.get('origin'))
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {

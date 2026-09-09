@@ -3,6 +3,7 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import Stripe from 'npm:stripe@14';
 import { z } from 'npm:zod@3';
+import { getCorsHeaders as buildCorsHeaders } from '../_shared/cors.ts';
 // Rate limiter in-memory (inlined to avoid import issues)
 const rateStore = new Map<string, { count: number; resetAt: number }>();
 function checkRateLimit(ip: string): boolean {
@@ -42,16 +43,6 @@ const CheckoutRequestSchema = z.object({
   client_name: z.string().nullable().optional(),
   client_phone: z.string().nullable().optional(),
 });
-
-function buildCorsHeaders(origin: string | null): Record<string, string> {
-  const allowed = Deno.env.get('ALLOWED_ORIGIN') || 'https://www.pessora.fr';
-  const isLocalhost = origin != null &&
-    (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'));
-  return {
-    'Access-Control-Allow-Origin': isLocalhost ? origin : allowed,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  };
-}
 
 /**
  * Récupère le vrai prix unitaire depuis la base de données en ignorant
