@@ -1,4 +1,4 @@
-# Conception — Séparation admin.pessora.com
+# Conception — Séparation admin.pessora.fr
 
 Date : 09/09/2026 · Branche : `feat/separer-admin`
 
@@ -15,11 +15,11 @@ PessÓra est une SPA Vite (pas de serveur/API routes). Transposition retenue, en
 l'esprit "1 déploiement, split par domaine" plutôt que "2 déploiements séparés" :
 
 - **1 seul projet Vercel** (`pessora`, existant), **2 domaines** attachés
-  (`pessora.fr` / `www.pessora.fr` + `admin.pessora.com`).
+  (`pessora.fr` / `www.pessora.fr` + `admin.pessora.fr`).
 - **2 entrées Vite** (`index.html` + `admin.html` → 2 bundles JS distincts, voir
   `vite.config.ts`), au lieu d'un middleware serveur (Vite n'en a pas).
 - Le split par domaine se fait via `vercel.json` (`rewrites` avec condition `has: host`) :
-  requête sur `admin.pessora.com` → servie avec `admin.html` ; tout le reste → `index.html`.
+  requête sur `admin.pessora.fr` → servie avec `admin.html` ; tout le reste → `index.html`.
   Pas besoin d'Edge Middleware custom, Vercel supporte les conditions de host nativement
   dans les rewrites.
 - **Auth admin conservée telle quelle** (Supabase Auth + `profiles.role === 'admin'`,
@@ -34,8 +34,8 @@ l'esprit "1 déploiement, split par domaine" plutôt que "2 déploiements sépar
   supporte maintenant une liste d'origines séparées par virgules, et les 11 fonctions qui
   dupliquaient leur propre logique CORS inline importent désormais ce helper.
   → **Action restante (hors code)** : mettre à jour le secret `ALLOWED_ORIGIN` dans
-  Supabase (Edge Functions → Secrets) pour inclure `https://admin.pessora.com`, ex :
-  `https://www.pessora.fr,https://admin.pessora.com`.
+  Supabase (Edge Functions → Secrets) pour inclure `https://admin.pessora.fr`, ex :
+  `https://www.pessora.fr,https://admin.pessora.fr`.
 
 ## Ce qui part dans chaque bundle
 
@@ -54,7 +54,7 @@ l'esprit "1 déploiement, split par domaine" plutôt que "2 déploiements sépar
 - Les imports lazy et routes `/admin/*` ont été retirés.
 - Un filet de sécurité `RedirectToAdminApp` reste sur `/admin/*` : si quelqu'un atteint
   cette route sur le mauvais domaine (avant propagation DNS, en dev, etc.), redirection
-  JS vers `admin.pessora.com` + chemin courant.
+  JS vers `admin.pessora.fr` + chemin courant.
 
 **Code partagé** (inchangé, ~60 fichiers) : `supabaseClient`, `AuthContext`, types, hooks,
 `design tokens` (`index.css` importé dans les deux entrées) — pas de découpage physique,
@@ -81,5 +81,5 @@ comme chez les autres clients.
 ## DNS
 
 Ajouter chez OVH (zone `pessora.fr`) un CNAME `admin` → `cname.vercel-dns.com.`, après
-avoir ajouté le domaine `admin.pessora.com` au projet Vercel `pessora` (Settings → Domains)
+avoir ajouté le domaine `admin.pessora.fr` au projet Vercel `pessora` (Settings → Domains)
 — Vercel affichera la valeur exacte à ce moment-là (voir rapport de fin pour le détail).

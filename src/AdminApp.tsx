@@ -20,7 +20,7 @@ const AdminProduitsGammes = lazy(() => import('./pages/admin/AdminProduitsGammes
 const AdminContenu = lazy(() => import('./pages/admin/AdminContenu'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
-// Bundle admin.pessora.com — n'importe QUE les modules /admin/*.
+// Bundle admin.pessora.fr — n'importe QUE les modules /admin/*.
 // Le reste du site public (Home, Menu, checkout, /mon-espace…) vit dans App.tsx
 // et n'est jamais chargé ici : les deux bundles sont produits par des entrées
 // Vite séparées (index.html / admin.html), voir vite.config.ts + docs/admin-separe-conception.md.

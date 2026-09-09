@@ -20,7 +20,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       // 2 entrées = 2 bundles distincts (site public / admin), servis chacun
-      // sur son domaine (pessora.fr / admin.pessora.com) — voir vercel.json
+      // sur son domaine (pessora.fr / admin.pessora.fr) — voir vercel.json
       // et docs/admin-separe-conception.md. Le split par entrée + le lazy
       // loading des routes suffisent : aucune route /admin/* n'est incluse
       // dans le bundle public, et inversement.

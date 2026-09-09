@@ -21,10 +21,10 @@ const IS_DEV = import.meta.env.DEV;
 
 // Filet de sécurité si /admin/* est atteint sur le mauvais domaine (avant propagation
 // DNS, en dev, ou si la redirection Vercel — voir vercel.json — n'a pas matché).
-// En prod, l'admin vit sur admin.pessora.com (voir AdminApp.tsx).
+// En prod, l'admin vit sur admin.pessora.fr (voir AdminApp.tsx).
 const RedirectToAdminApp = () => {
   useEffect(() => {
-    const target = `https://admin.pessora.com${window.location.pathname}${window.location.search}`;
+    const target = `https://admin.pessora.fr${window.location.pathname}${window.location.search}`;
     window.location.replace(target);
   }, []);
   return null;
@@ -168,7 +168,7 @@ function App() {
             <Route path="/nos-produits/:rangeId/:slug" element={<GammeProductDetail />} />
             <Route path="/nos-produits/:rangeId" element={<RangeDetail />} />
             <Route path="/pessobot" element={<PessobotPage />} />
-            {/* Modules /admin/* extraits vers AdminApp.tsx (bundle admin.pessora.com) —
+            {/* Modules /admin/* extraits vers AdminApp.tsx (bundle admin.pessora.fr) —
                 voir docs/admin-separe-conception.md. Toute URL /admin/* atteinte ici
                 (mauvais domaine) redirige vers l'app admin. */}
             <Route path="/admin/*" element={<RedirectToAdminApp />} />

@@ -1,5 +1,5 @@
 // CORS helper partagé — autorise les hostnames configurés (liste séparée par
-// virgules dans ALLOWED_ORIGIN, ex: "https://www.pessora.fr,https://admin.pessora.com")
+// virgules dans ALLOWED_ORIGIN, ex: "https://www.pessora.fr,https://admin.pessora.fr")
 // ET localhost (dev).
 export function getCorsHeaders(origin: string | null): Record<string, string> {
   const rawAllowed = Deno.env.get("ALLOWED_ORIGIN") ?? "https://www.pessora.fr";
