@@ -223,10 +223,12 @@ export default function ModeBar() {
                       className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium uppercase tracking-[0.1em] ${
                         order.status === 'preparing'
                           ? 'bg-amber-500/20 text-amber-400'
-                          : 'bg-sapin/20 text-sapin-light'
+                          : order.status === 'ready'
+                            ? 'bg-emerald-500/20 text-emerald-400'
+                            : 'bg-sapin/20 text-sapin-light'
                       }`}
                     >
-                      {order.status === 'preparing' ? 'En prép.' : 'À faire'}
+                      {order.status === 'preparing' ? 'En prép.' : order.status === 'ready' ? 'Prête' : 'À faire'}
                     </span>
                   </div>
                 </button>

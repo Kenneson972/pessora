@@ -32,6 +32,7 @@ export default function SuiviCommande() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => { document.title = 'Suivi commande — PessÓra'; }, []);
 
@@ -114,7 +115,6 @@ export default function SuiviCommande() {
   const currentIdx = STEPS.findIndex((s) => s.key === order.status);
   const items = order.order_items ?? [];
   const itemNames = items.map((it) => `${it.quantity}× ${it.product_name}`).join(', ');
-  const { isAuthenticated } = useAuth();
   const isGuest = !!token && !isAuthenticated;
   const isDone = order.status === 'completed';
   const CurrentIcon = currentIdx >= 0 && currentIdx < STEPS.length ? STEPS[currentIdx].icon : Package;

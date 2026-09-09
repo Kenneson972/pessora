@@ -3,6 +3,7 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import Stripe from 'npm:stripe@14'
 import { activateOraPlus } from '../_shared/activateOraPlus.ts'
+import { sendOrderConfirmationEmail } from '../_shared/sendOrderConfirmation.ts'
 
 serve(async (req) => {
   const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')!
@@ -12,6 +13,9 @@ serve(async (req) => {
 
   const stripe = new Stripe(stripeKey, { apiVersion: '2024-04-10' })
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
+  const siteUrl = (Deno.env.get('SITE_URL') && Deno.env.get('SITE_URL')!.startsWith('http'))
+    ? Deno.env.get('SITE_URL')!
+    : 'https://www.pessora.fr'
 
   const body = await req.text()
   const signature = req.headers.get('stripe-signature') ?? ''
@@ -64,6 +68,8 @@ serve(async (req) => {
               .from('orders')
               .update({ status: 'paid', stripe_payment_intent_id: session.payment_intent as string })
               .in('id', orderIds);
+            const email = session.customer_details?.email ?? session.customer_email
+            await sendOrderConfirmationEmail(supabase, orderIds, email, siteUrl)
           }
         }
         break
@@ -130,6 +136,8 @@ serve(async (req) => {
               .from('orders')
               .update({ status: 'paid', stripe_payment_intent_id: session.payment_intent as string })
               .in('id', orderIds);
+            const email = session.customer_details?.email ?? session.customer_email
+            await sendOrderConfirmationEmail(supabase, orderIds, email, siteUrl)
           }
         }
         break

@@ -136,15 +136,15 @@ const Header = () => {
                 to={item.path}
                 aria-current={isActive ? 'page' : undefined}
                 className={cn(
-                  'relative whitespace-nowrap py-1.5 text-[10px] font-normal uppercase tracking-[0.16em] transition-colors duration-200 rounded-[1px]',
+                  'relative whitespace-nowrap py-1.5 text-[12px] font-semibold uppercase tracking-[0.1em] transition-colors duration-200 rounded-[1px]',
                   isActive
                     ? chromeDark
                       ? 'text-white'
                       : 'text-black'
                     : chromeDark
-                      ? 'text-white/60 hover:text-white'
-                      : 'text-black/72 hover:text-black',
-                  isActive && 'after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:content-[""]',
+                      ? 'text-white/85 hover:text-white'
+                      : 'text-black/88 hover:text-black',
+                  isActive && 'after:absolute after:-bottom-0.5 after:left-0 after:right-0 after:h-[2px] after:content-[""]',
                   isActive && (chromeDark ? 'after:bg-white' : 'after:bg-sapin'),
                 )}
               >
