@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/(.*)", "has": [{ "type": "host", "value": "admin.pessora.com" }], "destination": "/admin.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

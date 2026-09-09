@@ -2,15 +2,7 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { z } from 'npm:zod@3';
-
-function getCorsHeaders(origin: string | null): Record<string, string> {
-  const allowed = Deno.env.get('ALLOWED_ORIGIN') || 'https://www.pessora.fr';
-  const isLocalhost = origin != null && (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'));
-  return {
-    'Access-Control-Allow-Origin': isLocalhost ? origin : allowed,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  };
-}
+import { getCorsHeaders } from '../_shared/cors.ts';
 
 const NewsletterSchema = z.object({
   subject: z.string().min(1, 'Sujet requis').max(200),
