@@ -90,9 +90,10 @@
 
 ### ⏳ APRÈS LA CARTE
 6. **Catégories** (mapping boissons → MEGA THÉ / PROTEIN SHAKE / COFFEE) + tailles actives.
-   - ⚠️ **PIÈGE — la structure SANS le mapping viderait le menu** (état vérifié en base le 10/09, 16 produits) : **coffee 2 actifs** · **energie 4 actifs / 1 inactif** · **shakes 4 actifs / 2 inactifs** · **wellness 1 actif / 2 inactifs**. Si on bascule la nav sur les 3 piliers et qu'on **supprime Énergie** avant de re-mapper, **9 des 11 produits actifs** se retrouvent **sans catégorie** → invisibles côté client. Autrement dit : la structure seule **casse la vitrine**.
-   - **Faisable maintenant sans risque** : préparer les **libellés / la structure / le retrait d'Énergie** *derrière* un mapping provisoire qui **ne masque jamais un produit** (repli « Nos boissons » pour toute catégorie non rattachée), et basculer ensuite le mapping quand la carte arrive.
-   - **Ne pas faire** : publier la nav à 3 piliers **sans** filet → le site perd la moitié de son catalogue le jour de l'ouverture.
+   - ✅ **DÉCISION KEN (10/09) : on bascule la structure maintenant.** Les produits actuels sont **périmés** — Catherine ajustera sa carte, **on peut même tout archiver** s'il faut. Le manque de la carte ne bloque donc plus ce lot.
+   - ⚠️ **Filet OBLIGATOIRE dans le code** (exigence vela) : « toute catégorie non rattachée → **regroupée dans un bloc visible, jamais masquée** ». Le repli ne doit pas être une donnée provisoire saisie à la main : il doit être **dans le code**, sinon une carte partielle ou en retard = vitrine trouée sans que personne ne le voie.
+   - ✅ **Critère d'acceptation (automatisable, vela)** : **nombre de produits affichés sur `/menu` == nombre de produits actifs en base** (script ~10 lignes). Avec le filet, l'égalité doit toujours tenir → à intégrer à la recette, et réutilisable à chaque évolution du catalogue.
+   - ⚠️ **Si des produits sont archivés** : le générateur de sitemap les retire automatiquement (`.eq('active', true)`, l.22-24) → **régénérer** ; et vérifier qu'**aucun lien ne pointe vers un `/menu/<slug>` archivé** (Home, Menu, mockups, puces PessoBot) — même règle que le retrait Bilan : **zéro lien mort**.
 7. **Moteur Formule** (bundle intelligent + recommandation thé ↔ shake + prix validé **côté serveur**).
 8. **Challenge/Bilan (lot A — le plus gros)** : rubrique dans Événements, créneaux J-14 auto (UTC-4), validation admin + email, suppression page Bilan, migration du choix de créneau, photos avant/après.
    - ✅ **Fondations déjà en place (vérifié)** : `events.type` (→ `type='challenge'`), `bilan_slots` (`date`/`heure`/`disponible`), `event_registrations.post_registration_details`, Resend opérationnel → **aucune table neuve**.
