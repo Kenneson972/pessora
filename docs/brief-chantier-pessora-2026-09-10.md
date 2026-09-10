@@ -105,6 +105,13 @@
 
 ---
 
+### ORDRE DE MERGE — bloc 1 (testé le 10/09 sur une copie jetable du repo)
+- **Collision réelle** : `feat/boosters-2-euros` et `feat/retrait-remise-ora-plus` touchent les mêmes fichiers → merger **en séquence** : **boosters d'abord**, puis `retrait-remise-ora-plus` (rebase ou merge), jamais les deux en parallèle.
+- **Conflits mesurés** : **2 fichiers seulement** (`src/components/cart/DrinkOptionsModal.tsx`, `src/lib/cartDisplayPrice.ts`). ✅ **`create-checkout-session` fusionne automatiquement** — et le résultat est **correct** : il contient `BOOSTER_PRICE_EUR = 2` **et** la remise Óra+ retirée. Le chemin de l'argent n'est donc pas à recoller à la main.
+- **Règle de résolution** : garder **les deux intentions** — `BOOSTER_PRICE_EUR` partout **et** aucune condition `isOraPlus` → supprimer l'import `oraMemberUnitPrice`/`oraPricing` côté client, **conserver** l'import `BOOSTER_PRICE_EUR`, et garder `previewUnitPrice = basePrice + boosterAdd`.
+- `feat/partenariat-formulaire` (base `1707799`) : simple **rebase** sur main (les docs ne touchent aucun de ses fichiers, aucun conflit).
+- ⚠️ **Aucun merge avant recette vela verte** — et `src/__tests__/checkout.test.ts` doit être remis d'aplomb **dans la même passe** (il affirme encore « boosters × 1 € » et la remise −50 %).
+
 ## 3. RÈGLES DE TRAVAIL (impératives)
 - Branche `feat/...`, **jamais de push direct sur `main`** ; **aucun merge sans recette QA** (Vela) — gate obligatoire.
 - **Toutes les règles de prix vivent côté serveur** (`create-checkout-session`) : le client affiche, le serveur décide. Jamais un prix calculé côté client seul.
