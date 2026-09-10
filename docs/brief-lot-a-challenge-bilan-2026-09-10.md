@@ -75,3 +75,39 @@ Le parcours Bilan a été **retiré** au bloc 1. Ici on le **rétablit** avec la
 - **Dates en UTC-4**, jamais de génération planifiée.
 - **Une seule personne dans le repo à la fois** ; les fonctions edge se déploient **nommément** (jamais « toutes » : `stripe-webhook`/`send-contact-email`/`update-order-status` sont en `verify_jwt = False` **exprès**).
 - **Aucun secret** dans le code ni dans un chat.
+
+## 10. ADDENDUM 10/09 soir — points 7/8/9 (relecture équipe)
+
+Les 6 premiers points de relecture sont **traités en v2** (`c879e05`). Restent ces trois-ci, à coder **dans la même migration**.
+
+### Point 7 — le chemin hors-créneau (`slot_id IS NULL`) est non borné
+Un visiteur non connecté peut insérer autant de demandes qu'il veut — et le brief prévoit **un e-mail par demande** → risque de remplir la boîte de `ADMIN_EMAIL` dès l'ouverture.
+- **Dédup en base** : index **UNIQUE partiel**, `WHERE statut = 'en_attente' AND slot_id IS NULL`, clé `COALESCE(user_id::text, normalize_phone(telephone))`. **Pas** de `IF NOT EXISTS` dans un trigger (laisse une course sous insertions simultanées — cf. critère ③).
+- **Volume** : `public.check_rate_limit(p_key, p_max, p_window_seconds)` **existe déjà en base** (table `rate_limits`, 0 ligne, jamais appelée) — la réutiliser. Mais l'insertion est un **REST direct** : elle ne traverse **aucune** edge function, donc le rate-limiter en mémoire (celui des 3 fonctions qui limitent) **ne peut pas la couvrir** → **tout doit tenir en base**.
+
+### Point 8 — normaliser AVANT de dédupliquer
+Le canon existant en base (`lower(regexp_replace(..., '\s+', '', 'g'))`) **ne retire que les espaces** → `0696000000` et `+596 696 000 000` restent **deux clés** : l'index donnerait une **fausse sécurité**. Ordre imposé :
+1. `public.normalize_phone(text) IMMUTABLE` — chiffres seuls, préfixe pays retiré, **9 derniers** conservés (→ `696000000` pour les 4 formats).
+2. Trigger **`BEFORE INSERT OR UPDATE`** qui stocke la valeur normalisée.
+3. Index unique partiel sur la **valeur normalisée** (ou index sur expression — équivalent si la fonction est `IMMUTABLE`).
+`bilan_bookings` est **vide** → **zéro backfill**.
+
+### Point 9 — règle du chemin hors-créneau (arbitrage client du 10/09)
+**Créneaux ouverts `J-14 → J` ; passé J, on accepte encore les demandes pendant 7 jours (jusqu'à J+7) ; au-delà le bilan est fermé.** Le RDV demandé tombe **entre le jour de la demande et `J+7`**.
+
+- **Le serveur DÉDUIT le challenge — il ne le demande plus au client** : `SELECT id FROM events WHERE type='challenge' AND active AND date < today ORDER BY date DESC LIMIT 1`. Un garde en moins, un champ à forger en moins.
+- `challenge_event_id` **reste en colonne**, remplie par le **trigger** (l'admin doit voir à quel challenge se rattache la demande) — **jamais lue depuis le client**.
+- La vérification passe par un **helper `SECURITY DEFINER`** (ex. `fn_challenge_window_ok(p_date_rdv date) → boolean`, `search_path` fixé) appelé depuis le `WITH CHECK` — **pas** un `EXISTS` inline : il s'exécuterait avec les droits de l'appelant et **dépendrait de la policy SELECT d'`events`** (couplage = panne silencieuse, même piège que `fn_bilan_slot_bookable`).
+- **Bornes en `America/Martinique`**, jamais en UTC.
+- **Corrections SQL** : `today > e.date` (le chemin hors-créneau ne s'ouvre **qu'après J** — sans cette borne il s'ouvre avant, ce qui annule la règle) et **`date_rdv`** (pas `NEW.date_rdv`, qui n'existe pas dans une policy).
+- **`statut = 'en_attente'`** forcé (la colonne a déjà ce `DEFAULT`).
+
+### ⚠️ Deux prérequis base, sinon la fonctionnalité est inutilisable
+1. `events_type_check` n'autorise **pas** `'challenge'` (`run_club, popup, atelier, event, partenariat, bilan`) → **la migration doit l'ajouter**.
+2. L'**admin doit permettre de créer un challenge avec sa date** — sans ça, le chemin « demande après la date » n'est jamais ouvrable, même code livré.
+3. Pour la recette : **poser un challenge en base** (il n'y en a **aucun** aujourd'hui) — sinon on ne teste que les refus et on conclura à tort que la voie nominale est cassée.
+
+### Recette ajoutée (⑥⑦), en REST direct, **avec ET sans `Origin`**
+- **⑥** 4 insertions anon du **même numéro sous 4 formats** → **1 seule ligne** (et jamais N e-mails).
+- **⑦** `aujourd'hui = J+7` → accepté · `J+8` → refusé · **challenge futur** → refusé (le chemin ne s'ouvre qu'après J) · date passée → refusé · dans les bornes → `en_attente` + e-mail.
+- **Couverture des deux chemins** : `[J-14 → J]` ∪ `[J+1 → J+7]` → contigus, **aucun trou** où un client légitime n'a de chemin.
