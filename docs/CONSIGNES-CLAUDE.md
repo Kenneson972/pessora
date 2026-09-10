@@ -23,15 +23,33 @@
 
 ## 2026-09-10 (soir) — LOT A : Challenge / Bilan — ✅ MERGÉ
 
-**État : `origin/main` = `047c294`** (17 fichiers, +1029/−12), **déployé en production (Vercel READY)**. Les deux migrations sont en base.
+**État : le merge du lot A est `047c294`** (17 fichiers, +1029/−12) — vérifié comme **déploiement de production servi** (Vercel, ref `main`, état READY). Les deux migrations sont en base. *(`origin/main` a avancé depuis — c'est normal, ce SHA est la trace du lot A, pas la tête de branche.)*
 
 Contenu : garanties serveur (fenêtre J-14→J, anti double-réservation, dédup hors-date, téléphone normalisé, `origine`), widget de réservation, catégories d'erreur partagées, validation téléphone 9 chiffres, accroches Challenge.
 
 **Réserve écrite, à ne pas oublier :** le critère **⑨** (`origine = 'questionnaire'`) **n'est PAS validé** — aucun appelant n'existe tant que la RPC n'est pas écrite. Il se recettera **avec** elle.
 
-**À attendre, ce n'est pas un bug :** la page Challenge affiche **0 créneau** tant que Catherine n'a pas créé son challenge (les 7 créneaux historiques sont orphelins, sans date future).
+**À attendre, ce n'est pas un bug :** le widget ne se monte que sur un événement `type = 'challenge'` (`EvenementDetail.tsx:364`). Comme **aucun challenge n'existe en base**, **aucune page ne l'affiche aujourd'hui** — un visiteur ne voit rien de nouveau (vérifié en live : `/evenements` et `/evenements/runclub` rendent sans erreur console). Dès que Catherine crée son challenge, la page affichera **ses** créneaux — et **0** tant qu'aucun créneau ne lui est rattaché : les 7 créneaux historiques sont **orphelins** (sans `challenge_event_id`), donc invisibles par construction.
 
 **Fichiers d'historique (ne pas modifier) :** `20260911100000_lot_a_challenge_bilan_server_guards.sql` (blob `709359a9…`, appliqué) + `20260911120000_grant_delete_bilan_bookings.sql` (`d777652`, correctif daté).
+
+---
+
+## 🔴 2026-09-10 (après merge) — BLOQUANT AVANT DÉMO : aucun chemin ne rattache un créneau à un challenge
+
+**Constat vérifié dans le code de `main` (pas une hypothèse) :**
+
+- `AdminBilans.tsx:190-199` — `createSlotAtSelected()` insère `{ date, heure, disponible: true }` : **jamais `challenge_event_id`**. Aucun écran, aucune fonction ne renseigne cette colonne (elle n'apparaît que dans `BilanBookingWidget.tsx:78` en **lecture**, et dans `types/database.ts`).
+- `BilanBookingWidget.tsx:76-78` — le widget lit `.eq('challenge_event_id', challengeEventId)`.
+- Conséquence : **tout créneau créé depuis son admin est orphelin** → `fn_bilan_slot_bookable()` = `false` → **invisible et non réservable**. Créer un challenge puis des créneaux **ne suffit pas** : la page affichera **0 créneau**, même avec des créneaux `disponible = true`.
+
+**Régression induite par la v5 sur un flux existant** : avant la migration, la policy `bilan_slots_select_public (USING true)` rendait le créneau visible ; depuis, il ne l'est plus tant qu'il n'est pas rattaché. Le geste « ajouter un créneau » dans son admin est donc **sans effet visible** aujourd'hui — il faut le dire, sinon c'est un « ça ne marche pas » devant la cliente.
+
+**Correctif recommandé (doctrine de la soirée : la règle vit côté serveur, l'UI affiche)** — trigger `BEFORE INSERT OR UPDATE` sur `bilan_slots` : si `challenge_event_id IS NULL`, le rattacher au challenge `active` dont la fenêtre couvre la date du créneau (`events.date - 14 <= NEW.date <= events.date`, `type = 'challenge'`) ; si aucun ne correspond, laisser `NULL` (orphelin assumé). Avantage : plus aucun opérateur ne peut créer un créneau invisible, et **aucune** évolution UI n'est nécessaire pour que ça marche. Un sélecteur « challenge concerné » dans l'admin reste souhaitable **plus tard** pour la lisibilité, mais ne doit pas être la seule garantie.
+
+**Critère de recette (à faire jouer tel quel)** : créer un challenge dans l'admin → **ajouter un créneau depuis l'admin** → le créneau devient **visible et réservable** sur la page du challenge, **sans aucun SQL**. Aujourd'hui : ❌ (aucune interface ne peut le faire).
+
+**Lien avec la migration v5** : ce n'est **pas** un oubli du lot A côté client — c'est un lien manquant entre deux lots (la colonne est arrivée avec la v5, l'écran de saisie des créneaux est antérieur et n'a pas suivi). À traiter comme un correctif **avant** la démo du Challenge.
 
 ---
 
@@ -71,6 +89,9 @@ Un membre modifie son profil → l'interface dit « enregistré », **rien n'est
 - **⚠️ 16 occurrences de `pessora.fr@gmail.com`** à remplacer par **`pessora.mq@gmail.com`** (décision de Ken) : `src/data/infoData.ts`, `CGV.tsx` (×2), `MentionsLegales.tsx` (×2), `PolitiqueConfidentialite.tsx` (×2), `AdminInfosBar.tsx` (placeholder), `send-contact-email/index.ts:63` (fallback en dur), `.env.example`, `docs/` (×3), **`template/client.config.ts`**. La base porte déjà la bonne adresse (`bar_settings.email`) → le site et le chatbot se contredisent aujourd'hui.
 - **`template/client.config.ts` contient les coordonnées réelles de Catherine** (adresse du bar, lien Maps, email) → **tout doit devenir placeholder** (`contact@exemple.fr`, `00000`, Maps vide). Sinon chaque futur client publie les coordonnées d'un autre commerce. Critère : **zéro coordonnée réelle dans `template/`**.
 - **Crédit footer** « Site réalisé par Karibloom » (avec l'accord de Catherine) — ligne typo fine, intégrée à la ligne légale.
+- **Franchise de TVA** : la mention « **TVA non applicable, art. 293 B du CGI** » doit remplacer tout « **TTC** » ambigu. ⚠️ Il n'y en a **pas seulement dans les mentions légales** : le relevé live en trouve aussi dans **`/cgv`** (page où le client lit ses droits). Mesuré en rendu navigateur, pas dans le HTML brut.
+- **`/confidentialite` ne porte AUCUNE adresse de contact** (page de 888 caractères, zéro e-mail) — or c'est la page où l'on exerce ses droits RGPD : y mettre **la même adresse arbitrée** que les mentions légales, sinon le droit d'accès n'a pas de voie affichée.
+- **Les 4 `[À compléter]` visibles en production** (relevé live de `/mentions-legales`) : *Forme juridique*, *Directeur de la publication*, *Hébergeur*, *Adresse* (celle de l'hébergeur). Les autres pages légales (`/cgv`, `/confidentialite`, `/contact`) sont propres.
 - **Médiateur de la consommation** : obligatoire (L612-1 · L616-1/R616-1 · amende L641-1 jusqu'à 3 000 €). **C'est Catherine qui le désigne** → coordonnées à inscrire sur le site **et** dans les CGV dès qu'elle répond.
 - **Newsletter conforme** : colonne `token uuid DEFAULT gen_random_uuid()`, **fonction de désinscription dédiée en `verify_jwt = false`** (déployée **nommément**), **`List-Unsubscribe` + `List-Unsubscribe-Post: List-Unsubscribe=One-Click`**, réponse **sans PII**, idempotente, rate-limitée. **DMARC absent** : `_dmarc.pessora.fr TXT "v=DMARC1; p=none"` (chez OVH). ⚠️ L'apex a un SPF **strict** (`include:mx.ovh.com -all`) → aucun envoi depuis `@pessora.fr` hors Resend.
 
