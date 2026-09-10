@@ -30,6 +30,7 @@ const TYPE_LABELS: Record<string, string> = {
   event: 'Événement',
   partenariat: 'Partenariat',
   bilan: 'Bilan',
+  challenge: 'Challenge 21 jours',
 };
 
 type HeaderSearchProps = {

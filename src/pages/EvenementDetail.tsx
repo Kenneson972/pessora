@@ -9,12 +9,14 @@ import { supabase } from '../lib/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 import type { Event } from '../types/database';
 import { PostRegistrationWizard } from '../components/events/PostRegistrationWizard';
+import { BilanBookingWidget } from '../components/events/BilanBookingWidget';
 import { EventJsonLd } from '../components/seo/EventJsonLd';
+import { isValidPhone } from '../lib/phone';
 
 const schema = z.object({
   nom: z.string().min(2, 'Nom requis'),
   prenom: z.string().min(2, 'Prénom requis'),
-  telephone: z.string().min(8, 'Téléphone requis'),
+  telephone: z.string().refine(isValidPhone, 'Vérifiez votre numéro de téléphone'),
   nb_personnes: z.string(),
   souhait_info: z.string(),
   privacyAccepted: z.boolean().refine((v) => v === true, {
@@ -43,6 +45,7 @@ const TYPE_LABELS: Record<Event['type'], string> = {
   event: 'Événement',
   partenariat: 'Partenariat',
   bilan: 'Bilan',
+  challenge: 'Challenge 21 jours',
 };
 
 const inputClass =
@@ -343,6 +346,27 @@ const EvenementDetail = () => {
                     {event.heure && <> à {event.heure.slice(0, 5)}</>}.
                   </p>
                 </div>
+                {event.type === 'challenge' && Array.isArray(event.gallery) && event.gallery.length > 0 && (
+                  <div className="mt-8">
+                    <p className="mb-3 text-[9px] font-normal uppercase tracking-[0.2em] text-black/40">
+                      Avant / après — challengers précédents
+                    </p>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                      {event.gallery.map((url: string) => (
+                        <div key={url} className="aspect-square overflow-hidden rounded-[2px] bg-surface-product-well">
+                          <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {event.type === 'challenge' && (
+                  <div className="mt-8">
+                    <BilanBookingWidget challengeEventId={event.id} />
+                  </div>
+                )}
+
                 {postRegistration && (
                   <PostRegistrationWizard
                     registrationId={postRegistration.id}
@@ -493,7 +517,7 @@ const EvenementDetail = () => {
           </div>
         </div>
       </div>
-      {Array.isArray(event.gallery) && event.gallery.length > 0 && (
+      {event.type !== 'challenge' && Array.isArray(event.gallery) && event.gallery.length > 0 && (
         <section className="border-t border-noir/[0.05]">
           <div className="mx-auto w-full max-w-6xl py-12">
             <h2 className="mb-6 font-display text-[22px] font-normal text-black">Photos</h2>
