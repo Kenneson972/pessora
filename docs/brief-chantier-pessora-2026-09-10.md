@@ -2,6 +2,8 @@
 
 *À lire AVANT tout code. Complète `CLAUDE.md` (état projet) — ne pas le dupliquer.*
 
+> ⚠️ **EN CAS DE CONTRADICTION, CE BRIEF FAIT AUTORITÉ SUR `CLAUDE.md`.** Le `CLAUDE.md` en racine (daté du 09/09) dit encore « mécanique interne Óra+ **conservée** volontairement » : c'est **périmé** → décision du 10/09 = **archivage TOTAL** (lot 4 ; seule exception : la remise −50 %, lot 1). De même, la section « Décisions actées 02/09 » de ce fichier est remplacée par le CR du 10/09 ci-dessous (catégories, prix, challenge, Óra+, Bilan).
+
 ---
 
 ## 1. RÉSUMÉ DU CR (décisions actées avec la cliente)
