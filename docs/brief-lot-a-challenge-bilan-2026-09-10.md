@@ -31,6 +31,10 @@ Faire du **Challenge 21 jours** une **rubrique dédiée DANS la page Événement
 - ➡️ **Mais le calcul ne doit PAS vivre seulement à l'affichage** : c'est **le serveur qui décide** (policy RLS / edge function), sinon un membre connecté peut réserver hors fenêtre par un appel API et la règle devient décorative. Même doctrine que les prix.
 
 ## 5. GARANTIES SERVEUR À POSER (indispensables)
+0. 🔴 **TROU CONFIRMÉ — `bilan_bookings_insert_public` : `WITH CHECK (true)`, aucun contrôle** (Claude, 10/09). La policy est ouverte au rôle `public` → **n'importe quel visiteur, même non connecté, peut insérer une ligne arbitraire** (`user_id` forgé, `slot_id` forgé, voire `statut = 'confirme'`). **Preuve sans écriture** (probe 10/09) : un `INSERT` anon avec un `slot_id` inexistant renvoie **`23502` (NOT NULL `telephone`)** et **non `42501` (violation RLS)** → la policy a **laissé passer**, seul le contrainte l'a arrêté ; **aucune ligne créée**.
+   - ✅ **À FAIRE** : **supprimer** cette policy (pas la faire cohabiter) et la remplacer par une policy **conditionnelle** (points 1-2).
+   - ⚠️ **Sur-privilège à corriger dans la même passe** : `anon` a **DELETE, INSERT, SELECT, UPDATE, TRUNCATE, REFERENCES, TRIGGER** sur la table → restreindre au strict nécessaire (**SELECT/INSERT**). Non exploitable aujourd'hui (les autres policies filtrent), mais c'est exactement ce qui rend une future policy mal écrite exploitable.
+   - 🔍 **Audit associé** : vérifier qu'**aucune autre table** du projet ne porte le même motif (`WITH CHECK (true)` + grants larges à `anon`/`authenticated`) — à faire **avant** le go-live.
 1. **`WITH CHECK` sur l'INSERT** dans `bilan_bookings` : le créneau doit **exister**, être `disponible`, et être **dans la fenêtre J-14 → J inclus**. Aujourd'hui **un membre peut s'inscrire hors fenêtre**.
 2. **Index UNIQUE partiel sur `bilan_bookings(slot_id)`** en excluant `statut = 'annule'` → **1 créneau = 1 personne**, garanti par la base (pas par l'interface).
 3. **Bascule `bilan_slots.disponible = false` côté serveur**, atomique avec la réservation (**trigger sur INSERT** ou edge function).
