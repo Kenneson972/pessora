@@ -124,18 +124,12 @@
   - ℹ️ CORS : `ALLOWED_ORIGIN` = `www.pessora.fr + admin.pessora.fr` → depuis l'alias, les appels **REST** passent, les appels **edge** sont bloqués par le navigateur ; un **POST direct** (sans `Origin`) n'est pas concerné.
 - ✅ **Vérifié dans `feat/archivage-tailles-admin`** : `price_medium` est désormais **lu** (`sizeFromKey === 'medium' ? 'price_medium'` + colonne ajoutée au `select`) — le piège « panier à 0 € » est traité ; et les refus passent par une `CartValidationError` avec **statuts 4xx explicites** (400/404/409) au lieu de 500.
 
-**Séquence exacte (copiable)**
-```
-git checkout main && git pull
-git merge --no-ff origin/feat/partenariat-formulaire
-git merge --no-ff origin/feat/archivage-tailles-admin
-git merge --no-ff origin/feat/archivage-ora-plus-complet
-git merge --no-ff origin/feat/boosters-2-euros      # 1 conflit : create-checkout-session (ou DrinkOptionsModal selon l'ordre des 2 prix)
-git merge --no-ff origin/feat/retrait-remise-ora-plus
-# résolution : garder BOOSTER_PRICE_EUR ET supprimer toute condition isOraPlus
-npx tsc            # PORTE DE TYPES LOCALE — exit 0 attendu
-npx vitest run     # 10 échecs dans cartStore.test.ts = PRÉ-EXISTANTS (jsdom/localStorage), identiques sur main
-```
+**✅ SÉQUENCE EXÉCUTÉE — passes 1 & 2 closes le 10/09 (état vérifié de façon indépendante)**
+- `main` = **`da2e2eb`** (poussé). **7 branches mergées** dans l'ordre prévu : partenariat → archivage-tailles → archivage-Óra+ → **retrait-bilan** → boosters (avec `_shared/pricing.ts`) → remise Óra+. 3 conflits au total, tous résolus à la main (`create-checkout-session`, `DrinkOptionsModal`, `cartDisplayPrice`), **`npx tsc --noEmit` → exit 0**.
+- ✅ **Contrôles indépendants sur `main`** : `supabase/functions/_shared/pricing.ts` présent (`BOOSTER_PRICE_EUR = 2`) · `create-checkout-session` l'importe (`../_shared/pricing.ts`) · `checkout.test.ts` importe **le vrai module** et **plus aucune copie locale `computeServerPrice`** (0 occurrence) · **aucune trace** de `oraMemberUnitPrice` / `ORA_PLUS_MAX_DRINK_DISCOUNT` · serveur : `CartValidationError` en 4xx + lecture de `price_medium`/`price_*_active`.
+- 🔧 **Edge functions déployées nommément** : `create-checkout-session` **v22 → v23 → v24** (le log de déploiement confirme `pricing.ts` embarqué) · `create-subscription-session` **v13 → v14**. `verify_jwt` **préservé** (`True`), et **`stripe-webhook` / `send-contact-email` / `update-order-status` non touchés** (toujours `False`) → les webhooks Stripe tiennent. **Historique de rollback : v22 → v23 → v24**.
+- 🧹 **À faire en fin de créneau** : nettoyer les **4 worktrees de recette** (`pessora-brief`, `pessora-partenariat`, `pessora-pricing`, `pessora-tailles`) et l'alias de branche — ils épinglent des branches et encombrent `git worktree list`.
+- 📌 **Document d'état à jour** : `docs/BRIEF-ETAT-2026-09-10-soir.md` (Élise, `076a018`) = avancement ; **ce fichier-ci** = décisions + spécifications. ⚠️ Dans le doc d'état, la ligne « boosters » du bloc *FAIT* mélange les deux passes : le module `_shared/pricing.ts` et le test réécrit sont arrivés en **2ᵉ passe** (ce n'est vrai qu'après `da2e2eb`).
 - ⚠️ **Ne pas compter sur `npm run build` en local** : il échoue pour une raison **d'environnement**, pas de code — `@heroui-pro/react@1.0.0-beta.1` s'installe sans map `exports` (npm bloque son `postinstall`), donc `@heroui-pro/react/css` reste irrésoluble. Fix : `export HEROUI_AUTH_TOKEN=…` (ENVKAR, 36 car.) → `node node_modules/@heroui-pro/react/dist/postinstall/index.js` → `rm -rf node_modules/.vite dist` (**pessora = Vite**, pas de `.next`) → rebuild, et **`git checkout -- package-lock.json`** après (le re-install le modifie : ne pas le commiter).
 - ❌ **Le fallback « copier le paquet depuis un repo frère » n'est PAS viable** : les voisins sont en `beta.8`, le code cible la `beta.1` → `"KPI" is not exported … Dashboard.tsx`.
 - ✅ **Gate de merge retenu** : **`npx tsc` local + build Vercel** (seul endroit où l'install HeroUI est complète) + la **preuve par le contenu** de la preview (voir skill `frontend-build-verification`).
@@ -146,9 +140,9 @@ npx vitest run     # 10 échecs dans cartStore.test.ts = PRÉ-EXISTANTS (jsdom/l
 
 | # | Cas | Attendu |
 |---|---|---|
-| A | Panier **bar** + **2 boosters**, taille Grand, compte **sans** Óra+ | Prix affiché = **base + 4 €** = **montant sur la page Stripe** = ligne `orders`/`order_items` en base, `stripe_session_id` en `cs_test_…` |
-| B | Même panier avec un compte **Óra+ actif** | **Aucune remise** : prix affiché = prix public = montant Stripe (c'est LE cas qui prouve le lot 1) |
-| C | **Taille archivée** : POST direct sur `create-checkout-session` (sans en-tête `Origin`) avec une taille archivée | **4xx explicite** (400/409), **jamais 0 €**, **aucune session Stripe créée** |
+| A | Panier **bar** + **2 boosters**, taille Grand, compte **sans** Óra+ | Prix affiché = **base + 4 €** = **`amount_total` réel de la session Stripe** (lu via l'API, pas seulement l'affichage) = ligne `orders`/`order_items` en base, `stripe_session_id` en `cs_test_…` |
+| B | Même panier avec un compte **Óra+ actif** | **Aucune remise** : prix affiché = prix public = `amount_total` Stripe (c'est LE cas qui prouve le lot 1), et **aucun `oraMemberUnitPrice` dans le payload** |
+| C | **Taille archivée** — tester **LES DEUX variantes** : POST forgé **avec** `Origin: https://www.pessora.fr` **et** **sans** `Origin` | **4xx explicite** (400/409) dans les deux cas, **jamais 0 €**, **aucune session Stripe créée**. ⚠️ Si le refus ne tombe que sans `Origin`, c'est du **CORS**, pas une garde — un vrai navigateur passerait |
 | D | Boisson à **une seule taille active** | Reste commandable de bout en bout |
 | E | Webhook | `Stripe → Developers → Webhooks → Recent deliveries` : **200** sur `checkout.session.completed` (mode test) |
 
