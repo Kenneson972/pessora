@@ -56,9 +56,39 @@
 --      raisonnement que le point 2 (une garde RLS ne doit pas dépendre
 --      d'une policy SELECT externe).
 --
--- Testée sur une branche Supabase jetable avant la 1ʳᵉ version (v1) ; la
--- v2 (6 corrections) et cette v3 (points 7/8/9) ont chacune été
--- re-testées de la même façon avant application en prod.
+-- v4 — 3 corrections bloquantes trouvées en revue puis en re-test (avant
+-- toute application en prod, donc aucun impact réel) :
+--   a. Le §3 droppait bilan_slots_select_public mais ne créait aucune
+--      policy de remplacement propre — seule restait "Anyone can view
+--      available slots" (CURRENT_DATE en UTC, pas Martinique, et sans
+--      filtre challenge). Remplacée par une policy unique qui appelle
+--      fn_bilan_slot_bookable() — même vérité que la garde INSERT,
+--      jamais deux calculs de fenêtre qui peuvent diverger dans le temps.
+--   b. Dans fn_bilan_booking_before_insert, le chemin slot_id IS NULL
+--      écrasait TOUJOURS challenge_event_id via la déduction générique —
+--      y compris si l'appelant (ex. la future RPC du questionnaire
+--      post-inscription) avait déjà posé la bonne valeur. Corrigé : ne
+--      déduire que si NULL.
+--   c. normalize_phone() renvoie '' (pas NULL) pour un téléphone
+--      inexploitable → stocker '' tel quel aurait fait de tous les
+--      invités sans numéro exploitable une seule et même clé de
+--      déduplication (index §5g), se bloquant mutuellement en 23505 sur
+--      une demande qui n'est pas la leur. NULLIF(..., '') corrige : NULL
+--      n'entre jamais en conflit dans un index unique.
+--      ⚠️ Effet de bord trouvé en re-testant ce correctif : si user_id ET
+--      telephone_normalized sont tous deux NULL, la clé de rate-limit
+--      devient NULL, et rate_limits.key est NOT NULL → l'insertion
+--      entière plantait (23502) au lieu de simplement ignorer le
+--      rate-limit. Corrigé : le rate-limit n'est appelé que si la clé
+--      n'est pas NULL (un visiteur non traçable n'est de toute façon pas
+--      rate-limitable — la dédup, elle, s'applique correctement : NULL
+--      n'entrant jamais en conflit, deux personnes sans numéro exploitable
+--      restent deux lignes distinctes, jamais bloquées l'une par l'autre).
+--
+-- Testée sur une branche Supabase jetable avant la 1ʳᵉ version (v1) ; v2
+-- (6 corrections), v3 (points 7/8/9) et v4 (3 corrections ci-dessus,
+-- trouvées en revue équipe puis en re-testant le correctif du point c) ont
+-- chacune été re-testées de la même façon avant application en prod.
 
 -- ── 1. Nouveau type d'événement 'challenge' ──────────────────────────
 ALTER TABLE public.events DROP CONSTRAINT IF EXISTS events_type_check;
@@ -77,12 +107,20 @@ CREATE INDEX IF NOT EXISTS idx_bilan_slots_challenge_event_id
 COMMENT ON COLUMN public.bilan_slots.challenge_event_id IS
   'Édition de challenge (events.type=challenge) dont dépend ce créneau. NULL = créneau orphelin, non réservable publiquement tant qu''il n''est pas rattaché (cas des 7 créneaux pré-existants, tous à une date passée).';
 
--- ── 3. SELECT sur bilan_slots : retire le doublon trop permissif ────
+-- ── 3. SELECT sur bilan_slots : retire les 2 policies publiques existantes ──
 -- "bilan_slots_select_public" (USING true) rendait visibles TOUS les
--- créneaux à n'importe qui, y compris passés/indisponibles — la policy
--- correcte ("Anyone can view available slots") était de fait inopérante
--- car les policies permissives s'additionnent par OR.
+-- créneaux à n'importe qui, y compris passés/indisponibles. Et
+-- "Anyone can view available slots" (disponible=true AND date>=CURRENT_DATE)
+-- ne suffit pas non plus : CURRENT_DATE est en UTC (pas Martinique) — le
+-- critère de visibilité aurait pu basculer selon l'heure de la journée —
+-- et ne filtre pas sur le challenge (un créneau orphelin ou lié à un
+-- challenge désactivé resterait visible). Remplacées ensemble par une
+-- policy unique après la définition de fn_bilan_slot_bookable (§4) :
+-- la visibilité SELECT est désormais EXACTEMENT la même vérité que la
+-- garde INSERT — un seul calcul de fenêtre, jamais deux versions qui
+-- peuvent diverger.
 DROP POLICY IF EXISTS "bilan_slots_select_public" ON public.bilan_slots;
+DROP POLICY IF EXISTS "Anyone can view available slots" ON public.bilan_slots;
 
 -- ── 4. Fonction pure : un créneau est-il réservable MAINTENANT ? ─────
 -- Fenêtre J-14 → J inclus, calculée à la lecture (pas d'ordonnanceur),
@@ -110,6 +148,15 @@ $$;
 
 COMMENT ON FUNCTION public.fn_bilan_slot_bookable(uuid) IS
   'Vrai si le créneau existe, est disponible, rattaché à un challenge actif, et dans la fenêtre J-14→J inclus (heure Martinique). Utilisée dans la garde RLS — jamais seulement à l''affichage. SECURITY DEFINER : indépendante des policies SELECT de l''appelant.';
+
+-- ── 4b. SELECT public : remplace les 2 policies droppées au §3 ──────
+-- Visible seulement si réellement réservable maintenant — même fonction
+-- que la garde INSERT, donc même fenêtre (Martinique) et même filtre
+-- challenge. Un anon ne peut plus voir un créneau passé, indisponible,
+-- orphelin ou lié à un challenge désactivé/hors-fenêtre.
+CREATE POLICY "bilan_slots_select_bookable" ON public.bilan_slots
+  FOR SELECT
+  USING (public.fn_bilan_slot_bookable(id));
 
 -- ── 5a. Colonnes support pour le chemin hors-créneau ─────────────────
 -- challenge_event_id : rattachement déduit par le serveur (jamais transmis
@@ -198,19 +245,37 @@ SECURITY DEFINER
 SET search_path TO 'public'
 AS $$
 BEGIN
-  NEW.telephone_normalized := public.normalize_phone(NEW.telephone);
+  -- NULLIF : normalize_phone() renvoie '' (pas NULL) pour un téléphone
+  -- inexploitable ("N/A", "---"...). Si on stockait '', tous les invités
+  -- sans numéro exploitable partageraient la même clé de dédup ('') et se
+  -- bloqueraient mutuellement (23505 sur une demande qui n'est pas la
+  -- leur). NULL, lui, n'entre jamais en conflit dans un index unique.
+  NEW.telephone_normalized := NULLIF(public.normalize_phone(NEW.telephone), '');
 
   IF NEW.slot_id IS NOT NULL THEN
     SELECT challenge_event_id INTO NEW.challenge_event_id
     FROM public.bilan_slots WHERE id = NEW.slot_id;
   ELSE
-    NEW.challenge_event_id := public.fn_deduce_hors_date_challenge();
+    -- Ne déduire que si l'appelant n'a pas déjà posé une valeur (ex. la
+    -- future RPC du questionnaire post-inscription, qui connaît le
+    -- challenge exact de l'inscription et ne doit jamais se faire
+    -- écraser silencieusement par la déduction générique).
+    IF NEW.challenge_event_id IS NULL THEN
+      NEW.challenge_event_id := public.fn_deduce_hors_date_challenge();
+    END IF;
 
-    -- Pas de rate-limit sur les insertions admin (saisie manuelle au bar).
-    IF NOT public.is_admin() AND NOT public.check_rate_limit(
-      'bilan_hors_date:' || coalesce(NEW.user_id::text, NEW.telephone_normalized),
-      3, 86400
-    ) THEN
+    -- Pas de rate-limit sur les insertions admin (saisie manuelle au bar),
+    -- ni si la clé serait NULL (ni user_id ni téléphone exploitable —
+    -- rate_limits.key est NOT NULL, un appel avec NULL ferait planter
+    -- l'insertion entière au lieu de juste ignorer le rate-limit ; un
+    -- visiteur non traçable n'est de toute façon pas rate-limitable).
+    IF NOT public.is_admin()
+       AND coalesce(NEW.user_id::text, NEW.telephone_normalized) IS NOT NULL
+       AND NOT public.check_rate_limit(
+         'bilan_hors_date:' || coalesce(NEW.user_id::text, NEW.telephone_normalized),
+         3, 86400
+       )
+    THEN
       RAISE EXCEPTION 'rate_limited' USING ERRCODE = 'P0001';
     END IF;
   END IF;

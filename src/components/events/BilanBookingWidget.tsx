@@ -110,6 +110,10 @@ export function BilanBookingWidget({ challengeEventId }: Props) {
       return;
     }
 
+    // Le trigger serveur ferme le créneau (disponible=false) au même
+    // moment — l'état local doit refléter ça immédiatement, pas attendre
+    // un futur rechargement de la liste.
+    setSlots((prev) => prev.filter((s) => s.id !== selectedSlot));
     setStatus('success');
   };
 
@@ -153,8 +157,8 @@ export function BilanBookingWidget({ challengeEventId }: Props) {
         <CheckCircle size={32} strokeWidth={1.25} className="text-sapin" aria-hidden />
         <p className="text-[13px] text-black/70">
           {selectedSlot
-            ? 'Ton créneau de bilan est réservé.'
-            : 'Ta demande est enregistrée — nous te recontactons pour fixer l’heure exacte.'}
+            ? 'Ta demande de créneau est envoyée — Catherine te confirme rapidement.'
+            : 'Ta demande est envoyée — Catherine te recontacte pour fixer l’heure exacte.'}
         </p>
       </div>
     );
