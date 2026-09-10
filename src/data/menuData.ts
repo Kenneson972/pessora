@@ -1,3 +1,7 @@
+import { BOOSTER_PRICE_EUR } from '../../supabase/functions/_shared/pricing.ts';
+
+export { BOOSTER_PRICE_EUR };
+
 export interface MenuItem {
   id: string;
   name: string;
@@ -245,13 +249,6 @@ export const menuItems: MenuItem[] = [
   ...shakesItems,
   ...coffeeItems
 ];
-
-/**
- * Prix unitaire d'un booster (€) — doit rester en parité avec la constante
- * dupliquée côté serveur (supabase/functions/create-checkout-session/index.ts,
- * BOOSTER_PRICE_EUR) car les edge functions Deno ne partagent pas ce module.
- */
-export const BOOSTER_PRICE_EUR = 2;
 
 // BOOSTERS
 export const boosters: Booster[] = [
