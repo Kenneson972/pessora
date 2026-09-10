@@ -14,17 +14,23 @@ Recettes vertes :
 - **Archivage des tailles** : archiver/restaurer depuis l'admin ✅, la taille disparaît de la fiche et du modal, boisson à taille unique toujours commandable, 0 erreur console.
 - **Boosters** : `BOOSTER_PRICE_EUR = 2` dans `_shared/pricing.ts`, **test de mutation vérifié** (2→3 fait rougir la suite) → le test a des dents.
 
-**Edge functions déployées nommément** : `create-checkout-session` v22 → **v23**, `create-subscription-session` v13 → **v14**. `verify_jwt` préservé ; `stripe-webhook`, `send-contact-email`, `update-order-status` **non touchés** (toujours `False`).
+**Edge functions déployées nommément** : `create-checkout-session` v22 → v23 → **v24**, `create-subscription-session` v13 → **v14**. `verify_jwt` préservé ; `stripe-webhook`, `send-contact-email`, `update-order-status` **non touchés** (toujours `False`).
 
-### 🔄 EN COURS — 2ᵉ passe (prise par l'équipe)
-- `801c433` (sur `feat/boosters-2-euros`) : refactor `_shared/pricing.ts` + `checkout.test.ts` réécrit contre le vrai module.
-- `81c0233` (`feat/retrait-bilan-surface-publique`) : retrait du parcours Bilan de la surface publique (les 9 accroches : nav, footer, Home, Menu, espace membre, PessoBot, recherche, questionnaire post-inscription, routes) **+ fix du générateur de sitemap**.
-- Après ces 2 merges : re-`tsc`, **redéploiement nommé de `create-checkout-session`** (elle importera `_shared/pricing.ts`), puis **recette argent A→E** (mode TEST).
+### ✅ PASSES 1 & 2 — MERGÉES ET DÉPLOYÉES (`main` = `161f089`)
+- **Tout est en ligne** : `create-checkout-session` **v24** (embarque `_shared/pricing.ts`), `create-subscription-session` **v14**, `verify_jwt` préservé ; `stripe-webhook` / `send-contact-email` / `update-order-status` **non touchés**.
+- **Recette argent : A/B/C/D VERTS** (A 16,00 € = Grand 12 € + 2 boosters · B 12,00 € même avec un `ora_plus` forgé → aucune remise · C **409 avec ET sans `Origin`**, aucune session créée · D ESPRESSO 2,50 €). **E CLOS** par non-régression : `stripe-webhook` **v15 intact**, ses imports `_shared/` inchangés, contrat `metadata[order_ids]` identique des deux côtés, chaîne déjà prouvée par 2 commandes `paid` du 09/09.
+- **Hygiène** : ENVKAR nettoyé (2 artefacts tronqués marqués `# PERIME`, notes sorties de la valeur, pré-vol à **0 anomalie**) · `CLAUDE.md` à jour (plus de consigne Óra+ périmée) · ⚠️ **PAT Supabase (`ACCES_SUPABASE_TOKEN`) expire le 16/11/2026** → à renouveler avant (il couvre SQL, migrations, secrets, déploiements).
 
-### ⏳ EN ATTENTE DE LA CLIENTE
-- La **carte des boissons** → débloque le mapping catégories (MEGA THÉ / PROTEIN SHAKE / COFFEE) et le moteur Formule.
+### 🚀 PRÊT À LANCER — aucune dépendance à la carte
+1. **Lot A — Challenge/Bilan** : spec dédiée `docs/brief-lot-a-challenge-bilan-2026-09-10.md` (`6b8e440`). **Il n'attend PAS la carte** : la rubrique vit dans **Événements** (`events.type`, `bilan_slots`, règles serveur, créneaux J-14) et ne consomme **aucune** donnée boisson.
+2. **Structure catégories** (nav 3 piliers + retrait d'Énergie) **avec le filet dans le code** — « toute catégorie non rattachée reste **visible**, jamais masquée » — et le critère d'acceptation *produits affichés sur `/menu` == produits actifs en base*. **COFFEE intouchée** (CAFÉ LONG + ESPRESSO).
+3. **Les 3 petits** : `X-Robots-Tag` par chemin dans `vercel.json` · merge de `chore/gitignore-env` · réparation de la **lecture carte PessoBot** (config n8n).
+4. ⏳ **Claude** : « gros bloc Partenariat / page Contact » — **pas encore poussé**, c'est à lui.
+
+### ⏳ EN ATTENTE DE LA CLIENTE — et ça ne bloque que ces points
+- La **carte des boissons** → **mapping boissons → MEGA THÉ / PROTEIN SHAKE** + **prix par produit** ; le **moteur Formule** ; le prompt **PessoBot v2**.
 - Le **lien Easy Ta Vie** dédié.
-→ Ensuite : **lot A (Challenge/Bilan)**, PessoBot v2 (@alcyone, phase 2), page Partenariat complète.
+- (Le lot A, la structure catégories et les 3 petits ne dépendent **pas** de la carte.)
 
 ---
 
