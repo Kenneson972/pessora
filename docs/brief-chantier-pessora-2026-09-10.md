@@ -91,6 +91,8 @@
 ### ⏳ APRÈS LA CARTE
 6. **Catégories** (mapping boissons → MEGA THÉ / PROTEIN SHAKE / COFFEE) + tailles actives.
    - ✅ **DÉCISION KEN (10/09) : on bascule la structure maintenant.** Les produits actuels sont **périmés** — Catherine ajustera sa carte, **on peut même tout archiver** s'il faut. Le manque de la carte ne bloque donc plus ce lot.
+   - ✅ **Précision Ken (10/09) : COFFEE ne bouge PAS.** Ses **2 boissons restent telles quelles** — vérifié en base : **CAFÉ LONG** (`cafe-long`) et **ESPRESSO** (`espresso`), tous deux actifs. **Ne pas les toucher** (ni nom, ni catégorie, ni slug).
+   - **Les 9 autres produits actifs** (shakes 4 · énergie 4 · wellness 1) sont ceux à répartir entre **MEGA THÉ** et **PROTEIN SHAKE** — et ce sont eux que le **filet** protège tant que la carte n'est pas arrivée : **visibles, jamais masqués**.
    - ⚠️ **Filet OBLIGATOIRE dans le code** (exigence vela) : « toute catégorie non rattachée → **regroupée dans un bloc visible, jamais masquée** ». Le repli ne doit pas être une donnée provisoire saisie à la main : il doit être **dans le code**, sinon une carte partielle ou en retard = vitrine trouée sans que personne ne le voie.
    - ✅ **Critère d'acceptation (automatisable, vela)** : **nombre de produits affichés sur `/menu` == nombre de produits actifs en base** (script ~10 lignes). Avec le filet, l'égalité doit toujours tenir → à intégrer à la recette, et réutilisable à chaque évolution du catalogue.
    - ⚠️ **Si des produits sont archivés** : le générateur de sitemap les retire automatiquement (`.eq('active', true)`, l.22-24) → **régénérer** ; et vérifier qu'**aucun lien ne pointe vers un `/menu/<slug>` archivé** (Home, Menu, mockups, puces PessoBot) — même règle que le retrait Bilan : **zéro lien mort**.
