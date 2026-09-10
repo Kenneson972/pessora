@@ -66,13 +66,15 @@
    - **Commandes passées** : la taille est dénormalisée sur la ligne de commande → ne pas la casser.
    - Vérifier le **code HTTP** des refus (4xx attendu avec message clair, pas un 500 générique).
 5. **Archivage Óra+ complet** : mécanique interne, pages membre, blocs admin, `create-subscription-session` (fonction morte). ⚠️ Le **secret** `STRIPE_ORA_PLUS_PRICE_ID` : **ne pas y toucher dans le code** — c'est alcyone qui le retirera du projet Supabase.
-6. **Retrait du parcours Bilan de la surface publique** *(décision Ken 10/09 : option (b) — le parcours revient dans le lot A, refait avec la garantie serveur)*. **Inventaire exact à traiter — aucun lien mort, aucun point d'accès direct** :
-   - `src/data/headerNav.ts:23` (nav) · `src/components/layout/Footer.tsx:21` (footer) · `src/components/layout/Header.tsx:21` (liste de chemins du header)
-   - `src/pages/Home.tsx:46` (vignette d'accueil) · `src/pages/Menu.tsx:390` (lien) · `src/pages/ManagerSketchMockup.tsx:244` (mockup)
-   - Espace membre : `src/components/member/MemberLayout.tsx:27` + `src/components/dashboard/DashboardBottomNav.tsx:40`
-   - Routes : `src/App.tsx:178` (`/bilan-bien-etre`) et `src/App.tsx:78` (segment membre `bilans`) → **retirer les routes** (pas seulement les liens) : sinon un accès direct par URL atteint le parcours cassé.
-   - ✅ **À CONSERVER** : l'admin (`AdminApp.tsx:62`, `AdminLayout.tsx:21`, `AdminOverview.tsx`) — Catherine continue de gérer créneaux et bilans depuis son back-office.
-   - ⚠️ Zone grise à vérifier : `src/pages/BilanBienEtre.tsx` garde sa logique de réservation cassée — si le fichier reste dans le bundle, **ne pas laisser d'entrée atteignable**.
+6. **Retrait du parcours Bilan de la surface publique** *(décision Ken 10/09 : option (b) — le parcours revient dans le lot A, refait avec la garantie serveur)*. **Inventaire complet, vérifié dans le code — aucun lien mort, aucune promesse fantôme, aucun accès direct** :
+   - **Nav / pages publiques** : `data/headerNav.ts:23` · `components/layout/Footer.tsx:21` · `components/layout/Header.tsx:21` · `pages/Home.tsx:46` · `pages/Menu.tsx:390` · `pages/ManagerSketchMockup.tsx:244`
+   - **Espace membre** : `components/member/MemberLayout.tsx:27` · `components/dashboard/DashboardBottomNav.tsx:40` · `pages/member/Dashboard.tsx` (11 occurrences) · `pages/member/Subscription.tsx` · `pages/member/MesEvenements.tsx`
+   - **Routes** : `src/App.tsx:178` (`/bilan-bien-etre`) et `src/App.tsx:78` (segment membre `bilans`) → **retirer les routes**, pas seulement les liens ; l'accès direct par URL doit tomber sur une **redirection/404 propre** (comme `/ora-plus`).
+   - **Agent & recherche** : `components/common/Chatbot.tsx:27` (puce « Prendre un bilan » dans les suggestions par défaut) **et `:289-290`** (l'intention « bilan » route vers ces puces) · `components/layout/HeaderSearch.tsx:32` (mot-clé `bilan`) · `pages/PessobotPage.tsx:33-34` (« il vous redirige vers le Bilan Bien-Être »).
+   - **Questionnaire post-inscription** : `lib/postRegistrationSurveySchema.ts:25` **et `:34`** (champ `bilan_offert` **obligatoire** — 2 schémas) · `components/events/PostRegistrationWizard.tsx:85-86`, `:151`, `:248` · `lib/postRegistrationSurvey.ts` (option « Oui, je souhaite profiter du bilan offert ») → **neutraliser en bloc 1** (on ne peut pas promettre un bilan dont la réservation n'existe plus) ; le libellé définitif se décidera au lot A.
+   - 🔴 **SEO — `public/sitemap.xml:10-11`** : contient **2 URLs mortes** : `/bilan-bien-etre` **ET `/ora-plus`** (résidu du retrait d'août). **Critique** : le `noindex` est levé au lancement → Google irait indexer deux pages supprimées. 2 lignes à nettoyer, **dans ce même lot**.
+   - ✅ **À CONSERVER** : l'**admin** (`AdminApp.tsx:62`, `admin/AdminLayout.tsx:21`, `admin/AdminOverview.tsx`) — Catherine continue de gérer créneaux et bilans depuis son back-office. Et le **type d'événement `bilan`** (`pages/Evenements.tsx:22`+`:25` `TYPE_ORDER`, `pages/EvenementDetail.tsx:45`) : utile au lot A, où le type `challenge` s'ajoutera à cette liste.
+   - **Critère de recette (vela)** : plus aucune occurrence **visible** de « bilan » côté public/agent, et accès direct par URL = redirection/404 propre.
 
 **Pièges déjà identifiés (ne pas les redécouvrir)**
 - Un **panier forgé** peut envoyer un `productId + size` incohérent : la vérification serveur doit porter sur **la paire**, pas seulement sur le produit.
