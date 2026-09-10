@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { PageShell } from '../components/layout/PageShell';
 import { useState } from 'react';
-import { boosters, milkOptions, categoryNames, type MenuItem } from '../data/menuData';
+import { boosters, milkOptions, categoryNames, BOOSTER_PRICE_EUR, type MenuItem } from '../data/menuData';
 import { useCart } from '../store/cartStore';
 import { buildDrinkCartOptions, getAvailableSizes } from '../lib/cartLine';
 import { useMenuCatalog } from '../hooks/useMenuCatalog';
@@ -93,7 +93,7 @@ const DrinkDetail = () => {
     );
   };
 
-  const boostersPrice = selectedBoosters.length * 1 * quantity;
+  const boostersPrice = selectedBoosters.length * BOOSTER_PRICE_EUR * quantity;
 
   const availableSizes = getAvailableSizes(drink);
   const hasSizes = availableSizes.length > 0;
@@ -415,7 +415,7 @@ const DrinkDetail = () => {
                 Boosters
               </p>
               <p className="mb-3 text-center text-[11px] font-light text-black/35 sm:text-left">
-                +1&nbsp;€ par option sélectionnée
+                +{BOOSTER_PRICE_EUR}&nbsp;€ par option sélectionnée
               </p>
               <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-2.5" role="list">
                 {boosters.map((booster) => {

@@ -250,14 +250,21 @@ export const menuItems: MenuItem[] = [
   ...coffeeItems
 ];
 
+/**
+ * Prix unitaire d'un booster (€) — doit rester en parité avec la constante
+ * dupliquée côté serveur (supabase/functions/create-checkout-session/index.ts,
+ * BOOSTER_PRICE_EUR) car les edge functions Deno ne partagent pas ce module.
+ */
+export const BOOSTER_PRICE_EUR = 2;
+
 // BOOSTERS
 export const boosters: Booster[] = [
-  { id: 'collagene', name: 'Collagène', price: 1, description: 'Peau, ongles, cheveux' },
-  { id: 'creatine', name: 'Créatine', price: 1, description: 'Force & performance' },
-  { id: 'proteine', name: '12g Protéines', price: 1, description: 'Récupération musculaire' },
-  { id: 'electrolytes', name: 'Électrolytes', price: 1, description: 'Hydratation & anti-crampe' },
-  { id: 'fibres', name: 'Fibres', price: 1, description: 'Confort digestif' },
-  { id: 'aloe-vera', name: 'Aloé Vera', price: 1, description: 'Détox & hydratation' }
+  { id: 'collagene', name: 'Collagène', price: BOOSTER_PRICE_EUR, description: 'Peau, ongles, cheveux' },
+  { id: 'creatine', name: 'Créatine', price: BOOSTER_PRICE_EUR, description: 'Force & performance' },
+  { id: 'proteine', name: '12g Protéines', price: BOOSTER_PRICE_EUR, description: 'Récupération musculaire' },
+  { id: 'electrolytes', name: 'Électrolytes', price: BOOSTER_PRICE_EUR, description: 'Hydratation & anti-crampe' },
+  { id: 'fibres', name: 'Fibres', price: BOOSTER_PRICE_EUR, description: 'Confort digestif' },
+  { id: 'aloe-vera', name: 'Aloé Vera', price: BOOSTER_PRICE_EUR, description: 'Détox & hydratation' }
 ];
 
 // LAITS VÉGÉTAUX

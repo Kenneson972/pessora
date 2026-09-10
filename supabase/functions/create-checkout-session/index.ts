@@ -33,6 +33,13 @@ class CartValidationError extends Error {
   }
 }
 
+/**
+ * Prix unitaire d'un booster (€) — doit rester en parité avec la constante
+ * client (src/data/menuData.ts, BOOSTER_PRICE_EUR). Dupliqué ici car cette
+ * edge function Deno ne partage pas les modules du bundle Vite.
+ */
+const BOOSTER_PRICE_EUR = 2;
+
 const CartLineSchema = z.object({
   productId: z.string().min(1),
   name: z.string().min(1),
@@ -143,13 +150,13 @@ async function fetchVerifiedPrice(
   const baseProductPrice = Number(rawPrice);
 
   // Vérification anti-fraude : client base estimate vs serveur
-  const clientBaseEstimate = item.barBasePublic ?? (item.unitPrice - boosterCount);
+  const clientBaseEstimate = item.barBasePublic ?? (item.unitPrice - boosterCount * BOOSTER_PRICE_EUR);
   if (Math.abs(clientBaseEstimate - baseProductPrice) > 0.02) {
     console.error(`[create-checkout-session] Écart prix bar : client=${clientBaseEstimate}€, serveur=${baseProductPrice}€ pour ${item.productId}`);
     throw new CartValidationError('Erreur de validation du panier. Veuillez le vider et réessayer.', 409);
   }
 
-  const verifiedUnitPrice = baseProductPrice + boosterCount;
+  const verifiedUnitPrice = baseProductPrice + boosterCount * BOOSTER_PRICE_EUR;
   return { verifiedUnitPrice, productId: data.id };
 }
 
