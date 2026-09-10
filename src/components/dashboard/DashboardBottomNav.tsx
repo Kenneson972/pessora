@@ -37,7 +37,6 @@ export function MemberDashboardBottomNav({ prefix }: { prefix: string }) {
   const links = [
     { to: prefix, exact: true, label: 'Accueil', icon: LayoutDashboard },
     { to: `${prefix}/evenements`, label: 'Événements', icon: CalendarDays },
-    { to: `${prefix}/bilans`, label: 'Bilans', icon: Heart },
     { to: `${prefix}/historique`, label: 'Commandes', icon: ShoppingBag },
     { to: `${prefix}/abonnement`, label: 'Óra+', icon: Star },
     { to: `${prefix}/profil`, label: 'Profil', icon: User },

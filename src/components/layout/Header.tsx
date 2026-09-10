@@ -18,7 +18,7 @@ const navFocusDark =
 
 // Parcours desktop — la carte & services clés
 const DESKTOP_NAV = PRIMARY_NAV.filter((i) =>
-  ['/menu', '/nos-produits', '/evenements', '/bilan-bien-etre', '/contact'].includes(i.path)
+  ['/menu', '/nos-produits', '/evenements', '/contact'].includes(i.path)
 );
 
 const Header = () => {

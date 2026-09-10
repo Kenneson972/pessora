@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button, Card, Skeleton, cn } from '@heroui/react';
 import { EmptyState, Segment } from '@heroui-pro/react';
@@ -9,7 +9,7 @@ import { ItemListJsonLd } from '../components/seo/ProductJsonLd';
 import { ProductCard } from '../components/ui/ProductCard';
 import { categoryNames, badgeLabels, type MenuItem } from '../data/menuData';
 import { useMenuCatalog } from '../hooks/useMenuCatalog';
-import { useFadeUpWhenVisible, useStaggerReveal } from '../lib/motionReveal';
+import { useStaggerReveal } from '../lib/motionReveal';
 import { DrinkOptionsModal } from '../components/cart/DrinkOptionsModal';
 
 function normalizeStr(s: string): string {
@@ -69,7 +69,6 @@ const Menu = () => {
   const [selectedSizes, setSelectedSizes] = useState<Record<string, 'small' | 'medium' | 'large'>>({});
   const [optionsItem, setOptionsItem] = useState<MenuItem | null>(null);
   const { container: staggerContainer, item: staggerItem } = useStaggerReveal();
-  const fadeCta = useFadeUpWhenVisible();
 
   const searchQuery = (searchParams.get('q') ?? '').trim();
   const isSearchMode = searchQuery.length > 0;
@@ -367,33 +366,6 @@ const Menu = () => {
       </div>
 
       <DrinkOptionsModal item={optionsItem} onClose={() => setOptionsItem(null)} initialSize={optionsItem ? selectedSizes[optionsItem.id] : undefined} />
-
-      {/* Bilan CTA — fond large avec contenu contraint */}
-      <div className="bg-surface-muted px-4 md:px-10 lg:px-[72px]">
-        <div className="mx-auto max-w-7xl py-16">
-          <motion.div
-            className="text-center md:flex md:items-end md:justify-between md:gap-10 md:text-left"
-            {...fadeCta}
-          >
-            <div>
-              <p className="mb-3 text-[8px] font-light uppercase tracking-[0.48em] text-black/40">Bilan Bien-être</p>
-              <h3
-                className="font-display font-normal leading-[1.0] text-black"
-                style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: 'clamp(28px, 3vw, 38px)',
-                }}
-              >
-                30 minutes<br /><em className="italic text-black/65">offertes</em>
-              </h3>
-            </div>
-            <Link to="/bilan-bien-etre" className="text-editorial-link-underline mt-8 inline-block md:mt-0 md:flex-shrink-0">
-              Réserver mon bilan
-            </Link>
-          </motion.div>
-        </div>
-      </div>
-
     </div>
   );
 };

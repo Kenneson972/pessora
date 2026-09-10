@@ -53,11 +53,9 @@ const Profile = lazy(() => import('./pages/member/Profile'));
 const History = lazy(() => import('./pages/member/History'));
 const OrderDetail = lazy(() => import('./pages/member/OrderDetail'));
 const MesEvenements = lazy(() => import('./pages/member/MesEvenements'));
-const MesBilans = lazy(() => import('./pages/member/MesBilans'));
 const PessobotPage = lazy(() => import('./pages/PessobotPage'));
 const SuiviCommande = lazy(() => import('./pages/SuiviCommande'));
 const EvenementDetail = lazy(() => import('./pages/EvenementDetail'));
-const BilanBienEtre = lazy(() => import('./pages/BilanBienEtre'));
 const LuxeMockup = lazy(() => import('./pages/LuxeMockup'));
 const ManagerSketchMockup = lazy(() => import('./pages/ManagerSketchMockup'));
 const CommandeSucces = lazy(() => import('./pages/CommandeSucces'));
@@ -75,7 +73,6 @@ const MEMBER_EMBEDDED_CHATBOT = (
 const MEMBER_ROUTE_SEGMENTS: { segment: string; element: React.ReactNode }[] = [
   { segment: '', element: <Dashboard /> },
   { segment: 'evenements', element: <MesEvenements /> },
-  { segment: 'bilans', element: <MesBilans /> },
   { segment: 'abonnement', element: <Subscription /> },
   { segment: 'profil', element: <Profile /> },
   { segment: 'historique', element: <History /> },
@@ -175,7 +172,6 @@ function App() {
             <Route path="/menu/:drinkId" element={<DrinkDetail />} />
             <Route path="/evenements" element={<Evenements />} />
             <Route path="/evenements/:slug" element={<EvenementDetail />} />
-            <Route path="/bilan-bien-etre" element={<BilanBienEtre />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/contact-partenariat" element={<ContactPartenariat />} />
             <Route path="/mentions-legales" element={<MentionsLegales />} />

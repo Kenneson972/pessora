@@ -2,11 +2,15 @@ import type { Event } from '../types/database'
 
 export type PostRegistrationStepId = 'precommande' | 'bilan' | 'objectif' | 'gaufres'
 
+// Étape 'bilan' neutralisée (retrait du parcours Bilan public, 10/09) : on ne
+// peut pas promettre un bilan dont la réservation n'existe plus. L'étape
+// revient au lot A (Challenge/Bilan) — copie et options conservées ci-dessous
+// pour être réutilisées, libellé définitif à trancher à ce moment-là.
 export function getPostRegistrationSteps(eventType: Event['type']): PostRegistrationStepId[] {
   if (eventType === 'run_club') {
-    return ['precommande', 'bilan', 'objectif', 'gaufres']
+    return ['precommande', 'objectif', 'gaufres']
   }
-  return ['bilan', 'objectif']
+  return ['objectif']
 }
 
 export const PRECOMMANDE_OPTIONS: { value: string; label: string }[] = [

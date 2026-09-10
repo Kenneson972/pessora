@@ -1,7 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import {
   CalendarDays,
-  Heart,
   Home,
   Mail,
   Package,
@@ -20,7 +19,6 @@ export const PRIMARY_NAV: {
   { label: 'La carte', path: '/menu', icon: UtensilsCrossed },
   { label: 'Produits', path: '/nos-produits', icon: Package },
   { label: 'Événements', path: '/evenements', icon: CalendarDays },
-  { label: 'Bilan', path: '/bilan-bien-etre', icon: Heart },
   { label: 'Contact', path: '/contact', icon: Mail },
 ];
 

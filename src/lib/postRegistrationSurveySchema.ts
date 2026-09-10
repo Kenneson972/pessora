@@ -22,7 +22,11 @@ const gaufreRefine = (data: { gaufre_salee: string; gaufre_salee_autre?: string 
 
 export const postRegistrationBaseSchema = z
   .object({
-    bilan_offert: z.string().min(1, 'Choisis une réponse.'),
+    // Neutralisé (retrait du parcours Bilan public, 10/09) : le champ n'est
+    // plus posé côté formulaire, on ne peut pas promettre un bilan dont la
+    // réservation n'existe plus. Optionnel pour ne pas casser les réponses
+    // déjà en base ; libellé définitif à trancher au lot A (Challenge/Bilan).
+    bilan_offert: z.string().optional(),
     objectif_principal: z.string().min(1, 'Choisis un objectif.'),
     objectif_autre: z.string().optional(),
   })
@@ -31,7 +35,8 @@ export const postRegistrationBaseSchema = z
 export const postRegistrationRunClubSchema = z
   .object({
     precommande_offre: z.string().min(1, 'Choisis une offre.'),
-    bilan_offert: z.string().min(1, 'Choisis une réponse.'),
+    // Neutralisé (retrait du parcours Bilan public, 10/09) — voir schéma ci-dessus.
+    bilan_offert: z.string().optional(),
     objectif_principal: z.string().min(1, 'Choisis un objectif.'),
     objectif_autre: z.string().optional(),
     gaufre_salee: z.string().min(1, 'Choisis une gaufre salée.'),

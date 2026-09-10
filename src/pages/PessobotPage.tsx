@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Zap, Heart, Sparkles, ArrowRight } from 'lucide-react';
+import { Zap, Heart, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button, cn } from '@heroui/react';
 import { PageShell, PAGE_GUTTER } from '../components/layout/PageShell';
@@ -28,11 +28,6 @@ const PessobotPage = () => {
       title: 'Bien-être & Beauté',
       desc: 'Collagène, antioxydants, vitamines... Il vous explique les ingrédients et bienfaits de chaque produit, sans jamais inventer.',
       icon: Heart,
-    },
-    {
-      title: 'Bilan bien-être',
-      desc: "Il vous redirige vers le Bilan Bien-Être si vous cherchez un accompagnement sur mesure.",
-      icon: Sparkles,
     },
   ];
 
