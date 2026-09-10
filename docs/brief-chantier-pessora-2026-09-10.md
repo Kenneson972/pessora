@@ -141,6 +141,20 @@ npx vitest run     # 10 échecs dans cartStore.test.ts = PRÉ-EXISTANTS (jsdom/l
 - ✅ **Gate de merge retenu** : **`npx tsc` local + build Vercel** (seul endroit où l'install HeroUI est complète) + la **preuve par le contenu** de la preview (voir skill `frontend-build-verification`).
 - ⚠️ **Aucun merge avant recette vela verte**, et `src/__tests__/checkout.test.ts` doit être remis d'aplomb **dans la même passe** (il affirme encore « boosters × 1 € » et la remise −50 % : (a) supprimer l'assertion Óra+ et la copie locale `computeServerPrice`, (b) porter le test de parité boosters sur le **module partagé** `supabase/functions/_shared/pricing.ts`, avec **test de mutation** — passer `BOOSTER_PRICE_EUR` de 2 à 3 doit faire rougir la suite).
 
+### RECETTE ARGENT — protocole exact (à lancer JUSTE APRÈS le déploiement des 2 fonctions)
+**Cadre** : mode **TEST** (secret `STRIPE_SECRET_KEY` inchangé) · cartes Stripe test : `4242 4242 4242 4242` (succès), `4000 0025 0000 3155` (3DS), `4000 0000 0000 9995` (refus). **Aucune bascule de secret dans ce créneau.** Chaque essai crée des lignes (`cs_test_…`) : normal, elles partiront à la purge du go-live (filtre par date).
+
+| # | Cas | Attendu |
+|---|---|---|
+| A | Panier **bar** + **2 boosters**, taille Grand, compte **sans** Óra+ | Prix affiché = **base + 4 €** = **montant sur la page Stripe** = ligne `orders`/`order_items` en base, `stripe_session_id` en `cs_test_…` |
+| B | Même panier avec un compte **Óra+ actif** | **Aucune remise** : prix affiché = prix public = montant Stripe (c'est LE cas qui prouve le lot 1) |
+| C | **Taille archivée** : POST direct sur `create-checkout-session` (sans en-tête `Origin`) avec une taille archivée | **4xx explicite** (400/409), **jamais 0 €**, **aucune session Stripe créée** |
+| D | Boisson à **une seule taille active** | Reste commandable de bout en bout |
+| E | Webhook | `Stripe → Developers → Webhooks → Recent deliveries` : **200** sur `checkout.session.completed` (mode test) |
+
+- Preuve à consigner : captures/IDs (`cs_test_…`), sortie du POST forgé, et le montant lu côté Stripe.
+- ⚠️ Si un montant diverge (même de quelques centimes), **on s'arrête** : c'est le signal d'une règle de prix restée côté ancien serveur.
+
 ## 3. RÈGLES DE TRAVAIL (impératives)
 - Branche `feat/...`, **jamais de push direct sur `main`** ; **aucun merge sans recette QA** (Vela) — gate obligatoire.
 - **Toutes les règles de prix vivent côté serveur** (`create-checkout-session`) : le client affiche, le serveur décide. Jamais un prix calculé côté client seul.
