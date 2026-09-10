@@ -90,6 +90,9 @@
 
 ### ⏳ APRÈS LA CARTE
 6. **Catégories** (mapping boissons → MEGA THÉ / PROTEIN SHAKE / COFFEE) + tailles actives.
+   - ⚠️ **PIÈGE — la structure SANS le mapping viderait le menu** (état vérifié en base le 10/09, 16 produits) : **coffee 2 actifs** · **energie 4 actifs / 1 inactif** · **shakes 4 actifs / 2 inactifs** · **wellness 1 actif / 2 inactifs**. Si on bascule la nav sur les 3 piliers et qu'on **supprime Énergie** avant de re-mapper, **9 des 11 produits actifs** se retrouvent **sans catégorie** → invisibles côté client. Autrement dit : la structure seule **casse la vitrine**.
+   - **Faisable maintenant sans risque** : préparer les **libellés / la structure / le retrait d'Énergie** *derrière* un mapping provisoire qui **ne masque jamais un produit** (repli « Nos boissons » pour toute catégorie non rattachée), et basculer ensuite le mapping quand la carte arrive.
+   - **Ne pas faire** : publier la nav à 3 piliers **sans** filet → le site perd la moitié de son catalogue le jour de l'ouverture.
 7. **Moteur Formule** (bundle intelligent + recommandation thé ↔ shake + prix validé **côté serveur**).
 8. **Challenge/Bilan (lot A — le plus gros)** : rubrique dans Événements, créneaux J-14 auto (UTC-4), validation admin + email, suppression page Bilan, migration du choix de créneau, photos avant/après.
    - ✅ **Fondations déjà en place (vérifié)** : `events.type` (→ `type='challenge'`), `bilan_slots` (`date`/`heure`/`disponible`), `event_registrations.post_registration_details`, Resend opérationnel → **aucune table neuve**.
