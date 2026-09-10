@@ -91,7 +91,9 @@
    - ⚠️ **RLS à durcir** : aujourd'hui un membre peut s'inscrire hors fenêtre.
    - 🐛 **Bug connue à corriger ICI (ne pas corriger le composant actuel)** : le créneau ne se marque jamais pris — `BilanBienEtre.tsx:238` (erreur avalée) et `member/MesBilans.tsx:257` (erreur non contrôlée) font `bilan_slots.update({disponible:false})` **côté client**, or l'UPDATE est réservé aux **admins** (`is_admin()`) → refusé par la RLS → un créneau réservé **reste affiché libre** (sur-réservations). Fix attendu, **en base** : **(1) index UNIQUE partiel** sur `bilan_bookings(slot_id)` hors `statut='annule'` ; **(2) bascule `disponible=false` côté serveur** (trigger sur INSERT ou edge function), atomique. `bilan_bookings` est **vide** → aucune migration de données.
    - ⚠️ **La rubrique Bilan revient dans ce lot** (retirée de la surface publique au bloc 1, décision (b) du 10/09) : la réintroduire en nav+footer **avec** la garantie serveur ci-dessus, et restaurer les accroches (Home, Menu, espace membre) — toujours sans lien mort.
-9. **PessoBot v2** : réécriture du prompt + conseils produits/ingrédients + rattachements + réparation de la lecture carte.
+9. **PessoBot v2** ⚠️ **NON confié à Claude — assigné à @alcyone, en phase 2 (après les correctifs du bloc 1)**. Réécriture du system prompt (il contient encore Óra+ ≈24 occurrences + les anciennes catégories/prix), conseils produits/ingrédients, rattachements événements/challenge/bilan, et **réparation de la lecture de la carte** (clé/URL Supabase du workflow n8n — ticket séparé, même famille que l'allowlist `.mq`).
+   - **Prérequis avant de réécrire** (sinon le prompt est périmé à la première modif) : **catalogue figé** (Mega Thé 600 cl 10 €, Shake Grand 14 €, boosters 2 €, catégories finales du bloc 1) + **infos challenge/événements** (lot A) + **lecture carte réparée**.
+   - ⚠️ Le **n8n est en production** pour d'autres clients (facturation + workflows) : **ne toucher qu'au workflow PessoBot**, jamais aux workflows partagés.
 10. **Page Partenariat** complète (si des éléments dépendent de contenus à venir).
 
 ---
