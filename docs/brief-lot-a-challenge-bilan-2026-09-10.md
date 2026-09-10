@@ -55,8 +55,8 @@ Le parcours Bilan a été **retiré** au bloc 1. Ici on le **rétablit** avec la
 - **`X-Robots-Tag` / levée du `noindex`**, purge go-live, bascule Stripe live → **checklist go-live**, pas ici.
 
 ## 8. RECETTE ATTENDUE (vela) — cas limites obligatoires
-1. Réservation **dans** la fenêtre → OK ; **hors** fenêtre (avant J-14 et après J) → **refus serveur** (pas seulement masqué).
-2. **Double réservation du même créneau** → la 2ᵉ est **rejetée par la base** (index unique), message clair.
+1. Réservation **dans** la fenêtre → OK ; **hors** fenêtre (avant J-14 et après J) → **refus serveur** (pas seulement masqué). ⚠️ **Tester avec ET sans en-tête `Origin`** : si le refus ne tombe que sans `Origin`, c'est du **CORS**, pas une garde — ça ne protège rien (leçon du cas C argent, 10/09).
+2. **Double réservation du même créneau — en SÉQUENTIEL *et* EN PARALLÈLE** : deux réservations **simultanées** → **exactement une** doit passer. Le séquentiel se contente de prouver l'index ; le risque de retour est dans la **course** (`index UNIQUE partiel` + bascule atomique côté serveur). Même exigence d'`Origin` qu'au point 1.
 3. **Créneau déjà pris** (`disponible = false`) → refus, jamais de réservation fantôme.
 4. **Demande de bilan hors date** → `en_attente` + **e-mail reçu** (`ADMIN_EMAIL`) + validation dans l'admin.
 5. **Changement de date du challenge** après ouverture → comportement documenté, **aucune donnée orpheline**.

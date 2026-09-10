@@ -24,7 +24,8 @@ Recettes vertes :
 ### 🚀 PRÊT À LANCER — aucune dépendance à la carte
 1. **Lot A — Challenge/Bilan** : spec dédiée `docs/brief-lot-a-challenge-bilan-2026-09-10.md` (`6b8e440`). **Il n'attend PAS la carte** : la rubrique vit dans **Événements** (`events.type`, `bilan_slots`, règles serveur, créneaux J-14) et ne consomme **aucune** donnée boisson.
 2. **Structure catégories** (nav 3 piliers + retrait d'Énergie) **avec le filet dans le code** — « toute catégorie non rattachée reste **visible**, jamais masquée » — et le critère d'acceptation *produits affichés sur `/menu` == produits actifs en base*. **COFFEE intouchée** (CAFÉ LONG + ESPRESSO).
-3. **Les 3 petits** : `X-Robots-Tag` par chemin dans `vercel.json` · merge de `chore/gitignore-env` · réparation de la **lecture carte PessoBot** (config n8n).
+3. **Les 2 petits** : `X-Robots-Tag` par chemin dans `vercel.json` · merge de **`chore/gitignore-env`** (branche **poussée** : `6ee2e89`, 1 fichier, +2 lignes, `main` intact).
+   - ✅ **Lecture carte PessoBot : FAITE ce soir** (alcyone) — 2 nœuds `Tool:` pointaient vers des workflows **supprimés** (404) ; repointés vers les actifs (`z6QvQ6WJPNIDvT9x` / `zp7l18YSIGf27HAa`), PUT 200, `v_pessobot_menu` répond (**11 lignes**). **Sorti de la liste de Claude** (n8n self-hosted, pas d'accès) — reste le **contrôle fonctionnel** : une question au chat doit citer un **vrai** produit avec son **prix**.
 4. ⏳ **Claude** : « gros bloc Partenariat / page Contact » — **pas encore poussé**, c'est à lui.
 
 ### ⏳ EN ATTENTE DE LA CLIENTE — et ça ne bloque que ces points
