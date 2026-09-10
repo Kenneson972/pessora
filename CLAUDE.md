@@ -1,20 +1,29 @@
 # Claude Code Configuration - Karibloom — PESSORA
 
-## État projet — 09/09/2026 (à lire avant tout chantier)
+## État projet — 10/09/2026 (à lire avant tout chantier)
+
+> ⚠️ **Le CR du RDV Catherine du 10/09/2026 fait autorité** — détail complet dans `docs/brief-chantier-pessora-2026-09-10.md`. Cette section ne garde que ce qu'il ne faut PAS contredire.
 
 ### Contexte
 - Client : PessÓra (Catherine) — bar protéiné Herbalife, Fort-de-France. Stack : **Vite SPA** (seul projet client en Vite, pas Next.js) + **Supabase** (compte SÉPARÉ — PAT `ACCES_SUPABASE_TOKEN`, `ACCESS_TOKEN` = 401) + **Stripe en mode TEST** (zéro paiement réel possible). Vercel prod. Repo : `Kenneson972/pessora`.
 
-### ⚠️ Coupe ORA+ EN PROD (08/09/2026) — NE PAS RÉINTRODUIRE
-- Toute la **surface publique Óra+ est supprimée** (route `/ora-plus`, nav, footer, teasers, prix « avec Óra+ ») — commit `b59da8a`/merge `d76d6f6`, recette QA verte.
-- La **mécanique interne est conservée volontairement** (décision jeudi 10/09 avec Catherine) : remise −50% panier via `useIsOraPlus` (membre connecté plan `ora_plus` + status `active`), pages membre, portail Stripe, admin (MRR/membres/bilans), edge functions Stripe.
+### ⚠️ Óra+ — ARCHIVAGE TOTAL (décision Catherine, 10/09/2026) — NE RIEN RÉINTRODUIRE
+- La **surface publique** est déjà supprimée (route `/ora-plus`, nav, footer, teasers, prix « avec Óra+ ») — commit `b59da8a`/merge `d76d6f6`, recette QA verte.
+- 🔴 **La mécanique interne est à archiver AUSSI** (lot 4) : pages membre, blocs admin, `create-subscription-session` (fonction morte). **L'ancienne consigne « mécanique interne conservée » est PÉRIMÉE** — ne pas s'y référer.
+- **Seule exception conservée** : la remise −50 % panier (`useIsOraPlus`), retirée au **lot 1** et **avant toute bascule live**.
+- ⚠️ **Les 7 abonnés Stripe LIVE (~174 €/mois) ne sont PAS touchés** — décision ferme de la cliente, elle les gère au bar. **Hors périmètre : ne rien faire.**
 - Ne jamais recréer : route `/ora-plus`, lien public vers Óra+, teaser ou mention « avec Óra+ » côté public.
 
-### Décisions actées 02/09 (scope figé) — RDV Catherine jeudi 10/09 pour valider la suite
-- Catégories cibles : **Shakes / Thé / Formules** (actuel : menu = wellness/energie/shakes/coffee ; catalogue Nos Produits = wellness/sport/skin). Mapping des 13 boissons + catalogue NON tranché → attendre validation client.
-- Tailles : « shakes petit & grand » (aujourd'hui 3 tailles optionnelles `price_small/medium/large`), « thé grand » (pas encore de gamme thé en données).
-- Google OAuth connexion ✅ déjà fait ; Easy Ta Vie ✅ déjà en place (lien panier + contact, pas d'API).
-- Stripe live : clé `sk_live` corrompue → roll en cours côté client (jeudi). Ne pas utiliser de clés live tant que non validées.
+### Décisions actées au RDV du 10/09/2026 (remplacent le scope du 02/09)
+- Catégories : **MEGA THÉ · PROTEIN SHAKE · COFFEE** — **Énergie supprimée**. ⚠️ **« Formules » n'est PAS une catégorie** → c'est un **moteur de recommandation/bundle** (thé + shake, prix validé côté serveur). Mapping des boissons NON tranché → attendre **la carte complète** de la cliente.
+- Prix : **Mega Thé 600 cl = 10 €** · **Shake Grand = 14 €** · **boosters = 2 €** (au lieu de 1 €).
+- **Archivage des tailles depuis l'admin**, avec garde serveur (taille archivée = refus, jamais 0 €).
+- **Challenge 21 jours** = rubrique **DANS la page Événements** (pas de page ni landing séparée) ; créneaux de bilan ouverts **J-14 → jour J**, calculés **à la lecture** (décision : pas de `pg_cron`) ; **inscription au bilan obligatoire** pour participer.
+- **La page Bilan disparaît** ; le choix du créneau migre dans la page Événement (retour prévu au lot A, avec la garantie serveur).
+- **Click & Collect uniquement** sur le site + **lien Easy Ta Vie** pour la livraison.
+- **PessoBot** : réécriture du prompt assignée à **alcyone** (phase 2) — **pas à Claude Code**.
+- Le **gommage** : la cliente corrige le visuel elle-même → **ne pas y toucher**.
+- Stripe live : clé `sk_live` corrompue → **roll côté client**. Ne pas utiliser de clés live tant que non validées.
 
 ### Règles de travail
 - Toujours brancher (`feat/...`), jamais pousser sur `main` directement ; le merge passe par une relecture équipe (alcyone/vela) + recette QA.
