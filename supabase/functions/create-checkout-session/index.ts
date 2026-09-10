@@ -255,23 +255,8 @@ serve(async (req) => {
       }),
     );
 
-    // ── Óra+ : appliquer -50% sur les boissons bar (boosters exclus) ──
-    if (user_id) {
-      const { data: sub } = await supabase
-        .from('subscriptions')
-        .select('plan, status')
-        .eq('user_id', user_id)
-        .maybeSingle();
-      if (sub?.plan === 'ora_plus' && sub?.status === 'active') {
-        for (const item of verifiedLines) {
-          if (item.source !== 'gamme' && item.barBasePublic != null) {
-            const boosterAdd = item.verifiedUnitPrice - item.barBasePublic;
-            const discountedBase = Math.round(item.barBasePublic * 0.5 * 100) / 100;
-            item.verifiedUnitPrice = discountedBase + boosterAdd;
-          }
-        }
-      }
-    }
+    // Remise Óra+ retirée de la surface publique (offre repassée en présentiel) :
+    // tous les paniers sont facturés au tarif public, sans exception.
 
     // Construire le pickup_time ISO complet (date d'aujourd'hui + créneau choisi)
     const orderPickupTime = pickup_time
