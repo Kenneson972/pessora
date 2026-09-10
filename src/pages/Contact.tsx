@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { barInfo } from '../data/infoData';
-import { Mail, MapPin, Instagram, ArrowRight, CheckCircle2, Truck } from 'lucide-react';
+import { Mail, MapPin, Instagram, ArrowRight, CheckCircle2, Truck, Building2 } from 'lucide-react';
 import { useFadeUpWhenVisible, useStaggerReveal } from '../lib/motionReveal';
 import { Button, Card, Input, Label, TextArea, TextField, cn } from '@heroui/react';
 import { Segment } from '@heroui-pro/react';
@@ -91,6 +91,35 @@ const Contact = () => {
       <div className="pb-24 pt-10 md:pt-14">
       <PageShell>
         <div className="mx-auto max-w-6xl">
+          {/* ── Bloc Partenariat — gros CTA, renvoie vers la page dédiée ── */}
+          <Link
+            to="/contact-partenariat"
+            className="group mb-16 flex flex-col items-start gap-6 rounded-[2px] border border-noir/[0.08] bg-noir p-8 text-white transition-colors hover:bg-anthracite sm:flex-row sm:items-center sm:justify-between md:p-10"
+          >
+            <div className="flex items-start gap-5 sm:items-center">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/15 bg-white/[0.06]">
+                <Building2 size={22} strokeWidth={1.35} aria-hidden />
+              </div>
+              <div>
+                <p className="mb-1 text-[10px] font-normal uppercase tracking-[0.18em] text-white/50">
+                  Marques · Médias · Événements
+                </p>
+                <h3
+                  className="font-display text-xl font-normal text-white md:text-2xl"
+                  style={{ fontFamily: 'var(--font-display)' }}
+                >
+                  Vous avez un projet de partenariat ?
+                </h3>
+                <p className="mt-2 max-w-md text-[13px] font-light leading-relaxed text-white/70">
+                  Pop-up, sponsoring, corner produit, packs sur devis pour clubs de sport et entreprises — découvrez la page dédiée.
+                </p>
+              </div>
+            </div>
+            <span className="inline-flex shrink-0 items-center gap-2 rounded-full border border-white/20 px-6 py-3 text-[10px] font-normal uppercase tracking-[0.14em] text-white transition-all group-hover:gap-3 group-hover:border-white/40">
+              Voir la page partenariats <ArrowRight size={14} />
+            </span>
+          </Link>
+
           <div className="grid grid-cols-1 gap-16 lg:grid-cols-2 lg:gap-24">
             <motion.div
               className="space-y-14"
@@ -198,17 +227,9 @@ const Contact = () => {
 
             <motion.div {...fadeForm}>
             <Card className="bg-surface-muted p-8 shadow-none md:p-10">
-              <h3 className="mb-4 font-display text-2xl font-normal text-black" style={{ fontFamily: 'var(--font-display)' }}>
+              <h3 className="mb-8 font-display text-2xl font-normal text-black" style={{ fontFamily: 'var(--font-display)' }}>
                 Envoyez-nous un message
               </h3>
-              <p className="mb-8 text-[12px] font-light leading-relaxed text-black/48">
-                Projet{' '}
-                <strong className="font-normal text-black/65">marque, média ou événement</strong> ? Utilisez la{' '}
-                <Link to="/contact-partenariat" className="text-editorial-link-underline text-black/70 hover:text-black">
-                  page partenariats
-                </Link>
-                .
-              </p>
               <form
                 className="space-y-6"
                 onSubmit={handleSubmit}
