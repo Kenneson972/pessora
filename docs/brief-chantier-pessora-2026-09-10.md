@@ -76,6 +76,10 @@
 6. **Catégories** (mapping boissons → MEGA THÉ / PROTEIN SHAKE / COFFEE) + tailles actives.
 7. **Moteur Formule** (bundle intelligent + recommandation thé ↔ shake + prix validé **côté serveur**).
 8. **Challenge/Bilan (lot A — le plus gros)** : rubrique dans Événements, créneaux J-14 auto (UTC-4), validation admin + email, suppression page Bilan, migration du choix de créneau, photos avant/après.
+   - ✅ **Fondations déjà en place (vérifié)** : `events.type` (→ `type='challenge'`), `bilan_slots` (`date`/`heure`/`disponible`), `event_registrations.post_registration_details`, Resend opérationnel → **aucune table neuve**.
+   - ⚠️ **Décision d'archi à trancher AVANT de coder** : ne **pas** installer `pg_cron` (absent du projet). Retenu : **la fenêtre J-14 → J se calcule à la lecture** ; la cliente pose la date, les créneaux existent en base, la visibilité s'ouvre d'elle-même. Supprime le risque de dérive de fuseau.
+   - ⚠️ **9 points d'accroche** à mettre à jour le jour où la page Bilan disparaît (nav, footer, Home, Menu, recherche, puces PessoBot, questionnaire post-inscription, mockup…) — **aucun lien mort**. Inventaire tenu par Vela.
+   - ⚠️ **RLS à durcir** : aujourd'hui un membre peut s'inscrire hors fenêtre.
 9. **PessoBot v2** : réécriture du prompt + conseils produits/ingrédients + rattachements + réparation de la lecture carte.
 10. **Page Partenariat** complète (si des éléments dépendent de contenus à venir).
 
