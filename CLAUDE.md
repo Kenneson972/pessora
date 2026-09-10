@@ -11,7 +11,7 @@
 - La **surface publique** est déjà supprimée (route `/ora-plus`, nav, footer, teasers, prix « avec Óra+ ») — commit `b59da8a`/merge `d76d6f6`, recette QA verte.
 - 🔴 **La mécanique interne est à archiver AUSSI** (lot 4) : pages membre, blocs admin, `create-subscription-session` (fonction morte). **L'ancienne consigne « mécanique interne conservée » est PÉRIMÉE** — ne pas s'y référer.
 - **Seule exception conservée** : la remise −50 % panier (`useIsOraPlus`), retirée au **lot 1** et **avant toute bascule live**.
-- ⚠️ **Les 7 abonnés Stripe LIVE (~174 €/mois) ne sont PAS touchés** — décision ferme de la cliente, elle les gère au bar. **Hors périmètre : ne rien faire.**
+- ⚠️ **Les 9 abonnements Stripe LIVE (7 actifs — 174,30 €/mois — + 2 impayés) ne sont PAS touchés** (relevé sur le compte Stripe de la cliente, 10/09/2026 : 9 au total, tous à 24,90 €/mois) — décision ferme de la cliente, elle les gère au bar. **Hors périmètre : ne rien faire.**
 - Ne jamais recréer : route `/ora-plus`, lien public vers Óra+, teaser ou mention « avec Óra+ » côté public.
 
 ### Décisions actées au RDV du 10/09/2026 (remplacent le scope du 02/09)
