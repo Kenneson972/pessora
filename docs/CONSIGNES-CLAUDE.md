@@ -35,6 +35,24 @@ Contenu : garanties serveur (fenêtre J-14→J, anti double-réservation, dédup
 
 ---
 
+## 🔴 2026-09-10 (après merge) — BLOQUANT AVANT DÉMO : aucun chemin ne rattache un créneau à un challenge
+
+**Constat vérifié dans le code de `main` (pas une hypothèse) :**
+
+- `AdminBilans.tsx:190-199` — `createSlotAtSelected()` insère `{ date, heure, disponible: true }` : **jamais `challenge_event_id`**. Aucun écran, aucune fonction ne renseigne cette colonne (elle n'apparaît que dans `BilanBookingWidget.tsx:78` en **lecture**, et dans `types/database.ts`).
+- `BilanBookingWidget.tsx:76-78` — le widget lit `.eq('challenge_event_id', challengeEventId)`.
+- Conséquence : **tout créneau créé depuis son admin est orphelin** → `fn_bilan_slot_bookable()` = `false` → **invisible et non réservable**. Créer un challenge puis des créneaux **ne suffit pas** : la page affichera **0 créneau**, même avec des créneaux `disponible = true`.
+
+**Régression induite par la v5 sur un flux existant** : avant la migration, la policy `bilan_slots_select_public (USING true)` rendait le créneau visible ; depuis, il ne l'est plus tant qu'il n'est pas rattaché. Le geste « ajouter un créneau » dans son admin est donc **sans effet visible** aujourd'hui — il faut le dire, sinon c'est un « ça ne marche pas » devant la cliente.
+
+**Correctif recommandé (doctrine de la soirée : la règle vit côté serveur, l'UI affiche)** — trigger `BEFORE INSERT OR UPDATE` sur `bilan_slots` : si `challenge_event_id IS NULL`, le rattacher au challenge `active` dont la fenêtre couvre la date du créneau (`events.date - 14 <= NEW.date <= events.date`, `type = 'challenge'`) ; si aucun ne correspond, laisser `NULL` (orphelin assumé). Avantage : plus aucun opérateur ne peut créer un créneau invisible, et **aucune** évolution UI n'est nécessaire pour que ça marche. Un sélecteur « challenge concerné » dans l'admin reste souhaitable **plus tard** pour la lisibilité, mais ne doit pas être la seule garantie.
+
+**Critère de recette (à faire jouer tel quel)** : créer un challenge dans l'admin → **ajouter un créneau depuis l'admin** → le créneau devient **visible et réservable** sur la page du challenge, **sans aucun SQL**. Aujourd'hui : ❌ (aucune interface ne peut le faire).
+
+**Lien avec la migration v5** : ce n'est **pas** un oubli du lot A côté client — c'est un lien manquant entre deux lots (la colonne est arrivée avec la v5, l'écran de saisie des créneaux est antérieur et n'a pas suivi). À traiter comme un correctif **avant** la démo du Challenge.
+
+---
+
 ## PROCHAIN LOT — dans l'ordre
 
 ### 1. RPC questionnaire post-inscription (débloque le critère ⑨)
