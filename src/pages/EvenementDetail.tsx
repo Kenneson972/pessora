@@ -43,6 +43,7 @@ const TYPE_LABELS: Record<Event['type'], string> = {
   event: 'Événement',
   partenariat: 'Partenariat',
   bilan: 'Bilan',
+  challenge: 'Challenge 21 jours',
 };
 
 const inputClass =

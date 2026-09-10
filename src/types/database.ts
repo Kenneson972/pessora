@@ -64,7 +64,7 @@ export interface Database {
           date: string
           heure: string | null
           location: string | null
-          type: 'run_club' | 'popup' | 'atelier' | 'event' | 'partenariat' | 'bilan'
+          type: 'run_club' | 'popup' | 'atelier' | 'event' | 'partenariat' | 'bilan' | 'challenge'
           description: string | null
           image_url: string | null
           gallery: string[]
@@ -106,6 +106,7 @@ export interface Database {
           date: string
           heure: string
           disponible: boolean
+          challenge_event_id: string | null
           created_at: string
         }
         Insert: Omit<Database['public']['Tables']['bilan_slots']['Row'], 'id'>
@@ -120,14 +121,21 @@ export interface Database {
           nom: string
           prenom: string
           telephone: string
+          telephone_normalized: string | null
           email: string | null
           date_rdv: string
           heure_rdv: string
           statut: 'en_attente' | 'confirme' | 'annule'
+          challenge_event_id: string | null
           notes: string | null
           created_at: string
         }
-        Insert: Omit<Database['public']['Tables']['bilan_bookings']['Row'], 'id' | 'created_at'>
+        // statut a un DEFAULT 'en_attente' en base ; telephone_normalized et
+        // challenge_event_id sont déduits/normalisés côté serveur (trigger
+        // BEFORE INSERT) — jamais envoyés par le client.
+        Insert: Omit<Database['public']['Tables']['bilan_bookings']['Row'], 'id' | 'created_at' | 'statut' | 'telephone_normalized' | 'challenge_event_id'> & {
+          statut?: 'en_attente'
+        }
         Update: Partial<Pick<Database['public']['Tables']['bilan_bookings']['Row'], 'statut' | 'notes'>>
         Relationships: []
       }

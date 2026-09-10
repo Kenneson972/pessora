@@ -31,9 +31,10 @@ export const EMPTY_FORM = {
 
 export type FormState = typeof EMPTY_FORM;
 
-export const TYPE_OPTIONS: Event['type'][] = ['event', 'popup', 'atelier', 'partenariat', 'bilan', 'run_club'];
+export const TYPE_OPTIONS: Event['type'][] = ['challenge', 'event', 'popup', 'atelier', 'partenariat', 'bilan', 'run_club'];
 
 export const TYPE_LABELS: Record<Event['type'], string> = {
+  challenge: 'Challenge 21 jours',
   event: 'Événement',
   popup: 'Pop-up',
   atelier: 'Atelier',

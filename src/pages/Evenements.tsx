@@ -20,9 +20,10 @@ const TYPE_LABELS: Record<Event['type'], string> = {
   event: 'Événement',
   partenariat: 'Partenariat',
   bilan: 'Bilan',
+  challenge: 'Challenge 21 jours',
 };
 
-const TYPE_ORDER: Event['type'][] = ['run_club', 'popup', 'atelier', 'event', 'partenariat', 'bilan'];
+const TYPE_ORDER: Event['type'][] = ['challenge', 'run_club', 'popup', 'atelier', 'event', 'partenariat', 'bilan'];
 
 
 function formatDate(dateStr: string) {

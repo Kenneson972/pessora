@@ -62,8 +62,9 @@ const EMPTY_FORM = {
 
 type FormState = typeof EMPTY_FORM;
 
-const TYPE_OPTIONS: Event['type'][] = ['event', 'popup', 'atelier', 'partenariat', 'bilan', 'run_club'];
+const TYPE_OPTIONS: Event['type'][] = ['challenge', 'event', 'popup', 'atelier', 'partenariat', 'bilan', 'run_club'];
 const TYPE_LABELS: Record<Event['type'], string> = {
+  challenge: 'Challenge 21 jours',
   event: 'Événement',
   popup: 'Pop-up',
   atelier: 'Atelier',
