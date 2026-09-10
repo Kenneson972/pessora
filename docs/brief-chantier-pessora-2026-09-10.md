@@ -80,6 +80,8 @@
    - ⚠️ **Décision d'archi à trancher AVANT de coder** : ne **pas** installer `pg_cron` (absent du projet). Retenu : **la fenêtre J-14 → J se calcule à la lecture** ; la cliente pose la date, les créneaux existent en base, la visibilité s'ouvre d'elle-même. Supprime le risque de dérive de fuseau.
    - ⚠️ **9 points d'accroche** à mettre à jour le jour où la page Bilan disparaît (nav, footer, Home, Menu, recherche, puces PessoBot, questionnaire post-inscription, mockup…) — **aucun lien mort**. Inventaire tenu par Vela.
    - ⚠️ **RLS à durcir** : aujourd'hui un membre peut s'inscrire hors fenêtre.
+   - 🐛 **Bug connue à corriger ICI (ne pas corriger le composant actuel)** : le créneau ne se marque jamais pris — `BilanBienEtre.tsx:238` (erreur avalée) et `member/MesBilans.tsx:257` (erreur non contrôlée) font `bilan_slots.update({disponible:false})` **côté client**, or l'UPDATE est réservé aux **admins** (`is_admin()`) → refusé par la RLS → un créneau réservé **reste affiché libre** (sur-réservations). Fix attendu, **en base** : **(1) index UNIQUE partiel** sur `bilan_bookings(slot_id)` hors `statut='annule'` ; **(2) bascule `disponible=false` côté serveur** (trigger sur INSERT ou edge function), atomique. `bilan_bookings` est **vide** → aucune migration de données.
+   - ⚠️ **La page Bilan est dans la nav publique + le footer** → elle sera **live dès l'ouverture du site**, avant ce lot : si le lot A n'est pas passé, il faut soit la **garantie serveur minimale**, soit **masquer la rubrique** (décision Ken).
 9. **PessoBot v2** : réécriture du prompt + conseils produits/ingrédients + rattachements + réparation de la lecture carte.
 10. **Page Partenariat** complète (si des éléments dépendent de contenus à venir).
 
