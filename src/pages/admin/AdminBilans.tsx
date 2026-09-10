@@ -35,6 +35,7 @@ interface BilanBooking {
   telephone: string | null;
   message: string | null;
   statut: 'en_attente' | 'confirme' | 'annule';
+  origine: 'visiteur' | 'questionnaire' | 'admin' | null;
   created_at: string;
   bilan_slots: BilanSlot;
 }
@@ -43,6 +44,12 @@ const STATUT_LABELS = {
   en_attente: 'En attente',
   confirme: 'Confirmé',
   annule: 'Annulé',
+};
+
+const ORIGINE_LABELS: Record<string, string> = {
+  visiteur: 'Visiteur',
+  questionnaire: 'Questionnaire',
+  admin: 'Admin',
 };
 
 const STATUT_STYLES = {
@@ -315,7 +322,7 @@ const AdminBilans = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-noir/[0.05]">
-                      {['Client', 'Email', 'Créneau', 'Message', 'Statut', ''].map((h) => (
+                      {['Client', 'Email', 'Créneau', 'Message', 'Origine', 'Statut', ''].map((h) => (
                         <th
                           key={h}
                           className="px-5 py-3 text-left text-[8px] font-normal uppercase tracking-[0.25em] text-black/35"
@@ -365,6 +372,11 @@ const AdminBilans = () => {
                             <p className="text-[11px] text-black/50 truncate">
                               {b.message || '—'}
                             </p>
+                          </td>
+                          <td className="px-5 py-4">
+                            <span className="text-[10px] text-black/40">
+                              {b.origine ? ORIGINE_LABELS[b.origine] ?? b.origine : '—'}
+                            </span>
                           </td>
                           <td className="px-5 py-4">
                             <span

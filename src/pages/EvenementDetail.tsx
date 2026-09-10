@@ -11,11 +11,12 @@ import type { Event } from '../types/database';
 import { PostRegistrationWizard } from '../components/events/PostRegistrationWizard';
 import { BilanBookingWidget } from '../components/events/BilanBookingWidget';
 import { EventJsonLd } from '../components/seo/EventJsonLd';
+import { isValidPhone } from '../lib/phone';
 
 const schema = z.object({
   nom: z.string().min(2, 'Nom requis'),
   prenom: z.string().min(2, 'Prénom requis'),
-  telephone: z.string().min(8, 'Téléphone requis'),
+  telephone: z.string().refine(isValidPhone, 'Vérifiez votre numéro de téléphone'),
   nb_personnes: z.string(),
   souhait_info: z.string(),
   privacyAccepted: z.boolean().refine((v) => v === true, {

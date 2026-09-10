@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabaseClient';
 import { DashPageHeader } from '../../components/dashboard/primitives';
 import { DASH_MAIN_PAD } from '../../components/dashboard/layoutClasses';
+import { isValidPhone } from '../../lib/phone';
 
 type PrefsShape = {
   notifications: boolean;
@@ -68,6 +69,10 @@ const Profile = () => {
 
   const handleSave = async () => {
     if (!user) return;
+    if (phone.trim() !== '' && !isValidPhone(phone)) {
+      setSaveError('Vérifiez votre numéro de téléphone');
+      return;
+    }
     setSaving(true);
     setSaveError(null);
     setSaveSuccess(false);

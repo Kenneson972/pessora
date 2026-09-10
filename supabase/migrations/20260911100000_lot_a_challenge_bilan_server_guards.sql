@@ -85,10 +85,59 @@
 --      n'entrant jamais en conflit, deux personnes sans numéro exploitable
 --      restent deux lignes distinctes, jamais bloquées l'une par l'autre).
 --
+-- v5 — 4 corrections avant application (dernier tour, rien d'autre en
+-- attente) :
+--   d. DoS ouvert par la v4 elle-même : un visiteur avec un téléphone
+--      inexploitable avait telephone_normalized=NULL → ni dédupliqué
+--      (l'index unique ignore NULL, par construction) ni rate-limité (le
+--      garde-fou du point c skippe justement si la clé est NULL) →
+--      volume illimité de demandes. Un numéro à 9 chiffres après
+--      normalisation est désormais obligatoire sur le chemin public
+--      (RAISE 'invalid_phone' / P0003) — jamais pour un insert admin
+--      (saisie manuelle au bar, formats libres).
+--   e. La clé d'identité (dédup ET rate-limit) était user_id d'abord,
+--      téléphone en repli — un même client connecté puis invité déposait
+--      deux lignes sous deux clés différentes. Inversé :
+--      COALESCE(NULLIF(telephone_normalized,''), user_id::text) — le
+--      téléphone (identifiant stable, présent des deux côtés) passe
+--      avant le user_id (qui, lui, change selon l'état de connexion).
+--   f. Un code d'erreur par type de refus, pour que le front puisse
+--      afficher le bon message et que la recette distingue quelle garde
+--      a joué : 23505 = créneau déjà pris (index §6, inchangé) ·
+--      P0001 = trop de demandes (rate-limit) · P0002 = demande déjà en
+--      attente (pré-vérifiée dans le trigger avant l'index §5g, qui
+--      reste le filet de sécurité en cas de vraie course concurrente —
+--      dans ce cas rare, 23505 peut encore sortir : l'index garantit la
+--      correction, le pré-check n'est que pour le message) · P0003 =
+--      numéro invalide.
+--   g. Colonne `origine` ('visiteur'/'questionnaire'/'admin'), purement
+--      descriptive pour la file admin — JAMAIS dans une garde (dédup,
+--      rate-limit, WITH CHECK) et JAMAIS lue depuis le payload client :
+--      NEW.origine est systématiquement écrasé par le trigger, qu'il
+--      soit NULL ou non — un POST anon avec {"origine":"admin"} ne doit
+--      jamais passer, contrairement à challenge_event_id (point b) où
+--      l'écrasement était conditionnel (NULL seulement).
+--      ⚠️ Ni via current_user, ni via session_user : à l'intérieur d'un
+--      trigger SECURITY DEFINER, current_user devient TOUJOURS le
+--      propriétaire de la fonction (postgres) — inutilisable. Et
+--      session_user ne distinguerait pas non plus : la future RPC du
+--      questionnaire sera appelée par un membre authentifié via
+--      PostgREST normal (rôle authenticated), donc indistinguable d'un
+--      insert direct sur la table par ce biais. Mécanisme retenu : un
+--      GUC de session (pessora.bilan_origine) positionné par la RPC via
+--      set_config() juste avant son propre INSERT — un corps JSON
+--      PostgREST ne peut pas définir un GUC arbitraire en effet de bord
+--      d'un POST, contrairement à une colonne de la ligne.
+--
+-- Dette assumée, écrite ici plutôt que corrigée en douce : la policy
+-- autorise déjà un insert admin (saisie manuelle au bar), mais aucun
+-- écran ne le propose aujourd'hui — c'est un manque de fonctionnalité,
+-- pas une régression de cette migration.
+--
 -- Testée sur une branche Supabase jetable avant la 1ʳᵉ version (v1) ; v2
--- (6 corrections), v3 (points 7/8/9) et v4 (3 corrections ci-dessus,
--- trouvées en revue équipe puis en re-testant le correctif du point c) ont
--- chacune été re-testées de la même façon avant application en prod.
+-- (6 corrections), v3 (points 7/8/9), v4 (3 corrections) et v5 (4
+-- corrections ci-dessus) ont chacune été re-testées de la même façon
+-- avant application en prod.
 
 -- ── 1. Nouveau type d'événement 'challenge' ──────────────────────────
 ALTER TABLE public.events DROP CONSTRAINT IF EXISTS events_type_check;
@@ -165,7 +214,15 @@ CREATE POLICY "bilan_slots_select_bookable" ON public.bilan_slots
 -- distinct de `telephone` (affichage) — voir normalize_phone() plus bas.
 ALTER TABLE public.bilan_bookings
   ADD COLUMN IF NOT EXISTS challenge_event_id uuid REFERENCES public.events(id) ON DELETE SET NULL,
-  ADD COLUMN IF NOT EXISTS telephone_normalized text;
+  ADD COLUMN IF NOT EXISTS telephone_normalized text,
+  ADD COLUMN IF NOT EXISTS origine text;
+
+ALTER TABLE public.bilan_bookings DROP CONSTRAINT IF EXISTS bilan_bookings_origine_check;
+ALTER TABLE public.bilan_bookings ADD CONSTRAINT bilan_bookings_origine_check
+  CHECK (origine IS NULL OR origine = ANY (ARRAY['visiteur', 'questionnaire', 'admin']::text[]));
+
+COMMENT ON COLUMN public.bilan_bookings.origine IS
+  'Purement descriptif pour la file admin (jamais lu par une garde, jamais lu depuis le payload client). Toujours écrasé par le trigger : admin si is_admin(), questionnaire si le GUC pessora.bilan_origine=questionnaire (posé par la future RPC via set_config, jamais par un client), visiteur sinon.';
 
 -- ── 5b. normalize_phone : canon avant déduplication (point 8) ───────
 -- Chiffres seuls, 9 derniers conservés → 0696000000 / +596 696 000 000 /
@@ -244,13 +301,49 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path TO 'public'
 AS $$
+DECLARE
+  v_identity_key text;
 BEGIN
   -- NULLIF : normalize_phone() renvoie '' (pas NULL) pour un téléphone
-  -- inexploitable ("N/A", "---"...). Si on stockait '', tous les invités
-  -- sans numéro exploitable partageraient la même clé de dédup ('') et se
-  -- bloqueraient mutuellement (23505 sur une demande qui n'est pas la
-  -- leur). NULL, lui, n'entre jamais en conflit dans un index unique.
+  -- inexploitable ("N/A", "---"...). NULL n'entre jamais en conflit dans
+  -- un index unique — voir la garde ci-dessous qui rend ce cas impossible
+  -- sur le chemin public de toute façon (numéro obligatoire).
   NEW.telephone_normalized := NULLIF(public.normalize_phone(NEW.telephone), '');
+
+  -- (d) Numéro exploitable obligatoire sur le chemin public. Sans lui,
+  -- telephone_normalized reste NULL → ni dédupliqué (index ignore NULL)
+  -- ni rate-limité (garde ci-dessous skippe si la clé est NULL) → volume
+  -- illimité de demandes avec un téléphone bidon. Jamais pour un insert
+  -- admin (saisie manuelle au bar, formats libres, pas de DoS possible
+  -- puisqu'elle nécessite déjà d'être admin).
+  IF NOT public.is_admin() AND NEW.telephone_normalized IS NULL THEN
+    RAISE EXCEPTION 'invalid_phone' USING ERRCODE = 'P0003';
+  END IF;
+
+  -- (g) Origine descriptive pour la file admin — JAMAIS lue depuis le
+  -- payload client (NEW.origine est systématiquement écrasé ci-dessous,
+  -- qu'il soit NULL ou non) : un POST anon avec {"origine":"admin"} ne
+  -- doit jamais passer.
+  --
+  -- ⚠️ Pas de détection par current_user/session_user : à l'intérieur
+  -- d'un trigger SECURITY DEFINER, current_user devient TOUJOURS le
+  -- propriétaire de la fonction (postgres), quel que soit l'appelant
+  -- réel — et la future RPC du questionnaire sera appelée par un membre
+  -- authentifié via PostgREST normal (rôle authenticated), pas
+  -- postgres/service_role : indistinguable d'un insert direct par ce
+  -- biais. Mécanisme retenu à la place : un GUC de session
+  -- (pessora.bilan_origine) que seule la RPC — du code SQL de confiance
+  -- que j'écris, pas un corps JSON client — pourra positionner juste
+  -- avant son propre INSERT via set_config(). Un payload PostgREST ne
+  -- peut pas définir un GUC arbitraire en effet de bord d'un simple
+  -- POST, contrairement à une colonne de la ligne.
+  IF public.is_admin() THEN
+    NEW.origine := 'admin';
+  ELSIF current_setting('pessora.bilan_origine', true) = 'questionnaire' THEN
+    NEW.origine := 'questionnaire';
+  ELSE
+    NEW.origine := 'visiteur';
+  END IF;
 
   IF NEW.slot_id IS NOT NULL THEN
     SELECT challenge_event_id INTO NEW.challenge_event_id
@@ -264,19 +357,33 @@ BEGIN
       NEW.challenge_event_id := public.fn_deduce_hors_date_challenge();
     END IF;
 
-    -- Pas de rate-limit sur les insertions admin (saisie manuelle au bar),
-    -- ni si la clé serait NULL (ni user_id ni téléphone exploitable —
-    -- rate_limits.key est NOT NULL, un appel avec NULL ferait planter
-    -- l'insertion entière au lieu de juste ignorer le rate-limit ; un
-    -- visiteur non traçable n'est de toute façon pas rate-limitable).
-    IF NOT public.is_admin()
-       AND coalesce(NEW.user_id::text, NEW.telephone_normalized) IS NOT NULL
-       AND NOT public.check_rate_limit(
-         'bilan_hors_date:' || coalesce(NEW.user_id::text, NEW.telephone_normalized),
-         3, 86400
-       )
-    THEN
-      RAISE EXCEPTION 'rate_limited' USING ERRCODE = 'P0001';
+    -- (e) Téléphone d'abord, user_id en repli : un même client connecté
+    -- puis invité (ou l'inverse) doit désigner la MÊME clé d'identité —
+    -- sinon la dédup et le rate-limit le traitent comme deux personnes.
+    v_identity_key := coalesce(NULLIF(NEW.telephone_normalized, ''), NEW.user_id::text);
+
+    IF NOT public.is_admin() THEN
+      -- (f) P0002 : pré-vérification pour un message clair et un code
+      -- distinct de 23505. Reste un filet secondaire — l'index unique
+      -- (§5g) est la vraie garantie sous concurrence ; en cas de vraie
+      -- course, 23505 peut encore sortir ici, ce qui est correct (la
+      -- ligne concurrente a gagné pendant l'évaluation de ce SELECT).
+      IF v_identity_key IS NOT NULL AND EXISTS (
+        SELECT 1 FROM public.bilan_bookings
+        WHERE statut = 'en_attente'
+          AND slot_id IS NULL
+          AND coalesce(NULLIF(telephone_normalized, ''), user_id::text) = v_identity_key
+      ) THEN
+        RAISE EXCEPTION 'duplicate_pending_request' USING ERRCODE = 'P0002';
+      END IF;
+
+      -- Pas de rate-limit si la clé serait NULL (ne devrait plus arriver
+      -- sur le chemin public depuis (d), gardé en défense supplémentaire).
+      IF v_identity_key IS NOT NULL AND NOT public.check_rate_limit(
+        'bilan_hors_date:' || v_identity_key, 3, 86400
+      ) THEN
+        RAISE EXCEPTION 'rate_limited' USING ERRCODE = 'P0001';
+      END IF;
     END IF;
   END IF;
 
@@ -313,13 +420,19 @@ CREATE POLICY "bilan_bookings_insert_guarded" ON public.bilan_bookings
     )
   );
 
--- ── 5g. Déduplication des demandes hors-créneau (point 7/8) ─────────
--- 1 personne (user_id) ou 1 numéro normalisé = 1 demande en_attente à la
--- fois. Index unique — pas de IF NOT EXISTS applicatif, qui laisserait
+-- ── 5g. Déduplication des demandes hors-créneau (point 7/8, clé revue au v5.e) ──
+-- 1 numéro normalisé (ou 1 user_id en repli si pas de téléphone exploitable
+-- — cas admin uniquement depuis (d)) = 1 demande en_attente à la fois.
+-- Téléphone d'abord : un même client connecté puis invité doit tomber sur
+-- la même clé (voir le pré-check P0002 dans le trigger, même expression).
+-- Index unique — pas de IF NOT EXISTS applicatif seul, qui laisserait
 -- passer une course sous insertions simultanées (même doctrine que le
--- point 6 pour les créneaux).
+-- point 6 pour les créneaux) ; le pré-check du trigger n'est qu'un
+-- message plus clair dans le cas non-concurrent, cet index reste la
+-- garantie réelle.
+DROP INDEX IF EXISTS public.bilan_bookings_hors_date_dedup;
 CREATE UNIQUE INDEX IF NOT EXISTS bilan_bookings_hors_date_dedup
-  ON public.bilan_bookings (COALESCE(user_id::text, telephone_normalized))
+  ON public.bilan_bookings (COALESCE(NULLIF(telephone_normalized, ''), user_id::text))
   WHERE statut = 'en_attente' AND slot_id IS NULL;
 
 -- ── 6. 1 créneau = 1 personne, garanti par la base (pas par l'UI) ───

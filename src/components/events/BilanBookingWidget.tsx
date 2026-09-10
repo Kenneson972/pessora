@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
+import { isValidPhone } from '../../lib/phone';
+import { mapBilanError } from '../../lib/bilanErrors';
 
 interface Slot {
   id: string;
@@ -39,6 +41,17 @@ const formatSlotDate = (dateStr: string) =>
  * ⚠️ Non testable en conditions réelles tant que la migration
  * 20260911100000 n'est pas appliquée (pas de challenge_event_id en base,
  * pas de contrainte 'challenge' sur events.type).
+ *
+ * Les 2 insert() ci-dessous n'appellent JAMAIS .select() : avec
+ * Prefer: return=representation (ce que .select() ajoute), PostgREST
+ * exige que la ligne insérée soit relisible par une policy SELECT de
+ * l'appelant — hors une réservation invité a user_id=NULL, et la seule
+ * policy SELECT sur bilan_bookings est "Users read own bookings"
+ * (auth.uid()=user_id), jamais vraie pour NULL=NULL. Vérifié en direct
+ * (branche jetable) : le même payload passe en 201 sans .select() et
+ * échoue en 401/42501 avec — .select() casserait le chemin invité, qui
+ * est le chemin principal (réservation sans compte). error===null (pas
+ * de lecture de ligne) est un signal de succès suffisant ici.
  */
 export function BilanBookingWidget({ challengeEventId }: Props) {
   const { user } = useAuth();
@@ -76,7 +89,7 @@ export function BilanBookingWidget({ challengeEventId }: Props) {
     };
   }, [challengeEventId]);
 
-  const contactValid = nom.trim().length >= 2 && prenom.trim().length >= 2 && telephone.trim().length >= 8;
+  const contactValid = nom.trim().length >= 2 && prenom.trim().length >= 2 && isValidPhone(telephone);
 
   const submitSlot = async () => {
     if (!selectedSlot || !contactValid) return;
@@ -98,14 +111,11 @@ export function BilanBookingWidget({ challengeEventId }: Props) {
     });
 
     if (error) {
+      setErrorMsg(mapBilanError(error, 'slot'));
+      setStatus(error.code === '23505' ? 'conflict' : 'error');
       if (error.code === '23505') {
-        setErrorMsg('Ce créneau vient d’être pris par quelqu’un d’autre — choisis-en un autre.');
-        setStatus('conflict');
         setSlots((prev) => prev.filter((s) => s.id !== selectedSlot));
         setSelectedSlot(null);
-      } else {
-        setErrorMsg('Impossible d’enregistrer ta réservation. Réessaie ou contacte-nous.');
-        setStatus('error');
       }
       return;
     }
@@ -135,16 +145,14 @@ export function BilanBookingWidget({ challengeEventId }: Props) {
     });
 
     if (error) {
-      if (error.code === '23505') {
-        setErrorMsg('Tu as déjà une demande en cours de traitement.');
-        setStatus('conflict');
-      } else if (error.message?.includes('rate_limited')) {
-        setErrorMsg('Trop de demandes récentes avec ces coordonnées — contacte-nous directement si c’est urgent.');
-        setStatus('rate_limited');
-      } else {
-        setErrorMsg('Cette date n’est plus dans la fenêtre acceptée pour une demande hors créneau.');
-        setStatus('error');
-      }
+      setErrorMsg(mapBilanError(error, 'hors-date'));
+      setStatus(
+        error.code === '23505' || error.code === 'P0002'
+          ? 'conflict'
+          : error.code === 'P0001'
+            ? 'rate_limited'
+            : 'error',
+      );
       return;
     }
 
