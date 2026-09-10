@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button, cn } from '@heroui/react';
 import { Sheet } from '@heroui-pro/react';
 import { Minus, Plus, Check } from 'lucide-react';
-import { milkOptions, boosters as fallbackBoosters, type MenuItem, type Booster } from '../../data/menuData';
+import { milkOptions, boosters as fallbackBoosters, BOOSTER_PRICE_EUR, type MenuItem, type Booster } from '../../data/menuData';
 import { supabase } from '../../lib/supabaseClient';
 import { useCart } from '../../store/cartStore';
 import { useIsOraPlus } from '../../hooks/useIsOraPlus';
@@ -66,7 +66,7 @@ export function DrinkOptionsModal({ item, onClose, initialSize = 'medium' }: Pro
       : item.price
     : 0;
 
-  const boosterAdd = selectedBoosters.length;
+  const boosterAdd = selectedBoosters.length * BOOSTER_PRICE_EUR;
   const publicUnitPrice = basePrice + boosterAdd;
   /** Prix unitaire affiché (aperçu) : remise Óra+ sur la boisson seule, boosters au prix bar. */
   const previewUnitPrice =
@@ -207,7 +207,7 @@ export function DrinkOptionsModal({ item, onClose, initialSize = 'medium' }: Pro
               <div>
                 <p className="mb-2.5 text-[9px] font-normal uppercase tracking-[0.18em] text-black/40">
                   Boosters{' '}
-                  <span className="normal-case tracking-normal text-black/30">+1€ / booster</span>
+                  <span className="normal-case tracking-normal text-black/30">+{BOOSTER_PRICE_EUR}€ / booster</span>
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {boosters.map((b) => {

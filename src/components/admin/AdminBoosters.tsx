@@ -18,7 +18,7 @@ const ALL_CATEGORIES = [
   { key: 'shakes', label: 'Shakes' },
 ];
 
-const EMPTY: Omit<Booster, 'id'> = { name: '', price: 1, description: '', categories: [], active: true, sort_order: 0 };
+const EMPTY: Omit<Booster, 'id'> = { name: '', price: 2, description: '', categories: [], active: true, sort_order: 0 };
 
 export function AdminBoosters() {
   const [boosters, setBoosters] = useState<Booster[]>([]);
@@ -45,7 +45,7 @@ export function AdminBoosters() {
     setSaving(true);
     const payload = {
       name: edit.name.trim(),
-      price: edit.price ?? 1,
+      price: edit.price ?? 2,
       description: edit.description || null,
       categories: edit.categories ?? [],
       active: edit.active ?? true,

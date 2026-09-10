@@ -1,4 +1,4 @@
-import { boosters, milkOptions, type MenuItem } from '../data/menuData';
+import { boosters, milkOptions, BOOSTER_PRICE_EUR, type MenuItem } from '../data/menuData';
 
 /** Lait personnalisable : coffee uniquement (plus de choix lait sur les shakes). */
 const needsMilkChoice = (category: MenuItem['category']) => category === 'coffee';
@@ -31,6 +31,6 @@ export function buildDrinkCartOptions(
     optionLabels.push(`Taille : ${sizeLabel}`);
   }
   const basePrice = sizePrice ?? drink.price;
-  const unitPrice = basePrice + boosterIds.length * 1;
+  const unitPrice = basePrice + boosterIds.length * BOOSTER_PRICE_EUR;
   return { optionsKey, optionLabels, unitPrice, barBasePublic: basePrice };
 }

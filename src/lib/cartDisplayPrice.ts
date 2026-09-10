@@ -1,4 +1,5 @@
 import { oraMemberUnitPrice } from './oraPricing';
+import { BOOSTER_PRICE_EUR } from '../data/menuData';
 
 /** Nombre de boosters encodés dans `optionsKey` (segments `boost:…`). */
 export function boosterCountFromOptionsKey(optionsKey: string): number {
@@ -12,7 +13,7 @@ export function boosterCountFromOptionsKey(optionsKey: string): number {
  * - public si pas Óra+
  * - base boisson remisée + boosters au prix bar si Óra+
  *
- * `unitPrice` en magasin est toujours le tarif **public** (base + 1€ × boosters).
+ * `unitPrice` en magasin est toujours le tarif **public** (base + BOOSTER_PRICE_EUR × boosters).
  * `barBasePublic` = base taille seule (sans boosters), si disponible.
  */
 export function displayBarLineUnit(
@@ -26,6 +27,6 @@ export function displayBarLineUnit(
 ): number {
   if (line.source !== 'bar' || !isOraPlus) return line.unitPrice;
   const n = boosterCountFromOptionsKey(line.optionsKey);
-  const base = line.barBasePublic ?? Math.max(0, line.unitPrice - n * 1);
-  return oraMemberUnitPrice(base) + n * 1;
+  const base = line.barBasePublic ?? Math.max(0, line.unitPrice - n * BOOSTER_PRICE_EUR);
+  return oraMemberUnitPrice(base) + n * BOOSTER_PRICE_EUR;
 }
