@@ -10,7 +10,7 @@ import { PageShell } from '../components/layout/PageShell';
 import { PageHero } from '../components/layout/PageHero';
 import { supabase } from '../lib/supabaseClient';
 
-type RequestType = 'info' | 'reservation' | 'partenariat' | 'autre';
+type RequestType = 'info' | 'reservation' | 'autre';
 
 const Contact = () => {
   const fadeForm = useFadeUpWhenVisible();
@@ -225,7 +225,6 @@ const Contact = () => {
                   >
                     <Segment.Item id="info">Information</Segment.Item>
                     <Segment.Item id="reservation">Réservation</Segment.Item>
-                    <Segment.Item id="partenariat">Partenariat</Segment.Item>
                     <Segment.Item id="autre">Autre</Segment.Item>
                   </Segment>
                   <input type="hidden" name="type" value={requestType} />
