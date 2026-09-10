@@ -244,6 +244,10 @@ const Evenements = () => {
     () => events.filter((ev) => ev.date >= todayStr),
     [events, todayStr],
   );
+  const upcomingChallenges = useMemo(
+    () => upcoming.filter((ev) => ev.type === 'challenge'),
+    [upcoming],
+  );
   const past = useMemo(
     () => [...events.filter((ev) => ev.date < todayStr)].reverse(),
     [events, todayStr],
@@ -258,7 +262,11 @@ const Evenements = () => {
   const typeFromUrl = searchParams.get('type') as Event['type'] | null;
   const activeType = typeFromUrl && availableTypes.includes(typeFromUrl) ? typeFromUrl : null;
 
-  const filteredUpcoming = activeType ? upcoming.filter((ev) => ev.type === activeType) : upcoming;
+  // Les challenges ont leur propre rubrique dédiée au-dessus — pas de doublon
+  // dans la liste générique tant qu'on ne les sélectionne pas explicitement.
+  const filteredUpcoming = activeType
+    ? upcoming.filter((ev) => ev.type === activeType)
+    : upcoming.filter((ev) => ev.type !== 'challenge');
   const filteredPast = activeType ? past.filter((ev) => ev.type === activeType) : past;
 
   const setTypeFilter = (type: Event['type'] | null) => {
@@ -280,6 +288,44 @@ const Evenements = () => {
         title="Événements"
         subtitle="Ateliers, run clubs, pop-ups et rencontres autour de Pessóra. Filtrez par catégorie ou parcourez les éditions passées."
       />
+
+      {/* ── Rubrique dédiée : Challenge 21 jours (pas de page séparée) ── */}
+      {!loading && upcomingChallenges.length > 0 && (
+        <section className="border-b border-noir/[0.06] bg-noir px-4 py-14 text-white md:px-10 md:py-16 lg:px-[72px]">
+          <p className="mb-2 text-[10px] font-light uppercase tracking-[0.24em] text-white/50">
+            Challenge 21 jours
+          </p>
+          <h2
+            className="mb-8 font-display font-normal leading-none text-white"
+            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(26px, 3vw, 34px)' }}
+          >
+            Prochaines éditions
+          </h2>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {upcomingChallenges.map((ev) => {
+              const { day, month, year } = splitDate(ev.date);
+              return (
+                <Link
+                  key={ev.id}
+                  to={`/evenements/${ev.slug}`}
+                  className="group flex items-center justify-between gap-4 rounded-[2px] border border-white/15 bg-white/[0.04] p-6 transition-colors hover:bg-white/[0.08]"
+                >
+                  <div>
+                    <p className="text-[10px] font-light uppercase tracking-[0.2em] text-white/45">
+                      {month} {year}
+                    </p>
+                    <p className="mt-1 font-display text-2xl font-normal text-white" style={{ fontFamily: 'var(--font-display)' }}>
+                      {day} {month}
+                    </p>
+                    <p className="mt-2 text-[12px] font-light text-white/65">{ev.title}</p>
+                  </div>
+                  <ArrowRight size={16} className="shrink-0 text-white/50 transition-transform group-hover:translate-x-1" />
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Filtres par type — inline dans la page, pas dans le header */}
       {availableTypes.length > 0 && (
