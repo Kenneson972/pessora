@@ -4,9 +4,10 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowRight, Building2, Mail, Users } from 'lucide-react';
+import { ArrowRight, Briefcase, Building2, Mail, Users } from 'lucide-react';
 import { Button, Card, Input, Label, TextArea, TextField, cn } from '@heroui/react';
 import { barInfo } from '../data/infoData';
+import { supabase } from '../lib/supabaseClient';
 import { useFadeUpWhenVisible, useStaggerReveal } from '../lib/motionReveal';
 import {
   contactPartnershipSchema,
@@ -27,6 +28,8 @@ const ContactPartenariat = () => {
   const { container, item, isReducedMotion } = useStaggerReveal();
   const honeypotRef = useRef<HTMLInputElement>(null);
   const [success, setSuccess] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState(false);
 
   const {
     register,
@@ -47,12 +50,42 @@ const ContactPartenariat = () => {
     },
   });
 
-  const onSubmit = (_values: ContactPartnershipFormValues) => {
+  const onSubmit = async (values: ContactPartnershipFormValues) => {
     if ((honeypotRef.current?.value ?? '').trim() !== '') {
       setSuccess(true);
       reset();
       return;
     }
+
+    setSendError(false);
+    setSending(true);
+
+    const message = [
+      `Structure : ${values.organisation}`,
+      `Type de projet : ${partnershipTypeLabels[values.partnershipType]}`,
+      values.phone ? `Téléphone : ${values.phone}` : null,
+      '',
+      values.message,
+    ]
+      .filter((line) => line !== null)
+      .join('\n');
+
+    const { error } = await supabase.functions.invoke('send-contact-email', {
+      body: {
+        name: values.contactName,
+        email: values.email,
+        message,
+        type: 'partenariat',
+      },
+    });
+
+    setSending(false);
+
+    if (error) {
+      setSendError(true);
+      return;
+    }
+
     setSuccess(true);
     reset({
       organisation: '',
@@ -108,6 +141,20 @@ const ContactPartenariat = () => {
 
                 <motion.div variants={item} className="rounded-[2px] border border-noir/[0.06] p-8 md:p-10">
                   <div className="mb-6 flex items-center gap-3">
+                    <Briefcase size={22} strokeWidth={1.35} className="text-black/55" aria-hidden />
+                    <h4 className="text-[11px] font-normal uppercase tracking-[0.18em] text-black/45">
+                      Packs formules sur devis
+                    </h4>
+                  </div>
+                  <p className="text-[14px] font-light leading-relaxed text-black/70">
+                    Clubs de sport et entreprises : nous composons des packs formules spéciales sur devis
+                    (volumétrie, fréquence, lieu de livraison) — précisez votre besoin dans le formulaire,
+                    nous revenons vers vous avec une proposition adaptée.
+                  </p>
+                </motion.div>
+
+                <motion.div variants={item} className="rounded-[2px] border border-noir/[0.06] p-8 md:p-10">
+                  <div className="mb-6 flex items-center gap-3">
                     <Users size={22} strokeWidth={1.35} className="text-black/55" aria-hidden />
                     <h4 className="text-[11px] font-normal uppercase tracking-[0.18em] text-black/45">
                       Contact équipe
@@ -159,12 +206,21 @@ const ContactPartenariat = () => {
                       className="mb-6 rounded-[2px] border border-noir/10 bg-white px-4 py-3 text-[13px] font-light text-black/75"
                       role="status"
                     >
-                      Merci — votre demande a bien été enregistrée. Nous vous contacterons à l’adresse indiquée.
-                      (Envoi automatique à venir : en attendant, vous pouvez aussi nous écrire directement à{' '}
+                      Merci — votre demande a bien été envoyée. Nous vous contacterons à l’adresse indiquée sous
+                      48 à 72 h ouvrées.
+                    </p>
+                  )}
+
+                  {sendError && (
+                    <p
+                      className="mb-6 rounded-[2px] border border-red-500/20 bg-red-500/5 px-4 py-3 text-[13px] font-light text-red-700"
+                      role="alert"
+                    >
+                      Une erreur est survenue lors de l’envoi. Réessayez, ou écrivez-nous directement à{' '}
                       <a href={`mailto:${barInfo.contact.email}`} className="text-editorial-link-underline">
                         {barInfo.contact.email}
                       </a>
-                      .)
+                      .
                     </p>
                   )}
 
@@ -348,9 +404,10 @@ const ContactPartenariat = () => {
                     <Button
                       type="submit"
                       variant="primary"
-                      className="mt-4 flex w-full items-center justify-center gap-3 rounded-full bg-noir py-4 text-[10px] font-normal uppercase tracking-[0.14em] text-white hover:bg-anthracite"
+                      isDisabled={sending}
+                      className="mt-4 flex w-full items-center justify-center gap-3 rounded-full bg-noir py-4 text-[10px] font-normal uppercase tracking-[0.14em] text-white hover:bg-anthracite disabled:opacity-60"
                     >
-                      Envoyer la proposition <ArrowRight size={14} aria-hidden />
+                      {sending ? 'Envoi…' : 'Envoyer la proposition'} <ArrowRight size={14} aria-hidden />
                     </Button>
                   </form>
                 </Card>
