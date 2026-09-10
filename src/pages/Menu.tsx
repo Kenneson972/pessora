@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button, Card, Skeleton, cn } from '@heroui/react';
 import { EmptyState, Segment } from '@heroui-pro/react';
@@ -358,6 +358,34 @@ const Menu = () => {
       </div>
 
       <DrinkOptionsModal item={optionsItem} onClose={() => setOptionsItem(null)} initialSize={optionsItem ? selectedSizes[optionsItem.id] : undefined} />
+
+      {/* Challenge CTA — fond large avec contenu contraint */}
+      <div className="bg-surface-muted px-4 md:px-10 lg:px-[72px]">
+        <div className="mx-auto max-w-7xl py-16">
+          <motion.div
+            className="text-center md:flex md:items-end md:justify-between md:gap-10 md:text-left"
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+          >
+            <div>
+              <p className="mb-3 text-[8px] font-light uppercase tracking-[0.48em] text-black/40">Communauté</p>
+              <h3
+                className="font-display font-normal leading-[1.0] text-black"
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 'clamp(28px, 3vw, 38px)',
+                }}
+              >
+                Challenge<br /><em className="italic text-black/65">21 jours</em>
+              </h3>
+            </div>
+            <Link to="/evenements" className="text-editorial-link-underline mt-8 inline-block md:mt-0 md:flex-shrink-0">
+              Voir les prochaines éditions
+            </Link>
+          </motion.div>
+        </div>
+      </div>
     </div>
   );
 };

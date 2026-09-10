@@ -24,7 +24,7 @@ interface Message {
 }
 
 const QUICK_SUGGESTIONS = {
-  default: ['Voir le menu', 'Horaires d\'ouverture', 'Différence entre les boissons'],
+  default: ['Voir le menu', 'Horaires d\'ouverture', 'Différence entre les boissons', 'Challenge 21 jours'],
   menu: ['Wellness (Douceur)', 'Énergie Drink (Focus)', 'Shakes protéinés (Sport)', 'Prix des boissons'],
   health: ['Combien de protéines ?', 'Végétalien ?', 'Calories ?', 'Ingrédients'],
 };
