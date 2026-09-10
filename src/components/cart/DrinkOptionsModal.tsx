@@ -5,9 +5,7 @@ import { Minus, Plus, Check } from 'lucide-react';
 import { milkOptions, boosters as fallbackBoosters, BOOSTER_PRICE_EUR, type MenuItem, type Booster } from '../../data/menuData';
 import { supabase } from '../../lib/supabaseClient';
 import { useCart } from '../../store/cartStore';
-import { useIsOraPlus } from '../../hooks/useIsOraPlus';
 import { buildDrinkCartOptions, getAvailableSizes } from '../../lib/cartLine';
-import { oraMemberUnitPrice } from '../../lib/oraPricing';
 
 interface Props {
   item: MenuItem | null;
@@ -26,7 +24,6 @@ export function DrinkOptionsModal({ item, onClose, initialSize = 'medium' }: Pro
   const [selectedSize, setSelectedSize] = useState<'small' | 'medium' | 'large'>(initialSize);
   const [justAdded, setJustAdded] = useState(false);
   const [boosters, setBoosters] = useState<Booster[]>(fallbackBoosters);
-  const { isOraPlus, effectiveUnitPrice } = useIsOraPlus();
 
   useEffect(() => {
     if (!item) return;
@@ -66,10 +63,7 @@ export function DrinkOptionsModal({ item, onClose, initialSize = 'medium' }: Pro
     : 0;
 
   const boosterAdd = selectedBoosters.length * BOOSTER_PRICE_EUR;
-  const publicUnitPrice = basePrice + boosterAdd;
-  /** Prix unitaire affiché (aperçu) : remise Óra+ sur la boisson seule, boosters au prix bar. */
-  const previewUnitPrice =
-    isOraPlus ? oraMemberUnitPrice(basePrice) + boosterAdd : publicUnitPrice;
+  const previewUnitPrice = basePrice + boosterAdd;
   const total = previewUnitPrice * quantity;
 
   const toggleBooster = useCallback((id: string) => {
@@ -157,10 +151,7 @@ export function DrinkOptionsModal({ item, onClose, initialSize = 'medium' }: Pro
                         >
                           {sLabel}
                           <br />
-                          {isOraPlus
-                            ? <><span className="line-through text-white/50">{sPrice}€</span>{' '}{effectiveUnitPrice(sPrice).toFixed(2).replace('.', ',')}€</>
-                            : <>{sPrice}€</>
-                          }
+                          {sPrice}€
                         </button>
                       );
                     })}
