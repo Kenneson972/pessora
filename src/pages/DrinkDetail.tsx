@@ -11,7 +11,7 @@ import { PageShell } from '../components/layout/PageShell';
 import { useState } from 'react';
 import { boosters, milkOptions, categoryNames, type MenuItem } from '../data/menuData';
 import { useCart } from '../store/cartStore';
-import { buildDrinkCartOptions } from '../lib/cartLine';
+import { buildDrinkCartOptions, getAvailableSizes } from '../lib/cartLine';
 import { useMenuCatalog } from '../hooks/useMenuCatalog';
 import { useAuth } from '../contexts/AuthContext';
 import { DrinkDetailAdminEdit } from '../components/admin/DrinkDetailAdminEdit';
@@ -95,17 +95,14 @@ const DrinkDetail = () => {
 
   const boostersPrice = selectedBoosters.length * 1 * quantity;
 
-  const hasSizes =
-    drink.price_small != null &&
-    drink.price_medium != null &&
-    drink.price_large != null;
+  const availableSizes = getAvailableSizes(drink);
+  const hasSizes = availableSizes.length > 0;
+  const resolvedSize: 'small' | 'medium' | 'large' | null = hasSizes
+    ? (availableSizes.some((s) => s.size === selectedSize) ? selectedSize : availableSizes[0].size)
+    : null;
 
   const sizeBasePrice = hasSizes
-    ? selectedSize === 'small'
-      ? drink.price_small!
-      : selectedSize === 'large'
-      ? drink.price_large!
-      : drink.price_medium!
+    ? availableSizes.find((s) => s.size === resolvedSize)!.price
     : drink.price;
 
   const calculateTotal = () => {
@@ -144,7 +141,7 @@ const DrinkDetail = () => {
       selectedMilk,
       selectedBoosters,
       sizeBasePrice,
-      hasSizes ? selectedSize : undefined,
+      resolvedSize ?? undefined,
     );
     addLine({
       productId: drink.id,
@@ -333,15 +330,9 @@ const DrinkDetail = () => {
                   Choisissez votre format
                 </p>
                 <div className="flex gap-2">
-                  {(['small', 'medium', 'large'] as const).map((s) => {
-                    const sPrice =
-                      s === 'small'
-                        ? drink.price_small!
-                        : s === 'medium'
-                        ? drink.price_medium!
-                        : drink.price_large!;
+                  {availableSizes.map(({ size: s, price: sPrice }) => {
                     const sLabel = s === 'small' ? 'Petit' : s === 'medium' ? 'Moyen' : 'Grand';
-                    const isSelected = selectedSize === s;
+                    const isSelected = resolvedSize === s;
                     return (
                       <button
                         key={s}

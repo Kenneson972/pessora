@@ -20,6 +20,19 @@ function checkRateLimit(ip: string): boolean {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+/**
+ * Erreur de validation panier : renvoie un 4xx clair au client (par défaut 400)
+ * au lieu de tomber dans le catch-all générique (500).
+ */
+class CartValidationError extends Error {
+  status: number;
+  constructor(message: string, status = 400) {
+    super(message);
+    this.name = 'CartValidationError';
+    this.status = status;
+  }
+}
+
 const CartLineSchema = z.object({
   productId: z.string().min(1),
   name: z.string().min(1),
@@ -63,7 +76,7 @@ async function fetchVerifiedPrice(
       .eq('active', true)
       .single();
     if (error || !data) {
-      throw new Error(`Produit gamme introuvable ou inactif : ${item.productId}`);
+      throw new CartValidationError(`Produit gamme introuvable ou inactif : ${item.productId}`, 404);
     }
     const serverPrice = Number(data.price);
     // Option cuillère doseuse : +1€ (encodé dans optionsKey comme spoon:1)
@@ -72,7 +85,7 @@ async function fetchVerifiedPrice(
     const expectedPrice = serverPrice + spoonPrice;
     if (Math.abs(item.unitPrice - expectedPrice) > 0.02) {
       console.error(`[create-checkout-session] Écart prix gamme : client=${item.unitPrice}€, attendu=${expectedPrice}€ pour ${item.productId}`);
-      throw new Error('Erreur de validation du panier. Veuillez le vider et réessayer.');
+      throw new CartValidationError('Erreur de validation du panier. Veuillez le vider et réessayer.', 409);
     }
     return { verifiedUnitPrice: expectedPrice, productId: data.id };
   }
@@ -85,14 +98,19 @@ async function fetchVerifiedPrice(
   const boostMatch = item.optionsKey?.match(/(?:^|\|)boost:([^|]*)/);
   const boosterCount = boostMatch?.[1] ? boostMatch[1].split(',').filter(Boolean).length : 0;
 
-  // Colonne de prix selon la taille (fallback → price par défaut)
+  // Colonne de prix selon la taille (fallback → price par défaut, produit sans tailles)
   const priceCol = sizeFromKey === 'small' ? 'price_small'
+    : sizeFromKey === 'medium' ? 'price_medium'
     : sizeFromKey === 'large' ? 'price_large'
     : 'price';
+  const activeCol = sizeFromKey === 'small' ? 'price_small_active'
+    : sizeFromKey === 'medium' ? 'price_medium_active'
+    : sizeFromKey === 'large' ? 'price_large_active'
+    : null;
 
   let query = supabase
     .from('products')
-    .select(`id, slug, price, price_small, price_large`)
+    .select(`id, slug, price, price_small, price_medium, price_large, price_small_active, price_medium_active, price_large_active`)
     .eq('active', true);
 
   if (UUID_RE.test(item.productId)) {
@@ -103,16 +121,32 @@ async function fetchVerifiedPrice(
 
   const { data, error } = await query.single();
   if (error || !data) {
-    throw new Error(`Produit bar introuvable ou inactif : ${item.productId}`);
+    throw new CartValidationError(`Produit bar introuvable ou inactif : ${item.productId}`, 404);
   }
 
-  const baseProductPrice = Number(data[priceCol] ?? data.price);
+  // Taille archivée par l'admin : refus explicite, jamais de repli silencieux.
+  if (activeCol && data[activeCol] === false) {
+    throw new CartValidationError(
+      `Cette taille n'est plus disponible pour ${item.name}. Veuillez actualiser votre panier.`,
+      409,
+    );
+  }
+
+  const rawPrice = data[priceCol];
+  if (rawPrice == null) {
+    console.error(`[create-checkout-session] Prix manquant (${priceCol}) pour ${item.productId}`);
+    throw new CartValidationError(
+      `Prix indisponible pour ${item.name}. Veuillez actualiser votre panier.`,
+      409,
+    );
+  }
+  const baseProductPrice = Number(rawPrice);
 
   // Vérification anti-fraude : client base estimate vs serveur
   const clientBaseEstimate = item.barBasePublic ?? (item.unitPrice - boosterCount);
   if (Math.abs(clientBaseEstimate - baseProductPrice) > 0.02) {
     console.error(`[create-checkout-session] Écart prix bar : client=${clientBaseEstimate}€, serveur=${baseProductPrice}€ pour ${item.productId}`);
-    throw new Error('Erreur de validation du panier. Veuillez le vider et réessayer.');
+    throw new CartValidationError('Erreur de validation du panier. Veuillez le vider et réessayer.', 409);
   }
 
   const verifiedUnitPrice = baseProductPrice + boosterCount;
@@ -389,6 +423,12 @@ serve(async (req) => {
     });
   } catch (err) {
     console.error('[create-checkout-session]', err);
+    if (err instanceof CartValidationError) {
+      return new Response(JSON.stringify({ error: err.message, v: '2026-06-02-v2' }), {
+        status: err.status,
+        headers: { ...cors, 'Content-Type': 'application/json' },
+      });
+    }
     const msg = err instanceof Error ? err.message : String(err);
     return new Response(JSON.stringify({ error: 'Erreur serveur', detail: msg, v: '2026-06-02-v2' }), {
       status: 500,
