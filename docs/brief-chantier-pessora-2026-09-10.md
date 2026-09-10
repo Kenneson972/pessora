@@ -123,6 +123,22 @@
   - 🔒 Noter les **numéros de version** des fonctions déployées (retour arrière possible).
   - ℹ️ CORS : `ALLOWED_ORIGIN` = `www.pessora.fr + admin.pessora.fr` → depuis l'alias, les appels **REST** passent, les appels **edge** sont bloqués par le navigateur ; un **POST direct** (sans `Origin`) n'est pas concerné.
 - ✅ **Vérifié dans `feat/archivage-tailles-admin`** : `price_medium` est désormais **lu** (`sizeFromKey === 'medium' ? 'price_medium'` + colonne ajoutée au `select`) — le piège « panier à 0 € » est traité ; et les refus passent par une `CartValidationError` avec **statuts 4xx explicites** (400/404/409) au lieu de 500.
+
+**Séquence exacte (copiable)**
+```
+git checkout main && git pull
+git merge --no-ff origin/feat/partenariat-formulaire
+git merge --no-ff origin/feat/archivage-tailles-admin
+git merge --no-ff origin/feat/archivage-ora-plus-complet
+git merge --no-ff origin/feat/boosters-2-euros      # 1 conflit : create-checkout-session (ou DrinkOptionsModal selon l'ordre des 2 prix)
+git merge --no-ff origin/feat/retrait-remise-ora-plus
+# résolution : garder BOOSTER_PRICE_EUR ET supprimer toute condition isOraPlus
+npx tsc            # PORTE DE TYPES LOCALE — exit 0 attendu
+npx vitest run     # 10 échecs dans cartStore.test.ts = PRÉ-EXISTANTS (jsdom/localStorage), identiques sur main
+```
+- ⚠️ **Ne pas compter sur `npm run build` en local** : il échoue pour une raison **d'environnement**, pas de code — `@heroui-pro/react@1.0.0-beta.1` s'installe sans map `exports` (npm bloque son `postinstall`), donc `@heroui-pro/react/css` reste irrésoluble. Fix : `export HEROUI_AUTH_TOKEN=…` (ENVKAR, 36 car.) → `node node_modules/@heroui-pro/react/dist/postinstall/index.js` → `rm -rf node_modules/.vite dist` (**pessora = Vite**, pas de `.next`) → rebuild, et **`git checkout -- package-lock.json`** après (le re-install le modifie : ne pas le commiter).
+- ❌ **Le fallback « copier le paquet depuis un repo frère » n'est PAS viable** : les voisins sont en `beta.8`, le code cible la `beta.1` → `"KPI" is not exported … Dashboard.tsx`.
+- ✅ **Gate de merge retenu** : **`npx tsc` local + build Vercel** (seul endroit où l'install HeroUI est complète) + la **preuve par le contenu** de la preview (voir skill `frontend-build-verification`).
 - ⚠️ **Aucun merge avant recette vela verte**, et `src/__tests__/checkout.test.ts` doit être remis d'aplomb **dans la même passe** (il affirme encore « boosters × 1 € » et la remise −50 % : (a) supprimer l'assertion Óra+ et la copie locale `computeServerPrice`, (b) porter le test de parité boosters sur le **module partagé** `supabase/functions/_shared/pricing.ts`, avec **test de mutation** — passer `BOOSTER_PRICE_EUR` de 2 à 3 doit faire rougir la suite).
 
 ## 3. RÈGLES DE TRAVAIL (impératives)
