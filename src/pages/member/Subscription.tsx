@@ -16,7 +16,6 @@ const Subscription = () => {
     'Sans engagement',
     'Tarifs préférentiels sur les boissons',
     'Programme de parrainage Óra+',
-    'Bilan bien-être personnalisé',
     'Accès privilégié aux événements PESSORA',
   ];
 

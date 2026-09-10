@@ -18,7 +18,6 @@ const MENU_LINKS = [
 ];
 const ESPACE_LINKS = [
   { label: 'Événements', to: '/evenements' },
-  { label: 'Bilan Bien-être', to: '/bilan-bien-etre' },
 ];
 const CONTACT_LINKS = [
   { label: 'Instagram', to: 'https://instagram.com/pessora.fr', external: true },

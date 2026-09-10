@@ -79,20 +79,17 @@ const Dashboard = () => {
   );
 
   const eventsTrend = useMemo(() => computeTrend(stats.eventsSparkline), [stats.eventsSparkline]);
-  const bilansTrend = useMemo(() => computeTrend(stats.bilansSparkline), [stats.bilansSparkline]);
   const ordersTrend = useMemo(() => computeTrend(ordersMonthly), [ordersMonthly]);
 
   const isOraPlus = subscription?.plan === 'ora_plus' && subscription?.status === 'active';
   const PERKS: { label: string; on: boolean }[] = isOraPlus
     ? [
         { label: 'Tarifs préférentiels boissons',   on: true },
-        { label: 'Bilan bien-être personnalisé',    on: true },
         { label: 'Accès privilégié événements',     on: true },
         { label: 'Programme de parrainage Óra+',    on: false },
       ]
     : [
         { label: 'Tarifs préférentiels boissons',   on: false },
-        { label: 'Bilan bien-être personnalisé',    on: false },
         { label: 'Accès privilégié événements',     on: false },
         { label: 'Programme de parrainage Óra+',    on: false },
       ];
@@ -125,7 +122,7 @@ const Dashboard = () => {
                     <p className="mt-4 max-w-[420px] text-[14px] leading-relaxed text-black/55 sm:text-[15px]">
                       {statsLoading
                         ? 'Chargement de vos données…'
-                        : `Indice bien-être en progression — ${stats.eventsThisQuarter} événement${stats.eventsThisQuarter !== 1 ? 's' : ''} ce trimestre, ${stats.bilansTotal} bilan${stats.bilansTotal !== 1 ? 's' : ''} confirmé${stats.bilansTotal !== 1 ? 's' : ''}.`}
+                        : `Indice bien-être en progression — ${stats.eventsThisQuarter} événement${stats.eventsThisQuarter !== 1 ? 's' : ''} ce trimestre.`}
                     </p>
                   </div>
                   <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:gap-[10px]">
@@ -168,18 +165,6 @@ const Dashboard = () => {
                       <DashEyebrow className="mt-2">Ce trimestre</DashEyebrow>
                     </div>
                     <div>
-                      {statsLoading ? (
-                        <div className="font-display italic text-[24px] leading-none text-noir">—</div>
-                      ) : (
-                        <NumberValue
-                          className="font-display italic text-[24px] leading-none text-noir"
-                          value={stats.bilansTotal}
-                          maximumFractionDigits={0}
-                        />
-                      )}
-                      <DashEyebrow className="mt-2">Bilans</DashEyebrow>
-                    </div>
-                    <div>
                       <div className="font-display text-[24px] leading-none text-noir">{planLabel}</div>
                       <DashEyebrow className="mt-2">Plan</DashEyebrow>
                     </div>
@@ -206,20 +191,6 @@ const Dashboard = () => {
                 </KPI.Trend>
               </KPI.Content>
               <KPI.Chart color="#1E3529" data={toChartData(stats.eventsSparkline)} height={42} />
-            </KPI>
-          </div>
-          <div className="col-span-1 md:col-span-3">
-            <KPI>
-              <KPI.Header>
-                <KPI.Title>Bilans confirmés</KPI.Title>
-              </KPI.Header>
-              <KPI.Content>
-                <KPI.Value maximumFractionDigits={0} value={stats.bilansTotal} />
-                <KPI.Trend trend={bilansTrend.trend}>
-                  {bilansTrend.label}
-                </KPI.Trend>
-              </KPI.Content>
-              <KPI.Chart color="#1E3529" data={toChartData(stats.bilansSparkline)} height={42} />
             </KPI>
           </div>
           <div className="col-span-1 md:col-span-3">

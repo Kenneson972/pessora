@@ -36,16 +36,6 @@ const UNIVERS = [
     variant: 'dark' as const,
     path: '/evenements',
   },
-  {
-    id: 'bien-etre',
-    eyebrow: 'Bien-être',
-    title: 'Bilan',
-    titleEm: '30 min',
-    bgClass: 'bg-surface-muted',
-    variant: 'light' as const,
-    path: '/bilan-bien-etre',
-    bgImage: '/images/univers-bilan-30min.webp',
-  },
 ] as const;
 
 const Home = () => {

@@ -241,10 +241,6 @@ export default function ManagerSketchMockup() {
             Accueil
           </Link>
           {' · '}
-          <Link to="/bilan-bien-etre" className="underline underline-offset-2 hover:text-black">
-            Bilan
-          </Link>
-          {' · '}
           <Link to="/evenements" className="underline underline-offset-2 hover:text-black">
             Événements
           </Link>
