@@ -58,6 +58,13 @@ Contenu : garanties serveur (fenêtre J-14→J, anti double-réservation, dédup
 
 ---
 
+**BASELINE AVANT v6 — à repasser APRÈS application (écart = fixture oubliée)**
+Relevé du 10/09 (indépendamment par @vela et @alcyone) : `bilan_slots` = **7 lignes**, **7 orphelins** (`challenge_event_id = NULL`), toutes `disponible = true`, datées du **25/04 au 13/05** · `bilan_bookings` = **0** · `events` = **1**, dont **0 `challenge`** · **0 trigger** sur `bilan_slots`.
+➡️ Le contrôle discriminant n'est pas « 7 lignes » mais « **7 lignes ET 7 liens toujours NULL** » : un backfill oublié garderait le compte **et** changerait les liens.
+➡️ **Fixtures de demain** : tout challenge/créneau de test doit porter un nom **traçable** (préfixe `TEST-`) et entrer dans l'inventaire de purge du go-live. **Mieux** : si Catherine a créé son vrai challenge, **la démo se joue dessus** — le test est réel et il n'y a rien à purger.
+
+---
+
 ## PROCHAIN LOT — dans l'ordre
 
 ### 1. RPC questionnaire post-inscription (débloque le critère ⑨)
