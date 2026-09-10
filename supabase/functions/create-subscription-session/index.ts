@@ -1,14 +1,14 @@
 // supabase/functions/create-subscription-session/index.ts
+//
+// Óra+ archivé côté public (décision cliente 10/09) : l'offre repasse en
+// présentiel, plus aucune souscription en ligne. Cette fonction n'a plus
+// aucun appelant côté front (aucun bouton/lien ne l'invoque), mais restait
+// joignable directement par son URL — elle est donc bloquée en dur plutôt
+// que supprimée, pour ne pas avoir à retoucher ce fichier si l'offre revient
+// un jour. Le secret STRIPE_ORA_PLUS_PRICE_ID n'est plus lu ici : ne pas le
+// retirer du projet Supabase depuis ce commit, c'est alcyone qui s'en charge.
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
-import { createClient } from 'npm:@supabase/supabase-js@2'
-import Stripe from 'npm:stripe@14'
-import { z } from 'npm:zod@3'
-import { checkRateLimit } from '../_shared/rate-limiter.ts'
 import { getCorsHeaders } from '../_shared/cors.ts'
-
-const BodySchema = z.object({
-  price_id: z.string().optional(),
-})
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req.headers.get('origin'))
@@ -16,89 +16,8 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  try {
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown"
-    if (!checkRateLimit(ip)) {
-      return new Response(JSON.stringify({ error: "Too many requests" }), {
-        status: 429,
-        headers: { ...corsHeaders, "Content-Type": "application/json", "Retry-After": "60" },
-      })
-    }
-
-    // 🔐 Auth — valide le JWT avant toute chose
-    const authHeader = req.headers.get('authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Authentification requise' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')
-    if (!supabaseUrl || !supabaseKey) {
-      return new Response(JSON.stringify({ error: 'Configuration Supabase manquante' }), {
-        status: 503,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      global: { headers: { Authorization: authHeader } },
-    })
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Token invalide ou expiré' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-    const stripeKey = Deno.env.get('STRIPE_SECRET_KEY')
-    const siteUrl = (Deno.env.get('SITE_URL') ?? 'http://localhost:5173').replace(/\/+$/, '')
-    const defaultPriceId = Deno.env.get('STRIPE_ORA_PLUS_PRICE_ID')
-
-    if (!stripeKey) {
-      return new Response(JSON.stringify({ error: 'STRIPE_SECRET_KEY non configurée' }), {
-        status: 503,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
-    const raw = await req.json().catch(() => ({}))
-    const parsed = BodySchema.safeParse(raw)
-    const { price_id } = parsed.success ? parsed.data : {}
-
-    const priceId = price_id ?? defaultPriceId
-    if (!priceId) {
-      return new Response(JSON.stringify({ error: 'price_id manquant — configurez STRIPE_ORA_PLUS_PRICE_ID' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
-    const stripe = new Stripe(stripeKey, { apiVersion: '2024-04-10' })
-
-    const sessionParams: Stripe.Checkout.SessionCreateParams = {
-      mode: 'subscription',
-      locale: 'fr',
-      customer_email: user.email,
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${siteUrl}/abonnement/succes?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl}/commande/annulee`,
-      phone_number_collection: { enabled: true },
-      metadata: { user_id: user.id },
-    }
-
-    const session = await stripe.checkout.sessions.create(sessionParams)
-
-    return new Response(JSON.stringify({ url: session.url }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
-  } catch (err) {
-    console.error('[create-subscription-session]', err)
-    return new Response(JSON.stringify({ error: 'Erreur serveur' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
-  }
+  return new Response(
+    JSON.stringify({ error: "L'abonnement Óra+ n'est plus disponible en ligne. Renseignez-vous au bar." }),
+    { status: 410, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+  )
 })
