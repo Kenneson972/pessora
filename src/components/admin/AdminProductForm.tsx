@@ -70,6 +70,9 @@ export const EMPTY_FORM = {
   price_small: '',
   price_medium: '',
   price_large: '',
+  price_small_active: true,
+  price_medium_active: true,
+  price_large_active: true,
   calories: '',
   protein: '',
   description: '',
@@ -101,6 +104,9 @@ export function productToForm(p: Product): FormState {
     price_small: p.price_small != null ? String(p.price_small) : '',
     price_medium: p.price_medium != null ? String(p.price_medium) : '',
     price_large: p.price_large != null ? String(p.price_large) : '',
+    price_small_active: p.price_small_active ?? true,
+    price_medium_active: p.price_medium_active ?? true,
+    price_large_active: p.price_large_active ?? true,
     calories: p.calories != null ? String(p.calories) : '',
     protein: p.protein != null ? String(p.protein) : '',
     description: p.description ?? '',
@@ -129,6 +135,9 @@ export function payloadFromForm(form: FormState) {
     price_small: form.price_small ? Number(form.price_small) : null,
     price_medium: form.price_medium ? Number(form.price_medium) : null,
     price_large: form.price_large ? Number(form.price_large) : null,
+    price_small_active: form.price_small_active,
+    price_medium_active: form.price_medium_active,
+    price_large_active: form.price_large_active,
     calories: form.calories ? Number(form.calories) : null,
     protein: form.protein ? Number(form.protein) : null,
     description: form.description.trim() || null,
@@ -503,6 +512,38 @@ export function AdminProductForm({ form, onChange, busy, isEdit }: AdminProductF
                 </div>
               </div>
             )}
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  checked={form.price_small_active}
+                  onChange={(e) => onChange({ price_small_active: e.target.checked })}
+                  className="h-3.5 w-3.5 accent-black"
+                />
+                <span className="text-[10px] text-black/50">Petit disponible à la vente</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  checked={form.price_medium_active}
+                  onChange={(e) => onChange({ price_medium_active: e.target.checked })}
+                  className="h-3.5 w-3.5 accent-black"
+                />
+                <span className="text-[10px] text-black/50">Moyen disponible à la vente</span>
+              </label>
+              <label className="flex cursor-pointer items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  checked={form.price_large_active}
+                  onChange={(e) => onChange({ price_large_active: e.target.checked })}
+                  className="h-3.5 w-3.5 accent-black"
+                />
+                <span className="text-[10px] text-black/50">Grand disponible à la vente</span>
+              </label>
+            </div>
+            <p className="mt-1.5 text-[10px] font-light text-black/38">
+              Décocher retire la taille du site immédiatement sans supprimer son prix (utile en rupture ponctuelle).
+            </p>
           </div>
           <div className="flex flex-wrap items-center gap-6 md:col-span-2">
             <label className="flex cursor-pointer items-center gap-2">

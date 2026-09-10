@@ -140,6 +140,9 @@ export interface Database {
           price_small: number | null
           price_medium: number | null
           price_large: number | null
+          price_small_active: boolean
+          price_medium_active: boolean
+          price_large_active: boolean
           calories: number | null
           protein: number | null
           description: string | null

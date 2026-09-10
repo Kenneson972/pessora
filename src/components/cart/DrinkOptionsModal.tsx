@@ -6,7 +6,7 @@ import { milkOptions, boosters as fallbackBoosters, type MenuItem, type Booster 
 import { supabase } from '../../lib/supabaseClient';
 import { useCart } from '../../store/cartStore';
 import { useIsOraPlus } from '../../hooks/useIsOraPlus';
-import { buildDrinkCartOptions } from '../../lib/cartLine';
+import { buildDrinkCartOptions, getAvailableSizes } from '../../lib/cartLine';
 import { oraMemberUnitPrice } from '../../lib/oraPricing';
 
 interface Props {
@@ -53,16 +53,15 @@ export function DrinkOptionsModal({ item, onClose, initialSize = 'medium' }: Pro
     }
   }, [item?.id]);
 
-  const hasSizes =
-    item?.price_small != null && item?.price_medium != null && item?.price_large != null;
+  const availableSizes = item ? getAvailableSizes(item) : [];
+  const hasSizes = availableSizes.length > 0;
+  const resolvedSize: 'small' | 'medium' | 'large' | null = hasSizes
+    ? (availableSizes.some((s) => s.size === selectedSize) ? selectedSize : availableSizes[0].size)
+    : null;
 
   const basePrice = item
     ? hasSizes
-      ? selectedSize === 'small'
-        ? item.price_small!
-        : selectedSize === 'large'
-        ? item.price_large!
-        : item.price_medium!
+      ? availableSizes.find((s) => s.size === resolvedSize)!.price
       : item.price
     : 0;
 
@@ -86,7 +85,7 @@ export function DrinkOptionsModal({ item, onClose, initialSize = 'medium' }: Pro
       selectedMilk,
       selectedBoosters,
       basePrice,
-      hasSizes ? selectedSize : undefined,
+      resolvedSize ?? undefined,
     );
 
     addLine({
@@ -139,13 +138,7 @@ export function DrinkOptionsModal({ item, onClose, initialSize = 'medium' }: Pro
                     Taille
                   </p>
                   <div className="flex gap-2">
-                    {(['small', 'medium', 'large'] as const).map((s) => {
-                      const sPrice =
-                        s === 'small'
-                          ? item.price_small!
-                          : s === 'medium'
-                          ? item.price_medium!
-                          : item.price_large!;
+                    {availableSizes.map(({ size: s, price: sPrice }) => {
                       const sLabel =
                         s === 'small' ? 'Petit' : s === 'medium' ? 'Moyen' : 'Grand';
                       return (
@@ -153,11 +146,11 @@ export function DrinkOptionsModal({ item, onClose, initialSize = 'medium' }: Pro
                           key={s}
                           type="button"
                           onClick={() => setSelectedSize(s)}
-                          aria-pressed={selectedSize === s}
+                          aria-pressed={resolvedSize === s}
                           className={cn(
                             focusRing,
                             'flex-1 rounded-[2px] border py-2.5 text-center text-[9px] font-normal uppercase leading-snug tracking-[0.1em] transition-colors',
-                            selectedSize === s
+                            resolvedSize === s
                               ? 'border-noir bg-noir text-white'
                               : 'border-noir/15 text-black/50 hover:border-noir/30 hover:text-black',
                           )}

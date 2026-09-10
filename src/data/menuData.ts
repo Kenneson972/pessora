@@ -7,6 +7,10 @@ export interface MenuItem {
   price_small?: number;
   price_medium?: number;
   price_large?: number;
+  /** Défaut true (produits statiques de secours) — archivage par taille géré en base pour les produits réels. */
+  price_small_active?: boolean;
+  price_medium_active?: boolean;
+  price_large_active?: boolean;
   calories?: number;
   protein?: number;
   ingredients: string[];

@@ -8,6 +8,7 @@ import { SectionTitle } from '../components/ui/SectionTitle';
 import { ItemListJsonLd } from '../components/seo/ProductJsonLd';
 import { ProductCard } from '../components/ui/ProductCard';
 import { categoryNames, badgeLabels, type MenuItem } from '../data/menuData';
+import { getAvailableSizes } from '../lib/cartLine';
 import { useMenuCatalog } from '../hooks/useMenuCatalog';
 import { useFadeUpWhenVisible, useStaggerReveal } from '../lib/motionReveal';
 import { DrinkOptionsModal } from '../components/cart/DrinkOptionsModal';
@@ -105,17 +106,14 @@ const Menu = () => {
   );
 
   const renderCard = (menuItem: MenuItem) => {
-    const hasSizes =
-      menuItem.price_small != null &&
-      menuItem.price_medium != null &&
-      menuItem.price_large != null;
-    const selectedSize = hasSizes ? (selectedSizes[menuItem.id] ?? 'medium') : null;
+    const availableSizes = getAvailableSizes(menuItem);
+    const hasSizes = availableSizes.length > 0;
+    const requestedSize = selectedSizes[menuItem.id] ?? 'medium';
+    const selectedSize = hasSizes
+      ? (availableSizes.some((s) => s.size === requestedSize) ? requestedSize : availableSizes[0].size)
+      : null;
     const effectivePrice = hasSizes
-      ? selectedSize === 'small'
-        ? menuItem.price_small!
-        : selectedSize === 'large'
-        ? menuItem.price_large!
-        : menuItem.price_medium!
+      ? availableSizes.find((s) => s.size === selectedSize)!.price
       : menuItem.price;
 
     const cardFooter = (
@@ -123,13 +121,7 @@ const Menu = () => {
         <div className="flex items-center gap-1">
           {hasSizes && (
             <div className="flex flex-1 gap-1">
-              {(['small', 'medium', 'large'] as const).map((s) => {
-                const sPrice =
-                  s === 'small'
-                    ? menuItem.price_small!
-                    : s === 'medium'
-                    ? menuItem.price_medium!
-                    : menuItem.price_large!;
+              {availableSizes.map(({ size: s, price: sPrice }) => {
                 const sLabel = s === 'small' ? 'P' : s === 'medium' ? 'M' : 'G';
                 const isSelected = selectedSize === s;
                 return (
