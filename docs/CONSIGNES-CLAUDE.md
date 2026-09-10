@@ -23,13 +23,13 @@
 
 ## 2026-09-10 (soir) — LOT A : Challenge / Bilan — ✅ MERGÉ
 
-**État : `origin/main` = `047c294`** (17 fichiers, +1029/−12), **déployé en production (Vercel READY)**. Les deux migrations sont en base.
+**État : le merge du lot A est `047c294`** (17 fichiers, +1029/−12) — vérifié comme **déploiement de production servi** (Vercel, ref `main`, état READY). Les deux migrations sont en base. *(`origin/main` a avancé depuis — c'est normal, ce SHA est la trace du lot A, pas la tête de branche.)*
 
 Contenu : garanties serveur (fenêtre J-14→J, anti double-réservation, dédup hors-date, téléphone normalisé, `origine`), widget de réservation, catégories d'erreur partagées, validation téléphone 9 chiffres, accroches Challenge.
 
 **Réserve écrite, à ne pas oublier :** le critère **⑨** (`origine = 'questionnaire'`) **n'est PAS validé** — aucun appelant n'existe tant que la RPC n'est pas écrite. Il se recettera **avec** elle.
 
-**À attendre, ce n'est pas un bug :** la page Challenge affiche **0 créneau** tant que Catherine n'a pas créé son challenge (les 7 créneaux historiques sont orphelins, sans date future).
+**À attendre, ce n'est pas un bug :** le widget ne se monte que sur un événement `type = 'challenge'` (`EvenementDetail.tsx:364`). Comme **aucun challenge n'existe en base**, **aucune page ne l'affiche aujourd'hui** — un visiteur ne voit rien de nouveau (vérifié en live : `/evenements` et `/evenements/runclub` rendent sans erreur console). Dès que Catherine crée son challenge, la page affichera **ses** créneaux — et **0** tant qu'aucun créneau ne lui est rattaché : les 7 créneaux historiques sont **orphelins** (sans `challenge_event_id`), donc invisibles par construction.
 
 **Fichiers d'historique (ne pas modifier) :** `20260911100000_lot_a_challenge_bilan_server_guards.sql` (blob `709359a9…`, appliqué) + `20260911120000_grant_delete_bilan_bookings.sql` (`d777652`, correctif daté).
 
@@ -71,6 +71,9 @@ Un membre modifie son profil → l'interface dit « enregistré », **rien n'est
 - **⚠️ 16 occurrences de `pessora.fr@gmail.com`** à remplacer par **`pessora.mq@gmail.com`** (décision de Ken) : `src/data/infoData.ts`, `CGV.tsx` (×2), `MentionsLegales.tsx` (×2), `PolitiqueConfidentialite.tsx` (×2), `AdminInfosBar.tsx` (placeholder), `send-contact-email/index.ts:63` (fallback en dur), `.env.example`, `docs/` (×3), **`template/client.config.ts`**. La base porte déjà la bonne adresse (`bar_settings.email`) → le site et le chatbot se contredisent aujourd'hui.
 - **`template/client.config.ts` contient les coordonnées réelles de Catherine** (adresse du bar, lien Maps, email) → **tout doit devenir placeholder** (`contact@exemple.fr`, `00000`, Maps vide). Sinon chaque futur client publie les coordonnées d'un autre commerce. Critère : **zéro coordonnée réelle dans `template/`**.
 - **Crédit footer** « Site réalisé par Karibloom » (avec l'accord de Catherine) — ligne typo fine, intégrée à la ligne légale.
+- **Franchise de TVA** : la mention « **TVA non applicable, art. 293 B du CGI** » doit remplacer tout « **TTC** » ambigu. ⚠️ Il n'y en a **pas seulement dans les mentions légales** : le relevé live en trouve aussi dans **`/cgv`** (page où le client lit ses droits). Mesuré en rendu navigateur, pas dans le HTML brut.
+- **`/confidentialite` ne porte AUCUNE adresse de contact** (page de 888 caractères, zéro e-mail) — or c'est la page où l'on exerce ses droits RGPD : y mettre **la même adresse arbitrée** que les mentions légales, sinon le droit d'accès n'a pas de voie affichée.
+- **Les 4 `[À compléter]` visibles en production** (relevé live de `/mentions-legales`) : *Forme juridique*, *Directeur de la publication*, *Hébergeur*, *Adresse* (celle de l'hébergeur). Les autres pages légales (`/cgv`, `/confidentialite`, `/contact`) sont propres.
 - **Médiateur de la consommation** : obligatoire (L612-1 · L616-1/R616-1 · amende L641-1 jusqu'à 3 000 €). **C'est Catherine qui le désigne** → coordonnées à inscrire sur le site **et** dans les CGV dès qu'elle répond.
 - **Newsletter conforme** : colonne `token uuid DEFAULT gen_random_uuid()`, **fonction de désinscription dédiée en `verify_jwt = false`** (déployée **nommément**), **`List-Unsubscribe` + `List-Unsubscribe-Post: List-Unsubscribe=One-Click`**, réponse **sans PII**, idempotente, rate-limitée. **DMARC absent** : `_dmarc.pessora.fr TXT "v=DMARC1; p=none"` (chez OVH). ⚠️ L'apex a un SPF **strict** (`include:mx.ovh.com -all`) → aucun envoi depuis `@pessora.fr` hors Resend.
 
