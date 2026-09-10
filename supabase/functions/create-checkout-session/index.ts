@@ -4,6 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import Stripe from 'npm:stripe@14';
 import { z } from 'npm:zod@3';
 import { getCorsHeaders as buildCorsHeaders } from '../_shared/cors.ts';
+import { BOOSTER_PRICE_EUR } from '../_shared/pricing.ts';
 // Rate limiter in-memory (inlined to avoid import issues)
 const rateStore = new Map<string, { count: number; resetAt: number }>();
 function checkRateLimit(ip: string): boolean {
@@ -32,13 +33,6 @@ class CartValidationError extends Error {
     this.status = status;
   }
 }
-
-/**
- * Prix unitaire d'un booster (€) — doit rester en parité avec la constante
- * client (src/data/menuData.ts, BOOSTER_PRICE_EUR). Dupliqué ici car cette
- * edge function Deno ne partage pas les modules du bundle Vite.
- */
-const BOOSTER_PRICE_EUR = 2;
 
 const CartLineSchema = z.object({
   productId: z.string().min(1),
