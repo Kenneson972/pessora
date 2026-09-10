@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowRight, Building2, Mail, Users } from 'lucide-react';
+import { ArrowRight, Briefcase, Building2, Mail, Users } from 'lucide-react';
 import { Button, Card, Input, Label, TextArea, TextField, cn } from '@heroui/react';
 import { barInfo } from '../data/infoData';
 import { supabase } from '../lib/supabaseClient';
@@ -137,6 +137,20 @@ const ContactPartenariat = () => {
                     <li>• Salles, associations, retailers complémentaires</li>
                     <li>• Presse, influence, contenus éditoriaux</li>
                   </ul>
+                </motion.div>
+
+                <motion.div variants={item} className="rounded-[2px] border border-noir/[0.06] p-8 md:p-10">
+                  <div className="mb-6 flex items-center gap-3">
+                    <Briefcase size={22} strokeWidth={1.35} className="text-black/55" aria-hidden />
+                    <h4 className="text-[11px] font-normal uppercase tracking-[0.18em] text-black/45">
+                      Packs formules sur devis
+                    </h4>
+                  </div>
+                  <p className="text-[14px] font-light leading-relaxed text-black/70">
+                    Clubs de sport et entreprises : nous composons des packs formules spéciales sur devis
+                    (volumétrie, fréquence, lieu de livraison) — précisez votre besoin dans le formulaire,
+                    nous revenons vers vous avec une proposition adaptée.
+                  </p>
                 </motion.div>
 
                 <motion.div variants={item} className="rounded-[2px] border border-noir/[0.06] p-8 md:p-10">
