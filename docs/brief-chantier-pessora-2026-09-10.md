@@ -66,6 +66,13 @@
    - **Commandes passées** : la taille est dénormalisée sur la ligne de commande → ne pas la casser.
    - Vérifier le **code HTTP** des refus (4xx attendu avec message clair, pas un 500 générique).
 5. **Archivage Óra+ complet** : mécanique interne, pages membre, blocs admin, `create-subscription-session` (fonction morte). ⚠️ Le **secret** `STRIPE_ORA_PLUS_PRICE_ID` : **ne pas y toucher dans le code** — c'est alcyone qui le retirera du projet Supabase.
+6. **Retrait du parcours Bilan de la surface publique** *(décision Ken 10/09 : option (b) — le parcours revient dans le lot A, refait avec la garantie serveur)*. **Inventaire exact à traiter — aucun lien mort, aucun point d'accès direct** :
+   - `src/data/headerNav.ts:23` (nav) · `src/components/layout/Footer.tsx:21` (footer) · `src/components/layout/Header.tsx:21` (liste de chemins du header)
+   - `src/pages/Home.tsx:46` (vignette d'accueil) · `src/pages/Menu.tsx:390` (lien) · `src/pages/ManagerSketchMockup.tsx:244` (mockup)
+   - Espace membre : `src/components/member/MemberLayout.tsx:27` + `src/components/dashboard/DashboardBottomNav.tsx:40`
+   - Routes : `src/App.tsx:178` (`/bilan-bien-etre`) et `src/App.tsx:78` (segment membre `bilans`) → **retirer les routes** (pas seulement les liens) : sinon un accès direct par URL atteint le parcours cassé.
+   - ✅ **À CONSERVER** : l'admin (`AdminApp.tsx:62`, `AdminLayout.tsx:21`, `AdminOverview.tsx`) — Catherine continue de gérer créneaux et bilans depuis son back-office.
+   - ⚠️ Zone grise à vérifier : `src/pages/BilanBienEtre.tsx` garde sa logique de réservation cassée — si le fichier reste dans le bundle, **ne pas laisser d'entrée atteignable**.
 
 **Pièges déjà identifiés (ne pas les redécouvrir)**
 - Un **panier forgé** peut envoyer un `productId + size` incohérent : la vérification serveur doit porter sur **la paire**, pas seulement sur le produit.
@@ -81,7 +88,7 @@
    - ⚠️ **9 points d'accroche** à mettre à jour le jour où la page Bilan disparaît (nav, footer, Home, Menu, recherche, puces PessoBot, questionnaire post-inscription, mockup…) — **aucun lien mort**. Inventaire tenu par Vela.
    - ⚠️ **RLS à durcir** : aujourd'hui un membre peut s'inscrire hors fenêtre.
    - 🐛 **Bug connue à corriger ICI (ne pas corriger le composant actuel)** : le créneau ne se marque jamais pris — `BilanBienEtre.tsx:238` (erreur avalée) et `member/MesBilans.tsx:257` (erreur non contrôlée) font `bilan_slots.update({disponible:false})` **côté client**, or l'UPDATE est réservé aux **admins** (`is_admin()`) → refusé par la RLS → un créneau réservé **reste affiché libre** (sur-réservations). Fix attendu, **en base** : **(1) index UNIQUE partiel** sur `bilan_bookings(slot_id)` hors `statut='annule'` ; **(2) bascule `disponible=false` côté serveur** (trigger sur INSERT ou edge function), atomique. `bilan_bookings` est **vide** → aucune migration de données.
-   - ⚠️ **La page Bilan est dans la nav publique + le footer** → elle sera **live dès l'ouverture du site**, avant ce lot : si le lot A n'est pas passé, il faut soit la **garantie serveur minimale**, soit **masquer la rubrique** (décision Ken).
+   - ⚠️ **La rubrique Bilan revient dans ce lot** (retirée de la surface publique au bloc 1, décision (b) du 10/09) : la réintroduire en nav+footer **avec** la garantie serveur ci-dessus, et restaurer les accroches (Home, Menu, espace membre) — toujours sans lien mort.
 9. **PessoBot v2** : réécriture du prompt + conseils produits/ingrédients + rattachements + réparation de la lecture carte.
 10. **Page Partenariat** complète (si des éléments dépendent de contenus à venir).
 
