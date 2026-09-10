@@ -105,12 +105,18 @@
 
 ---
 
-### ORDRE DE MERGE — bloc 1 (testé le 10/09 sur une copie jetable du repo)
-- **Collision réelle** : `feat/boosters-2-euros` et `feat/retrait-remise-ora-plus` touchent les mêmes fichiers → merger **en séquence** : **boosters d'abord**, puis `retrait-remise-ora-plus` (rebase ou merge), jamais les deux en parallèle.
-- **Conflits mesurés** : **2 fichiers seulement** (`src/components/cart/DrinkOptionsModal.tsx`, `src/lib/cartDisplayPrice.ts`). ✅ **`create-checkout-session` fusionne automatiquement** — et le résultat est **correct** : il contient `BOOSTER_PRICE_EUR = 2` **et** la remise Óra+ retirée. Le chemin de l'argent n'est donc pas à recoller à la main.
-- **Règle de résolution** : garder **les deux intentions** — `BOOSTER_PRICE_EUR` partout **et** aucune condition `isOraPlus` → supprimer l'import `oraMemberUnitPrice`/`oraPricing` côté client, **conserver** l'import `BOOSTER_PRICE_EUR`, et garder `previewUnitPrice = basePrice + boosterAdd`.
-- `feat/partenariat-formulaire` (base `1707799`) : simple **rebase** sur main (les docs ne touchent aucun de ses fichiers, aucun conflit).
-- ⚠️ **Aucun merge avant recette vela verte** — et `src/__tests__/checkout.test.ts` doit être remis d'aplomb **dans la même passe** (il affirme encore « boosters × 1 € » et la remise −50 %).
+### ORDRE DE MERGE — bloc 1 (5 branches, testé le 10/09 sur copies jetables du repo, 4 ordres essayés)
+- **Ordre recommandé** : `feat/partenariat-formulaire` → **`feat/archivage-tailles-admin`** → `feat/archivage-ora-plus-complet` → puis les **2 branches prix** (`feat/boosters-2-euros` / `feat/retrait-remise-ora-plus`), l'une puis l'autre.
+- **Pourquoi les tailles d'abord** : c'est la branche la plus large (11 fichiers, elle réécrit la résolution de prix côté serveur) et elle recoupe **5 fichiers** avec la branche boosters. En la mergant **avant** les branches prix, la surface de conflit tombe à **1 seul fichier** ; en la mettant après, c'est **2 fichiers**.
+- **Conflits mesurés** :
+  - ordre `partenariat → tailles → ora+ → boosters → remise` → **1 fichier** : `supabase/functions/create-checkout-session/index.ts` (au moment de boosters) ;
+  - ordre `partenariat → tailles → ora+ → remise → boosters` → **1 fichier** : `src/components/cart/DrinkOptionsModal.tsx` (au moment de remise) ;
+  - **un rebase ne l'évite pas** (mêmes 1 fichier par branche).
+  - ⚠️ **Chaîne testée jusqu'au 1ᵉʳ conflit seulement** : après l'avoir résolu, **vérifier le 2ᵉ branchement** (non testé).
+- **Règle de résolution** : garder **les deux intentions** — `BOOSTER_PRICE_EUR` **et** aucune condition `isOraPlus` (supprimer l'import `oraMemberUnitPrice`/`oraPricing`, conserver l'import `BOOSTER_PRICE_EUR`, garder `previewUnitPrice = basePrice + boosterAdd`).
+- 🔴 **MIGRATION À APPLIQUER EN BASE AVANT LE DÉPLOIEMENT DU CODE** : `supabase/migrations/20260910120000_add_size_archive_flags_products.sql` — ajoute `price_small_active`, `price_medium_active`, `price_large_active` (`boolean NOT NULL DEFAULT true`, `IF NOT EXISTS`, idempotente). Sans elle, `create-checkout-session` échoue (il `select` ces colonnes).
+- ✅ **Vérifié dans `feat/archivage-tailles-admin`** : `price_medium` est désormais **lu** (`sizeFromKey === 'medium' ? 'price_medium'` + colonne ajoutée au `select`) — le piège « panier à 0 € » est traité ; et les refus passent par une `CartValidationError` avec **statuts 4xx explicites** (400/404/409) au lieu de 500.
+- ⚠️ **Aucun merge avant recette vela verte**, et `src/__tests__/checkout.test.ts` doit être remis d'aplomb **dans la même passe** (il affirme encore « boosters × 1 € » et la remise −50 % : (a) supprimer l'assertion Óra+ et la copie locale `computeServerPrice`, (b) porter le test de parité boosters sur le **module partagé** `supabase/functions/_shared/pricing.ts`, avec **test de mutation** — passer `BOOSTER_PRICE_EUR` de 2 à 3 doit faire rougir la suite).
 
 ## 3. RÈGLES DE TRAVAIL (impératives)
 - Branche `feat/...`, **jamais de push direct sur `main`** ; **aucun merge sans recette QA** (Vela) — gate obligatoire.
