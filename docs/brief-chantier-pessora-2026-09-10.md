@@ -61,8 +61,16 @@
 1. **Partenariat (lot F)** : bloc + texte packs sur devis + retrait de la pill + **câblage du formulaire** via `send-contact-email` (`type: 'partenariat'`) — ⚠️ replier `organisation`/`phone`/`partnershipType` dans `message` (sinon strippés par Zod).
 2. **Remise Óra+ retirée** : **les 2 endroits ensemble** — `src/lib/oraPricing.ts` (constante client) **et** `create-checkout-session` (calcul serveur). À faire **AVANT la bascule live**.
 3. **Boosters 2 €** : **5 endroits** à bouger ensemble (`cartLine.ts`, `cartDisplayPrice.ts` ×2, `create-checkout-session` ×2) + **constante partagée documentée** + **test de parité**.
-4. **Archivage des tailles (admin)** : flag par taille + UI admin + front n'affichant que les actives — ⚠️ **garde serveur obligatoire** (taille archivée = refus serveur, jamais 0 €). Étendre le pattern existant (`product.active` + Archiver/Restaurer).
-5. **Archivage Óra+ complet** : mécanique interne, pages membre, blocs admin, `create-subscription-session` + secret `STRIPE_ORA_PLUS_PRICE_ID` (devenus morts).
+4. **Archivage des tailles (admin)** : flag par taille + UI admin + front n'affichant que les actives — ⚠️ **garde serveur obligatoire** (taille archivée = refus serveur, **jamais 0 €**). Étendre le pattern existant (`product.active` + Archiver/Restaurer — `AdminProduits.tsx`).
+   - ⚠️ **Piège `price_medium` (vérifié dans le code)** : le serveur ne lit que `price_small`, `price_large`, puis `price` en repli (`create-checkout-session` l.89-95/109) — **il ignore `price_medium`**, alors que le front s'en sert (`src/data/menuData.ts`). Donc : soit le client annonce un prix « medium » que le serveur ne retrouve pas → **rejet de commande**, soit `price` est `NULL` → `Number(null) = 0` → **panier à 0 €**. À traiter dans ce lot : lire `price_medium` **et** refuser explicitement tout prix absent/invalide (jamais 0 €).
+   - **Commandes passées** : la taille est dénormalisée sur la ligne de commande → ne pas la casser.
+   - Vérifier le **code HTTP** des refus (4xx attendu avec message clair, pas un 500 générique).
+5. **Archivage Óra+ complet** : mécanique interne, pages membre, blocs admin, `create-subscription-session` (fonction morte). ⚠️ Le **secret** `STRIPE_ORA_PLUS_PRICE_ID` : **ne pas y toucher dans le code** — c'est alcyone qui le retirera du projet Supabase.
+
+**Pièges déjà identifiés (ne pas les redécouvrir)**
+- Un **panier forgé** peut envoyer un `productId + size` incohérent : la vérification serveur doit porter sur **la paire**, pas seulement sur le produit.
+- `useIsOraPlus` s'appuie sur une table **live** : après archivage Óra+, vérifier qu'**aucun écran membre** ne casse (compte `ora_plus` existant en base de test).
+- Le **n8n** est utilisé par d'autres clients : ne jamais modifier le workflow partagé (PessoBot = workflow dédié).
 
 ### ⏳ APRÈS LA CARTE
 6. **Catégories** (mapping boissons → MEGA THÉ / PROTEIN SHAKE / COFFEE) + tailles actives.
