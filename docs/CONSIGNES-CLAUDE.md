@@ -28,6 +28,18 @@
 
 ---
 
+## 🧪 À FAIRE MAINTENANT — test end-to-end (Playwright, sous les yeux de Ken)
+
+**Scénario complet, prêt à dérouler : `docs/test-e2e-challenge-2026-09-11.md`.**
+
+Il couvre : créer un challenge (`TEST-KEN-`) depuis l'admin → créer 2 créneaux → le parcours public complet (inscription → étape bilan → réservation → demande dans la file de Catherine) → l'annulation (ligne **et** créneau) → le test de l'e-mail du balayage → **et le nettoyage obligatoire** (`TEST-%` = 0, retour au baseline).
+
+**Points non négociables de ce test** : tout est préfixé `TEST-KEN-` · on teste **en production** · les identifiants admin se lisent **à l'exécution** depuis le fichier de secrets (jamais dans le code, jamais dans un chat) · **aucun e-mail ne doit partir chez la cliente** (vérifier `ADMIN_EMAIL` = `ken972@yopmail.com` **avant**) · et le nettoyage + l'empreinte de sortie font partie du test.
+
+⚠️ **L'étape 6 (e-mail du balayage) nécessite le lot ② codé** — le reste est testable **tout de suite**.
+
+---
+
 ## ÉTAT AU 10/09/2026 (nuit) — clôture de journée
 
 - **`origin/main` = `c4325d6`** · **production déployée** (Vercel READY).
