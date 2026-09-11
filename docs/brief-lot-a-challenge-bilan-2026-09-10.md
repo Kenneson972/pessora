@@ -18,7 +18,7 @@ Faire du **Challenge 21 jours** une **rubrique dédiée DANS la page Événement
 - **Aucun ordonnanceur** : `pg_cron` **n'est pas installé** — voir §4.
 
 ## 3. RÈGLES MÉTIER
-- **Vagues** : sept./oct. · janv. · mars — pause nov.-déc. et février (carnaval). Les **dates sont posées par l'équipe dans l'admin**, rien n'attend la cliente.
+- **Vagues** : sept./oct. · janv. · mars — pause nov.-déc. et février (carnaval). **Le calendrier est géré par Catherine et son équipe** : c'est **elle** qui crée ses challenges et pose leurs dates dans l'admin. Nous fournissons l'outil et le code — **nous ne décidons d'aucune date**. Pour nos recettes : fixtures `TEST-` uniquement, purgées derrière.
 - **Créneaux de bilan ouverts de J-14 jusqu'au jour J inclus** (J = date du challenge), calculs en **heure Martinique (UTC-4)**, colonnes naïves en base.
 - **Après la date** : une demande de bilan reste possible → **file de validation dans l'admin** (`statut = en_attente`) + **notification e-mail** (`ADMIN_EMAIL`).
 - **Inscription au bilan OBLIGATOIRE** pour participer au challenge.
