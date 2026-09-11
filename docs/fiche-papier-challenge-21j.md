@@ -80,6 +80,8 @@ La fiche RDV de septembre (`gbrain`, `clients/pessora-rdv-2026-09.md`) prévoyai
 
 **Cette table n'a pas été construite** : le lot A du 10/09 a implémenté le parcours **événement + bilan** (`events.type='challenge'`, `bilan_bookings`, `event_registrations`). Les deux approches ne se contredisent pas — **la fiche papier est un outil de prospection au bar**, le site est le parcours en ligne. À trancher si on veut, un jour, saisir ces fiches dans l'admin.
 
+⚠️ **Et le mot « vague » de cette ancienne liste est de NOUS, pas de Catherine** — vérifié : sa fiche n'emploie que **« Challenge 21 jours »**, avec ses trois timings (« ce mois-ci · le mois prochain · je souhaite en savoir plus »). Dans **tout ce qui est publié** — page, visuel, e-mail client, libellé d'admin — on dit **« Challenge 21 jours »**, **jamais « vague »** (règle de vocabulaire dans `docs/CONSIGNES-CLAUDE.md`).
+
 ---
 
 ## À FAIRE À LA REMISE
