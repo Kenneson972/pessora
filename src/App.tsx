@@ -53,6 +53,7 @@ const Profile = lazy(() => import('./pages/member/Profile'));
 const History = lazy(() => import('./pages/member/History'));
 const OrderDetail = lazy(() => import('./pages/member/OrderDetail'));
 const MesEvenements = lazy(() => import('./pages/member/MesEvenements'));
+const MesBilans = lazy(() => import('./pages/member/MesBilans'));
 const PessobotPage = lazy(() => import('./pages/PessobotPage'));
 const SuiviCommande = lazy(() => import('./pages/SuiviCommande'));
 const EvenementDetail = lazy(() => import('./pages/EvenementDetail'));
@@ -73,6 +74,7 @@ const MEMBER_EMBEDDED_CHATBOT = (
 const MEMBER_ROUTE_SEGMENTS: { segment: string; element: React.ReactNode }[] = [
   { segment: '', element: <Dashboard /> },
   { segment: 'evenements', element: <MesEvenements /> },
+  { segment: 'bilans', element: <MesBilans /> },
   { segment: 'abonnement', element: <Subscription /> },
   { segment: 'profil', element: <Profile /> },
   { segment: 'historique', element: <History /> },
