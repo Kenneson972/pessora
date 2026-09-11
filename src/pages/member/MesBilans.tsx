@@ -52,7 +52,9 @@ const MesBilans = () => {
   const [bookingsLoading, setBookingsLoading] = useState(true);
   const [cancelLoading, setCancelLoading] = useState<string | null>(null);
   const [cancelTarget, setCancelTarget] = useState<string | null>(null);
-  const [cancelError, setCancelError] = useState<string | null>(null);
+  // L'erreur est rattachée à UN rendez-vous (elle s'affiche dans SA carte, pas en
+  // haut de page où le membre ne la verrait pas après avoir cliqué plus bas).
+  const [cancelError, setCancelError] = useState<{ id: string; message: string } | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -86,12 +88,20 @@ const MesBilans = () => {
       .select('id');
 
     if (error || !data || data.length === 0) {
-      setCancelError('Impossible d’annuler ce rendez-vous. Réessaie ou contacte-nous sur Instagram.');
+      setCancelError({
+        id: cancelTarget,
+        message:
+          'Impossible d’annuler ce rendez-vous — rien n’a été annulé. Réessaie dans un instant, ou écris-nous à pessora.mq@gmail.com.',
+      });
       setCancelLoading(null);
       setCancelTarget(null);
       return;
     }
 
+    // Succès : on efface une éventuelle erreur précédente. Sinon, sur une
+    // deuxième tentative qui réussit, la carte afficherait « annulation
+    // impossible » ET « annulé » en même temps.
+    setCancelError(null);
     setBookings((prev) => prev.map((b) => (b.id === cancelTarget ? { ...b, statut: 'annule' } : b)));
     setCancelLoading(null);
     setCancelTarget(null);
@@ -119,10 +129,6 @@ const MesBilans = () => {
         />
 
         <div className={DASH_MAIN_PAD}>
-          {cancelError && (
-            <p className="mb-5 text-[11px] text-red-500/80" role="alert">{cancelError}</p>
-          )}
-
           <div className="mb-8 flex flex-wrap gap-4">
             <DashCard className="flex flex-col gap-2 min-w-[140px]">
               <DashEyebrow>Confirmés</DashEyebrow>
@@ -169,10 +175,9 @@ const MesBilans = () => {
                   return (
                     <div
                       key={b.id}
-                      className={`grid grid-cols-[48px_minmax(0,1fr)_auto] items-start gap-x-4 gap-y-1 py-4 ${
-                        i > 0 ? 'border-t border-noir/[0.06]' : ''
-                      }`}
+                      className={`py-4 ${i > 0 ? 'border-t border-noir/[0.06]' : ''}`}
                     >
+                      <div className="grid grid-cols-[48px_minmax(0,1fr)_auto] items-start gap-x-4 gap-y-1">
                       <div className="w-[48px] h-[48px] rounded-[10px] bg-surface-muted border border-noir/[0.06] flex flex-col items-center justify-center shrink-0">
                         <span className="font-display text-[15px] leading-none">{day}</span>
                         <span className="text-[8px] tracking-[0.14em] text-black/40 mt-[1px]">{month}</span>
@@ -203,6 +208,13 @@ const MesBilans = () => {
                           </button>
                         )}
                       </div>
+                      </div>
+
+                      {cancelError?.id === b.id && (
+                        <p className="mt-3 pl-16 text-[13px] leading-snug text-red-600" role="alert">
+                          {cancelError.message}
+                        </p>
+                      )}
                     </div>
                   );
                 })}
