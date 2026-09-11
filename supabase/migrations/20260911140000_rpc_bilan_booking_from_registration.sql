@@ -161,12 +161,25 @@ BEGIN
   -- refuserait elle-même. Ne pas "harmoniser" ce chemin sur la policy
   -- publique un jour sans relire cette note -- ça casserait le
   -- questionnaire.
+  --
+  -- user_id = v_reg.user_id est OBLIGATOIRE (docs/CONSIGNES-CLAUDE.md,
+  -- ajout du 11/09 @vela + @alcyone) : sans lui la ligne n'appartient à
+  -- personne. Dans l'espace membre, l'annulation filtre par
+  -- `auth.uid() = user_id` (policy bilan_bookings_update_own_cancel_only)
+  -- -- avec user_id NULL, ce filtre ne matche jamais : 0 ligne mise à jour,
+  -- aucune erreur renvoyée, le membre lit "Annulé" alors que la demande
+  -- reste `en_attente` dans la file de Catherine (et, sur le chemin par
+  -- créneau, le trigger AFTER UPDATE fn_bilan_booking_sync_slot ne voit
+  -- jamais l'UPDATE, donc le créneau ne se rouvre pas). Un invité
+  -- (event_registrations.user_id NULL) reste non-annulable -- c'est
+  -- cohérent avec le reste du système, pas un oubli.
   INSERT INTO public.bilan_bookings (
-    nom, prenom, telephone, date_rdv, heure_rdv, notes, challenge_event_id, statut
+    nom, prenom, telephone, user_id, date_rdv, heure_rdv, notes, challenge_event_id, statut
   ) VALUES (
     v_reg.nom,
     v_reg.prenom,
     v_reg.telephone,
+    v_reg.user_id,
     (now() AT TIME ZONE 'America/Martinique')::date,
     '00:00',
     'Demande via questionnaire post-inscription',
@@ -188,3 +201,56 @@ COMMENT ON FUNCTION public.fn_create_bilan_booking_from_registration(uuid, text)
 
 REVOKE ALL ON FUNCTION public.fn_create_bilan_booking_from_registration(uuid, text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.fn_create_bilan_booking_from_registration(uuid, text) TO anon, authenticated;
+
+-- 3) Garde défense-en-profondeur : "une garde dont l'entrée vient de
+--    l'appelant n'est pas une garde" (docs/CONSIGNES-CLAUDE.md, règles
+--    générales). La vérification event.type='challenge' ci-dessus n'existe
+--    aujourd'hui que dans fn_create_bilan_booking_from_registration -- rien
+--    n'empêche un autre chemin (policy bilan_bookings_insert_guarded,
+--    ouverte à anon/authenticated ; ou un futur écran admin) de poser
+--    challenge_event_id vers un événement qui n'est PAS un challenge. Ce
+--    trigger ferme ce chemin au niveau table, pour tout INSERT et pour tout
+--    UPDATE qui touche challenge_event_id.
+--
+--    Nommage délibéré : "trg_bilan_booking_guard_challenge_type" trie
+--    APRÈS "trg_bilan_booking_before_insert" dans l'ordre d'exécution
+--    Postgres (les triggers BEFORE de même événement/timing s'exécutent
+--    par ordre alphabétique de nom) -- indispensable en INSERT, où
+--    trg_bilan_booking_before_insert déduit encore challenge_event_id
+--    (fn_deduce_hors_date_challenge) quand il est NULL. Si cette garde
+--    s'exécutait avant, elle ne verrait jamais la valeur déduite et ne
+--    la validerait donc jamais.
+--
+--    Contrôle sur le TYPE seul (pas active) : un événement 'challenge'
+--    désactivé reste un challenge -- ce n'est pas cette garde qui doit
+--    juger de la fenêtre de recevabilité (déjà géré par
+--    fn_challenge_window_ok / fn_bilan_slot_bookable), seulement de la
+--    cohérence du type.
+CREATE OR REPLACE FUNCTION public.fn_bilan_booking_guard_challenge_type()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $guard$
+DECLARE
+  v_event_type text;
+BEGIN
+  IF NEW.challenge_event_id IS NOT NULL THEN
+    SELECT e.type INTO v_event_type
+    FROM public.events e
+    WHERE e.id = NEW.challenge_event_id;
+
+    IF v_event_type IS DISTINCT FROM 'challenge' THEN
+      RAISE EXCEPTION 'event_not_challenge' USING ERRCODE = 'P0004';
+    END IF;
+  END IF;
+
+  RETURN NEW;
+END;
+$guard$;
+
+DROP TRIGGER IF EXISTS trg_bilan_booking_guard_challenge_type ON public.bilan_bookings;
+CREATE TRIGGER trg_bilan_booking_guard_challenge_type
+  BEFORE INSERT OR UPDATE OF challenge_event_id ON public.bilan_bookings
+  FOR EACH ROW
+  EXECUTE FUNCTION public.fn_bilan_booking_guard_challenge_type();
