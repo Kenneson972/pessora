@@ -202,7 +202,7 @@ const MesBilans = () => {
                             type="button"
                             onClick={() => handleCancelClick(b.id)}
                             disabled={cancelLoading === b.id}
-                            className="text-[10px] text-red-500/70 hover:text-red-600 underline underline-offset-2 transition-colors disabled:opacity-40"
+                            className="text-[12px] text-red-600 hover:text-red-700 underline underline-offset-2 transition-colors disabled:opacity-40"
                           >
                             {cancelLoading === b.id ? 'Annulation…' : 'Annuler'}
                           </button>
@@ -211,7 +211,7 @@ const MesBilans = () => {
                       </div>
 
                       {cancelError?.id === b.id && (
-                        <p className="mt-3 pl-16 text-[13px] leading-snug text-red-600" role="alert">
+                        <p className="mt-3 pl-0 text-[13px] leading-snug text-red-600 sm:pl-16" role="alert">
                           {cancelError.message}
                         </p>
                       )}
