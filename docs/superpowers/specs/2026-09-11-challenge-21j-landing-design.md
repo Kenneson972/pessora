@@ -69,7 +69,13 @@ Tout le texte des blocs 1, 2 et 4 vient mot pour mot de `docs/fiche-papier-chall
 - La section "Complément de revenus" (opportunité Herbalife) n'apparaît **nulle part** dans le code — ni page, ni formulaire.
 
 ### Visuels
-Emplacements avec le traitement pointillé de la maquette (`.hero__slot`, cadres en pointillés) tant que les assets ne sont pas livrés — génération des visuels (fond hero, icônes, OG image) traitée séparément par l'utilisateur (Higgsfield), hors périmètre de ce lot de code. Le badge de vague est du texte dynamique (mois calculé depuis `event.date`), jamais une image.
+
+🔴 **RÈGLE OBLIGATOIRE (équipe, 11/09) — aucun pointillé en prod.** Le cadre en pointillés (`.hero__slot`) et les libellés "Visuel de fond (à produire)" sont un **repère de revue**, propre à la maquette HTML — ils **ne s'intègrent pas tels quels**. En production :
+- **Hero** : `.hero__media` (le dégradé radial + linéaire déjà codé dans la maquette) est le rendu **définitif** tant que le visuel réel n'est pas livré — la page a l'air finie sans l'image, jamais un cadre en pointillés avec un texte "à produire". Quand le vrai fond (généré par l'utilisateur via Higgsfield) sera prêt, il vient **par-dessus** ce dégradé de repli (`background-image`), sans changer la structure.
+- **Blocs de preuve** (`StatsBlock`/`BeforeAfterBlock`/`TestimonialsBlock`) : déjà couverts au §2 — **absents du DOM**, jamais un cadre vide ou pointillé.
+- **Icônes des 3 puces de réassurance et des 6 inclus** : icônes `lucide-react` (déjà utilisées ailleurs sur le site, ex. `EvenementDetail.tsx`) en attendant les 6 icônes au trait générées séparément — un vrai rendu, pas un espace réservé.
+
+Le badge de vague est du texte dynamique (mois calculé depuis `event.date` via `todayInMartinique`/formatage FR), jamais une image.
 
 ---
 
@@ -109,3 +115,4 @@ Aucune requête supplémentaire : `challenges` (déjà chargé par `AdminBilans.
 8. Aucune mention "Complément de revenus"/Herbalife trouvée par `grep -ri "herbalife\|complément de revenus" src/`.
 9. Aucune promesse de résultat chiffré trouvée dans le texte de la page (relecture manuelle des puces de réassurance et du hero).
 10. Aucun appel à `toISOString()` ni `toLocaleDateString()` sans `timeZone` explicite pour la comparaison de date de cette page (`grep -n "toISOString\|toLocaleDateString" src/pages/ChallengeLandingPage.tsx` ne doit rien trouver) — seul `todayInMartinique()` calcule la borne.
+11. **Porte ① @vela (mesurable, page déployée)** : éléments en pointillés visibles = **0** (`document.querySelectorAll('[class*="dashed"], [style*="dashed"]')` sur la page rendue ne doit rien trouver — le hero affiche le dégradé de repli, jamais un cadre "à produire").
