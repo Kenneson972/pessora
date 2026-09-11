@@ -22,11 +22,17 @@ const gaufreRefine = (data: { gaufre_salee: string; gaufre_salee_autre?: string 
 
 export const postRegistrationBaseSchema = z
   .object({
-    // Neutralisé (retrait du parcours Bilan public, 10/09) : le champ n'est
-    // plus posé côté formulaire, on ne peut pas promettre un bilan dont la
-    // réservation n'existe plus. Optionnel pour ne pas casser les réponses
-    // déjà en base ; libellé définitif à trancher au lot A (Challenge/Bilan).
+    // Optionnel hors challenge : le bilan offert n'existe que pour ce type
+    // d'événement (widget monté uniquement sur type='challenge').
     bilan_offert: z.string().optional(),
+    objectif_principal: z.string().min(1, 'Choisis un objectif.'),
+    objectif_autre: z.string().optional(),
+  })
+  .superRefine(objectifRefine)
+
+export const postRegistrationChallengeSchema = z
+  .object({
+    bilan_offert: z.string().min(1, 'Choisis une réponse.'),
     objectif_principal: z.string().min(1, 'Choisis un objectif.'),
     objectif_autre: z.string().optional(),
   })
@@ -48,13 +54,20 @@ export const postRegistrationRunClubSchema = z
 
 export type PostRegistrationBasePayload = z.infer<typeof postRegistrationBaseSchema>
 export type PostRegistrationRunClubPayload = z.infer<typeof postRegistrationRunClubSchema>
+export type PostRegistrationChallengePayload = z.infer<typeof postRegistrationChallengeSchema>
 
 export function parsePostRegistrationPayload(
   eventType: string,
   raw: Record<string, unknown>,
-): z.SafeParseReturnType<PostRegistrationBasePayload | PostRegistrationRunClubPayload, PostRegistrationBasePayload | PostRegistrationRunClubPayload> {
+): z.SafeParseReturnType<
+  PostRegistrationBasePayload | PostRegistrationRunClubPayload | PostRegistrationChallengePayload,
+  PostRegistrationBasePayload | PostRegistrationRunClubPayload | PostRegistrationChallengePayload
+> {
   if (eventType === 'run_club') {
     return postRegistrationRunClubSchema.safeParse(raw)
+  }
+  if (eventType === 'challenge') {
+    return postRegistrationChallengeSchema.safeParse(raw)
   }
   return postRegistrationBaseSchema.safeParse(raw)
 }
