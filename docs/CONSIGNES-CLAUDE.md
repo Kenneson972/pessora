@@ -286,6 +286,7 @@ Un membre modifie son profil → l'interface dit « enregistré », **rien n'est
 - 🔎 **LA RECETTE DE LA PAGE — 8 portes, toutes mesurables, aucune au jugé** (écrites et testées à blanc par @vela ; le détail d'exécution vit dans son script, les définitions ici) :
   1. **Précondition** — la page **rend bien le challenge** (H1 « introuvable » = portes **nulles**, pas vertes). *Une porte sans mesure n'est pas une porte verte* : ce défaut a été trouvé dans la sonde elle-même (elle rendait « 0 · 0 » sur un slug inexistant).
   2. **Pointillés = 0** — ⚠️ mesuré en **style calculé** (`getComputedStyle(e).borderStyle`), **jamais** par le nom de classe : la porte ① de la spec de build (l.118, `[class*="dashed"]`) **passerait avec un cadre pointillé défini dans une feuille de style** — faux vert de la famille. À corriger, ou à doubler par la mesure d'@vela.
+     ⚠️ **Et scopé à la PAGE DU CHALLENGE, pas à tout `src/`** : les composants **admin** ont des `border-dashed` **légitimes** (zones d'upload — `EventGalleryManager`, `AdminProductGallery`, `DrinkDetailAdminEdit`). Mesurer la page, sinon **faux rouge**.
   3. **Blocs de preuve (chiffres, avant/après, témoignages) = 0** — **absents du DOM**, pas masqués en CSS, tant que Catherine n'a rien livré.
   4. **Contenu positif (@nova)** — ce qui doit être **là** : accroche = **sa phrase** (« Quel est ton prochain objectif ? ») · **6 puces « inclus »** mot pour mot (GetFitNow · 24FIT PESSORA · séances · recettes · conseils · suivi) · **3 timings** de démarrage · **CTA vers le parcours d'inscription existant** (aucune nouvelle collecte). Source : `docs/fiche-papier-challenge-21j.md`. *Sans porte positive, trois compteurs à « 0 » valident une page vide.*
   5. **Fuseau** — borne **front** et borne **base** disent la même chose **à 20 h 30 locale** (helper unique `src/lib/martiniqueDate.ts`).
@@ -303,6 +304,19 @@ Un membre modifie son profil → l'interface dit « enregistré », **rien n'est
   3. **un seul accent : le vert sapin `#1E3529`**, jamais une deuxième couleur de mise en avant ;
   4. **respiration de section ≥ 6,5 rem en desktop** (c'est ce qui fait le « sobre » ; tassé, ça devient une page promo).
   **Reste au seul jugement d'@lyra : la composition** — et elle vient **après** ces 4 valeurs, jamais à leur place.
+
+---
+
+## 🔴 À LA REPRISE — page Challenge 21 jours (revue statique du 11/09 au soir, branche `feat/challenge-21j-landing`)
+
+Revue statique faite par @elise (23 fichiers, **2 704 insertions**) — **la branche est bien construite** ; reste ceci **avant merge/PR** :
+
+1. 🔴 **La porte 8 n'est PAS implémentée** — `ChallengeLanding` ne reçoit **aucun état de date** et rend `<ChallengeRegistrationCard>` **inconditionnellement** ; `EvenementDetail.tsx:122` monte `<ChallengeLanding>` **sans contrôle de fenêtre** → un vieux lien Instagram / QR au bar d'un challenge **terminé** propose encore de s'inscrire. *(La route stable est protégée par sa requête ; c'est le **slug** qui contourne.)* → appliquer la fenêtre **aux deux portes d'entrée**, **et** rendre **les timings absents du DOM** dans l'état passé (ajout @lyra : la rangée « Ce mois-ci / Le mois prochain » **ment aussi** au milieu de la page, pas seulement le bouton du bas).
+2. 🔴 **Le mot « vague » est affiché à l'écran** — `ChallengeHero.tsx:26` (« Challenge 21 jours · **Vague de** {mois} ») et `ChallengeClosedState.tsx:15` (« **Prochaine vague** »). Le mois vient de `event.date` (propre) ; **seule la formule est à changer** → « Challenge 21 jours » / « prochain challenge ». Claude a codé sur la maquette **d'avant la purge** : **mécanique, pas un choix**.
+3. ⚠️ **Deux portes à ne pas mal scoper** (sinon faux rouges) : la porte « Herbalife » vise **le recrutement** (« complément de revenus », « opportunité », « recrutement ») — **pas la marque** (`productsData.ts` / `ProductJsonLd.tsx` = **38 occurrences légitimes**, ce sont **les produits vendus**) ; et la porte « pointillés » est **scopée à la page du challenge** (les zones d'upload de l'admin sont légitimes).
+4. 🐛 **Même famille, hors lot** : `src/lib/siteAnnouncement.ts:6` fait `new Date().toISOString().slice(0,10)` → **le bandeau d'annonce du site bascule au jour suivant dès 20 h locale**. La règle de fuseau qu'on vient d'écrire est donc **déjà violée ailleurs dans le code** : à corriger avec le même helper (`src/lib/martiniqueDate.ts`) — **dette écrite**, même famille que la borne front/base.
+5. 🎨 **Deux accents** dans les composants (`sapin` 7 usages, `gold` 6) alors que la règle dit « un seul accent » → **arbitrage @lyra** (le doré est peut-être l'accent historique du site, donc légitime).
+6. ⏭️ **Reste du process** : la **revue finale de branche** (interrompue avant résultat), puis **finishing-a-development-branch** (merge/PR). **Pas de merge sans les 8 portes tirées sur la preview** *ni* **l'œil d'@lyra**.
 
 ---
 
