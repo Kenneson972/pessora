@@ -52,6 +52,7 @@ const MesBilans = () => {
   const [bookingsLoading, setBookingsLoading] = useState(true);
   const [cancelLoading, setCancelLoading] = useState<string | null>(null);
   const [cancelTarget, setCancelTarget] = useState<string | null>(null);
+  const [cancelError, setCancelError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -73,13 +74,31 @@ const MesBilans = () => {
   const handleCancelConfirm = useCallback(async () => {
     if (!cancelTarget) return;
     setCancelLoading(cancelTarget);
-    await (supabase as any).from('bilan_bookings').update({ statut: 'annule' }).eq('id', cancelTarget);
+    setCancelError(null);
+    // .select('id') est le bon outil ici : c'est la ligne du membre connecté
+    // (auth.uid() = user_id), la policy SELECT own s'applique, le RETURNING
+    // fonctionne. Ne pas copier ce pattern sur le chemin invité du widget
+    // public (BilanBookingWidget.tsx), où le RETURNING casserait l'INSERT.
+    const { data, error } = await (supabase as any)
+      .from('bilan_bookings')
+      .update({ statut: 'annule' })
+      .eq('id', cancelTarget)
+      .select('id');
+
+    if (error || !data || data.length === 0) {
+      setCancelError('Impossible d’annuler ce rendez-vous. Réessaie ou contacte-nous sur Instagram.');
+      setCancelLoading(null);
+      setCancelTarget(null);
+      return;
+    }
+
     setBookings((prev) => prev.map((b) => (b.id === cancelTarget ? { ...b, statut: 'annule' } : b)));
     setCancelLoading(null);
     setCancelTarget(null);
   }, [cancelTarget]);
 
   const handleCancelClick = (bookingId: string) => {
+    setCancelError(null);
     setCancelTarget(bookingId);
   };
 
@@ -100,6 +119,10 @@ const MesBilans = () => {
         />
 
         <div className={DASH_MAIN_PAD}>
+          {cancelError && (
+            <p className="mb-5 text-[11px] text-red-500/80" role="alert">{cancelError}</p>
+          )}
+
           <div className="mb-8 flex flex-wrap gap-4">
             <DashCard className="flex flex-col gap-2 min-w-[140px]">
               <DashEyebrow>Confirmés</DashEyebrow>
