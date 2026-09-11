@@ -24,6 +24,10 @@ export type NewsletterSignupProps = {
   compact?: boolean;
   /** Pied de page ultra-compact : pas de paragraphe d’intro + titre sr-only */
   minimal?: boolean;
+  /** 'dark' (défaut, fond sombre type footer) ou 'light' (carte claire type ChallengeClosedState). */
+  theme?: 'dark' | 'light';
+  /** Valeur libre pour tracer l'origine de l'inscription (colonne `source`). */
+  source?: string;
 };
 
 export function NewsletterSignup({
@@ -31,6 +35,8 @@ export function NewsletterSignup({
   align = 'left',
   compact = false,
   minimal = false,
+  theme = 'dark',
+  source = 'footer',
 }: NewsletterSignupProps) {
   const honeypotRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'duplicate' | 'error'>('idle');
@@ -53,7 +59,7 @@ export function NewsletterSignup({
     const { error } = await (supabase as any).from('newsletter_subscribers').insert({
       email: data.email.trim().toLowerCase(),
       consent: data.acceptPrivacy,
-      source: 'footer',
+      source,
     });
     if (error) {
       if (error.code === '23505') {
@@ -69,6 +75,7 @@ export function NewsletterSignup({
   };
 
   const isCenter = align === 'center';
+  const isLight = theme === 'light';
   const showVisibleNewsletterHeading = !(compact && minimal);
 
   return (
@@ -88,7 +95,9 @@ export function NewsletterSignup({
         <p
           className={cn(
             'text-[9px] font-light uppercase tracking-[0.42em]',
-            compact ? 'mb-1.5 text-footer-text-quiet' : 'mb-3 text-white/42',
+            isLight
+              ? (compact ? 'mb-1.5 text-black/40' : 'mb-3 text-black/40')
+              : (compact ? 'mb-1.5 text-footer-text-quiet' : 'mb-3 text-white/42'),
           )}
         >
           Newsletter
@@ -98,7 +107,9 @@ export function NewsletterSignup({
         <p
           className={cn(
             'font-light tracking-[0.04em]',
-            compact ? 'mb-2.5 text-[10px] leading-snug text-footer-text-muted' : 'mb-4 text-[11px] leading-relaxed text-white/45',
+            isLight
+              ? (compact ? 'mb-2.5 text-[10px] leading-snug text-black/50' : 'mb-4 text-[11px] leading-relaxed text-black/45')
+              : (compact ? 'mb-2.5 text-[10px] leading-snug text-footer-text-muted' : 'mb-4 text-[11px] leading-relaxed text-white/45'),
             isCenter && 'mx-auto max-w-[280px]',
             compact && isCenter && !minimal && 'max-w-[220px]',
           )}
@@ -136,7 +147,10 @@ export function NewsletterSignup({
             autoComplete="email"
             placeholder={compact && minimal ? 'Votre e-mail' : 'votre@email.com'}
             className={cn(
-              'min-w-0 flex-1 rounded-[2px] border border-[color:var(--color-footer-border-soft)] bg-white/[0.06] py-2 font-light text-ivory placeholder:text-footer-text-subtle',
+              'min-w-0 flex-1 rounded-[2px] border py-2 font-light placeholder:text-black/30',
+              isLight
+                ? 'border-noir/10 bg-transparent text-noir placeholder:text-black/30'
+                : 'border-[color:var(--color-footer-border-soft)] bg-white/[0.06] text-ivory placeholder:text-footer-text-subtle',
               compact && minimal ? 'min-h-12 px-4 text-[13px]' : compact ? 'min-h-11 px-4 text-[12px]' : 'min-h-[48px] px-4 text-[12px]',
             )}
             {...register('email')}
@@ -154,7 +168,8 @@ export function NewsletterSignup({
             isIconOnly
             isDisabled={status === 'loading'}
             className={cn(
-              'shrink-0 rounded-[2px] bg-ivory text-noir transition-colors hover:bg-ivory-warm disabled:opacity-50',
+              'shrink-0 rounded-[2px] transition-colors disabled:opacity-50',
+              isLight ? 'bg-noir text-white hover:bg-anthracite' : 'bg-ivory text-noir hover:bg-ivory-warm',
               compact && minimal ? 'min-h-12 min-w-12' : compact ? 'min-h-11 min-w-11' : 'min-h-12 min-w-12',
             )}
             aria-label="S’inscrire à la newsletter"
@@ -181,17 +196,28 @@ export function NewsletterSignup({
                 <span
                   className={cn(
                     'font-light tracking-[0.04em]',
-                    compact && minimal
-                      ? 'text-[10px] leading-snug text-footer-text-muted sm:text-[11px]'
-                      : compact
-                        ? 'text-[10px] leading-snug text-white/50'
-                        : 'text-[11px] leading-relaxed text-white/50',
+                    isLight
+                      ? (compact && minimal
+                          ? 'text-[10px] leading-snug text-black/55 sm:text-[11px]'
+                          : compact
+                            ? 'text-[10px] leading-snug text-black/55'
+                            : 'text-[11px] leading-relaxed text-black/55')
+                      : (compact && minimal
+                          ? 'text-[10px] leading-snug text-footer-text-muted sm:text-[11px]'
+                          : compact
+                            ? 'text-[10px] leading-snug text-white/50'
+                            : 'text-[11px] leading-relaxed text-white/50'),
                   )}
                 >
                   J’accepte de recevoir la newsletter et j’ai pris connaissance de la{' '}
                   <Link
                     to="/politique-confidentialite"
-                    className="text-footer-text-muted underline decoration-[color:var(--color-footer-border-soft)] underline-offset-2 hover:text-ivory/90"
+                    className={cn(
+                      'underline underline-offset-2',
+                      isLight
+                        ? 'text-noir/70 decoration-noir/20 hover:text-noir'
+                        : 'text-footer-text-muted decoration-[color:var(--color-footer-border-soft)] hover:text-ivory/90',
+                    )}
                   >
                     politique de confidentialité
                   </Link>
@@ -201,21 +227,21 @@ export function NewsletterSignup({
             )}
           />
           {errors.acceptPrivacy && (
-            <p className="mt-2 text-[10px] font-light text-red-300/90">{errors.acceptPrivacy.message}</p>
+            <p className={cn('mt-2 text-[10px] font-light', isLight ? 'text-red-600' : 'text-red-300/90')}>{errors.acceptPrivacy.message}</p>
           )}
         </div>
       </Form>
       {errors.email && (
-        <p className="mt-2 text-[10px] font-light text-red-300/90">{errors.email.message}</p>
+        <p className={cn('mt-2 text-[10px] font-light', isLight ? 'text-red-600' : 'text-red-300/90')}>{errors.email.message}</p>
       )}
       {status === 'success' && (
-        <p className="mt-2 text-[11px] font-light tracking-wide text-ivory/90">Merci — vous êtes inscrit·e.</p>
+        <p className={cn('mt-2 text-[11px] font-light tracking-wide', isLight ? 'text-noir/80' : 'text-ivory/90')}>Merci — vous êtes inscrit·e.</p>
       )}
       {status === 'duplicate' && (
-        <p className="mt-2 text-[11px] font-light text-white/50">Cette adresse est déjà inscrite.</p>
+        <p className={cn('mt-2 text-[11px] font-light', isLight ? 'text-black/45' : 'text-white/50')}>Cette adresse est déjà inscrite.</p>
       )}
       {status === 'error' && (
-        <p className="mt-2 text-[11px] font-light text-red-300/90">Impossible de finaliser. Réessayez plus tard.</p>
+        <p className={cn('mt-2 text-[11px] font-light', isLight ? 'text-red-600' : 'text-red-300/90')}>Impossible de finaliser. Réessayez plus tard.</p>
       )}
     </div>
   );
