@@ -126,6 +126,7 @@ La réponse « je veux mon bilan » du questionnaire doit créer **une demande d
 - 🔒 **CRITÈRES DE RECETTE DU LOT (contre-signature @vela — la liste de référence, à jouer telle quelle après application)** :
   1. **anon → `challenge_event_id` = événement `type='event'`** : refus **`P0004`** (aujourd'hui : **201** — c'est le trou prouvé du 11/09) ;
   2. **anon → `challenge_event_id` = challenge valide** : **201** (la garde ne doit pas produire de faux refus — d'où le `SECURITY DEFINER`) ;
+  2bis. 🔴 **NON-RÉGRESSION DU CHEMIN NORMAL (le plus important, et le plus facile à casser)** : une réservation **par créneau** (le parcours public habituel, `slot_id` renseigné) doit toujours rendre **201**, et le créneau passer `disponible = false`. ⚠️ La garde ne doit **refuser que** `challenge_event_id IS NOT NULL AND type <> 'challenge'` : elle doit **laisser passer `NULL`** — sinon elle casse la réservation par créneau (dont le lien peut être **NULL** si le créneau est orphelin) et le formulaire public avec. C'est le critère à jouer **avant** les autres : un correctif qui casse le parcours le plus courant est pire que le trou qu'il ferme ;
   3. **`PATCH` d'une ligne vers un non-challenge** → **`P0004`** (comportement `UPDATE OF` **mesuré**, pas supposé) ;
   4. **croisement** `SELECT count(*) FROM bilan_bookings b JOIN events e ON e.id = b.challenge_event_id WHERE e.type <> 'challenge'` → **0** ;
   5. **dédup par téléphone** : 2ᵉ demande, même numéro **dans un autre format** → **`P0002`** ;
