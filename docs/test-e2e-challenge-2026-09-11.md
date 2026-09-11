@@ -29,6 +29,8 @@
 
 **Critère** : l'événement existe, type `challenge`, date à +4 j.
 
+**1bis. Ouvrir les inscriptions sur ce challenge de test** (`registration_open`) — sinon l'étape 3 ne peut pas se faire, et on croira à un bug du formulaire. ⚠️ C'est un **état à emporter avec la suppression du challenge** (étape 7) : un `TEST-KEN` laissé **ouvert aux inscriptions** apparaîtrait dans la page **Événements** publique. Si le test s'interrompt, on nettoie **à la main avant tout partage d'écran** — on ne montre pas à Catherine un onglet où traîne `TEST-KEN`.
+
 ---
 
 ## 2. CRÉER DEUX CRÉNEAUX (admin)
