@@ -116,6 +116,17 @@ La réponse « je veux mon bilan » du questionnaire doit créer **une demande d
   - **Aucun backfill** : `bilan_bookings` est **vide** (compté le 11/09).
 - ⚠️ **Rappel structurel** : la clé étrangère ne référence que `events(id)`, **sans contrôle de `type`** — c'est ce qui rend la garde nécessaire, et c'est le même motif « une colonne, un seul écrivain » que le créneau orphelin du lot A.
 - **Recette de cette garde** : POST anon avec `challenge_event_id` = un événement **non-challenge** → **refus `P0004`** · avec un challenge → **201** · **PATCH** d'une ligne vers un non-challenge → **`P0004`** (le `UPDATE OF` s'évalue sur la **liste `SET` du statement**, pas sur ce qu'un `BEFORE` réécrit ensuite — **à mesurer, pas à déduire**) · **annulation par un membre → relire la ligne (`statut = 'annule'`) ET le créneau (redevenu réservable)**, jamais le message de l'interface · puis `SELECT count(*) FROM bilan_bookings b JOIN events e ON e.id = b.challenge_event_id WHERE e.type <> 'challenge'` → **0**.
+- 🔒 **CRITÈRES DE RECETTE DU LOT (contre-signature @vela — la liste de référence, à jouer telle quelle après application)** :
+  1. **anon → `challenge_event_id` = événement `type='event'`** : refus **`P0004`** (aujourd'hui : **201** — c'est le trou prouvé du 11/09) ;
+  2. **anon → `challenge_event_id` = challenge valide** : **201** (la garde ne doit pas produire de faux refus — d'où le `SECURITY DEFINER`) ;
+  3. **`PATCH` d'une ligne vers un non-challenge** → **`P0004`** (comportement `UPDATE OF` **mesuré**, pas supposé) ;
+  4. **croisement** `SELECT count(*) FROM bilan_bookings b JOIN events e ON e.id = b.challenge_event_id WHERE e.type <> 'challenge'` → **0** ;
+  5. **dédup par téléphone** : 2ᵉ demande, même numéro **dans un autre format** → **`P0002`** ;
+  6. **annulation par le membre** → relire **la ligne** (`statut = 'annule'`) **ET le créneau** (redevenu réservable) — pas le message de l'interface ;
+  7. **⑫ non-fuite du GUC** : après un appel RPC **réel**, **10 inserts REST consécutifs** tous étiquetés `visiteur` (+ variante après une pause, + variante **après échec/rollback**) ;
+  8. **⑨** : demande créée via le questionnaire → `origine = 'questionnaire'` **et** `challenge_event_id` = l'événement de l'inscription, visible dans l'onglet « Demandes » ;
+  9. **contrôle STRUCTUREL (comportement non mesurable, dépendance vérifiable)** : le **dernier** trigger `BEFORE INSERT` de `bilan_bookings` en ordre alphabétique doit être la garde — `SELECT tgname FROM pg_trigger WHERE tgrelid='public.bilan_bookings'::regclass AND NOT tgisinternal AND (tgtype & 2)=2 AND (tgtype & 4)=4 AND tgenabled <> 'D' ORDER BY tgname;` (⚠️ pas `tgtype = 7` : la garde sera **`INSERT OR UPDATE`**, donc **23** → un filtre exact donnerait un **faux rouge permanent**) ;
+  10. **sortie de recette** : **8 inscriptions / 7 créneaux / 1 événement / 0 booking** + `TEST-%` = **0** (les 2 fixtures — challenge `TEST-` et inscription rattachée, insérée **en admin**, jamais par le formulaire public qui enverrait de vrais e-mails).
 - **Recette ⑨** : après une demande via questionnaire → `origine = 'questionnaire'` **et** `challenge_event_id` = l'`event_id` de l'inscription, **et** la ligne apparaît dans l'**onglet « Demandes »** de `AdminBilans` avec son origine **lisible**.
 
 ### 2. Edge function « notification admin » (demandes hors-date)
