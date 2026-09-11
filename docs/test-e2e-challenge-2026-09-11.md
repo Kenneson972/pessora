@@ -68,12 +68,15 @@ Sur `https://www.pessora.fr`, **sans être connecté** (fenêtre de navigation p
 
 **Critère** : la demande est visible dans la file, avec son origine lisible. *(C'est la promesse du CR : « on n'a pas promis une réservation, on a promis que sa file reçoit la demande ».)*
 
+⚠️ **Attendre DEUX lignes, pas une** : la demande **sans créneau** (le questionnaire — origine `questionnaire`) **et** la réservation **sur créneau**. Ce n'est **pas un échec du test** : la personne apparaît deux fois parce qu'elle a exprimé **deux intentions réelles** (`je veux un bilan` / `je veux un bilan à CE moment-là`). C'est du **bruit connu**, dont la résolution est une **décision produit en attente** (la réservation de créneau devrait *supplanter* la demande sans créneau de la même personne). ➡️ **Étape 7 : supprimer les DEUX lignes.**
+
 ---
 
 ## 5. TESTER L'ANNULATION (le correctif `user_id`)
 
 1. Se connecter sur le site avec **un compte membre** (le compte QA d'Alcyone, ou celui de Ken).
    ⚠️ L'inscription du test doit alors porter **ce compte** dans `user_id` — sinon l'annulation ne s'écrira pas (invité = non annulable, c'est voulu).
+   🔴 **Donc DEUX variantes à jouer, et la première n'est pas un échec** : **(a) invité** (navigation privée) → la demande existe, et **elle n'est pas annulable** : c'est la propriété voulue, on le **note** au lieu de le compter comme un bug ; **(b) connecté en membre, inscription faite CONNECTÉ** → on vérifie les **deux** effets ci-dessous. **Seule (b) prouve le correctif `user_id`** — et si l'étape 3 a été jouée en invité, il faut **refaire une inscription connectée** avant de conclure.
 2. Espace membre → **Mes bilans** → **Annuler** la demande.
 3. **Vérifier les DEUX effets** (jamais le message de l'écran) :
    - la ligne passe bien en `statut = 'annule'` ;
