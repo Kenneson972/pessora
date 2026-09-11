@@ -36,4 +36,24 @@ describe('slotChallengeLabel', () => {
     expect(slotChallengeLabel(slot(), [challenge({ date: '2026-12-25' })], TODAY))
       .toBe('→ TEST-KEN Challenge (hors fenêtre — pas encore réservable)');
   });
+
+  it('window boundary: exactly at J-14 (window opens)', () => {
+    expect(slotChallengeLabel(slot(), [challenge({ date: '2026-09-15' })], '2026-09-01'))
+      .toBe('→ TEST-KEN Challenge');
+  });
+
+  it('window boundary: exactly at J (window closes)', () => {
+    expect(slotChallengeLabel(slot(), [challenge({ date: '2026-09-15' })], '2026-09-15'))
+      .toBe('→ TEST-KEN Challenge');
+  });
+
+  it('window boundary: one day before J-14 (before window opens)', () => {
+    expect(slotChallengeLabel(slot(), [challenge({ date: '2026-09-15' })], '2026-08-31'))
+      .toBe('→ TEST-KEN Challenge (hors fenêtre — pas encore réservable)');
+  });
+
+  it('window boundary: one day after J (after window closes)', () => {
+    expect(slotChallengeLabel(slot(), [challenge({ date: '2026-09-15' })], '2026-09-16'))
+      .toBe('→ TEST-KEN Challenge (hors fenêtre — pas encore réservable)');
+  });
 });
