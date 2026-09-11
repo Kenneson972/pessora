@@ -98,17 +98,22 @@ Trigger `trg_bilan_slot_attach_challenge` + fonction `fn_bilan_slot_attach_chall
 
 ---
 
-**BASELINE AVANT v6 — à repasser APRÈS application (écart = fixture oubliée)**
-Relevé du 10/09 (indépendamment par @vela et @alcyone) : `bilan_slots` = **7 lignes**, **7 orphelins** (`challenge_event_id = NULL`), toutes `disponible = true`, datées du **25/04 au 13/05** · `bilan_bookings` = **0** · `events` = **1**, dont **0 `challenge`** · **0 trigger** sur `bilan_slots`.
-➡️ Le contrôle discriminant n'est pas « 7 lignes » mais « **7 lignes ET 7 liens toujours NULL** » : un backfill oublié garderait le compte **et** changerait les liens.
-➡️ **Fixtures de demain** : tout challenge/créneau de test doit porter un nom **traçable** (préfixe `TEST-`) et entrer dans l'inventaire de purge du go-live. **Mieux** : si Catherine a créé son vrai challenge, **la démo se joue dessus** — le test est réel et il n'y a rien à purger.
+**ÉTAT DE LA BASE (11/09, après application — référence pour toute recette)**
+`bilan_slots` = **7** (7 orphelins, inchangé) · `bilan_bookings` = **0** · `events` = **1** (`0 challenge`) · `event_registrations` = **8** (dont **7 `TEST*` héritées** → purge go-live) · `rate_limits` = **19 entrées** (compteurs 24 h, dont **12 issues de nos recettes** → **à ajouter à l'inventaire de purge**).
+➡️ **Une empreinte d'objets est prise à chaque application** : `python3 /opt/data/cache/base_fingerprint.py --snapshot` avant / après, puis `--diff`. Une écriture non annoncée apparaît alors dans un diff, datée.
+➡️ **Fixtures du test E2E** : préfixe **`TEST-KEN-`**, purgées derrière — scénario complet dans **`docs/test-e2e-challenge-2026-09-11.md`**.
 
 ---
 
 ## PROCHAIN LOT — dans l'ordre
 
-### 1. RPC questionnaire post-inscription (débloque le critère ⑨)
-La réponse « je veux mon bilan » du questionnaire doit créer **une demande dans la file de Catherine** — aujourd'hui elle part dans un JSON que **personne n'affiche**.
+### 1. RPC questionnaire post-inscription — ✅ **CLOS** (appliqué, recetté, mergé)
+
+**Fait le 11/09** : branche `feat/rpc-questionnaire-bilan` mergée (`d8ecf00`), **blob appliqué = blob mergé** (`451d0ee18b9d766f2df973f665f0cbefec54f117`). **Recette 12/12 verte** : la demande est créée avec `origine = 'questionnaire'`, `challenge_event_id` = l'événement de l'inscription, `user_id` du membre · l'annulation **écrit** et **rouvre le créneau** · le GUC ne fuit pas (12 inserts consécutifs en `visiteur`) · la garde `P0004` tient sur l'INSERT **et** le PATCH (y compris un uuid inexistant).
+**Ne pas y retoucher.**
+
+**Spec d'origine (réalisée — conservée comme trace de ce qui a été demandé)**
+La réponse « je veux mon bilan » du questionnaire devait créer **une demande dans la file de Catherine** — avant, elle partait dans un JSON que **personne n'affiche**.
 
 - **Une seule file** : la RPC écrit une ligne `bilan_bookings` (`slot_id = NULL`, `statut = 'en_attente'`).
 - **Champ `bilan_offert` réactivé** dans `getPostRegistrationSteps` **pour le type `challenge` uniquement** (jamais pour tous les types — c'est l'erreur d'origine). Les options `BILAN_OFFERT_OPTIONS` existent déjà.
@@ -153,8 +158,23 @@ La réponse « je veux mon bilan » du questionnaire doit créer **une demande d
       ⚠️ **Deux critères différents, à ne pas confondre** : la **recette** exige le **retour au baseline** (les 7 `TEST*` historiques sont toujours là — les compter comme un échec serait un critère mal calibré, vécu le 11/09) ; c'est la **purge go-live** qui exige **`TEST-%` = 0**.
 - **Recette ⑨** : après une demande via questionnaire → `origine = 'questionnaire'` **et** `challenge_event_id` = l'`event_id` de l'inscription, **et** la ligne apparaît dans l'**onglet « Demandes »** de `AdminBilans` avec son origine **lisible**.
 
-### 2. Edge function « notification admin » (demandes hors-date)
-Pattern `send-contact-email` / Resend. Elle **lit** les demandes en attente et **envoie l'e-mail** — elle n'écrit pas dans la table (c'est la RPC qui écrit). Contenu : nom, prénom, téléphone, origine, challenge.
+### 2. Edge function « notification admin » (demandes hors-date) — **PROCHAINE TÂCHE**
+
+**DÉCISION PRISE (11/09) : c'est un BALAYAGE, pas un envoi déclenché.**
+Un job passe **toutes les 15 minutes**, lit les demandes `statut = 'en_attente' AND notified_at IS NULL`, envoie l'e-mail, puis marque `notified_at` — **sur succès seulement**.
+
+**Pourquoi ce choix** : il n'y a **rien à installer** (⚠️ `pg_cron`, `pg_net`, `http` et le schéma `supabase_functions` sont **tous absents** de ce projet — vérifié), il **couvre les trois chemins** (questionnaire, créneau, hors-date), et l'onglet fermé ne perd rien : la demande est **déjà en base**. La latence de quelques minutes est sans objet — Catherine **valide à la main**.
+*Écarté :* un **Database Webhook** (nécessite d'activer une extension + une config dans le dashboard = **hors repo**, à assumer comme telle) et un **déclenchement par le front** (un client qui ferme son onglet = **e-mail jamais envoyé**).
+
+- **Pas de claim, pas de bail, pas de table de notifications.** On accepte un **doublon rare** (process mort entre l'acceptation Resend et le marquage), on **refuse la perte** — c'est le bon sens de l'erreur. La file de Catherine reste la vérité ; l'e-mail n'est qu'un confort, donc **borné** : si le job meurt, elle voit quand même ses demandes.
+- **Lecture en `service_role` ou par connexion directe** (jamais `anon`) : la policy de `bilan_bookings` est « je lis les miennes » → un job en anon lirait **0 ligne, sans erreur**, et le symptôme serait « le job tourne, rien ne part ».
+- **`verify_jwt = true` sur cette fonction** : on copie le **code** de `send-contact-email`, **pas sa config de vérification** (elle est en `false` **exprès** parce qu'un formulaire public l'appelle). Ici, `false` ouvrirait un **robinet à e-mails** sur la boîte de Catherine. Déploiement **nommément**, jamais « toutes les fonctions ».
+- **Un e-mail par demande**, avec **le nom en objet** — pas un récapitulatif : elle traite une par une. *(Décision écrite, sinon on découvre le comportement au premier lundi chargé.)*
+- **L'e-mail porte l'ACTION, pas seulement l'information** : nom, prénom, téléphone, origine, le challenge concerné — **et un bouton vers sa file** dans `admin.pessora.fr`. Un message sans geste, on s'en est interdit ailleurs.
+- **Le job écrit sa trace à chaque passage**, et le **scan planning quotidien (8 h)** la lit → on apprend une panne en moins de 24 h **sans rien installer de plus**. ⚠️ Figer **ensemble** l'emplacement et le format de cette trace (le critère ⑤ et le critère ⑥ échouent **ensemble** si les deux ne s'accordent pas).
+- **Critères (@vela)** : ① une demande → **un** e-mail · ② un **second** balayage → **aucun** second e-mail · ③ un envoi qui **échoue** → la ligne reste **non marquée** et le balayage suivant **réessaie** · ④ le job **laisse une trace** · ⑤ **on ne valide jamais le job par `exit 0`** : on crée une demande et on vérifie que **le balayage la voit**.
+- **Propriétaire** : @alcyone (cron **script-only**, pas d'agent LLM sur un balayage de 15 min) — annoncé comme tel, et **config hors repo à documenter**.
+- **Le test** est l'étape 6 de `docs/test-e2e-challenge-2026-09-11.md` — et il ferme le **dernier maillon Resend** (jusqu'ici prouvé **au câblage**, jamais **à la réception**).
 
 ### 3. `X-Robots-Tag` par chemin (`vercel.json`)
 Dernier « petit » en suspens depuis plusieurs sessions (item 14 de la checklist go-live). Ordre impératif : (1) headers par chemin, (2) vérification **chemin par chemin**, (3) **ensuite seulement** lever le `noindex` global, puis régénérer le sitemap.
@@ -189,6 +209,20 @@ Un membre modifie son profil → l'interface dit « enregistré », **rien n'est
   7. 🔴 **ET la fonction DÉPLOYÉE — pas seulement le repo** (trouvé par @alcyone, 11/09) : l'ancienne adresse est **codée en dur dans `send-contact-email`** (2 occurrences : le `from:` **et** le `to:` de repli). Donc remplacer les 17 occurrences **ne suffit pas** : il faut **redéployer la fonction**, sinon l'adresse **survit en production** et la passe rend un **faux vert**. Le contrôle se fait sur le **déployé** (version + `verify_jwt`), jamais sur le seul fichier du repo — c'est la même leçon que « les migrations ne sont pas la source de vérité de la base ».
 - **Médiateur de la consommation** : obligatoire (L612-1 · L616-1/R616-1 · amende L641-1 jusqu'à 3 000 €). **C'est Catherine qui le désigne** → coordonnées à inscrire sur le site **et** dans les CGV dès qu'elle répond.
 - **Newsletter conforme** : colonne `token uuid DEFAULT gen_random_uuid()`, **fonction de désinscription dédiée en `verify_jwt = false`** (déployée **nommément**), **`List-Unsubscribe` + `List-Unsubscribe-Post: List-Unsubscribe=One-Click`**, réponse **sans PII**, idempotente, rate-limitée. **DMARC absent** : `_dmarc.pessora.fr TXT "v=DMARC1; p=none"` (chez OVH). ⚠️ L'apex a un SPF **strict** (`include:mx.ovh.com -all`) → aucun envoi depuis `@pessora.fr` hors Resend.
+
+---
+
+## PAGE CHALLENGE — ajout de périmètre (décision de Ken, 11/09)
+
+**Ce n'est PAS une page marketing isolée** : la route `/evenements/:slug` existe déjà et affiche un événement. Le travail consiste à **enrichir cette page quand le type est `challenge`** — un habillage de landing, dans la logique des autres événements. La décision du RDV (pas de page séparée) est donc **respectée**, et c'est **un ajout de périmètre**, pas un point du CR de Catherine.
+
+- **Charpente** (référence FitStrong envoyée par Ken) : hero · 3 puces de réassurance · barre de chiffres · cartes · témoignages · CTA final. ⚠️ **On prend la charpente, PAS le style** — vert fluo/noir « salle de muscu » est rejeté : Pessóra est un bar wellness chic, on garde sa palette et son ton éditorial, avec une seule couleur d'accent.
+- **Contenu** : il vient de la fiche papier de Catherine → **`docs/fiche-papier-challenge-21j.md`** (transcrite et vérifiée sur photo). Accroche de hero = **sa phrase** : « Quel est ton prochain objectif ? ». Les **6 éléments inclus** (GetFitNow · 24FIT PESSORA · séances · recettes · conseils · suivi) viennent d'elle, ils ne sont **pas inventés**.
+- 🔴 **La section « COMPLÉMENT DE REVENUS » (opportunité Herbalife) est EXCLUE** de la page **et de tout formulaire en ligne** — c'est du recrutement, et le site fait la vente, pas le recrutement. *(Écrit aussi dans la fiche, pour que personne ne la « rajoute » dans six mois.)*
+- **Aucun formulaire nouveau** : la page est un habillage. Son CTA mène au **parcours d'inscription déjà recetté** (inscription → bilan obligatoire → créneau). Donc pas de nouvelle collecte, pas de nouvelle mention RGPD, pas de table à créer.
+- **Trois blocs restent VIDES jusqu'aux vrais contenus de Catherine** : **chiffres**, **témoignages**, **photos avant/après**. Jamais de placeholder inventé, jamais de photo de banque d'images : ce serait de la **fausse preuve sociale** sur le site d'une commerçante.
+- ⚠️ **Lien partagé (ancre)** : le site gère les ancres **au clic** (`HeaderSubNav`), mais **`location.hash` n'est lu nulle part** — un lien `#challenge-21-jours` collé directement ouvrirait la page **en haut**, sans atteindre la rubrique. **À corriger** si on veut un lien partageable (post Instagram, QR au bar), et à vérifier **en navigation privée, lien collé**.
+- **Séquencement** : **on ne touche pas au front avant la fin du test E2E** — la recette est verte, le scénario est prêt. @lyra dessine pendant ce temps.
 
 ---
 
