@@ -289,7 +289,12 @@ Un membre modifie son profil → l'interface dit « enregistré », **rien n'est
   4. **Contenu positif (@nova)** — ce qui doit être **là** : accroche = **sa phrase** (« Quel est ton prochain objectif ? ») · **6 puces « inclus »** mot pour mot (GetFitNow · 24FIT PESSORA · séances · recettes · conseils · suivi) · **3 timings** de démarrage · **CTA vers le parcours d'inscription existant** (aucune nouvelle collecte). Source : `docs/fiche-papier-challenge-21j.md`. *Sans porte positive, trois compteurs à « 0 » valident une page vide.*
   5. **Fuseau** — borne **front** et borne **base** disent la même chose **à 20 h 30 locale** (helper unique `src/lib/martiniqueDate.ts`).
   6. **390 px** — `scrollWidth === clientWidth` (zéro débordement horizontal) **et** **1** bloc encadré **portant le titre signature** (= 1), le compte brut des cadres restant **indicatif** : compter les cadres donnait **2 faux positifs sur une page saine** (une carte d'inscription, un champ de saisie) — *un dispositif signature se définit par son rôle, pas par sa bordure*.
-  **@lyra garde l'œil sur la forme** (fidélité au mockup, ce que les compteurs ne voient pas).
+- 🎨 **« Fidélité au mockup » = 4 valeurs relevées sur le DOM (@lyra)** — ce n'est pas un jugement, ça se mesure :
+  1. **titre hero ≤ 3,5 rem** (règle dure : pas de titre géant façon landing fitness) ;
+  2. **rayon des blocs = 2 px** (le token du projet — une page en cartes arrondies, et on a perdu l'ADN Pessóra) ;
+  3. **un seul accent : le vert sapin `#1E3529`**, jamais une deuxième couleur de mise en avant ;
+  4. **respiration de section ≥ 6,5 rem en desktop** (c'est ce qui fait le « sobre » ; tassé, ça devient une page promo).
+  **Reste au seul jugement d'@lyra : la composition** — et elle vient **après** ces 4 valeurs, jamais à leur place.
 
 ---
 
