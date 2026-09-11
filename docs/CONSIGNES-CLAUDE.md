@@ -105,6 +105,29 @@ Trigger `trg_bilan_slot_attach_challenge` + fonction `fn_bilan_slot_attach_chall
 
 ---
 
+## 🔴 EN ATTENTE DE CLAUDE — 2 corrections avant merge
+
+### 1. `feat/route-mes-bilans-membre` — **1 bloquant** (revue @nova)
+
+**Ce qui est bon** ✅ : la route `/membre/bilans` + l'entrée « Mes bilans » dans la nav de l'espace membre · la suppression du booking client-side bugué (556 → 207 lignes) · le renvoi vers **le widget recetté** pour réserver · le récap du test dans `docs/`.
+
+🔴 **Ce qui bloque** — l'annulation écrit sans rien vérifier (`MesBilans.tsx`, ~l.76) :
+```js
+await supabase.from('bilan_bookings').update({ statut: 'annule' }).eq('id', cancelTarget);
+setBookings(prev => prev.map(b => b.id === cancelTarget ? {...b, statut: 'annule'} : b));
+```
+**Aucun contrôle d'erreur, aucune vérification de ligne, mise à jour optimiste** → si l'écriture touche **0 ligne** (policy, réseau, mauvaise ligne), l'écran affiche « **Annulé** » alors que **rien n'est annulé**, et le **créneau reste fermé**. C'est le bug `profiles` et le bug « sélection de créneau » recomposés sur la page qu'on vient d'ouvrir.
+
+**Correctif** : `.select('id')` sur l'`update`, et si `data.length === 0` → **message d'erreur à l'écran**, pas de mise à jour optimiste. ⚠️ Ici le `.select()` est **le bon outil** (c'est **sa propre ligne**, le `RETURNING` fonctionne) — contrairement au chemin **invité** du widget, où il casserait tout. Puis le critère 6 : après annulation, relire **la ligne** (`statut = 'annule'`) **et le créneau** (redevenu réservable).
+
+### 2. Le récap du test dit une chose fausse (`docs/recap-test-e2e-challenge-2026-09-11.md`)
+Il annonce que **les deux branches ne sont pas mergées** — or **`feat/rpc-questionnaire-bilan` EST mergée** (`main` = `d8ecf00`, et la migration dans `main` **est** le blob appliqué `451d0ee1…`). **Seule `feat/route-mes-bilans-membre` est en attente.** Corriger la ligne.
+
+### 3. Les captures du test n'ont pas été archivées
+Le scénario exigeait **5 états × 2 formats** dans un dossier daté en 600. La branche ne porte **que le rapport** — et comme les lignes du test ont été **nettoyées**, ces états **ne se re-tirent plus** sans réécrire en base. Donc : **si tu les as encore, verse-les dans le dossier daté ; sinon on l'écrit tel quel** (la forme a été validée sur la maquette, pas sur les écrans de prod). On ne laisse pas croire que la session a été validée à l'image.
+
+---
+
 ## PROCHAIN LOT — dans l'ordre
 
 ### 1. RPC questionnaire post-inscription — ✅ **CLOS** (appliqué, recetté, mergé)
@@ -221,8 +244,15 @@ Un membre modifie son profil → l'interface dit « enregistré », **rien n'est
 - 🔴 **La section « COMPLÉMENT DE REVENUS » (opportunité Herbalife) est EXCLUE** de la page **et de tout formulaire en ligne** — c'est du recrutement, et le site fait la vente, pas le recrutement. *(Écrit aussi dans la fiche, pour que personne ne la « rajoute » dans six mois.)*
 - **Aucun formulaire nouveau** : la page est un habillage. Son CTA mène au **parcours d'inscription déjà recetté** (inscription → bilan obligatoire → créneau). Donc pas de nouvelle collecte, pas de nouvelle mention RGPD, pas de table à créer.
 - **Trois blocs restent VIDES jusqu'aux vrais contenus de Catherine** : **chiffres**, **témoignages**, **photos avant/après**. Jamais de placeholder inventé, jamais de photo de banque d'images : ce serait de la **fausse preuve sociale** sur le site d'une commerçante.
+- **Maquette et spec prêtes (Lyra, hors repo)** : `clients/pessora/page-challenge/maquette-challenge-21j.html` — **ouvrable au navigateur**, avec un **bouton de revue** pour basculer entre « vague ouverte » et « aucune vague ouverte » · `clients/pessora/page-challenge/DA-SPEC-challenge-21j.md` — la spec chiffrée (tokens pris dans `src/index.css`, règles dures, ordre des blocs) · captures 1440 + 390 en `clients/pessora/page-challenge/captures/` (en **600**).
+- **Direction validée** : **Éditorial · Chaleureux · Sobre**. Un seul dispositif signature : **l'encadré « Challenge 21 jours »**, repris de la fiche papier (où c'est la seule zone encadrée). Accroche de hero = sa phrase.
+- 🔴 **Règle de Lyra, à respecter absolument : un bloc de preuve vide ne se publie jamais.** Les 3 blocs (chiffres, avant/après, témoignages) restaient **invisibles en prod** tant qu'ils n'ont pas de contenu réel — dessinés vides, ils ressemblaient à des **blocs cassés** (défaut trouvé à la QA et corrigé dans la spec).
+- **Les visuels à produire** — et la ligne de partage :
+  - **à nous** (aucun risque, ambiance et structure uniquement) : **fond hero 1920×1080 + déclinaison mobile** · **6 icônes au trait** pour les items inclus · **OG image 1200×630** (l'aperçu quand le lien circule — on n'en a pas aujourd'hui) · **badge de vague**.
+  - **à Catherine** : photos **avant/après** (droits), **témoignages** (jamais inventés, jamais une photo de banque d'images), **chiffres** (les vrais, ou pas de bloc).
+  - ⚠️ **Jamais de preuve générée** : pas de visage, pas d'avis, pas de chiffre inventés.
 - ⚠️ **Lien partagé (ancre)** : le site gère les ancres **au clic** (`HeaderSubNav`), mais **`location.hash` n'est lu nulle part** — un lien `#challenge-21-jours` collé directement ouvrirait la page **en haut**, sans atteindre la rubrique. **À corriger** si on veut un lien partageable (post Instagram, QR au bar), et à vérifier **en navigation privée, lien collé**.
-- **Séquencement** : **on ne touche pas au front avant la fin du test E2E** — la recette est verte, le scénario est prêt. @lyra dessine pendant ce temps.
+- **Séquencement** : le test E2E est **terminé** ✅ (base rendue au baseline) → **le front est libre**, la page challenge peut être codée. Le blocage restant est **le correctif du point 1 ci-dessus** (l'annulation de `MesBilans`), à passer **avant** le merge de sa branche.
 
 ---
 
