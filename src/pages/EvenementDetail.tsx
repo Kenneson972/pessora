@@ -12,6 +12,7 @@ import { PostRegistrationWizard } from '../components/events/PostRegistrationWiz
 import { BilanBookingWidget } from '../components/events/BilanBookingWidget';
 import { EventJsonLd } from '../components/seo/EventJsonLd';
 import { isValidPhone } from '../lib/phone';
+import { formatDate, formatDateShort } from '../lib/eventDateFormat';
 
 const schema = z.object({
   nom: z.string().min(2, 'Nom requis'),
@@ -50,17 +51,6 @@ const TYPE_LABELS: Record<Event['type'], string> = {
 
 const inputClass =
   'w-full border-0 border-b border-noir/10 bg-transparent py-4 text-[14px] text-noir placeholder:text-black/30 focus:outline-none focus:border-noir transition-colors';
-
-// Append T00:00:00 so JS parses as local time (Martinique UTC-4), not UTC midnight
-const formatDate = (dateStr: string) =>
-  new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  });
-
-const formatDateShort = (dateStr: string) =>
-  new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', {
-    weekday: 'long', day: 'numeric', month: 'long',
-  });
 
 interface EventWithCount extends Event {
   registrationCount: number;
