@@ -109,7 +109,7 @@ Trigger `trg_bilan_slot_attach_challenge` + fonction `fn_bilan_slot_attach_chall
 
 ### 1. `feat/route-mes-bilans-membre` — **1 bloquant** (revue @nova)
 
-**Ce qui est bon** ✅ : la route `/membre/bilans` + l'entrée « Mes bilans » dans la nav de l'espace membre · la suppression du booking client-side bugué (556 → 207 lignes) · le renvoi vers **le widget recetté** pour réserver · le récap du test dans `docs/`.
+**Ce qui est bon** ✅ : la route **`/mon-espace/bilans`** — ⚠️ **et non** `/membre/bilans`, qui rend un **404** (vérifié en preview par @vela le 11/09 ; l'URL fausse venait de la revue d'@nova, recopiée telle quelle dans ce doc : **on ne recopie pas une revue sans vérifier son chemin**) + l'entrée « Mes bilans » dans la nav de l'espace membre · la suppression du booking client-side bugué (556 → 207 lignes) · le renvoi vers **le widget recetté** pour réserver · le récap du test dans `docs/`.
 
 🔴 **Ce qui bloque** — l'annulation écrit sans rien vérifier (`MesBilans.tsx`, ~l.76) :
 ```js

@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
 import {
   LayoutDashboard, CalendarDays, ShoppingBag,
-  Star, MessageCircle, LogOut, Shield, ArrowLeft,
+  Star, MessageCircle, LogOut, Shield, ArrowLeft, Heart,
 } from 'lucide-react';
 import { cn } from '@heroui/react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -24,6 +24,7 @@ const MemberLayout = ({ children }: { children: React.ReactNode }) => {
   }[] = [
     { label: 'Tableau de bord', shortLabel: 'Accueil', icon: LayoutDashboard, path: prefix, exact: true },
     { label: 'Mes événements', shortLabel: 'Événements', icon: CalendarDays, path: `${prefix}/evenements` },
+    { label: 'Mes bilans', shortLabel: 'Bilans', icon: Heart, path: `${prefix}/bilans` },
     { label: 'Mes commandes', shortLabel: 'Commandes', icon: ShoppingBag, path: `${prefix}/historique` },
     { label: 'Abonnement', shortLabel: 'Óra+', icon: Star, path: `${prefix}/abonnement` },
     { label: 'PessoBot', shortLabel: 'PessoBot', icon: MessageCircle, path: `${prefix}/pessobot` },
