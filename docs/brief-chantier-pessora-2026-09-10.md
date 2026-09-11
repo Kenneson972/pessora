@@ -10,7 +10,7 @@
 
 **Challenge 21 jours**
 - Devient une **rubrique dédiée DANS la page Événements** (pas de page séparée, pas de landing isolée).
-- **Vagues** (posées par nous dans l'admin) : sept./oct. · janv. · mars — pause nov.-déc. et février (carnaval).
+- ~~Vagues~~ → **« Challenge 21 jours »** — ⚠️ **le rythme « sept./oct. · janv. · mars » est RETIRÉ (11/09)** : il n'a **jamais** été validé par Catherine, et le mot « vague » **n'est pas d'elle** (c'est notre jargon). **Aucune date en dur, nulle part** — ni page, ni visuel, ni e-mail. La page affiche **les challenges qui existent en base** ; s'il n'y en a aucun → « le prochain challenge ouvre bientôt » + newsletter. Règle : `docs/CONSIGNES-CLAUDE.md` (§ vocabulaire / calendrier).
 - **Créneaux de bilan ouverts automatiquement 2 semaines avant** chaque challenge (J-14), **jusqu'au jour J inclus**.
 - **Après la date**, une demande de bilan reste possible → **validation manuelle dans l'admin** + **notification par email**.
 - **Inscription au bilan OBLIGATOIRE** pour participer au challenge.
