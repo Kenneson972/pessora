@@ -105,9 +105,19 @@ Trigger `trg_bilan_slot_attach_challenge` + fonction `fn_bilan_slot_attach_chall
 
 ---
 
-## 🔴 EN ATTENTE DE CLAUDE — 2 corrections avant merge
+## ✅ PORTE FRANCHIE — `feat/route-mes-bilans-membre` **mergée** (`7e4fcf0`)
 
-### 1. `feat/route-mes-bilans-membre` — **1 bloquant** (revue @nova)
+Recette @vela **verte sur `a6cc9c7`** (critère 6 bout en bout : ligne `annule` **et** créneau rouvert ; capture d'échec tirée par `route.abort()`, **zéro écriture en base**), verrou code @nova vert, verdict visuel @lyra vert (« l'écran ne ment plus »). **Tout est dans `main`** :
+
+- `.select('id')` + contrôle de ligne → **message affiché DANS la carte du RDV** (13 px, `text-red-600`, **pleine largeur en mobile**), contact du site (`pessora.mq@gmail.com`) au lieu d'Instagram, la phrase **« rien n'a été annulé »**, et **`setCancelError(null)` au succès** ;
+- le bouton **« Annuler »** passe en **12 px / rouge plein** — il était en **10 px à 70 % d'opacité**, donc plus petit et plus pâle que le message d'erreur qu'on venait d'agrandir ;
+- le récap est corrigé (`feat/rpc-questionnaire-bilan` **est** mergée) et la ligne fausse du chef de branche est partie avec.
+
+⚠️ **Deux points restent ouverts, hors de cette porte :** **(a)** @lyra a relevé que **« ÓRA+ » est toujours dans la navigation de l'espace membre** (sidebar + barre mobile) → **passe Óra+** ; **(b)** les **7 créneaux legacy** de `bilan_slots` (avril/mai, passés, 0 réservation) s'affichent **en tête de l'onglet Créneaux** de Catherine — **suppression décidée et datée à la purge**, sur go de Ken.
+
+*Ce qui suit est conservé comme **trace** de ce qui a été corrigé — les quatre points sont désormais dans `main`.*
+
+### 1. Ce qui bloquait — **corrigé**
 
 **Ce qui est bon** ✅ : la route **`/mon-espace/bilans`** — ⚠️ **et non** `/membre/bilans`, qui rend un **404** (vérifié en preview par @vela le 11/09 ; l'URL fausse venait de la revue d'@nova, recopiée telle quelle dans ce doc : **on ne recopie pas une revue sans vérifier son chemin**) + l'entrée « Mes bilans » dans la nav de l'espace membre · la suppression du booking client-side bugué (556 → 207 lignes) · le renvoi vers **le widget recetté** pour réserver · le récap du test dans `docs/`.
 
@@ -252,6 +262,15 @@ Un membre modifie son profil → l'interface dit « enregistré », **rien n'est
   - **à Catherine** : photos **avant/après** (droits), **témoignages** (jamais inventés, jamais une photo de banque d'images), **chiffres** (les vrais, ou pas de bloc).
   - ⚠️ **Jamais de preuve générée** : pas de visage, pas d'avis, pas de chiffre inventés.
 - ⚠️ **Lien partagé (ancre)** : le site gère les ancres **au clic** (`HeaderSubNav`), mais **`location.hash` n'est lu nulle part** — un lien `#challenge-21-jours` collé directement ouvrirait la page **en haut**, sans atteindre la rubrique. **À corriger** si on veut un lien partageable (post Instagram, QR au bar), et à vérifier **en navigation privée, lien collé**.
+- 🔴 **RÈGLE OBLIGATOIRE — le fuseau (spec l.16 : `date >= aujourd'hui` n'était pas daté).** « Aujourd'hui » **ne se calcule jamais** avec `toISOString()` ni avec le fuseau du visiteur :
+  - **un seul helper** : `new Intl.DateTimeFormat('fr-CA', { timeZone: 'America/Martinique' }).format(new Date())` → rend bien `2026-09-11` ;
+  - **jamais `toISOString().slice(0,10)`** — à **20 h 30 locale**, il renvoie **`2026-09-12`** alors que la Martinique est encore le 11 → la page **se ferme 4 h trop tôt**, et la vague disparaît du site le soir du dernier jour ;
+  - **jamais le fuseau du visiteur** (`toLocaleDateString()` sans `timeZone`) : un visiteur à Paris ouvrirait/fermerait la page avec **son** « aujourd'hui » — le même bug, déguisé ;
+  - **même règle que la base**, qui fait déjà `(now() AT TIME ZONE 'America/Martinique')::date` → *une seule règle, un seul endroit*.
+  - **Critère** : la borne **front** et la borne **base** disent la **même chose à 20 h 30 locale** ✅.
+- 🔴 **RÈGLE OBLIGATOIRE — aucune date sur la page qui ne soit une ligne en base.** La page affiche **les vagues qui existent** (`events` où `type='challenge' AND active=true`). S'il n'y en a aucune → « le prochain challenge ouvre bientôt » + newsletter. **Pas de liste de rythme en dur** (le « sept./oct. · janv. · mars » est **retiré** : Catherine n'a pas validé ce calendrier, et **le calendrier est chez elle**). Conséquence voulue : le jour où elle crée son challenge, il apparaît **sans qu'on touche au code**.
+- **Non bloquant (@lyra)** : à 1440, le message d'erreur court sur **une ligne de ~850 px** — poser un `max-width` (~65-70 caractères) pour qu'il respire.
+- **Trouvaille visuelle (@lyra, avec captures)** : **« ÓRA+ » est encore dans la navigation de l'espace membre** — sidebar desktop **et** barre du bas mobile — alors que l'archivage est total. À traiter dans la **passe Óra+**, les captures servant de preuve.
 - **Séquencement** : le test E2E est **terminé** ✅ (base rendue au baseline) → **le front est libre**, la page challenge peut être codée. Le blocage restant est **le correctif du point 1 ci-dessus** (l'annulation de `MesBilans`), à passer **avant** le merge de sa branche.
 
 ---
