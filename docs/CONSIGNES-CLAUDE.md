@@ -272,6 +272,17 @@ Un membre modifie son profil → l'interface dit « enregistré », **rien n'est
 - **Non bloquant (@lyra)** : à 1440, le message d'erreur court sur **une ligne de ~850 px** — poser un `max-width` (~65-70 caractères) pour qu'il respire.
 - **Trouvaille visuelle (@lyra, avec captures)** : **« ÓRA+ » est encore dans la navigation de l'espace membre** — sidebar desktop **et** barre du bas mobile — alors que l'archivage est total. À traiter dans la **passe Óra+**, les captures servant de preuve.
 - **Séquencement** : le test E2E est **terminé** ✅ (base rendue au baseline) → **le front est libre**, la page challenge peut être codée. Le blocage restant est **le correctif du point 1 ci-dessus** (l'annulation de `MesBilans`), à passer **avant** le merge de sa branche.
+- 🔴 **PRÉCÉDENCE — un arbitre par QUESTION, jamais un arbitre par document.** Trois documents coexistent pour cette page ; en cas de désaccord, c'est la **question** qui désigne qui tranche :
+  - **`docs/CONSIGNES-CLAUDE.md` (ce doc)** → tout ce qui touche à **ce qui est vrai ou publiable** : fuseau, calendrier, exclusion Herbalife, publication d'un bloc vide, route ;
+  - **`clients/pessora/page-challenge/DA-SPEC-challenge-21j.md` (Lyra)** → les **valeurs visuelles mesurées** (tokens, tailles, hiérarchie, contraste) ;
+  - **`docs/superpowers/specs/2026-09-11-challenge-21j-landing-design.md` (spec de build)** → l'**implémentation** (fichiers, ordre, requêtes).
+  **Aucun document n'est « le bon » en bloc.** C'est le type d'écart qui a produit le faux chemin `/membre/bilans` : deux endroits, une seule règle — on vérifie le chemin, pas la confiance.
+- 🔴 **3 alignements à faire DANS la spec de build AVANT de coder** (relevés par @vela, comparaison ligne à ligne) :
+  1. **l.44** — *« Rythme des vagues : liste statique en dur pour ce lot »* **contredit la règle « aucune date qui ne soit une ligne en base »** → remplacer par la **requête en base** (l'état vide l.43 « ouvre bientôt » reste ✅) ;
+  2. **l.16** — `date >= aujourd'hui` **ne dit pas quel « aujourd'hui »** → c'est la **règle de fuseau de ce doc** qui tranche, sinon on recode `toISOString()` ;
+  3. **l.64** — les **cadres en pointillés décrits comme un rendu de prod** contredisent la règle de Lyra → **en prod, aucun pointillé** : le hero a un **dégradé de repli codé** (la page a l'air finie sans l'image), et les blocs de preuve sont **absents du DOM**, pas masqués en CSS. Le pointillé est un **repère de revue**, il vit dans la maquette.
+- ✅ **Ce que les deux documents disent déjà la même chose** (donc stable, ne pas y toucher) : Herbalife exclu **avec son grep de contrôle** · blocs de preuve qui retournent `null` · ordre des routes (statique **avant** paramétrée) · **un seul écrivain** pour le parcours d'inscription · aucune promesse de résultat chiffré.
+- 🔎 **Les 3 portes de recette sur la page DÉPLOYÉE** (@vela — mesurables, sans jugement d'humeur) : **①** éléments en pointillés = **0** · **②** blocs de preuve présents dans le DOM = **0** tant que Catherine n'a rien livré · **③** borne **front** et borne **base** disent la même chose **à 20 h 30 locale**. @lyra garde l'œil sur la forme.
 
 ---
 
