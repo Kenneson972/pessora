@@ -21,6 +21,17 @@
 
 ---
 
+## ÉTAT AU 10/09/2026 (nuit) — clôture de journée
+
+- **`origin/main` = `c4325d6`** · **production déployée** (Vercel READY).
+- **Les 3 migrations du Challenge/Bilan sont en base ET dans `main`** → **aucune migration appliquée hors du repo** (le motif corrigé toute la journée). Ne pas modifier les fichiers déjà appliqués : tout correctif passe par une **migration de suivi datée**.
+- **Branches mergées ce soir** : `chore/gitignore-env`, `feat/bloc-partenariat-page-contact`, `feat/tests-paiement-stripe`, `fix/google-full-name` (fonction et trigger **déjà en base** → merger a **aligné** repo↔base ; personne ne l'applique).
+- ⚠️ **`feat/tests-paiement-stripe` ne contient AUCUN test** — une seule doc de 47 lignes. **Ne jamais dire « les tests Stripe sont faits »** : un nom de branche n'est pas une preuve.
+- ⚠️ **`feat/bloc-partenariat-page-contact` est un ajout hors brief** (demande de Ken) : à déclarer comme tel, ce n'est pas un point du CR de Catherine. Vérifié en live après merge : `/contact` sert le CTA, le lien mène à `/contact-partenariat`, 0 erreur console.
+- **Prochaine étape** : la **RPC questionnaire** (lot 1 ci-dessous), puis l'edge function, puis `X-Robots-Tag`, le lot `profils`, la conformité.
+
+---
+
 ## 2026-09-10 (soir) — LOT A : Challenge / Bilan — ✅ MERGÉ
 
 **État : le merge du lot A est `047c294`** (17 fichiers, +1029/−12) — vérifié comme **déploiement de production servi** (Vercel, ref `main`, état READY). Les deux migrations sont en base. *(`origin/main` a avancé depuis — c'est normal, ce SHA est la trace du lot A, pas la tête de branche.)*
@@ -35,7 +46,17 @@ Contenu : garanties serveur (fenêtre J-14→J, anti double-réservation, dédup
 
 ---
 
-## 🔴 2026-09-10 (après merge) — BLOQUANT AVANT DÉMO : aucun chemin ne rattache un créneau à un challenge
+## ✅ 2026-09-10 (nuit) — RÉSOLU : rattachement créneau → challenge (mergé `c4325d6`)
+
+**État : mergé et déployé (Vercel READY).** La 3ᵉ migration `20260911130000_attach_slot_to_challenge.sql` est **en base et dans `main`** — le dépôt et la base sont au même niveau, **aucune migration appliquée hors du repo**.
+
+Trigger `trg_bilan_slot_attach_challenge` + fonction `fn_bilan_slot_attach_challenge` (`SECURITY DEFINER`, `search_path=public`). **Recette serveur : 7/7 verts** — rattachement automatique (insert identique à celui de l'admin), déterminisme prouvé dans **les deux ordres de création**, recalcul sur changement de date, retour à `NULL` hors fenêtre, non-régression (une réservation ne touche pas le lien), visibilité en anon, base rendue intacte (7 créneaux / 0 booking / 1 événement).
+
+⚠️ **Seul reste, purement visuel :** le libellé de l'admin. `slotChallengeLabel` rend `→ titre` **dès qu'un lien existe**, sans tester `active` ni la fenêtre → un créneau rattaché à un challenge **désactivé** ou **hors fenêtre** s'affiche comme normal alors qu'il est invisible côté public. Le cas **orphelin** est bien traité (message ambre). À corriger au prochain passage front : distinguer « **pas encore ouvert (J-14 → J)** » et « **challenge désactivé** » — les données (`active`, `date`) sont déjà dans le composant.
+
+---
+
+## 🔴 2026-09-10 (après merge) — HISTORIQUE : le constat qui a produit le correctif ci-dessus
 
 **Constat vérifié dans le code de `main` (pas une hypothèse) :**
 
