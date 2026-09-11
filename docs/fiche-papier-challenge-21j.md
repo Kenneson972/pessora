@@ -62,6 +62,18 @@ Que fais-tu dans la vie ? ____________________
 - **La section « COMPLÉMENT DE REVENUS » (opportunité Herbalife).** C'est du **recrutement de distributeurs** : la règle du projet est que **le site fait la vente, il ne fait pas le recrutement** — Catherine gère cette partie en présentiel. À exclure de toute page publique.
   *(Rappel Herbalife : le « système VIP » = programme client Wellness Rewards, à ne **jamais** présenter comme une opportunité de business. Ici, c'est explicitement l'opportunité distributeur — donc hors site.)*
 
+  > ⚠️ **À écrire partout où on utilise cette fiche** : *« cette section reste au bar, avec Catherine — elle n'entre pas dans le site »*. Sinon, dans six mois, quelqu'un ouvrira ce document, verra la section « manquante » et la rajoutera de bonne foi sur une page publique et commerciale.
+
+### ⚠️ La clause de consentement ne se recopie PAS telle quelle
+La fiche dit : *« j'accepte d'être recontacté(e) par l'équipe PESSORA concernant **les sujets cochés ci-dessus** »*. Or « ci-dessus » **inclut le complément de revenus Herbalife** — donc la recopier ferait consentir le visiteur à une finalité qu'on ne publie pas, et **mélangerait plusieurs finalités dans une seule case**. Trois adaptations obligatoires pour la version en ligne :
+
+1. **Consentement explicite et séparé**, avec **uniquement les finalités du site** : bilan · challenge · recontact. **Jamais l'opportunité financière.**
+2. **La newsletter est une finalité distincte** → sa **propre case**, jamais noyée dans le consentement de contact.
+3. **Le champ « Âge »** : le papier s'en passait, pas un formulaire public → prévoir la règle qui va avec (âge minimum, ou consentement parental pour un mineur).
+
+### ℹ️ Le gribouillage
+Le paraphe au stylo bleu en bas à droite de la photo est **une initiale tracée en boucle** — aucune information exploitable (ni prix, ni date, ni nom). Confirmé par Kenneson. **Rien à en tirer.**
+
 ### 🟡 Décision antérieure à réconcilier
 La fiche RDV de septembre (`gbrain`, `clients/pessora-rdv-2026-09.md`) prévoyait une table dédiée **`challenge_leads`** pour capturer cette fiche en ligne :
 `nom, prenom, age, telephone (canonique), email (obligatoire, pour les relances Resend), metier, objectifs[], timing, opportunite_herbalife (bool), creneau, consentement_rgpd, vague/session, statut, bilan_booking_id, created_at`.
