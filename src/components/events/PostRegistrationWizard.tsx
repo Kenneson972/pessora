@@ -11,6 +11,7 @@ import {
   cn,
 } from '@heroui/react'
 import { supabase } from '../../lib/supabaseClient'
+import { mapBilanError } from '../../lib/bilanErrors'
 import {
   parsePostRegistrationPayload,
   toSurveyJsonPayload,
@@ -178,11 +179,26 @@ export function PostRegistrationWizard({
       p_telephone: telephone,
       p_payload: payload,
     })
-    setSubmitting(false)
 
     if (error) {
+      setSubmitting(false)
       setSubmitError(mapRpcErrorMessage(error.message ?? ''))
       return
+    }
+
+    if (eventType === 'challenge' && fields.bilan_offert === 'Oui') {
+      const { error: bilanError } = await supabase.rpc('fn_create_bilan_booking_from_registration', {
+        p_registration_id: registrationId,
+        p_telephone: telephone,
+      })
+      setSubmitting(false)
+
+      if (bilanError) {
+        setSubmitError(mapBilanError(bilanError, 'questionnaire'))
+        return
+      }
+    } else {
+      setSubmitting(false)
     }
 
     setDone(true)

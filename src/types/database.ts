@@ -421,6 +421,13 @@ export interface Database {
         }
         Returns: Json
       }
+      fn_create_bilan_booking_from_registration: {
+        Args: {
+          p_registration_id: string
+          p_telephone: string
+        }
+        Returns: string
+      }
     }
   }
 }
