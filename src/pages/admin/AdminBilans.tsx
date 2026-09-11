@@ -23,6 +23,14 @@ interface BilanSlot {
   heure: string;
   disponible: boolean;
   created_at: string;
+  challenge_event_id: string | null;
+}
+
+interface ChallengeEvent {
+  id: string;
+  title: string;
+  date: string;
+  active: boolean;
 }
 
 interface BilanBooking {
@@ -51,6 +59,20 @@ const ORIGINE_LABELS: Record<string, string> = {
   questionnaire: 'Questionnaire',
   admin: 'Admin',
 };
+
+/**
+ * État lisible du rattachement d'un créneau — un créneau orphelin ne doit
+ * jamais disparaître en silence (exigence cliente). Le rattachement lui-même
+ * est décidé côté serveur (trigger fn_bilan_slot_attach_challenge) ; ceci
+ * n'affiche que le résultat.
+ */
+function slotChallengeLabel(slot: BilanSlot, challenges: ChallengeEvent[]): string {
+  if (slot.challenge_event_id) {
+    const challenge = challenges.find((c) => c.id === slot.challenge_event_id);
+    return challenge ? `→ ${challenge.title}` : 'Rattaché (challenge introuvable)';
+  }
+  return 'Orphelin — hors de la fenêtre d’un challenge actif (J-14 → J)';
+}
 
 const STATUT_STYLES = {
   en_attente: 'bg-amber-50 text-amber-700',
@@ -105,6 +127,7 @@ const AdminBilans = () => {
   const [tab, setTab] = useState<'demandes' | 'creneaux'>('demandes');
   const [bookings, setBookings] = useState<BilanBooking[]>([]);
   const [slots, setSlots] = useState<BilanSlot[]>([]);
+  const [challenges, setChallenges] = useState<ChallengeEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [filterStatut, setFilterStatut] = useState<string>('all');
@@ -146,11 +169,22 @@ const AdminBilans = () => {
     setSlots(data ?? []);
   }, []);
 
+  const fetchChallenges = useCallback(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase as any)
+      .from('events')
+      .select('id, title, date, active')
+      .eq('type', 'challenge')
+      .order('date', { ascending: true });
+    if (error) return;
+    setChallenges(data ?? []);
+  }, []);
+
   const reloadAll = useCallback(() => {
     setLoading(true);
     setLoadError(null);
-    Promise.all([fetchBookings(), fetchSlots()]).finally(() => setLoading(false));
-  }, [fetchBookings, fetchSlots]);
+    Promise.all([fetchBookings(), fetchSlots(), fetchChallenges()]).finally(() => setLoading(false));
+  }, [fetchBookings, fetchSlots, fetchChallenges]);
 
   useEffect(() => {
     reloadAll();
@@ -637,6 +671,13 @@ const AdminBilans = () => {
                               <Trash2 size={13} />
                             </button>
                           </div>
+                          <p
+                            className={`mt-1.5 text-[9px] uppercase tracking-[0.1em] ${
+                              slot.challenge_event_id ? 'text-black/35' : 'text-amber-600'
+                            }`}
+                          >
+                            {slotChallengeLabel(slot, challenges)}
+                          </p>
                           {hasBooking && (
                             <ul className="mt-2 space-y-1.5 pl-1">
                               {linked.map((b) => (
