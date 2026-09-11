@@ -14,14 +14,14 @@
    - 🧭 **RELEVÉ DE RÉFÉRENCE (mesuré le 10/09/2026 au soir, en lecture admin — c'est la BASE DE COMPARAISON, pas la cible)** :
      | Objet | Constaté |
      |---|---|
-     | `orders` | **4**, et **les 4** portent un nom `TEST*` |
-     | `event_registrations` | **7** lignes `nom TEST*` |
+     | `orders` | **29** au total · **28** avec une session `cs_test_` · **4** portant un nom `TEST*` — ⚠️ **trois chiffres, trois filtres** |
+     | `event_registrations` | **8** au total · **7** nommées `TEST*` |
      | `profiles` | **5** : `admin@pessora.mq`, `demo@pessora.mq`, **`kennesonb@gmail.com` (seul compte réel)**, + **2 lignes sans e-mail** |
      | `newsletter_subscribers` | **1** (`kenne972@hotmail.fr` — à trancher : test ou vrai contact ?) |
      | `bilan_bookings` | **0** |
      | `bilan_slots` | **7**, tous **legacy** (25/04→13/05, `challenge_event_id` NULL) |
      | `events` | **1** (RUN CLUB — MARIN) |
-     ⚠️ **Écart à acter** : ce fichier annonçait « 15 commandes / 19 `order_items` » et « 8 inscriptions » — la mesure du 10/09 au soir donne **4** et **7**. Les deux sont vrais **à leur date** : c'est exactement pourquoi **le critère de purge se vérifie sur un relevé frais le jour J**, jamais en comparant à un chiffre écrit ici. Ce tableau est le **point de départ daté**, pas l'objectif.
+     ⚠️ **Écart à acter** : ce fichier annonçait « 15 commandes / 19 `order_items` » (état de 16h) ; la mesure de fin de soirée donne **29 commandes / 33 items**, dont **28 avec une session de test** et **4 nommées `TEST*`**. **Tous ces chiffres sont vrais, chacun sur son filtre et à son heure** — c'est la démonstration même de la règle ci-dessous. Les deux sont vrais **à leur date** : c'est exactement pourquoi **le critère de purge se vérifie sur un relevé frais le jour J**, jamais en comparant à un chiffre écrit ici. Ce tableau est le **point de départ daté**, pas l'objectif.
      🔧 **Sonde fournie** : `scripts/… base_reference_purge.py` (chez vela : `/opt/data/profiles/vela/cache/e2e-pessora/base_reference_purge.py`) — relève ces compteurs en une commande, sans rien écrire.
 
 6. **Avant la bascule** : les chantiers prix / catégories / remise Óra+ doivent être passés — sinon le site encaisse en réel avec l'ancien catalogue (et −50 %).
