@@ -144,6 +144,11 @@ La réponse « je veux mon bilan » du questionnaire doit créer **une demande d
 ### 2. Edge function « notification admin » (demandes hors-date)
 Pattern `send-contact-email` / Resend. Elle **lit** les demandes en attente et **envoie l'e-mail** — elle n'écrit pas dans la table (c'est la RPC qui écrit). Contenu : nom, prénom, téléphone, origine, challenge.
 
+🔴 **Les trois trous à combler AVANT de coder (relevés le 11/09) — le lot n'est pas spécifiable tel quel :**
+1. **Qui DÉCLENCHE la fonction ?** La spec dit ce qu'elle fait, jamais ce qui la réveille. Si c'est le front après l'appel RPC → **un client qui ferme son onglet = une demande jamais notifiée** (la promesse « Catherine reçoit un e-mail » n'est alors pas tenue). ⚠️ Et une tâche planifiée en base est **impossible en l'état** : **`pg_cron` n'est pas installé** sur ce projet (vérifié). Les deux options viables : **Database Webhook Supabase sur `INSERT` de `bilan_bookings`** (le plus propre — mais **configuration hors repo**, donc à **annoncer et documenter** comme telle), ou un déclenchement explicite côté appelant, avec le risque assumé par écrit.
+2. 🔴 **`verify_jwt = true` (ou un secret partagé) sur CETTE fonction.** Le pattern à copier est le **code** de `send-contact-email`, **pas sa configuration de vérification** : celle-là est en `verify_jwt = false` **exprès** (appelée depuis un formulaire public). Si on la copie telle quelle ici, **n'importe qui** peut appeler la fonction en boucle → **flood de la boîte de Catherine**. C'est la porte d'entrée du risque déjà noté en dette (« ne câbler l'envoi qu'avec la borne ») : il faut **les deux** — la borne en base (rate-limit + dédup, déjà en place) **et** l'accès fermé.
+3. **Idempotence** : une demande = **un seul** e-mail. Prévoir le marqueur qui l'atteste (ex. `bilan_bookings.notified_at`, ou un filtre sur `created_at` + statut) — sinon une reprise, un retry ou un déclenchement multiples envoient **plusieurs fois** la même notification à la cliente.
+
 ### 3. `X-Robots-Tag` par chemin (`vercel.json`)
 Dernier « petit » en suspens depuis plusieurs sessions (item 14 de la checklist go-live). Ordre impératif : (1) headers par chemin, (2) vérification **chemin par chemin**, (3) **ensuite seulement** lever le `noindex` global, puis régénérer le sitemap.
 
