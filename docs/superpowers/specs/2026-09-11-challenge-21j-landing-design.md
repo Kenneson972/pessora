@@ -17,6 +17,13 @@ Nouveau composant `src/pages/ChallengeLandingPage.tsx` :
 - **Une ligne trouvée** → rend `<ChallengeLanding event={event} />` (état "ouvert").
 - **Aucune ligne** → rend `<ChallengeClosedState />` (état "fermé"), sur cette même URL, **sans redirection**. Le lien reste identique toute l'année (QR code, bio Instagram).
 
+🔴 **RÈGLE OBLIGATOIRE (équipe, 11/09) — le fuseau.** « Aujourd'hui » dans la requête ci-dessus **ne se calcule jamais** avec `toISOString()` ni avec le fuseau du visiteur :
+- **Un seul helper**, nouveau fichier `src/lib/martiniqueDate.ts` : `export const todayInMartinique = () => new Intl.DateTimeFormat('fr-CA', { timeZone: 'America/Martinique' }).format(new Date())` → rend `2026-09-11`.
+- **Jamais `toISOString().slice(0,10)`** — à 20h30 heure locale, il renvoie déjà `2026-09-12` alors que la Martinique est encore le 11 → la page se fermerait 4h trop tôt, la vague disparaîtrait le soir du dernier jour.
+- **Jamais le fuseau du visiteur** (`toLocaleDateString()` sans `timeZone`) : un visiteur à Paris ouvrirait/fermerait la page avec *son* "aujourd'hui" — même bug déguisé.
+- Même règle que la base, qui fait déjà `(now() AT TIME ZONE 'America/Martinique')::date` (trigger `fn_bilan_booking_before_insert` et consorts) — une seule règle, un seul endroit. `todayInMartinique()` est le seul point d'appel pour toute comparaison de date sur cette page (et à réutiliser si une autre page front a besoin de la même borne).
+- **Critère** : la borne front et la borne base disent la même chose à 20h30 heure locale.
+
 ### Route dynamique existante : `/evenements/:slug`
 Inchangée dans son fonctionnement (fetch par slug, inscriptions, etc.). Quand `event.type === 'challenge'`, elle rend elle aussi `<ChallengeLanding event={event} />` au lieu de l'affichage générique actuel — pour qu'un lien direct vers un événement précis (partagé avant ce lot, ou ouvert depuis l'admin) affiche la même expérience enrichie.
 
@@ -41,8 +48,9 @@ Aucun nouveau champ, aucune nouvelle table : le composant consomme l'`Event` dé
 ### `<ChallengeClosedState />` — nouveau
 Utilisé uniquement par `ChallengeLandingPage` quand aucune vague n'est à venir :
 - Titre "Le prochain Challenge 21 jours ouvre bientôt"
-- Rythme des vagues : liste statique en dur pour ce lot (pas de source de données dédiée — aucune table n'existe pour ça, et en créer une serait hors périmètre de cet ajout ; à revoir si Catherine veut piloter ce calendrier depuis l'admin un jour)
 - `<NewsletterSignup theme="light" source="challenge-closed" />`
+
+🔴 **RÈGLE OBLIGATOIRE (équipe, 11/09) — aucune date sur la page qui ne soit une ligne en base.** La maquette de Lyra affichait un rythme en dur ("Septembre — Octobre · Janvier · Mars") : **ce bloc ne s'implémente pas**. Catherine n'a pas validé ce calendrier, et le calendrier des vagues est chez elle, pas dans le code. `<ChallengeClosedState />` se limite au titre + à la newsletter. Conséquence voulue : le jour où Catherine crée son prochain challenge dans l'admin, il apparaît automatiquement, sans qu'on touche au code — aucun rythme à mettre à jour, aucun décalage possible entre ce qui est affiché et ce qui existe réellement.
 
 ### `NewsletterSignup` (existant, `src/components/layout/NewsletterSignup.tsx`) — modifié
 Ajout d'un prop `theme?: 'dark' | 'light'` (défaut `'dark'`, comportement actuel inchangé) pour s'adapter à un fond clair. Réutilise `newsletter_subscribers` (zéro nouvelle table), avec `source='challenge-closed'` pour tracer l'origine.
@@ -91,7 +99,7 @@ Aucune requête supplémentaire : `challenges` (déjà chargé par `AdminBilans.
 
 ## 6. Critères de recette
 
-1. `/evenements/challenge-21-jours` sans challenge à venir en base → état fermé (rythme + newsletter), **aucune erreur console**, **aucun bloc de preuve visible** (chiffres/avant-après/témoignages absents du DOM, pas juste masqués en CSS).
+1. `/evenements/challenge-21-jours` sans challenge à venir en base → état fermé (titre + newsletter, **aucun rythme de vagues en dur**), **aucune erreur console**, **aucun bloc de preuve visible** (chiffres/avant-après/témoignages absents du DOM, pas juste masqués en CSS).
 2. Créer un challenge à venir (`active=true`, date future) → recharger `/evenements/challenge-21-jours` (même URL) → état ouvert, hero + encadré + parcours d'inscription réel, aucune redirection dans la barre d'adresse.
 3. Le parcours d'inscription sur cette route stable produit exactement les mêmes effets que sur `/evenements/:slug` aujourd'hui (inscription, étape bilan, réservation créneau, message "demande envoyée") — non-régression du test e2e du 11/09.
 4. Naviguer directement vers `/evenements/{slug-du-challenge}` affiche la même expérience enrichie que la route stable.
@@ -100,3 +108,4 @@ Aucune requête supplémentaire : `challenges` (déjà chargé par `AdminBilans.
 7. `npx tsc --noEmit` et build Vercel verts.
 8. Aucune mention "Complément de revenus"/Herbalife trouvée par `grep -ri "herbalife\|complément de revenus" src/`.
 9. Aucune promesse de résultat chiffré trouvée dans le texte de la page (relecture manuelle des puces de réassurance et du hero).
+10. Aucun appel à `toISOString()` ni `toLocaleDateString()` sans `timeZone` explicite pour la comparaison de date de cette page (`grep -n "toISOString\|toLocaleDateString" src/pages/ChallengeLandingPage.tsx` ne doit rien trouver) — seul `todayInMartinique()` calcule la borne.
