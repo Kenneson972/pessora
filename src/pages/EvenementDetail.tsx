@@ -5,6 +5,7 @@ import { Spinner } from '@heroui/react';
 import { supabase } from '../lib/supabaseClient';
 import type { Event } from '../types/database';
 import { ChallengeRegistrationCard } from '../components/events/ChallengeRegistrationCard';
+import { ChallengeLanding } from '../components/events/ChallengeLanding';
 import { EventJsonLd } from '../components/seo/EventJsonLd';
 import { formatDate } from '../lib/eventDateFormat';
 
@@ -118,9 +119,9 @@ const EvenementDetail = () => {
 
   const placesDispo = event.places_max ? event.places_max - event.registrationCount : null;
 
-  return (
-    <div className="min-h-screen bg-white">
-      {event && (
+  if (event.type === 'challenge') {
+    return (
+      <>
         <EventJsonLd
           name={event.title}
           description={event.description}
@@ -129,7 +130,21 @@ const EvenementDetail = () => {
           image={event.image_url}
           url={window.location.href}
         />
-      )}
+        <ChallengeLanding event={event} />
+      </>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-white">
+      <EventJsonLd
+        name={event.title}
+        description={event.description}
+        startDate={event.date}
+        location={event.location}
+        image={event.image_url}
+        url={window.location.href}
+      />
 
       {/* Hero image */}
       <div className="relative h-[55vh] min-h-[380px] overflow-hidden">
@@ -214,7 +229,7 @@ const EvenementDetail = () => {
           <ChallengeRegistrationCard event={event} />
         </div>
       </div>
-      {event.type !== 'challenge' && Array.isArray(event.gallery) && event.gallery.length > 0 && (
+      {Array.isArray(event.gallery) && event.gallery.length > 0 && (
         <section className="border-t border-noir/[0.05]">
           <div className="mx-auto w-full max-w-6xl py-12">
             <h2 className="mb-6 font-display text-[22px] font-normal text-black">Photos</h2>
