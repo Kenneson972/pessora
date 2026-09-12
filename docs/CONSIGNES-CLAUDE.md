@@ -696,6 +696,31 @@ La page a **un seul** dispositif signature : **l'encadré Challenge**. Un compte
 - **le libellé** du décompte (« *Le prochain Challenge 21 jours commence dans…* ») attend **un mot de Ken** — il peut coder avec celui-là, on ajuste au rendu ;
 - **l'heure de lancement est tranchée** : **début du jour J** — `events.date` est une **DATE**, pas un horodatage (voir §3 du brief MINUTEUR). **Rien à décider.**
 
+### 🔴 LE CTA SUIT LA FENÊTRE — pas `isPast` : **deux conditions, pas une** (forme validée)
+
+⚠️ **Mesuré en base le 12/09 (@vela), et c'est un VRAI trou, pas une hypothèse** : avec un challenge daté à **J+30**, `registration_open = true`, **zéro créneau rattaché** →
+```
+demande de bilan en ANON    -> 401 / 42501   (la RLS refuse)
+demande de bilan en MEMBRE  -> 403 / 42501   (la RLS refuse)
+créneaux visibles en anon   -> []            (aucun)
+```
+**Le visiteur voit le CTA, et le parcours auquel il mène est fermé.** Le bouton promet **exactement ce que la RLS interdit**.
+
+**Donc le décompte et le CTA ne partagent PAS la même condition** — c'est le piège du prop unique, au-delà de son nom :
+- **le décompte suit « challenge à venir »** ✅ ;
+- **le CTA suit « il existe au moins un créneau réservable »** ✅ — **forme retenue** (@alcyone, validée par @lyra) : elle **réutilise `bilan_slots_select_bookable`**, la policy qui expose **déjà** `fn_bilan_slot_bookable` à l'anon → **la même règle que la base, une seule source**, et elle respecte le toggle `active` que Catherine bascule ✅.
+  *(Écartée : `date <= aujourd'hui + 14` — **incomplète**, elle ignore `disponible` : un challenge dont **tous** les créneaux sont pris afficherait quand même le CTA ✅.)*
+- ⚠️ **Aucune RPC à écrire** : un `anon` qui compte les créneaux de ce challenge reçoit **déjà** les réservables seulement ✅.
+
+**Règle d'état (@nova) : CTA absent ⟹ un libellé d'état PRÉSENT. Jamais le silence.** Sinon la page a l'air cassée : un décompte qui compte vers un challenge, et **aucun chemin**.
+
+⚠️ **Et une question de DONNÉES reste ouverte, pour @user** — dans la fenêtre, **« aucun créneau créé » et « tous les créneaux sont pris » rendent le MÊME résultat en anon** (@vela, mesuré sur deux challenges A et B ✅). Donc **deux messages distincts ne sont pas écrivables depuis la source actuelle** :
+- **option A — sans compteur** : **un seul message** (« les inscriptions au bilan ne sont pas ouvertes pour le moment ») — **et alors le décompte doit disparaître aussi** (on ne peut pas affirmer que le challenge est encore joignable). **Zéro code base.**
+- **option B — avec un compteur** : une petite fonction `fn_bilan_slots_count(challenge_id)` (`SECURITY DEFINER`, renvoie **un entier**) → **deux états, deux messages**, et le décompte vit dans « pas encore ouverts » ✅. ⚠️ **Aucune exposition nouvelle** : l'anon lit **déjà** les dates et heures des créneaux réservables ; un **compteur** ne dit pas **lesquels sont pris** ✅.
+→ **A ou B : décision produit (@user), pas un risque** — @vela a mesuré les deux bouts.
+
+**Portes @vela, dans les deux sens, quand ce sera codé** : **CTA présent ⟺ ≥ 1 créneau réservable** ✅ · **décompte présent ⟺ aucun créneau créé** (compteur = 0) — **jamais** quand le compteur > 0 et que le réservable est à 0 ✅.
+
 ### 5. 🔴 Ce que le minuteur ne doit PAS réintroduire
 
 - **Aucun mois à l'écran, aucune liste de rythme, aucune date qui ne soit pas une ligne en base** (règle l. 272) — le minuteur **lit** `events.date`, il n'annonce rien d'autre ;
