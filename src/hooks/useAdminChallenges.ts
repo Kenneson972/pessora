@@ -9,6 +9,7 @@ export interface ChallengeFormData {
   title: string;
   date: string;
   active: boolean;
+  registrationOpen: boolean;
 }
 
 export function useAdminChallenges() {
@@ -43,7 +44,7 @@ export function useAdminChallenges() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any)
       .from('events')
-      .insert({ type: 'challenge', title: form.title, date: form.date, slug, active: form.active })
+      .insert({ type: 'challenge', title: form.title, date: form.date, slug, active: form.active, registration_open: form.registrationOpen })
       .select()
       .single();
     if (error) return { data: null, error: error.message };
@@ -56,11 +57,13 @@ export function useAdminChallenges() {
     form: ChallengeFormData,
   ): Promise<{ error: string | null }> => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error } = await (supabase as any)
+    const { data, error } = await (supabase as any)
       .from('events')
-      .update({ title: form.title, date: form.date, active: form.active })
-      .eq('id', id);
+      .update({ title: form.title, date: form.date, active: form.active, registration_open: form.registrationOpen })
+      .eq('id', id)
+      .select('id');
     if (error) return { error: error.message };
+    if (!data || data.length === 0) return { error: 'Aucune ligne modifiée — vérifie que le challenge existe encore.' };
     refetch();
     return { error: null };
   };

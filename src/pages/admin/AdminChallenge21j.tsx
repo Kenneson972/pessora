@@ -20,7 +20,7 @@ function subtractDays(iso: string, days: number): string {
   return `${y}-${m}-${day}`;
 }
 
-const EMPTY_FORM: ChallengeFormData = { title: '', date: '', active: true };
+const EMPTY_FORM: ChallengeFormData = { title: '', date: '', active: true, registrationOpen: true };
 
 const AdminChallenge21j = () => {
   useEffect(() => { document.title = 'Challenge 21j — Admin PessÓra'; }, []);
@@ -36,7 +36,7 @@ const AdminChallenge21j = () => {
 
   useEffect(() => {
     if (selected) {
-      setForm({ title: selected.title, date: selected.date, active: selected.active ?? true });
+      setForm({ title: selected.title, date: selected.date, active: selected.active ?? true, registrationOpen: selected.registration_open ?? true });
       setIsCreating(false);
     } else if (!isCreating && challenges.length > 0) {
       setSelectedId(challenges[0].id);
@@ -100,7 +100,11 @@ const AdminChallenge21j = () => {
     const result = await slotsHook.generateSlots({ startDate: genStart, endDate: genEnd, heures, excludedWeekdays });
     setGenerating(false);
     if (result.error) { setGenResult(`Erreur : ${result.error}`); return; }
-    setGenResult(result.inserted === 0 ? 'Aucun nouveau créneau (déjà tous créés sur cette plage).' : `${result.inserted} créneau(x) créé(s).`);
+    if (result.orphaned > 0) {
+      setGenResult(`${result.inserted} créneau(x) créé(s) et rattaché(s). ⚠️ ${result.orphaned} créé(s) mais hors de la fenêtre J-14→J de ce challenge — invisibles publiquement.`);
+    } else {
+      setGenResult(result.inserted === 0 ? 'Aucun nouveau créneau (déjà tous créés sur cette plage).' : `${result.inserted} créneau(x) créé(s).`);
+    }
   };
 
   return (
@@ -169,7 +173,7 @@ const AdminChallenge21j = () => {
                 onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
               />
             </div>
-            <div className="flex items-end">
+            <div className="flex items-end gap-4">
               <label className="flex items-center gap-2 text-[12px] text-black/70">
                 <input
                   type="checkbox"
@@ -177,6 +181,14 @@ const AdminChallenge21j = () => {
                   onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))}
                 />
                 Actif (visible publiquement)
+              </label>
+              <label className="flex items-center gap-2 text-[12px] text-black/70">
+                <input
+                  type="checkbox"
+                  checked={form.registrationOpen}
+                  onChange={(e) => setForm((f) => ({ ...f, registrationOpen: e.target.checked }))}
+                />
+                Inscriptions ouvertes
               </label>
             </div>
           </div>
@@ -288,7 +300,7 @@ const AdminChallenge21j = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-noir/[0.06]">
-                      {['Prénom', 'Nom', 'Téléphone', 'Créneau bilan', 'Objectif', 'Complément revenus'].map((h) => (
+                      {['Prénom', 'Nom', 'Téléphone', 'Créneau bilan', 'Objectif', 'Complément revenus', "Date d'inscription"].map((h) => (
                         <th key={h} className="px-3 py-2 text-left text-[9px] uppercase tracking-[0.18em] text-black/35">{h}</th>
                       ))}
                     </tr>
@@ -303,11 +315,18 @@ const AdminChallenge21j = () => {
                           {r.bilan ? `${r.bilan.date} à ${r.bilan.heure.slice(0, 5)}` : <span className="text-black/30">Pas encore réservé</span>}
                         </td>
                         <td className="px-3 py-2 text-[12px]">{r.objectif ?? <span className="text-black/30">—</span>}</td>
-                        <td className="px-3 py-2 text-[12px]">{r.complementRevenus ?? <span className="text-black/30">—</span>}</td>
+                        <td className="px-3 py-2 text-[12px]">
+                          {r.complementRevenus ? (
+                            <span className="rounded-full bg-sapin-subtle px-3 py-1 text-[10px] text-sapin">{r.complementRevenus}</span>
+                          ) : (
+                            <span className="text-black/30">—</span>
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-[12px] text-black/60">{new Date(r.created_at).toLocaleDateString('fr-FR')}</td>
                       </tr>
                     ))}
                     {registrantsHook.rows.length === 0 && !registrantsHook.loading && (
-                      <tr><td colSpan={6} className="px-3 py-6 text-center text-[11px] text-black/30">Aucun inscrit pour ce challenge.</td></tr>
+                      <tr><td colSpan={7} className="px-3 py-6 text-center text-[11px] text-black/30">Aucun inscrit pour ce challenge.</td></tr>
                     )}
                   </tbody>
                 </table>
