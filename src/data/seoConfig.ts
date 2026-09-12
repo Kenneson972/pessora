@@ -22,9 +22,9 @@ export const seoConfig: Record<string, PageSEOEntry> = {
       'Shakes protéinés, wellness, énergie et coffee bar à Fort-de-France. Le 1er bar protéiné & bien-être de Martinique.',
     ogTitle: 'PessÓra — Bar Protéiné & Bien-Être en Martinique',
     ogDescription: 'Shakes protéinés, wellness, énergie et coffee bar à Fort-de-France. Découvrez le 1er bar protéiné & bien-être de Martinique.',
-    ogImage: '/logo-pessora.webp',
-    ogImageWidth: 1024,
-    ogImageHeight: 1024,
+    ogImage: '/og-default-1200x630.png',
+    ogImageWidth: 1200,
+    ogImageHeight: 630,
     ogType: 'website',
   },
   '/concept': {
