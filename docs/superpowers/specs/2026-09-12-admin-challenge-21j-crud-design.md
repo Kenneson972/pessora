@@ -46,9 +46,9 @@ Remplace `EventRegistrationsList` pour ce challenge (nouveau composant, ex. `Cha
 
 - Colonnes de base inchangées : prénom, nom, téléphone, date d'inscription
 - **+ Créneau de bilan** : jointure `bilan_bookings` par `challenge_event_id` + `telephone_normalized` (normaliser le téléphone de l'inscrit avec le même module `phone.ts` utilisé ailleurs) → affiche date/heure du créneau si réservé, "Pas encore réservé" sinon
+- **+ Objectif** (`post_registration_details->>'objectif_principal'`) — confirmé conservé (12/09) : ça aide Catherine à voir qui veut quoi pour le challenge, colonne à part entière, pas un champ à masquer
 - **+ Complément de revenus** (`post_registration_details->>'complement_revenus'`) avec la pastille "à recontacter" déjà actée dans les consignes équipe pour ce champ
 - Le JSON brut n'est jamais affiché tel quel — toujours des colonnes nommées, avec fallback "—" si la clé est absente (questionnaire pas rempli)
-- ⚠️ **Pas de colonne "Objectif"** : l'étape objectif (perte de poids/tonification/etc.) a été retirée du questionnaire pour le type `challenge` le 12/09 (retour utilisateur) — `getPostRegistrationSteps('challenge')` ne rend plus que `['bilan']`. `post_registration_details.objectif_principal` n'existera plus pour aucune nouvelle inscription au challenge.
 
 ## Hors périmètre (explicitement)
 
