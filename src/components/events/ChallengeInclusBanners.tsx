@@ -47,6 +47,7 @@ const INCLUS: InclusItem[] = [
     label: 'Conseils & accompagnement',
     description: "Un vrai suivi humain : des conseils personnalisés, une écoute réelle, pas un programme générique.",
     icon: MessagesSquare,
+    image: '/challenge-21j/inclus-conseils-accompagnement.webp',
   },
   {
     label: 'Suivi de tes objectifs',
