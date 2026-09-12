@@ -356,12 +356,38 @@ export function todayInMartinique(): string {   // → '2026-09-12'
 }
 ```
 
-Or un compte à rebours a besoin d'un **instant** (un `Date` comparable), pas d'une chaîne `YYYY-MM-DD`. **Deux options, à trancher par @alcyone** — mais **le calcul doit vivre dans `src/lib/martiniqueDate.ts`**, jamais dans le composant :
+Or un compte à rebours a besoin d'un **instant** (un `Date` comparable), pas d'une chaîne `YYYY-MM-DD`. **Forme TRANCHÉE par @alcyone — une seule export en plus, pas de refonte :**
 
-1. **étendre le module** avec un `challengeStartInstant(date: string): Date` — début de journée J en Martinique ;
-2. ou une variante générique `endOfDayInMartinique(date)` / `startOfDayInMartinique(date)`.
+```ts
+// events.date est une DATE naïve ('YYYY-MM-DD'), pas un horodatage.
+// America/Martinique = -04:00 SANS heure d'été DEPUIS 1980 (vérifié 2024→2100 par
+// @vela) ; -05:00 existait avant 1980. Le littéral est donc sûr pour nos dates,
+// mais il n'est pas "permanent depuis toujours".
+// Pas d'heure d'été = pas de calcul d'offset — c'est précisément ce calcul qui
+// produit le bug Dalcielo.
+export function startOfDayMartinique(date: string): Date {
+  return new Date(`${date}T00:00:00-04:00`);
+}
+```
 
-⚠️ **Martinique = UTC−4 toute l'année** (pas d'heure d'été) — le calcul doit le dire explicitement plutôt que de compter sur le runtime.
+**Pourquoi cette forme rend le bug structurellement impossible** (et pas « attention au fuseau ») : le décompte devient `startOfDayMartinique(events.date).getTime() - Date.now()` → **deux instants absolus**. Un `Date` **est** un instant, il n'a pas de fuseau : un visiteur à Paris et un à Fort-de-France calculent **le même** `remaining`. Il n'y a **aucun `timeZone` dans le calcul**, donc rien qui puisse diverger — l'invariant est dans le code, pas dans une consigne.
+
+⚠️ **`todayInMartinique()` reste** (la chaîne `'YYYY-MM-DD'`) pour les comparaisons du landing (`date >= aujourd'hui`). **Deux fonctions, deux métiers** — ne pas en surcharger une pour l'autre, sinon on recrée l'ambiguïté « date vs instant ».
+
+**Le test doit être FALSIFIABLE** (⚠️ comparer `startOfDayMartinique(x)` au littéral `new Date(x + 'T00:00:00-04:00')` compare **le même littéral à lui-même** : un offset faux passerait **vert**). Forme retenue :
+
+```ts
+const t = startOfDayMartinique('2026-09-16');
+const hm = (d: Date) => new Intl.DateTimeFormat('fr-CA', {
+  timeZone: 'America/Martinique', hour: '2-digit', minute: '2-digit',
+  hour12: false, hourCycle: 'h23',   // ⚠️ sans hourCycle, certaines versions d'ICU rendent '24:00'
+}).format(d);
+expect(hm(t)).toBe('00:00');                            // vu de Martinique = début du jour
+expect(hm(new Date(t.getTime() - 1))).toContain('23:59'); // 1 ms avant = la veille
+```
+Avec un offset en `-05:00`, ce test **rougit** (il lirait 23:00 puis 22:59) → il mesure vraiment ce qu'il prétend. Variante inattaquable, si on préfère : `expect(startOfDayMartinique('2026-09-16').toISOString()).toBe('2026-09-16T04:00:00.000Z')`.
+
+⚠️ **Et le cran d'écart VOULU, à écrire en commentaire dans `ChallengeCountdown.tsx`** — la même page porte deux définitions de « maintenant » : l'**état** du landing est `date >= aujourd'hui` (le jour J appartient encore au challenge ✅) alors que le **minuteur** disparaît dès `remaining > 0` **strict** (il s'efface exactement quand l'état bascule). Les deux sont justes, mais **elles divergent d'un cran au même endroit** → sans commentaire, le premier refactor fera dériver l'une des deux, et personne ne verra d'erreur : juste un décompte qui survit d'une journée.
 
 ⚠️ **Le test existant (`src/__tests__/martiniqueDate.test.ts`) doit être étendu**, pas contourné : c'est lui qui garantit qu'à **20 h 30 locale** le front et la base disent la même chose.
 
@@ -381,6 +407,18 @@ Or un compte à rebours a besoin d'un **instant** (un `Date` comparable), pas d'
 
 **⚠️ Anti-hydratation, obligatoire :** comme chez Dalcielo, le décompte ne s'affiche **qu'après le montage client** (`mounted`). Serveur et navigateur ne voient pas la même seconde — sans cette garde, React signale une erreur d'hydratation.
 
+### 4bis. 🔴 Le minuteur n'est PAS un deuxième dispositif signature (règles @lyra, mesurables)
+
+La page a **un seul** dispositif signature : **l'encadré Challenge**. Un compte à rebours se transforme vite en **enseigne lumineuse**, et on bascule dans le look « promo / offre flash » — l'inverse de la direction. Donc :
+
+- **Traitement d'information, pas d'urgence** : **pas de rouge, pas de cadre, pas de halo, pas d'or** (l'or reste un ornement ≤ 1 px — filets, points). Chiffres en **noir ou sapin**.
+- **`tabular-nums`** obligatoire : les chiffres ne doivent pas bouger d'une seconde à l'autre.
+- **Hiérarchie** : corps des unités **≤ 13 px**, et les chiffres **nettement sous le H1** (3,375 rem) — **le minuteur s'aligne sur le titre, jamais l'inverse**.
+- **La pulsation des secondes** = variation d'**opacité légère** — **pas** de rebond d'échelle. C'est un pouls, pas une animation de foire. Et elle se **désactive sous `prefers-reduced-motion`**.
+- **Placement** : dans l'état « le prochain Challenge 21 jours ouvre bientôt » — c'est là qu'il sert, et là qu'il ne vole la vedette à rien.
+
+**Test de recette associé** : si le minuteur devient un encadré doré au milieu du hero, la page a **deux points focaux** et le « sobre » tenu trois jours est perdu.
+
 ### 5. 🔴 Ce que le minuteur ne doit PAS réintroduire
 
 - **Aucun mois à l'écran, aucune liste de rythme, aucune date qui ne soit pas une ligne en base** (règle l. 272) — le minuteur **lit** `events.date`, il n'annonce rien d'autre ;
@@ -393,10 +431,14 @@ Or un compte à rebours a besoin d'un **instant** (un `Date` comparable), pas d'
 Aucun challenge en base, **et** challenge passé → **compteur = 0**. Vérifier l'absence, **pas** un affichage masqué en CSS.
 
 **Porte 10 — la porte de fuseau, appliquée au minuteur.**
-Horloge du navigateur réglée **à 20 h 30 locale Martinique** (= 00 h 30 UTC le lendemain) : **le nombre de jours ne doit pas avoir changé d'un cran**, et le libellé de date doit dire **le même jour que la base**. Même méthode que la porte 5 — si le résultat est identique avec et sans `timeZone`, la porte ne prouve rien.
+Elle est **structurelle** (forme @alcyone) : le décompte doit être **identique** avec le fuseau du navigateur réglé sur **`Europe/Paris`** et sur **`America/Martinique`** — parce qu'il n'y a **aucun `timeZone` dans le calcul** (deux instants absolus). En complément, horloge réglée **à 20 h 30 locale Martinique** (= 00 h 30 UTC le lendemain) : **le nombre de jours ne doit pas avoir changé d'un cran**. ⚠️ Si la porte passe « parce qu'il n'y a rien à faire diverger », le noter — **c'est le résultat attendu**, pas une porte inutile.
 
 **Porte 11 — l'échéance atteinte ne ment pas.**
 Simuler un `now` postérieur à J : le décompte **disparaît ou passe à l'état passé**, il n'affiche **jamais** `-01 j` ni `00 j 00 h 00 s` figé.
+
+**Porte 12 — la traversée de minuit, sans rechargement (@vela).**
+Playwright 1.60 expose `page.clock` ✅ : régler l'horloge à **23 h 59 min 30 s**, lire le décompte, avancer à **00 h 00 min 30 s**, et exiger **la même chose qu'après un rechargement** — le minuteur disparaît **et** la page a basculé d'état. C'est le seul scénario où un visiteur qui **laisse l'onglet ouvert** (le cas d'un lien Instagram) voit autre chose qu'un visiteur qui arrive.
+⚠️ **Et il n'y a rien à assumer ici** : le minuteur **tick déjà** (les secondes pulsent) → s'il recalcule `remaining` depuis `Date.now()` à chaque tick au lieu de figer l'échéance au montage, la traversée est **automatique**. La porte ne sert qu'à vérifier qu'on n'a pas figé ce qui ne doit pas l'être.
 
 **Compléments, mesurables :**
 - **390 px** — `scrollWidth === clientWidth` avec le minuteur affiché (4 cases + libellé : c'est là que ça déborde) ;
