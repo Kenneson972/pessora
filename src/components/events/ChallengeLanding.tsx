@@ -30,7 +30,7 @@ export function ChallengeLanding({ event }: ChallengeLandingProps) {
 
   return (
     <div className="bg-white">
-      <ChallengeHero eventDate={event.date} registrationOpen={!isPast} />
+      <ChallengeHero eventDate={event.date} isUpcoming={!isPast} />
       <ChallengeTrustBadges />
       <ChallengeStatsBlock />
       <ChallengeProgramCard isPast={isPast} />

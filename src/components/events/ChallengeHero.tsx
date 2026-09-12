@@ -8,11 +8,11 @@ function frenchMonth(dateStr: string): string {
 export interface ChallengeHeroProps {
   /** Date ISO (YYYY-MM-DD) du challenge affiché. */
   eventDate: string;
-  /** false quand event.date est déjà passée (porte 8) — masque le CTA d'inscription. */
-  registrationOpen?: boolean;
+  /** event.date >= aujourd'hui (porte 8) — n'est PAS events.registration_open. */
+  isUpcoming?: boolean;
 }
 
-export function ChallengeHero({ eventDate, registrationOpen = true }: ChallengeHeroProps) {
+export function ChallengeHero({ eventDate, isUpcoming = true }: ChallengeHeroProps) {
   return (
     <header className="relative overflow-hidden bg-surface-hero text-white">
       {/* Dégradé de repli — rendu définitif tant qu'aucun visuel réel n'est fourni.
@@ -41,7 +41,7 @@ export function ChallengeHero({ eventDate, registrationOpen = true }: ChallengeH
           Encadré, en collectif, avec un suivi réel — pas un défi à tenir seul.
         </p>
         <div className="mt-10 flex flex-wrap items-center gap-6">
-          {registrationOpen && (
+          {isUpcoming && (
             <a
               href="#inscription"
               className="inline-flex items-center gap-2 rounded-full bg-ivory px-8 py-4 text-[10px] uppercase tracking-[0.2em] text-noir transition-colors hover:bg-gold"
@@ -56,7 +56,7 @@ export function ChallengeHero({ eventDate, registrationOpen = true }: ChallengeH
             Ce qui est inclus
           </a>
         </div>
-        {registrationOpen && <ChallengeCountdown targetDate={eventDate} />}
+        {isUpcoming && <ChallengeCountdown targetDate={eventDate} />}
       </div>
     </header>
   );

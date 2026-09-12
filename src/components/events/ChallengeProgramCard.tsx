@@ -1,16 +1,20 @@
+import { Smartphone, Users, Dumbbell, Salad, MessagesSquare, Target, type LucideIcon } from 'lucide-react';
+
 interface InclusItem {
   label: string;
   /** Fournie par Catherine, une à une — le composant tient sans elle. */
   image?: string;
+  /** docs/icones-inclus-21j.md — table de correspondance verrouillée. */
+  icon: LucideIcon;
 }
 
 const INCLUS: InclusItem[] = [
-  { label: 'Application GetFitNow' },
-  { label: 'Communauté 24FIT PESSORA' },
-  { label: 'Séances de sport' },
-  { label: 'Idées recettes' },
-  { label: 'Conseils & accompagnement' },
-  { label: 'Suivi de tes objectifs' },
+  { label: 'Application GetFitNow', icon: Smartphone },
+  { label: 'Communauté 24FIT PESSORA', icon: Users },
+  { label: 'Séances de sport', icon: Dumbbell },
+  { label: 'Idées recettes', icon: Salad },
+  { label: 'Conseils & accompagnement', icon: MessagesSquare },
+  { label: 'Suivi de tes objectifs', icon: Target },
 ];
 
 const TIMINGS = ['Ce mois-ci', 'Le mois prochain', 'Je souhaite en savoir plus'];
@@ -58,14 +62,34 @@ export function ChallengeProgramCard({ isPast = false }: ChallengeProgramCardPro
                 ) : (
                   <div aria-hidden="true" className="absolute inset-0" style={{ background: BANNER_FALLBACK }} />
                 )}
+                {/* Voile étendu ~24px au-delà du seul besoin du libellé pour
+                    couvrir aussi l'icône (docs/icones-inclus-21j.md) — sinon
+                    le pire cas mesuré (photo claire, carte basse) retombe
+                    sous 3:1. */}
                 <div
                   aria-hidden="true"
                   className="absolute inset-0"
-                  style={{ background: 'linear-gradient(0deg, oklch(7% .004 55 / 0.78) 0%, oklch(7% .004 55 / 0.1) 55%, transparent 100%)' }}
+                  style={{ background: 'linear-gradient(0deg, oklch(7% .004 55 / 0.82) 0%, oklch(7% .004 55 / 0.55) 35%, oklch(7% .004 55 / 0.18) 62%, transparent 100%)' }}
                 />
-                <span className="absolute inset-x-3 bottom-3 text-[12px] font-light leading-snug text-white">
-                  {item.label}
-                </span>
+                {!item.image && (
+                  <item.icon
+                    aria-hidden="true"
+                    strokeWidth={1.4}
+                    className="absolute inset-0 m-auto text-white"
+                    style={{ width: '52px', height: '52px' }}
+                  />
+                )}
+                <div className="absolute inset-x-3 bottom-3 flex flex-col items-start gap-1.5">
+                  {item.image && (
+                    <item.icon
+                      aria-hidden="true"
+                      strokeWidth={1.4}
+                      className="text-white"
+                      style={{ width: '20px', height: '20px' }}
+                    />
+                  )}
+                  <span className="text-[12px] font-light leading-snug text-white">{item.label}</span>
+                </div>
               </li>
             ))}
           </ul>
