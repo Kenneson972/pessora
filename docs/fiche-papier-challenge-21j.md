@@ -58,16 +58,28 @@ Que fais-tu dans la vie ? ____________________
 - **Les 3 timings** (ce mois-ci · le mois prochain · en savoir plus) → utiles pour l'inscription au challenge.
 - **Les 4 créneaux de rappel** (matin/midi/après-midi/soir) + **la clause de consentement** → modèle pour le formulaire (RGPD).
 
-### 🔴 Ce qui NE VA PAS sur le site
-- **La section « COMPLÉMENT DE REVENUS » (opportunité Herbalife).** C'est du **recrutement de distributeurs** : la règle du projet est que **le site fait la vente, il ne fait pas le recrutement** — Catherine gère cette partie en présentiel. À exclure de toute page publique.
-  *(Rappel Herbalife : le « système VIP » = programme client Wellness Rewards, à ne **jamais** présenter comme une opportunité de business. Ici, c'est explicitement l'opportunité distributeur — donc hors site.)*
+### 🔄 Ce qui NE VA PAS sur le site — **MISE À JOUR 12/09 : voir le revirement ci-dessous**
+- ~~**La section « COMPLÉMENT DE REVENUS » (opportunité Herbalife).**~~ → **PÉRIMÉ le 12/09.** Catherine **veut** cette partie sur le site. Voir la note de revirement **juste après** : la règle n'est plus « hors site », elle est « **sur le site, en choix simple, sans promesse de revenus** ».
+  *(Historique conservé pour qu'on ne se demande pas pourquoi la règle a existé : à l'origine, le raisonnement était que **le site fait la vente, il ne fait pas le recrutement** — Catherine gérait cette partie en présentiel. Le 12/09, elle a demandé qu'elle apparaisse, et Ken a cadré : « sans plus », « pas de code complexe », « ils vont gérer avec le bilan », « quand même un choix possible ».)*
 
-  > ⚠️ **À écrire partout où on utilise cette fiche** : *« cette section reste au bar, avec Catherine — elle n'entre pas dans le site »*. Sinon, dans six mois, quelqu'un ouvrira ce document, verra la section « manquante » et la rajoutera de bonne foi sur une page publique et commerciale.
+---
+
+## 🔄 REVIREMENT DU 12/09 — la règle a changé
+
+**Avant** : « cette section reste au bar, avec Catherine — elle n'entre pas dans le site ».
+**Maintenant** : **elle entre dans le site, en choix simple.**
+
+- ✅ **Une section visible** + **un choix possible** dans le **questionnaire existant** (une constante d'options, comme `OBJECTIF_OPTIONS` — le `jsonb` `post_registration_details` prend la clé **sans migration**).
+- ✅ **La gestion se fait AU BILAN**, en présentiel, avec Catherine → **rien à automatiser**, aucune fonctionnalité.
+- 🔴 **Les garde-fous, eux, ne tombent pas** : **aucune promesse de revenus** (ni montant, ni « gagnez X € », ni témoignage de gains) · **le cadre dit ce que c'est** (activité de distribution **indépendante** — ni emploi, ni salaire) · **c'est un choix, pas une relance** (pas de séquence d'e-mails).
+- Le détail complet et la passe de conformité sont dans `docs/CONSIGNES-CLAUDE.md`, section « REVIREMENT DU 12/09 ».
+
+> ⚠️ **Ce qui reste vrai** : la fiche papier **n'est pas** le formulaire du site (voir ci-dessus), et **la clause de consentement ne se recopie pas telle quelle** — elle dit *« les sujets cochés ci-dessus »*, ce qui mélange des finalités dans une seule case. Sur le site : **explicite, séparée, et à jour de ce qui est réellement proposé**.
 
 ### ⚠️ La clause de consentement ne se recopie PAS telle quelle
 La fiche dit : *« j'accepte d'être recontacté(e) par l'équipe PESSORA concernant **les sujets cochés ci-dessus** »*. Or « ci-dessus » **inclut le complément de revenus Herbalife** — donc la recopier ferait consentir le visiteur à une finalité qu'on ne publie pas, et **mélangerait plusieurs finalités dans une seule case**. Trois adaptations obligatoires pour la version en ligne :
 
-1. **Consentement explicite et séparé**, avec **uniquement les finalités du site** : bilan · challenge · recontact. **Jamais l'opportunité financière.**
+1. **Consentement explicite et séparé**, avec **les finalités réelles du site** : bilan · challenge · recontact · **et, depuis le 12/09, l'opportunité (« en savoir plus ») — en choix distinct, avec sa propre case ou sa propre option**. Ce qui reste interdit, c'est de **noyer plusieurs finalités dans une seule case** : le visiteur doit pouvoir dire oui au bilan et non à l'opportunité.
 2. **La newsletter est une finalité distincte** → sa **propre case**, jamais noyée dans le consentement de contact.
 3. **Le champ « Âge »** : le papier s'en passait, pas un formulaire public → prévoir la règle qui va avec (âge minimum, ou consentement parental pour un mineur).
 
@@ -79,6 +91,21 @@ La fiche RDV de septembre (`gbrain`, `clients/pessora-rdv-2026-09.md`) prévoyai
 `nom, prenom, age, telephone (canonique), email (obligatoire, pour les relances Resend), metier, objectifs[], timing, opportunite_herbalife (bool), creneau, consentement_rgpd, vague/session, statut, bilan_booking_id, created_at`.
 
 **Cette table n'a pas été construite** : le lot A du 10/09 a implémenté le parcours **événement + bilan** (`events.type='challenge'`, `bilan_bookings`, `event_registrations`). Les deux approches ne se contredisent pas — **la fiche papier est un outil de prospection au bar**, le site est le parcours en ligne. À trancher si on veut, un jour, saisir ces fiches dans l'admin.
+
+⚠️ **Ce qui reste SUR LE PAPIER aujourd'hui, et n'entre PAS dans le formulaire du site** : **âge** · **« que fais-tu dans la vie ? »** · **les 4 créneaux de rappel** (matin / midi / après-midi / soir) · et **toute la section « complément de revenus »** (exclue, voir plus haut). Le parcours en ligne ne collecte que l'**identité**, le **téléphone**, `objectif_principal` (+ champ libre) et le **consentement**. **Les ajouter demain = un lot nommé** (nouvelle collecte = nouvelles finalités, consentements séparés, mention RGPD à jour) — **pas un champ qu'on ajoute par réflexe** en voyant la fiche : c'est exactement le réflexe que « la carte complète d'abord » nous a appris à ne pas avoir.
+
+🔴 **Nuance qui va avec, et elle est mesurée (@vela, 12/09) : la fiche est la source du *TEXTE*, pas des *CHAMPS*.** Les **4 objectifs de la feuille** (Perte de poids · Prise de masse / tonification · Plus d'énergie · Reprendre de bonnes habitudes) **ne sont pas** les options du formulaire en ligne : `src/data/postRegistrationSurvey.ts:28` propose **Découverte / curiosité · Remise en forme · Perte de poids · Bien-être et lien social · Autre** → **3 sur 4 diffèrent**, « Perte de poids » est le **seul** commun (et les valeurs **stockées en base sont sans accents** : `Decouverte`, `Remise en forme`, `Bien-etre social`). Ces choix sont **déjà en ligne, déjà collectés** : les « aligner » sur la feuille n'est **pas une retouche de texte** — c'est **une migration + des lignes déjà saisies à relire**, **et ça ajoute de la donnée de santé** (masse, énergie). Donc : **si Catherine le veut un jour, c'est un lot nommé avec sa conformité**, jamais un alignement de bonne foi.
+
+⚠️ **Et une précision de STRUCTURE, vérifiée en base (@elise, 12/09) : ce n'est pas une colonne.** Il n'existe **aucune colonne `objectif_*`** dans le schéma (vérifié dans `information_schema.columns`, **tous schémas confondus** : 0 résultat). Le questionnaire vit dans **`event_registrations.post_registration_details`, une colonne `jsonb`**, et `objectif_principal` en est **une clé**. Conséquences pour toute reprise, à écrire avant de la tenter :
+- on lit **`post_registration_details->>'objectif_principal'`**, **pas** une colonne — une requête qui cherche la colonne échoue avec `42703` ;
+- le `jsonb` **ne contraint rien** : les **deux seules valeurs** observées en base sont des **fixtures de recette** (`Recette QA 175807`, `Recette QA nominal`), et **6 des 8 inscriptions n'ont aucun JSON** (`NULL`) → une reprise doit traiter **l'inconnu et le `null`**, pas seulement les cinq libellés du front ;
+- **zéro objectif réel collecté à ce jour** ✅ — donc aucune donnée de santé de vraie personne n'est concernée aujourd'hui, ce qui rend le lot d'autant plus facile à cadrer **avant** d'avoir des inscrits.
+
+C'est la leçon des migrations RLS du matin, appliquée aux données : **le stockage ne dit pas ce que le code croit qu'il dit.**
+
+🔴 **Et la clause de consentement de la feuille ne se recopie JAMAIS telle quelle** : *« les sujets cochés ci-dessus »* inclut **le bloc « complément de revenus »** (exclu du site) et **noie plusieurs finalités dans une seule case**. Sur le site : **explicite, séparée, limitée aux finalités du site** ✅ (déjà écrit ci-dessus).
+
+⚠️ **Et le mot « vague » de cette ancienne liste est de NOUS, pas de Catherine** — vérifié : sa fiche n'emploie que **« Challenge 21 jours »**, avec ses trois timings (« ce mois-ci · le mois prochain · je souhaite en savoir plus »). Dans **tout ce qui est publié** — page, visuel, e-mail client, libellé d'admin — on dit **« Challenge 21 jours »**, **jamais « vague »** (règle de vocabulaire dans `docs/CONSIGNES-CLAUDE.md`).
 
 ---
 

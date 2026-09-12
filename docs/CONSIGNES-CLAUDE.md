@@ -7,6 +7,240 @@
 
 ---
 
+## 🎯 REPRISE ICI — ordre du jour du 12/09 (lire en premier)
+
+**Branche de travail : `feat/challenge-21j-landing`** — **19 commits déjà poussés** (dernier : `f1eafd9`), `tsc` propre, 30 tests verts (les 10 échecs `cartStore` sont préexistants). **Ne pas repartir de zéro — on FINIT ce qui est commencé.**
+
+### 1. Finir la page Challenge — **état au 12/09, après le push `4048075`**
+
+**✅ FAIT — et re-vérifié dans le code, pas sur parole** (@elise, puis **@nova indépendamment**) :
+- **La porte 8 est fermée POUR LE BOUTON** : `ChallengeLanding.tsx:29` → `const isPast = event.date < todayInMartinique()` — **le helper du fuseau**, pas `toISOString()`, et **un challenge du jour reste ouvert** ✅ — puis `l.40` bascule `<ChallengeEndedState />` au lieu de `<ChallengeRegistrationCard />` ✅.
+- **« vague » : 0 occurrence** ✅ · **« Places limitées » : 0** ✅.
+- **Le lien « politique de confidentialité »** est passé en `text-black/70 underline` (7,57:1) ✅ — la demande d'@lyra.
+- **L'emplacement des 6 bannières** est posé (`ChallengeProgramCard`, +39 lignes), dégradé de repli, **aucun pointillé** ✅.
+
+**⚠️ RESTE — dans cet ordre :**
+
+1. **🔴 Le sélecteur de timings ment encore sur un challenge terminé** — c'est **la porte 8, un cran plus loin** (le point d'@lyra : « la rangée de timings ment aussi »). `ChallengeProgramCard.tsx` **ne reçoit aucune prop** et rend `TIMINGS` (**l.16** la constante, **l.72** le rendu) **inconditionnellement** : sur l'état passé, le visiteur venu d'un vieux lien lit toujours « **Quand souhaites-tu commencer ?** » sous l'encadré. → passer l'état (**prop `isPast`**) et **retirer le sélecteur du DOM** (pas le masquer en CSS) — **les 6 inclus restent**, c'est ce que le visiteur est venu voir.
+2. **⏱️ Le minuteur n'est pas commencé** : `ChallengeCountdown.tsx` n'existe pas et `martiniqueDate.ts` **n'a pas encore** `startOfDayMartinique`. **Tout est tranché** (section MINUTEUR) : il ne reste que **le libellé à valider avec Ken**.
+3. **⚠️ `fix/seo-og-share` existe (`6befb92`) — mais elle ne couvre que 2 des 7 points du paquet SEO.** Vérifié le 12/09 en lisant le **contenu**, pas seulement la liste des fichiers (première lecture trop rapide — la mienne : *avoir vérifié quels fichiers bougent n'est pas avoir vérifié ce qu'ils font*) :
+   - **✅ fait** : `logo.png` mort → `logo-pessora.webp` (3 places : `og:image` l.27, `twitter:image` l.36, JSON-LD `image` l.55) · et les **dimensions réelles** lues par `PageSEO` (fini le `1200×630` en dur) ✅.
+   - **❌ PAS fait** : les **4 apex → www** — `canonical` **l.18**, `hreflang` **l.19**, `og:url` **l.30**, JSON-LD `url` **l.54**, **tous encore sur `pessora.fr`** (qui 308-redirige) — **et `robots.txt`, non touché** (`Sitemap` sur l'apex, `Disallow` incomplet).
+   - → **à compléter AVANT la recette.** Sinon on recette « le paquet SEO » alors que **le canonical — la balise qui pèse le plus au lancement — pointe toujours sur une redirection**. La cause n'est pas le code : **la consigne a grossi après son push** (le catalogue élargi est arrivé ensuite) — donc **ne pas relire « 3 bugs » et croire que c'est fini**.
+   - ✅ **Vérifié aussi : aucun conflit de merge entre les trois branches telles qu'elles sont aujourd'hui** (`fix/` = `index.html`, `PageSEO.tsx`, `seoConfig.ts` · `x-robots-tag` = `vercel.json` · challenge = composants/pages/libs).
+4. **🔴 ET LE CÂBLAGE DE L'OG DU CHALLENGE N'EST FAIT NULLE PART** (@nova, vérifié le 12/09/2026). `og-challenge` n'apparaît **ni dans `src/`**, **ni dans `public/`**, sur **aucune** des deux branches → `og-challenge-1200x630.png` reste **exactement ce qu'@alcyone avait annoncé : un fichier sur le disque que personne ne sert**. → poser l'**entrée par-page dans `seoConfig.ts`** **et** déposer le fichier dans `public/`. **Sans ça, un lien de challenge partagé sur WhatsApp affiche encore le carré du logo.**
+   ⚠️ **Et où poser cette entrée, maintenant qu'on sait que `seoConfig.ts` est modifié par `fix/seo-og-share`** : **dans `fix/seo-og-share` elle-même**, pas sur la branche du challenge. Raison : **un seul écrivain par fichier** — sinon les deux branches se disputent `seoConfig.ts` et la seconde à merger résout un conflit « à l'aveugle ». Bonus : l'entrée part avec **la recette du partage de lien** (l'aperçu réel), donc **le câblage de l'OG du challenge et les 4 `apex → www` se vérifient dans la MÊME passe**. Si on préfère la garder côté landing, alors **merger `fix/seo-og-share` EN PREMIER** — l'ordre n'est pas libre dès qu'un fichier est partagé.
+
+### 2. L'amélioration du frontend — **les bannières des 6 « inclus »** (Ken les fournit)
+
+- **Prévoir l'emplacement maintenant** : un visuel par inclus, **dans l'encadré signature**, avec le libellé de la fiche **rendu en HTML par-dessus** — **jamais de texte dans l'image** (les modèles écrivent mal : « 24FIT PESSORA » sortirait déformé).
+- **Le composant doit tenir SANS les images** (dégradé de repli, comme le hero) : elles arriveront une par une, et la page ne doit pas se casser à chaque ajout.
+- **Chaque image porte un `alt`** reprenant le libellé de la fiche — accessibilité **et** garde-fou : un libellé ne peut pas dériver de la fiche par la porte des images.
+- **Règles verrouillées** (section « Les 6 bannières », plus bas) : aucun logo, aucune interface lisible, aucune promesse de résultat, aucun visage identifiable, **une seule lumière** pour les six.
+- 🔴 **ET L'ICÔNE MANQUE DANS LES DEUX ÉTATS — à câbler maintenant** (@vela, vérifié dans le code poussé `4048075`) : `ChallengeProgramCard.tsx` rend aujourd'hui `{item.image ? <img/> : <div style={{background: BANNER_FALLBACK}}/>}` suivi du libellé — **aucune icône**, et la liste `INCLUS` ne porte qu'un `label` et une `image?` : **le lien libellé → icône n'existe pas dans le code**. Conséquence : la porte « 6 icônes dans le DOM » échouerait **avant même la première bannière** (0 au lieu de 6), et la livraison produirait une **grille à deux vitesses** — exactement ce qu'@lyra voulait éviter.
+  - **Les 6 pictogrammes sont dessinés et prêts à coller en JSX** : `/opt/data/clients/pessora/page-challenge/icones-inclus-21j.md` (viewBox 24, trait seul, `stroke-width 1.4`, `currentColor`, même grammaire que les icônes du site).
+  - **Rendu INCONDITIONNEL** — centré dans l'état de repli, **petit au-dessus du libellé** dans l'état illustré. **Une seule règle de rendu, deux présentations** : c'est ce qui garde les 6 cartes reconnaissables quand 3 auront une photo et 3 non.
+  - ⚠️ **Taille : viser ~20 px, pas 15.** Mesuré aux tailles réelles, **deux pictogrammes lâchent à 15 px** — « communauté 24FIT PESSORA » (les deux personnes fusionnent en une tache) et « séances de sport » (l'haltère devient un tiret à deux points) ; les quatre autres sont nets ✅. **Décision @lyra : 20 px, on ne redessine rien** — une seule règle vaut pour les six.
+  - 🔴 **ET LA TAILLE SE FIXE EN PX — jamais en `em`, `%` ou dérivée de la largeur de la carte** (@lyra). Sinon l'icône rétrécit avec les cartes étroites et **repasse sous 15 px à 390 px** : le défaut reviendrait **précisément chez le visiteur mobile**, et il serait **invisible en test desktop**. Valeurs : **20 px** au-dessus du libellé quand la bannière est là, **48-56 px** centrée sur le dégradé sinon.
+  - 🔴 **ET LA COULEUR DU TRAIT — l'icône est TOUJOURS sur fond sombre** (@vela, mesuré ; c'est le piège qui les rendrait invisibles). L'état sans image, c'est **le dégradé du hero** (oklch 15 % → 7 %) et l'état illustré, c'est **une photo avec un voile sombre** — **donc jamais `sapin`** (`#1E3529`) :
+    - `sapin` sur le dégradé de repli = **1,24 → 1,45:1** → **invisible**, pas discret (seuil graphique : **3:1**) ;
+    - trait **clair** (ivoire/écru, `#F7F4ED`) sur le même fond = **14,85:1** ✅.
+    - ⚠️ **La ligne `stroke: var(--color-sapin)` du fichier `icones-inclus-21j.md` est à corriger** : elle partait du principe que « les mêmes fichiers serviront en clair **et** en sombre », or **ils ne sont jamais sur fond clair**. **@lyra** le corrige dans son fichier ; ici la règle fait foi.
+    - **Porte** : contraste du trait sur le fond **réel** ≥ **3:1**, dans les **deux** états.
+  - ✅ **Et ce qui est déjà juste, à ne PAS casser en corrigeant** : le repli est **le dégradé du hero** (donc « une seule lumière » ✅) · le conteneur est en `aspect-[4/3]` **dans les deux états** (la hauteur ne bouge pas → **CLS = 0 par construction** ✅) · **aucun pointillé** ✅ · l'`alt` reprend **le libellé de la fiche** ✅ · `loading="lazy"` ✅.
+
+### 3. Les 3 corrections SEO/OG — **préexistantes, à faire dans la même passe**, ⚠️ **mais sur une BRANCHE SÉPARÉE** (`fix/seo-og-share`)
+
+`index.html` : **trois** références mortes à `logo.png` (qui n'existe pas) dont **le JSON-LD** · `src/components/common/PageSEO.tsx:71-72` déclare **1200×630 en dur** alors que l'image servie est un **carré 1024×1024** → letterbox sur tout lien partagé, **déjà en prod** · `seoConfig.ts` est **par page** → l'OG du challenge est une **entrée propre**, pas un remplacement du défaut. Détail en section « PAGE CHALLENGE ».
+
+> **Pourquoi une branche séparée (et pas « dans la même passe » sur la branche du challenge)** : ce sont des **bugs de PROD préexistants** qui touchent **tout le site** — leur recette est **courte et indépendante** (l'image réellement servie + les balises), donc ils **peuvent partir tout de suite**, sans attendre les 8 portes. Embarqués dans `feat/challenge-21j-landing` (17 commits), ils **conditionneraient un correctif de prod à une recette de landing** et **gonfleraient un merge** dont on ne saurait plus dire ce qu'il valide. **Même passe, branches séparées.** *(Les bannières, elles, n'ont pas ce problème : **le composant** — l'emplacement qui tient **sans** les images — va bien sur la branche du challenge ; **les images** se posent après, hors branche, sans retoucher la page.)*
+>
+> ⚠️ **Il y a un QUATRIÈME point OG, et il n'est PAS une réparation** (@alcyone) : le **câblage de l'OG du challenge** — `og-challenge-1200x630.png` posé comme `og:image` de la route challenge via une **entrée dédiée dans `seoConfig.ts`** (jamais à la place du défaut, `seoConfig` est **par page**), **dimensions déclarées = dimensions du fichier**. C'est un **actif du challenge** → il vit sur la **branche challenge**, pas sur `fix/`. Sans cette ligne, l'image de @user reste **un fichier sur le disque que personne ne sert**. À vérifier dans la spec de la landing. *(Bilan : **trois** réparations de prod sur `fix/seo-og-share`, **une** entrée neuve sur la landing.)*
+
+> 🆕 **Deux ajouts trouvés en vérifiant la config (@nova, 12/09) — même famille, même branche `fix/seo-og-share`, 2 lignes :**
+> 1. **`public/robots.txt` est incomplet par rapport au `vercel.json`.** Il `Disallow` : `/admin` · `/mon-espace` · `/demo-espace` · `/mockup-luxe` · `/mockup-croquis-gerant` — mais **pas** `/connexion`, `/inscription`, `/reinitialisation-mot-de-passe`, `/suivi-commande`, qui sont pourtant protégés par `X-Robots-Tag` ✅. **Ce n'est pas une fuite** (l'en-tête couvre ces chemins), c'est **deux listes qui divergeront** : le prochain qui en touche une oubliera l'autre. → aligner les listes, ou écrire dans le fichier que **le `vercel.json` fait autorité**.
+> 2. **Son `Sitemap:` pointe sur l'apex** (`https://pessora.fr/sitemap.xml`) alors que le canonique est **`www`** — même défaut que l'`og:url` corrigé ailleurs. → `https://www.pessora.fr/sitemap.xml`.
+>
+> ℹ️ **Et une différence de sémantique qui explique pourquoi le point « `/admin` nu » ne valait que pour Vercel** : en `robots.txt`, `Disallow: /admin` **couvre déjà la racine et ses sous-chemins** ✅ ; dans `vercel.json`, `source: "/admin/(.*)"` **ne matche pas `/admin`** seul ✅. Deux syntaxes, deux comportements — à ne pas transposer de l'une à l'autre.
+>
+> ✅ **Bonne nouvelle pour le go-live** : `robots.txt` dit bien **`Allow: /`** — **il ne reste donc qu'un seul verrou** à lever au lancement (`index.html:17`), et le contrôle de l'étape (2)/(3) se fait sur **trois assertions** : `x-robots-tag` **absent** sur `/` et `/menu` en prod · **présent** sur `admin.pessora.fr` · et `robots.txt` toujours en `Allow: /`.
+
+> 🔴 **ET UN SEPTIÈME POINT — ce n'est pas du SEO, c'est une adresse morte (@nova, mesuré le 12/09).** **`pessora.mq` n'existe pas en DNS** (requête DoH → **NXDOMAIN**), alors que **`pessora.fr` a bien des MX** (`mx1/2/3.mail.ovh.net` ✅ : elle **reçoit**). Or le **prompt du PessoBot** donne aux clients **`contact@pessora.mq`** (`docs/PESSOBOT_N8N_SCRIPT_IMPROVED.js:56` et `:127`, `PESSOBOT_PROMPT.md:122/192`, plus README et guides) → **un client qui demande le contact au bot reçoit une adresse qui rebondit**, sans la moindre erreur nulle part. *(Le JSON-LD du site déclare, lui, `contact@pessora.fr` ✅ — donc **deux adresses de contact circulent, dont une morte**.)*
+> → **Une seule adresse fait autorité**, partout (site, bot, guides, JSON-LD) ; les `.mq` des docs sont **à purger**. **Question pour @user : laquelle Catherine lit-elle réellement ?** On ne peut pas la deviner. Et c'est la troisième de la même famille : **`logo.png`** (fichier mort), **`jorisliny.com`** (DNS), **`pessora.mq`** (NXDOMAIN) — **une référence déclarée n'est pas une référence qui existe.**
+
+> 🔴 **LA FAMILLE DU FALLBACK — deux frères trouvés en balayant les edge functions (@nova, 12/09).** Le fallback d'e-mail de `send-contact-email:63` n'est pas un cas isolé :
+> 1. **`create-customer-portal-session/index.ts:21`** → `SITE_URL ?? 'http://localhost:5173'`. Si le secret `SITE_URL` manque en prod, le **retour du portail Stripe** renvoie un **client payant** sur **localhost** : page morte, **aucune erreur**. Latent (les secrets ne se lisent pas d'ici) mais **c'est le flux d'argent** → à vérifier **et** à aligner. ⚠️ **Le bon motif existe trois lignes plus bas, dans le même fichier** : `if (!stripeKey) return 503` — **un secret manquant échoue bruyamment.** C'est celui-là qu'on copie.
+> 2. **`_shared/activateOraPlus.ts:106`** → `ORA_PLUS_PRICE_AMOUNT ?? "2490"` : un **prix** en repli dur. Le module Óra+ est **archivé** → à emporter dans le **lot d'archivage** (avec la fonction morte `create-subscription-session`), pour ne pas laisser traîner un prix fantôme.
+> ✅ **Et un fallback qui est un BON design, à ne pas « corriger »** : `_shared/cors.ts:5` → `ALLOWED_ORIGIN ?? "https://www.pessora.fr"` — il est **plus restrictif** que l'absence de valeur : il protège au lieu de mentir.
+> **La règle, en une ligne : un secret manquant doit ÉCHOUER BRUYAMMENT ; un repli n'est acceptable que s'il est PLUS RESTRICTIF que la valeur absente.** Un repli qui substitue **une autre destination** — une autre boîte, un autre hôte, un autre prix — est **une panne programmée, et invisible.**
+
+### 4. Les contrastes admin / espace membre — **dette mesurée, à cadrer avec Ken**
+
+**498 usages** de gris sous 60 % (**échec AA**) dans `src/pages/admin` + `src/components/admin` + `src/pages/member` + `src/components/member`. Le pire motif : `labelBase` = **9 px à 45 %** (3,15:1), et il ne vit que dans **3 fichiers** — donc **la correction n'est pas un token** : c'est un chantier **par écran**, avec un compteur avant/après. Règle : **aucun texte sous 60 % de noir, aucune action sous 10 px**. ⚠️ **Lot à part entière — ne pas le glisser dans la page challenge.**
+
+### 5. Puis, dans l'ordre déjà écrit : `X-Robots-Tag` par chemin → lot `profils` → passe conformité → **l'edge function de notification** (la prochaine tâche technique, spec complète en section « PROCHAIN LOT »)
+
+**Et ce qui ne dépend PAS de nous** : tout ce qui est chez Catherine (sa carte, le médiateur, le lien Easy Ta Vie, l'accord footer) + le go-live qui en découle. **On ferme tout ce qui est chez nous.**
+
+---
+
+## 🔄 REVIREMENT DU 12/09 — « COMPLÉMENT DE REVENUS » : de HORS SITE à **sur le site, en choix simple**
+
+**Décision de Ken (12/09), après retour de Catherine : elle VEUT cette partie sur le site.** Cadrée en trois mots qui tiennent tout : **« sans plus »** · **« pas de fonctionnalité code trop complexe »** · **« ils vont gérer avec le bilan »** — plus **« quand même un choix possible »**.
+
+### Ce que ça change
+- ❌ **PÉRIMÉ** : la règle « COMPLÉMENT DE REVENUS = EXCLU du site et de tout formulaire », écrite plus bas dans ce doc **et** dans `docs/fiche-papier-challenge-21j.md`. **Elle n'est plus la règle.**
+- ✅ **NOUVELLE RÈGLE** : **une section visible**, avec **un choix possible** — et **la gestion se fait au bilan**, en présentiel, avec Catherine. **On n'automatise rien.**
+
+### Techniquement — c'est là que « pas complexe » se gagne
+**Aucune table, aucune migration, aucun formulaire dédié.** Le questionnaire post-inscription stocke déjà ses réponses dans `event_registrations.post_registration_details` — un **`jsonb`** (vérifié le 12/09 : `objectif_principal` y est **une clé**, pas une colonne) — et ses options vivent dans `src/data/postRegistrationSurvey.ts`, à côté de `OBJECTIF_OPTIONS`, `BILAN_OFFERT_OPTIONS`, `PRECOMMANDE_OPTIONS`.
+
+Donc **le « choix » = une constante d'options + un champ dans le questionnaire existant**, exactement comme les autres :
+```ts
+export const OPPORTUNITE_OPTIONS = [
+  { value: 'Oui', label: 'Oui, j’aimerais en savoir plus' },
+  { value: 'Non', label: 'Pas pour le moment' },
+];
+```
+→ **le `jsonb` prend la clé sans migration** ✅ · **rien à créer en base** ✅ · **le parcours reste le parcours** ✅.
+
+### 🔴 Les garde-fous qui RESTENT (ils ne tombaient pas avec l'exclusion)
+1. **AUCUNE promesse de revenus.** Aucun montant, aucun « gagnez X €/mois », aucun « revenus complémentaires jusqu'à… », aucun témoignage de gains. **C'est la règle n°1** — et le risque n°1 : c'est ce qui fait basculer un site commercial dans la promesse de gains.
+2. **Le cadre dit ce que c'est** : une **activité de distribution indépendante** — **ni un emploi, ni un salaire**. On ne vend **pas** un revenu, on propose **d'en parler**.
+3. **C'est un CHOIX, pas une relance.** Deux options dont « pas pour le moment », et **on n'y revient pas** : pas de séquence d'e-mails, pas de relance automatique.
+4. **On ne collecte rien de neuf** : la réponse vit dans le questionnaire existant ✅ — mais ⚠️ **@vela doit vérifier la cohérence du consentement** : le texte doit couvrir **ce qui est réellement proposé** — ni plus (pas de finalité qu'on ne publiait pas), ni moins (l'option existe maintenant).
+5. **Aucun visuel, aucun chiffre, aucun logo de l'opportunité** — même famille que les bannières : **pas de preuve inventée**.
+
+**@vela — c'est ta passe** : la phrase de consentement, le libellé exact des deux options, l'absence de toute promesse de revenus. **@lyra** — la section reste **sobre** : elle partage la page avec **l'encadré signature**, ce n'est **pas** un deuxième dispositif.
+
+### 🔴 CE QUE LA SECTION EXIGE EN PLUS — « visible » ≠ « stocké »
+
+**Le `jsonb` `post_registration_details` n'est lu par AUCUN composant** (@alcyone, élargi et revérifié par @elise) : il n'apparaît que dans `src/types/database.ts`, le type généré. Conséquence — **et elle ne date pas du revirement** :
+
+- **`EventRegistrationsList.tsx`**, le seul écran qui liste les inscrits, affiche **Prénom · Nom · Téléphone · Groupe · Date** — **aucune réponse du questionnaire** : ni `objectif_principal`, ni `bilan_offert`, ni le futur `complement_revenus`. ⚠️ **`souhait_info` lui-même n'est pas dans le tableau** (il n'existe que dans l'export CSV).
+- **La file de bilan ne les porte pas non plus** : `fn_create_bilan_booking_from_registration` copie `nom · prénom · téléphone` mais **jamais `objectif_*`** — vérifié dans `prosrc` : **0 occurrence**.
+
+**Donc : le « zéro code complexe » est vrai pour le STOCKAGE, faux pour la VISIBILITÉ.** Ajouter le champ sans vue, c'est écrire un choix que **Catherine ne verra jamais**.
+
+**Le correctif** — petit mais réel : un bloc dans la **fiche d'inscription de l'admin** qui affiche les réponses du questionnaire (le `jsonb`, ou les clés nommées). ⚠️ **Et il rend service pour TOUT le questionnaire, pas seulement pour le nouveau champ** : les objectifs sont collectés **pour rien** aujourd'hui, et c'est la donnée la plus sensible du site.
+
+### Les règles de la section (à coder tel quel)
+- **Le champ est `z.string().optional()` — JAMAIS `min(1)`** (@vela). Une case qu'on **doit** cocher pour s'inscrire n'est pas un consentement **libre**, et elle contaminerait les autres consentements du même formulaire. **Aucune option pré-cochée** (un « Oui » par défaut, c'est le même problème déguisé). Le « non » est un **choix qui valide**, pas un bouton pâle à côté.
+- **Le libellé** : la fiche dit « une **opportunité financière** » — **c'est la seule phrase du bloc qui suggère un gain**, donc la seule qui ne se rattrape pas. Version retenue : *« **Envie d'en savoir plus ?** ☐ Oui, je souhaite en savoir plus sur l'**activité de distribution indépendante**. ☐ Pas pour le moment. »* — les **deux cases au même poids visuel** (@lyra : jamais un « oui » en bouton sombre face à un « non » pâle, sinon le consentement n'est plus libre).
+- **La mention qui qualifie est DANS le bloc de l'option** : « **activité de distribution indépendante — ni un emploi, ni un salaire** ». Une mise en garde à trois écrans de la case **ne qualifie pas** ce qu'on accepte.
+- **Stocker la CLÉ du libellé, pas `'Oui'`** (@vela) : le libellé **change** (on est en train de le changer) → `'Oui'` ne dira plus quoi dans six mois. Ex. `complement_revenus: 'savoir_plus_activite_independante'`. **La valeur stockée doit dire ce qu'elle veut dire.**
+- **À l'écran, la pastille porte LE MÊME MOT que la valeur stockée** — sinon l'écran et la base finissent par dire deux choses différentes, et c'est **l'écran** que Catherine lira.
+- **Lisibilité (@lyra, croise l'audit d'hier)** : corps **≥ 11 px** et noir **≥ 60 %** (5,25:1) pour les réponses du questionnaire — cet écran porte aujourd'hui ses libellés en **9 px à 45 %** (**3,15:1, échec AA**). Sinon on **déplace** le problème de la base vers l'écran.
+- **Une pastille « à recontacter »** sur la ligne de l'inscrit quand la réponse est « Oui » : sans elle, Catherine doit **relire chaque ligne** pour trouver les oui — et dans trois semaines, elle ne les cherchera plus.
+- ✅ **Accès vérifié par @vela** : `event_registrations` rend **0 ligne à l'anon** et **0 ligne à un membre** — les lignes vont **uniquement à l'admin**. Le bloc qui affichera les réponses **ne desserre pas** qui peut les lire (vérifié **avant** de mettre à l'écran des objectifs de poids et un intérêt commercial, pas après).
+
+### Porte de recette @vela (4 comptages, sur la preview)
+① **aucun montant** / « €/mois » / « gagnez » / **témoignage de revenus** dans la section ✅ · ② le formulaire **valide** avec « Pas pour le moment » **et** avec **rien de coché** ✅ · ③ **aucune case pré-cochée** ✅ · ④ **mention de qualification présente dans le bloc de l'option** ✅.
+
+---
+
+## ✅ `feat/x-robots-tag` — le lot est CORRECT · **fausse alerte du 12/09 corrigée ici**
+
+⚠️ **Correction d'une alerte erronée, écrite dans ce doc le 12/09 par @elise et @vela, et levée par @alcyone. NE RIEN SUPPRIMER.**
+
+**Ce que nous avions lu** : `source: /(.*)` + `X-Robots-Tag: noindex, nofollow` → « tout le site est noindex, l'étape (3) du go-live est morte ». **C'était FAUX : nous avions lu `source` et `headers` sans lire la clause `has`.**
+
+**Ce que dit réellement la config** :
+```json
+{"source": "/(.*)",
+ "has": [{"type":"header","key":"host","value":"admin.pessora.fr"}],
+ "headers": [{"key":"X-Robots-Tag","value":"noindex, nofollow"}]}
+```
+→ cette règle noindexe **le sous-domaine `admin.pessora.fr` uniquement** — ce qui est **exactement voulu** : l'admin porte des **données client**, il ne doit **jamais** être indexé. Les autres règles (`/connexion`, `/inscription`, `/mon-espace`, `/demo-espace`, `/suivi-commande`, `/mockup-luxe`, `/mockup-croquis-gerant`, `/reinitialisation-mot-de-passe`, `/admin/(.*)`) sont **sans condition** et couvrent bien les chemins techniques **du domaine `www`** ✅.
+
+**Ce qu'on aurait cassé en « corrigeant »** : supprimer ce `/(.*)` retirait la protection noindex **de l'admin**, pas du site public — le site serait resté verrouillé par le `<meta>` d'`index.html`, et **l'admin serait devenu indexable**. Le pire des cas, en miroir.
+
+**Donc : le lot est BON tel que poussé.** Il reste **le check en prod après merge**, **path par path sur `www`** — en sachant que le `<meta>` d'`index.html` masquera encore tout **jusqu'à l'étape (3)**.
+
+**Et le point « `/admin` nu non couvert » est sans objet** : `/admin` nu sur `www` redirige déjà vers le sous-domaine, qui est noindexé par le `has`.
+
+### 🔒 Le verrou SEO est VOLONTAIRE (décision de Ken) — ne pas le lever par erreur
+`index.html:17` porte `<meta name="robots" content="noindex, nofollow">` **exprès** : le SEO ne doit **pas** démarrer avant le go-live. **C'est cette balise qui verrouille le site**, et c'est **elle seule** que l'étape (3) lèvera — **au moment du lancement, pas avant**. Tant qu'elle est là, le site n'est pas indexé, **même si tout le reste est propre**.
+
+⚠️ **La leçon, à ranger avec les autres** : **une condition (`has` / `missing`) fait partie de la règle.** Lire `source` + `headers` en sautant `has`, c'est lire une sonde **sans son filtre** — exactement ce qu'on s'interdit sur la base. Ici c'est arrivé **sur la config**, et ça a produit une instruction qui aurait **dégradé la sécurité de l'admin**.
+
+---
+
+## 📦 LE PAQUET SEO/OG — **8 points** · **`fix/seo-og-share` en couvre 2** ⚠️
+
+> ⚠️ **VÉRIFIÉ SUR LA BRANCHE LE 12/09 (@alcyone, revérifié par @elise) : la branche couvre 2 points sur 8.** **NE PAS la recetter comme « prête »** — le **canonical**, la balise qui pèse le plus au lancement, pointe **toujours sur l'apex qui 308-redirige**.
+> **Cause : la consigne a grossi APRÈS le push de Claude** (il a codé les « 3 bugs » initiaux : `logo.png` + dimensions). Ce n'est pas une erreur de code — c'est une consigne qui n'est jamais revenue vers lui.
+
+| # | Point | État sur `fix/seo-og-share` |
+|---|---|---|
+| 1 | **`canonical` (`index.html:18`)** — apex → `www` | ❌ **toujours apex** |
+| 2 | **`hreflang` (`l.19`)** — apex → `www` | ❌ **toujours apex** |
+| 3 | **`og:url` (`l.30`)** — apex → `www` | ❌ **toujours apex** |
+| 4 | **JSON-LD `url` (`l.54`)** — apex → `www` | ❌ **toujours apex** |
+| 5 | **`logo.png` mort ×3** (`l.27`/`36`/`55`) → `logo-pessora.webp` | ✅ **fait** |
+| 6 | **Dimensions `og:image`** menties (1200×630 pour un carré) | ✅ **fait** — lues depuis `seoConfig` |
+| 7 | **`robots.txt`** : `Sitemap` apex → `www` **et** `Disallow` aligné sur le `vercel.json` (4 chemins manquants) | ❌ **non touché** (aucun diff) |
+| 8 | **Câblage de l'OG du challenge** : `og-challenge-1200x630.jpg` déposé **dans `public/`** **et** référencé par une **entrée dédiée** dans `seoConfig.ts` | ❌ **rien** — 0 occurrence dans `seoConfig.ts`, 0 dans `public/` |
+
+**Ce qu'on aurait laissé passer en recettant tel quel** : un **conflit canonical/redirect** en prod — Google reçoit un canonical vers une URL qui **308-redirige** (mesuré), et tranche lui-même (souvent mal, ou il ignore le signal). C'est **la balise la plus importante du SEO**, et elle serait restée fausse **le jour où on lève le `<meta>` noindex**.
+
+### ⚠️ Et le câblage de l'OG crée le PREMIER fichier partagé — donc l'ordre cesse d'être libre
+Aujourd'hui, **seule `fix/seo-og-share` touche `seoConfig.ts`** (1 commit) ; la branche landing le touche dans **0** commit. **C'est le câblage de l'OG qui les ferait se croiser.**
+→ **Décision : poser l'entrée OG DANS `fix/seo-og-share`** — **un seul écrivain par fichier**, et l'aperçu de lien réel se vérifie **dans la même passe** que les 4 `apex → www`.
+*(Si on préfère la garder côté landing, alors `fix/seo-og-share` **merge EN PREMIER** — l'ordre n'est plus libre dès qu'un fichier est partagé.)*
+
+### ✅ L'image de partage est prête — et optimisée (@lyra, mesurée par @vela)
+- **`og-challenge-1200x630.jpg` : 61 Ko** (elle pesait **380 Ko** avant : à ce poids, WhatsApp charge mal l'aperçu → **une image qui s'affiche une fois sur deux**). Vérifiée à l'œil : aucun artefact, titre net, badge net.
+- **Servir le JPEG, PAS le WebP** (il existe en 20 Ko) : le support du WebP par les **scrapers d'aperçu** est **inégal** — c'est le seul endroit où on prend **le format le plus universel**, pas le plus léger.
+- **L'entrée déclare `1200×630`** = les **vraies** dimensions du fichier (vérifiées en machine : 1200×630, baseline, sRGB, **aucun ICC, aucun EXIF** — donc pas de décalage de couleur ni de rotation chez les scrapers). **C'est exactement le bug d'`index.html` qu'on ne reproduit pas.**
+- ⚠️ **Le vrai test de cette image reste l'aperçu de lien RÉEL, après déploiement** (@vela) — pas la lecture du fichier.
+
+### 🧪 Et une règle de merge, née ici (@vela)
+**Aucun merge sans simulation préalable.** `git merge-tree` (qui ne touche pas à l'arbre) a été passé sur les 3 paires de branches : **0 fichier commun, 0 conflit, rc=0** partout → **l'ordre est libre, pour de vrai** (mesuré, pas supposé). Le jour où l'ordre cesse d'être libre, **le dry-run le dit avant le merge**, pas en résolvant vite.
+
+### Le contrôle post-merge : **3 assertions**, avec leur mesure « AVANT » (@vela)
+| Assertion | **Aujourd'hui (mesuré)** | **Après merge (attendu)** |
+|---|---|---|
+| `x-robots-tag` sur **`www.pessora.fr`** (`/`, `/menu`) | **absent** ✅ | **absent** — le `<meta>` d'`index.html` suffit jusqu'à l'étape (3) |
+| `x-robots-tag` sur **`admin.pessora.fr`** (`/`, `/connexion`) | **absent** ⚠️ | **PRÉSENT** ✅ |
+| **`robots.txt`** | **`Allow: /`** ✅ | **`Allow: /`** — on ne bloque pas le public |
+
+⚠️ **Et la vérification ne peut PAS se faire sur une URL de déploiement** : `main` n'a aucune règle `X-Robots-Tag`, et pourtant **tous** ses chemins renvoient `noindex` → **cet en-tête vient de Vercel**. **La config est la seule autorité** ; le vrai contrôle se fait **après merge, sur la prod**.
+
+---
+
+## 🔴 ENCORE UNE FAMILLE — et elle n'est pas du SEO : **les adresses e-mail**
+
+**`pessora.mq` n'existe PAS en DNS** (vérifié : **NXDOMAIN**), alors que **`pessora.fr` a bien ses MX** (OVH, elle **reçoit** ✅). Or **le prompt du PessoBot donne `contact@pessora.mq` aux clients** → **un client qui demande le contact reçoit une adresse qui rebondit**, **sans la moindre erreur nulle part**. Et le JSON-LD du site déclare, lui, `contact@pessora.fr` : **deux adresses circulent, dont une morte.**
+
+**⚠️ Le nettoyage doit distinguer TROIS familles — le piège est là** (@alcyone) :
+1. **Le DOMAINE mort** : `contact@` (10) + `demo@` (9) + `admin@` (8) = **27 adresses `.mq`** → à remplacer ;
+2. ⚠️ **`pessora.mq@gmail.com` (10 occurrences) — LA GMAIL VIVANTE DE CATHERINE, À GARDER.** Elle **partage la chaîne `pessora.mq`** avec le domaine mort : un nettoyage naïf `pessora.mq → …` **purgerait la bonne boîte en même temps que l'adresse morte**. C'est **elle** que `ADMIN_EMAIL` doit viser ;
+3. **`pessora.fr@gmail.com` (14)** — bogus (le vieux « 17 remplacements ») → à remplacer aussi.
+Et les **6 légitimes** du domaine vivant : `contact@` (2), `demo@` (3), `noreply@` (1) sur **`pessora.fr`**.
+
+**@user — une seule question, et on ne peut pas la deviner** : **quelle adresse Catherine lit-elle réellement ?** Dès que tu le dis, on en fait **LA** seule (site, bot, guides, JSON-LD) et on purge les autres. C'est la **troisième** de la même famille : **`logo.png`** (fichier mort) · **`jorisliny.com`** (DNS) · **`pessora.mq`** (NXDOMAIN). **Une référence déclarée n'est pas une référence qui existe.**
+
+### ✅ Et le site public, lui, est propre (@vela)
+Les **4 pages** (`/`, `/contact`, `/mentions-legales`, `/confidentialite`) affichent **`contact@pessora.fr` partout** ✅ → **aucune adresse morte ne fait face à un visiteur**. Le `.mq` vit dans **le script du bot et les docs** — c'est-à-dire **là où un client le reçoit du bot**, sans la moindre erreur ✅.
+
+### 🔴 LE PIÈGE DU FALLBACK — vérifié dans le code (@elise), et il tombe PILE au go-live
+`supabase/functions/send-contact-email/index.ts:63` :
+```ts
+to: Deno.env.get("ADMIN_EMAIL") ?? "pessora.fr@gmail.com",
+```
+**Le fallback est `pessora.fr@gmail.com` — l'adresse bogus** (celle du vieux « 17 remplacements »). Donc **si `ADMIN_EMAIL` est absent ou vide, TOUS les messages du formulaire de contact partent vers cette adresse**, **silencieusement** ✅.
+
+⚠️ **Et c'est exactement le scénario du go-live** : on **bascule** `ADMIN_EMAIL` de la boîte de test vers celle de Catherine → **si la bascule rate, le fallback prend le relais, et personne ne voit rien**.
+
+**Correctif : SUPPRIMER le fallback** — ou le remplacer par une **erreur explicite**. Un secret d'e-mail ne se rabat pas sur une valeur par défaut : **il échoue bruyamment, ou il n'existe pas.**
+
+### ⚠️ Et deux choses que le DNS ne prouve PAS (@vela)
+1. **Un domaine qui reçoit n'est pas une boîte qui existe.** `pessora.fr` a des **MX vivants** ✅ (`mx1/mx2/mx3.mail.ovh.net`) — mais **`contact@` est-il une vraie boîte ou un alias ?** Inconnu. ⚠️ **On ne teste PAS en envoyant un mail à la cliente** : c'est **exactement** le piège de `contact@jorisoliny.com` — l'adresse **avait l'air bonne** et elle **rebondissait**. À confirmer par Catherine, ou d'un coup d'œil à la console OVH.
+2. **Le destinataire réellement configuré est INVISIBLE d'ici.** Ni l'ENVKAR ni le repo ne portent la valeur courante de `ADMIN_EMAIL` (0 occurrence). **Personne ne peut donc jurer aujourd'hui que les notifications du site atterrissent dans une boîte vivante.** Et comme le go-live **bascule** ce secret vers la boîte de Catherine, la seule preuve qui vaille est celle qu'on applique déjà aux secrets : **un secret se prouve par l'action qui l'utilise** → le go-live inclut « **une demande réelle → un e-mail réellement reçu** », **pas** « la valeur est posée » ✅.
+
+---
+
 ## RÈGLES GÉNÉRALES (permanentes)
 
 - **Une branche par lot** · jamais de push direct sur `main` · **aucun merge sans recette verte de @vela**.
@@ -251,29 +485,41 @@ Un membre modifie son profil → l'interface dit « enregistré », **rien n'est
 
 - **Charpente** (référence FitStrong envoyée par Ken) : hero · 3 puces de réassurance · barre de chiffres · cartes · témoignages · CTA final. ⚠️ **On prend la charpente, PAS le style** — vert fluo/noir « salle de muscu » est rejeté : Pessóra est un bar wellness chic, on garde sa palette et son ton éditorial, avec une seule couleur d'accent.
 - **Contenu** : il vient de la fiche papier de Catherine → **`docs/fiche-papier-challenge-21j.md`** (transcrite et vérifiée sur photo). Accroche de hero = **sa phrase** : « Quel est ton prochain objectif ? ». Les **6 éléments inclus** (GetFitNow · 24FIT PESSORA · séances · recettes · conseils · suivi) viennent d'elle, ils ne sont **pas inventés**.
-- 🔴 **La section « COMPLÉMENT DE REVENUS » (opportunité Herbalife) est EXCLUE** de la page **et de tout formulaire en ligne** — c'est du recrutement, et le site fait la vente, pas le recrutement. *(Écrit aussi dans la fiche, pour que personne ne la « rajoute » dans six mois.)*
+- ~~🔴 La section « COMPLÉMENT DE REVENUS » est EXCLUE de la page et de tout formulaire en ligne.~~ → **⚠️ RÈGLE PÉRIMÉE LE 12/09 : REVIREMENT DE LA CLIENTE** (elle demande la section sur le site, en **choix simple**, sans fonctionnalité — tout est écrit dans la section dédiée en tête de ce doc : garde-fous, consentement, libellés). **L'historique est conservé exprès** : cette règle existait parce que le site fait la **vente** et pas le **recrutement** — et c'est **la cliente** qui décide de sa surface commerciale, nous non. **Ce qui reste interdit, et c'est la seule chose qui compte désormais : aucune promesse de gains** (ni montant, ni « gagnez X €/mois », ni témoignage de revenus).
 - **Aucun formulaire nouveau** : la page est un habillage. Son CTA mène au **parcours d'inscription déjà recetté** (inscription → bilan obligatoire → créneau). Donc pas de nouvelle collecte, pas de nouvelle mention RGPD, pas de table à créer.
 - **Trois blocs restent VIDES jusqu'aux vrais contenus de Catherine** : **chiffres**, **témoignages**, **photos avant/après**. Jamais de placeholder inventé, jamais de photo de banque d'images : ce serait de la **fausse preuve sociale** sur le site d'une commerçante.
-- **Maquette et spec prêtes (Lyra, hors repo)** : `clients/pessora/page-challenge/maquette-challenge-21j.html` — **ouvrable au navigateur**, avec un **bouton de revue** pour basculer entre « vague ouverte » et « aucune vague ouverte » · `clients/pessora/page-challenge/DA-SPEC-challenge-21j.md` — la spec chiffrée (tokens pris dans `src/index.css`, règles dures, ordre des blocs) · captures 1440 + 390 en `clients/pessora/page-challenge/captures/` (en **600**).
+- **Maquette et spec prêtes (Lyra, hors repo)** : `clients/pessora/page-challenge/maquette-challenge-21j.html` — **ouvrable au navigateur**, avec un **bouton de revue** pour basculer entre « challenge ouvert » et « aucun challenge » · `clients/pessora/page-challenge/DA-SPEC-challenge-21j.md` — la spec chiffrée (tokens pris dans `src/index.css`, règles dures, ordre des blocs) · captures 1440 + 390 en `clients/pessora/page-challenge/captures/` (en **600**).
 - **Direction validée** : **Éditorial · Chaleureux · Sobre**. Un seul dispositif signature : **l'encadré « Challenge 21 jours »**, repris de la fiche papier (où c'est la seule zone encadrée). Accroche de hero = sa phrase.
 - 🔴 **Règle de Lyra, à respecter absolument : un bloc de preuve vide ne se publie jamais.** Les 3 blocs (chiffres, avant/après, témoignages) restaient **invisibles en prod** tant qu'ils n'ont pas de contenu réel — dessinés vides, ils ressemblaient à des **blocs cassés** (défaut trouvé à la QA et corrigé dans la spec).
 - **Les visuels à produire** — et la ligne de partage :
-  - **à nous** (aucun risque, ambiance et structure uniquement) : **fond hero 1920×1080 + déclinaison mobile** · **6 icônes au trait** pour les items inclus · **OG image 1200×630** (l'aperçu quand le lien circule — on n'en a pas aujourd'hui) · **badge de vague**.
+  - **à nous** (aucun risque, ambiance et structure uniquement) : **fond hero 1920×1080 + déclinaison mobile** · **6 icônes au trait** pour les items inclus · **OG image 1200×630** (l'aperçu quand le lien circule — on n'en a pas aujourd'hui) · **badge du mois** (mois calculé depuis la date du challenge — pas de mois en dur).
   - **à Catherine** : photos **avant/après** (droits), **témoignages** (jamais inventés, jamais une photo de banque d'images), **chiffres** (les vrais, ou pas de bloc).
   - ⚠️ **Jamais de preuve générée** : pas de visage, pas d'avis, pas de chiffre inventés.
+- 🖼️ **Les 6 bannières « inclus » (série en cours, @user + @lyra) — règles verrouillées** : **aucun texte dans l'image** (le libellé vient de la **fiche, mot pour mot**, rendu **en HTML** : Application GetFitNow · communauté 24FIT PESSORA · séances de sport · idées recettes · conseils & accompagnement · suivi de tes objectifs) · **aucun logo, aucune interface lisible, aucun vêtement de marque** (GetFitNow et 24FIT PESSORA sont des **marques** : le téléphone est **face contre table**, avec un **shake Pessóra** à côté — un objet du quotidien, jamais un écran de pub) · **aucune promesse de résultat** (« suivi des objectifs » s'illustre par une **progression** — pierres empilées —, **jamais** une balance ni un mètre ruban) · **palette Pessóra** (pas de lime « GetFitNow », pas de studio blanc éclatant : les 6 vivent **dans la même lumière**) · **aucun visage identifiable**.
+  - **Elles suivent le sort de l'encadré** : bloc « **challenge ouvert** » seulement → **absentes** dans l'état fermé **et** dans l'état passé (portes 7 et 8).
+  - **Chaque image porte un `alt`** reprenant le libellé de la fiche, et **la référence externe (le visuel de marque GetFitNow pris sur leur site) n'entre JAMAIS dans le repo** : **on garde l'idée, pas le fichier**.
+  - 🔴 **La carte SANS image — les invariants à coder (@lyra).** C'est ce qui rend « une aujourd'hui, cinq la semaine prochaine » invisible. **Sans image** : **aucun `<img>` du tout** (jamais d'image cassée, jamais de cadre vide) · **exactement la même hauteur et le même ratio 4:3** que la version illustrée · **fond sapin très désaturé** + **l'icône au trait centrée** (les 6 SVG existent déjà dans la maquette) · **le libellé à la même position** que dans la version illustrée. **Avec image** : `object-cover`, libellé posé dans la **zone calme** (d'où le négatif space à gauche demandé dans le bloc style). **Invariant à tenir : l'arrivée d'une image ne déplace AUCUN autre élément.** Et côté technique : `width`/`height` déclarés + `loading="lazy"` → **zéro saut de mise en page** (CLS). **L'icône ne disparaît pas** dans la version illustrée : elle reste en petit au-dessus du libellé — c'est elle qui fait la cohérence entre les deux états.
+  - 🔴 **PORTE DE L'ÉTAT MIXTE (@vela) — à tirer dès la 1ʳᵉ image livrée.** C'est l'état qui va **réellement exister pendant des semaines** (3 images sur 6, puis 5 sur 6, jusqu'à la dernière) — pas l'état final. « Zéro saut de mise en page » et « l'icône reste » sont écrits ci-dessus comme des **intentions** ; la porte les transforme en **comptages** : **6 icônes présentes dans le DOM** avec ou sans image · **CLS mesuré = 0** après chargement des images · **aucune carte ne bouge** (comparaison des boîtes avant/après). Trois chiffres — parce que la transition doit être **invisible**, pas « censée l'être ».
+  - ✅ **LES 6 IMAGES FINALES PASSENT LA VÉRIFICATION @VELA AVANT PUBLICATION** — sinon les règles ci-dessus restent **un prompt, c'est-à-dire une règle sans garde**. Cinq comptages, un par image : **lettres = 0 · marque ou logo reconnaissable = 0 · visage identifiable = 0 · écran d'interface = 0 · balance / mètre ruban / corps = 0**, **plus** la cohérence de lumière entre les six.
+- 🔴 **SEO / OG — trois corrections PRÉEXISTANTES à faire dans la même passe** (@alcyone, chemins et comptage revérifiés par @elise) :
+  - **① `index.html` : le logo est mort à TROIS endroits, pas deux.** `https://pessora.fr/logo.png` est référencé en `l.27` (`og:image`), `l.36` (`twitter:image`) **et `l.55` (le JSON-LD `"image"` — celui-là n'était pas relevé, et c'est celui que lisent les moteurs)**. Or **`logo.png` n'existe pas** dans `public/` (il n'y a que `logo.webp`, `logo-o.webp`, `logo-pessora.webp`, **identiques au md5 près** : `e3d6ad1c…`). → `https://www.pessora.fr/logo-pessora.webp`. ⚠️ Le fichier qui fait foi est **`logo-pessora.webp`** : c'est celui qu'utilisent `BrandLogo.tsx`, `seoConfig.ts` et le `preload` de `index.html:43`.
+  - **② `src/components/common/PageSEO.tsx:71-72` ment sur les dimensions.** Il déclare `og:image:width = '1200'` et `height = '630'` **en dur**, alors que l'image par défaut (`seoConfig.ts:22`) est `logo-pessora.webp`, un **carré 1024×1024** → le scraper reçoit un carré en croyant recevoir du 1200×630, **letterbox sur tout lien partagé**. Correctif : ne plus déclarer en dur — déduire de l'image servie, ou porter les dimensions dans `seoConfig` **à côté de chaque `ogImage`**. ⚠️ **Ça existe déjà en prod**, indépendamment du challenge.
+  - **③ `seoConfig.ts` est PAR PAGE** (`l.22` défaut, `l.37` « La Carte ») → `og-challenge-1200x630.png` doit être **une entrée propre pour la route challenge**, **pas** un remplacement du défaut : sinon **tout le site** partagerait l'image du challenge.
+  - **Les trois se font ensemble** — sinon on répare l'aperçu du challenge en laissant le reste du site casser ses liens.
 - ⚠️ **Lien partagé (ancre)** : le site gère les ancres **au clic** (`HeaderSubNav`), mais **`location.hash` n'est lu nulle part** — un lien `#challenge-21-jours` collé directement ouvrirait la page **en haut**, sans atteindre la rubrique. **À corriger** si on veut un lien partageable (post Instagram, QR au bar), et à vérifier **en navigation privée, lien collé**.
 - 🔴 **RÈGLE OBLIGATOIRE — le fuseau (spec l.16 : `date >= aujourd'hui` n'était pas daté).** « Aujourd'hui » **ne se calcule jamais** avec `toISOString()` ni avec le fuseau du visiteur :
   - **un seul helper** : `new Intl.DateTimeFormat('fr-CA', { timeZone: 'America/Martinique' }).format(new Date())` → rend bien `2026-09-11` ;
-  - **jamais `toISOString().slice(0,10)`** — à **20 h 30 locale**, il renvoie **`2026-09-12`** alors que la Martinique est encore le 11 → la page **se ferme 4 h trop tôt**, et la vague disparaît du site le soir du dernier jour ;
+  - **jamais `toISOString().slice(0,10)`** — à **20 h 30 locale**, il renvoie **`2026-09-12`** alors que la Martinique est encore le 11 → la page **se ferme 4 h trop tôt**, et le challenge disparaît du site le soir du dernier jour ;
   - **jamais le fuseau du visiteur** (`toLocaleDateString()` sans `timeZone`) : un visiteur à Paris ouvrirait/fermerait la page avec **son** « aujourd'hui » — le même bug, déguisé ;
   - **même règle que la base**, qui fait déjà `(now() AT TIME ZONE 'America/Martinique')::date` → *une seule règle, un seul endroit*.
   - **Critère** : la borne **front** et la borne **base** disent la **même chose à 20 h 30 locale** ✅.
-- 🔴 **RÈGLE OBLIGATOIRE — aucune date sur la page qui ne soit une ligne en base.** La page affiche **les vagues qui existent** (`events` où `type='challenge' AND active=true`). S'il n'y en a aucune → « le prochain challenge ouvre bientôt » + newsletter. **Pas de liste de rythme en dur** (le « sept./oct. · janv. · mars » est **retiré** : Catherine n'a pas validé ce calendrier, et **le calendrier est chez elle**). Conséquence voulue : le jour où elle crée son challenge, il apparaît **sans qu'on touche au code**.
+- 🔴 **RÈGLE OBLIGATOIRE — le vocabulaire vient de la fiche, pas de nous.** La fiche de Catherine dit **« Challenge 21 jours »**, et ses trois timings **« ce mois-ci · le mois prochain · je souhaite en savoir plus »**. Le mot **« vague »** n'est **pas d'elle** — c'est **notre** jargon (il traîne dans un de nos anciens docs), donc il ne va **nulle part** : ni sur la page, ni dans un **visuel**, ni dans un **e-mail client**, ni dans un libellé d'admin. Et **la source de vérité du texte est `docs/fiche-papier-challenge-21j.md`** — pas une maquette, pas une spec, pas un doc d'entrée : ce doc dit **où puiser**, la fiche dit **quoi écrire**.
+- 🔴 **RÈGLE OBLIGATOIRE — aucune date sur la page qui ne soit une ligne en base.** La page affiche **les challenges qui existent en base** (`events` où `type='challenge' AND active=true`). S'il n'y en a aucun → « le prochain Challenge 21 jours ouvre bientôt » + newsletter. **Pas de liste de rythme en dur** (le « sept./oct. · janv. · mars » est **retiré** : Catherine n'a pas validé ce calendrier, et **le calendrier est chez elle**). Conséquence voulue : le jour où elle crée son challenge, il apparaît **sans qu'on touche au code**.
 - **Non bloquant (@lyra)** : à 1440, le message d'erreur court sur **une ligne de ~850 px** — poser un `max-width` (~65-70 caractères) pour qu'il respire.
 - **Trouvaille visuelle (@lyra, avec captures)** : **« ÓRA+ » est encore dans la navigation de l'espace membre** — sidebar desktop **et** barre du bas mobile — alors que l'archivage est total. À traiter dans la **passe Óra+**, les captures servant de preuve.
 - **Séquencement** : le test E2E est **terminé** ✅ (base rendue au baseline) → **le front est libre**, la page challenge peut être codée. Le blocage restant est **le correctif du point 1 ci-dessus** (l'annulation de `MesBilans`), à passer **avant** le merge de sa branche.
 - 🔴 **PRÉCÉDENCE — un arbitre par QUESTION, jamais un arbitre par document.** Trois documents coexistent pour cette page ; en cas de désaccord, c'est la **question** qui désigne qui tranche :
-  - **`docs/CONSIGNES-CLAUDE.md` (ce doc)** → tout ce qui touche à **ce qui est vrai ou publiable** : fuseau, calendrier, exclusion Herbalife, publication d'un bloc vide, route ;
+  - **`docs/CONSIGNES-CLAUDE.md` (ce doc)** → tout ce qui touche à **ce qui est vrai ou publiable** : fuseau, calendrier, **ce qu'on peut écrire sur le complément de revenus (0 promesse de gains)**, publication d'un bloc vide, route ;
   - **`clients/pessora/page-challenge/DA-SPEC-challenge-21j.md` (Lyra)** → les **valeurs visuelles mesurées** (tokens, tailles, hiérarchie, contraste) ;
   - **`docs/superpowers/specs/2026-09-11-challenge-21j-landing-design.md` (spec de build)** → l'**implémentation** (fichiers, ordre, requêtes).
   **Aucun document n'est « le bon » en bloc.** C'est le type d'écart qui a produit le faux chemin `/membre/bilans` : deux endroits, une seule règle — on vérifie le chemin, pas la confiance.
@@ -281,13 +527,184 @@ Un membre modifie son profil → l'interface dit « enregistré », **rien n'est
   1. **l.44** — *« Rythme des vagues : liste statique en dur pour ce lot »* **contredit la règle « aucune date qui ne soit une ligne en base »** → remplacer par la **requête en base** (l'état vide l.43 « ouvre bientôt » reste ✅) ;
   2. **l.16** — `date >= aujourd'hui` **ne dit pas quel « aujourd'hui »** → c'est la **règle de fuseau de ce doc** qui tranche, sinon on recode `toISOString()` ;
   3. **l.64** — les **cadres en pointillés décrits comme un rendu de prod** contredisent la règle de Lyra → **en prod, aucun pointillé** : le hero a un **dégradé de repli codé** (la page a l'air finie sans l'image), et les blocs de preuve sont **absents du DOM**, pas masqués en CSS. Le pointillé est un **repère de revue**, il vit dans la maquette.
-- ✅ **Ce que les deux documents disent déjà la même chose** (donc stable, ne pas y toucher) : Herbalife exclu **avec son grep de contrôle** · blocs de preuve qui retournent `null` · ordre des routes (statique **avant** paramétrée) · **un seul écrivain** pour le parcours d'inscription · aucune promesse de résultat chiffré.
-- 🔎 **Les 3 portes de recette sur la page DÉPLOYÉE** (@vela — mesurables, sans jugement d'humeur) : **①** éléments en pointillés = **0** · **②** blocs de preuve présents dans le DOM = **0** tant que Catherine n'a rien livré · **③** borne **front** et borne **base** disent la même chose **à 20 h 30 locale**. @lyra garde l'œil sur la forme.
+- ✅ **Ce que les deux documents disent déjà la même chose** (donc stable, ne pas y toucher) : complément de revenus **autorisé en choix simple, avec son grep de contrôle requalifié (0 promesse de gains)** · blocs de preuve qui retournent `null` · ordre des routes (statique **avant** paramétrée) · **un seul écrivain** pour le parcours d'inscription · aucune promesse de résultat chiffré.
+- 🔎 **LA RECETTE DE LA PAGE — 8 portes, toutes mesurables, aucune au jugé** (écrites et testées à blanc par @vela ; le détail d'exécution vit dans son script, les définitions ici) :
+  1. **Précondition** — la page **rend bien le challenge** (H1 « introuvable » = portes **nulles**, pas vertes). *Une porte sans mesure n'est pas une porte verte* : ce défaut a été trouvé dans la sonde elle-même (elle rendait « 0 · 0 » sur un slug inexistant).
+  2. **Pointillés = 0** — ⚠️ mesuré en **style calculé** (`getComputedStyle(e).borderStyle`), **jamais** par le nom de classe : la porte ① de la spec de build (l.118, `[class*="dashed"]`) **passerait avec un cadre pointillé défini dans une feuille de style** — faux vert de la famille. À corriger, ou à doubler par la mesure d'@vela.
+     ⚠️ **Et scopé à la PAGE DU CHALLENGE, pas à tout `src/`** : les composants **admin** ont des `border-dashed` **légitimes** (zones d'upload — `EventGalleryManager`, `AdminProductGallery`, `DrinkDetailAdminEdit`). Mesurer la page, sinon **faux rouge**.
+  3. **Blocs de preuve (chiffres, avant/après, témoignages) = 0** — **absents du DOM**, pas masqués en CSS, tant que Catherine n'a rien livré.
+  4. **Contenu positif (@nova)** — ce qui doit être **là** : accroche = **sa phrase** (« Quel est ton prochain objectif ? ») · **6 puces « inclus »** mot pour mot (GetFitNow · 24FIT PESSORA · séances · recettes · conseils · suivi) · **3 timings** de démarrage · **CTA vers le parcours d'inscription existant** (aucune nouvelle collecte). Source : `docs/fiche-papier-challenge-21j.md`. *Sans porte positive, trois compteurs à « 0 » valident une page vide.*
+  5. **Fuseau** — borne **front** et borne **base** disent la même chose **à 20 h 30 locale** (helper unique `src/lib/martiniqueDate.ts`).
+  6. **390 px** — `scrollWidth === clientWidth` (zéro débordement horizontal) **et** **1** bloc encadré **portant le titre signature** (= 1), le compte brut des cadres restant **indicatif** : compter les cadres donnait **2 faux positifs sur une page saine** (une carte d'inscription, un champ de saisie) — *un dispositif signature se définit par son rôle, pas par sa bordure*.
+  7. **État FERMÉ (aucun challenge en base) — la page doit dire la vérité** (règle **7bis** d'@lyra) : **absents du DOM** = l'**encadré signature** **et** le **CTA d'inscription** ; **présents** = le bloc **« prochain challenge + newsletter »**, **remonté juste après la réassurance**, et le **CTA du hero qui bascule sur « Être prévenu·e de l'ouverture »**. Toujours visibles : hero · réassurance · footer. *Défaut trouvé dans la maquette : l'état existait mais affichait quand même le contenu du challenge — un état qui ne dit pas la vérité.*
+  ⚠️ **Les portes se tirent dans les DEUX états** (fermé **et** ouvert) : un vert sur l'état ouvert ne dit **rien** de l'état fermé. La maquette a le **bouton de revue** qui permute les deux — le même doit être utilisé sur la preview.
+  8. **État PASSÉ — la porte qui manquait, et elle contredit la spec telle qu'écrite.** Relevé (@nova) sur la spec de build **l.27-28** : la route `/evenements/:slug` rend `<ChallengeLanding>` **sans aucun contrôle de fenêtre**, alors que la liste, elle, filtre `date >= aujourd'hui`. Conséquence : un **lien Instagram / QR au bar d'un challenge terminé continue de circuler** (cas certain, pas hypothétique) → la page proposerait de **s'inscrire à un challenge fini**. Donc **trois états, pas deux** :
+     - **en cours** (`date >= aujourd'hui`, calculé en **Martinique**) → landing + **CTA d'inscription** ;
+     - **aucun challenge en base** → page stable, état fermé (règle 7bis) ;
+     - **challenge PASSÉ** → **le contenu reste** (la personne venue d'un vieux lien veut voir ce que c'était) **mais le CTA d'inscription disparaît**, remplacé par « **ce challenge est terminé — le prochain ouvre bientôt** » + newsletter. **Jamais** d'inscription à un challenge fini.
+     **La règle de fenêtre s'applique aux DEUX portes d'entrée** (route stable **et** `/evenements/:slug`) : un slug ne contourne pas la fenêtre. **Porte 8** : sur un challenge à **date passée**, CTA d'inscription **absent du DOM** (= 0) et bloc « terminé / prochain » **présent**.
+- 🎨 **« Fidélité au mockup » = 4 valeurs relevées sur le DOM (@lyra)** — ce n'est pas un jugement, ça se mesure :
+  1. **titre hero ≤ 3,5 rem** (règle dure : pas de titre géant façon landing fitness) ;
+  2. **rayon des blocs = 2 px** (le token du projet — une page en cartes arrondies, et on a perdu l'ADN Pessóra) ;
+  3. **un seul accent : le vert sapin `#1E3529`**, jamais une deuxième couleur de mise en avant ;
+  4. **respiration de section ≥ 6,5 rem en desktop** (c'est ce qui fait le « sobre » ; tassé, ça devient une page promo).
+  **Reste au seul jugement d'@lyra : la composition** — et elle vient **après** ces 4 valeurs, jamais à leur place.
+
+---
+
+## 🔴 À LA REPRISE — page Challenge 21 jours (revue statique du 11/09 au soir, branche `feat/challenge-21j-landing`)
+
+> ⚠️ **SECTION HISTORIQUE — état au 11/09 au soir.** Depuis, les points 1 à 4 ont été **faits et vérifiés** (`4048075` : porte 8 côté bouton, « vague » purgé, « Places limitées » retiré, lien confidentialité en noir 70 %, emplacement des bannières posé). **Pour l'état réel, lire l'ORDRE DU JOUR en tête de ce doc (§1 : ce qui est fait ✅ / ce qui reste).** Ce qui suit garde la valeur d'une trace : **pourquoi** chaque point existait.
+
+Revue statique faite par @elise (23 fichiers, **2 704 insertions**) — **la branche est bien construite** ; reste ceci **avant merge/PR** :
+
+1. 🔴 **La porte 8 n'est PAS implémentée** — `ChallengeLanding` ne reçoit **aucun état de date** et rend `<ChallengeRegistrationCard>` **inconditionnellement** ; `EvenementDetail.tsx:122` monte `<ChallengeLanding>` **sans contrôle de fenêtre** → un vieux lien Instagram / QR au bar d'un challenge **terminé** propose encore de s'inscrire. *(La route stable est protégée par sa requête ; c'est le **slug** qui contourne.)* → appliquer la fenêtre **aux deux portes d'entrée**, **et** rendre **les timings absents du DOM** dans l'état passé (ajout @lyra : la rangée « Ce mois-ci / Le mois prochain » **ment aussi** au milieu de la page, pas seulement le bouton du bas).
+2. 🔴 **Le mot « vague » est affiché à l'écran** — `ChallengeHero.tsx:26` (« Challenge 21 jours · **Vague de** {mois} ») et `ChallengeClosedState.tsx:15` (« **Prochaine vague** »). Le mois vient de `event.date` (propre) ; **seule la formule est à changer** → « Challenge 21 jours » / « prochain challenge ». Claude a codé sur la maquette **d'avant la purge** : **mécanique, pas un choix**.
+3. ⚠️ **Deux portes à ne pas mal scoper** (sinon faux rouges) : la porte « Herbalife » **a changé de cible le 12/09** : elle ne vise plus **le sujet** (la section est désormais voulue par la cliente) mais **la promesse de gains** (« gagnez X € », montant, revenu complémentaire chiffré, témoignage de revenus) **et** l'absence de la mention « **distribution indépendante — ni emploi ni salaire** ». ⚠️ Toujours **pas la marque** (`productsData.ts` / `ProductJsonLd.tsx` = **38 occurrences légitimes**, ce sont **les produits vendus**) ; et la porte « pointillés » est **scopée à la page du challenge** (les zones d'upload de l'admin sont légitimes).
+4. 🐛 **Même famille, hors lot** : `src/lib/siteAnnouncement.ts:6` fait `new Date().toISOString().slice(0,10)` → **le bandeau d'annonce du site bascule au jour suivant dès 20 h locale**. La règle de fuseau qu'on vient d'écrire est donc **déjà violée ailleurs dans le code** : à corriger avec le même helper (`src/lib/martiniqueDate.ts`) — **dette écrite**, même famille que la borne front/base.
+5. 🎨 **Accent doré/vert : tranché** — voir le point 8 (le doré est un **ornement**, pas un accent).
+6. ⏭️ **Reste du process** : la **revue finale de branche** (interrompue avant résultat), puis **finishing-a-development-branch** (merge/PR). **Pas de merge sans les 8 portes tirées sur la preview** *ni* **l'œil d'@lyra**.
+7. 🎨 **Deux corrections de forme tranchées par @lyra** (mesurées, pas d'opinion) : **①** le lien « **politique de confidentialité** » (11 px, `gold-dim` 4,54:1) **sort du doré** → c'est du **texte d'action juridique**, il passe en **noir 70 % souligné (7,57:1)** ou en sapin ; **②** « **Places limitées** » (`text-[8px]`, dans l'encadré signature) : 8 px est **sous le plancher de lisibilité**, et c'est **une affirmation de rareté** → ⚠️ **la fiche de Catherine ne dit pas un mot de places limitées**, donc en l'état **elle saute** (elle ne revient que si Catherine l'affirme — et alors ≥ 11 px, hors doré).
+8. ✅ **Accent tranché, par rôle** : **`sapin` #1E3529 = le seul accent sémantique** (documenté comme tel dans `index.css`, 67 fichiers, **13,15:1** sur blanc) ; **`gold` = ornement** (**2,26:1 — échec AA**, jamais de texte ; `gold-dim` 4,54:1 réservé aux micro-libellés). Vérifié sur la branche : **aucun `text-gold` plein**, et **aucun doré signifiant en double** dans un même bloc ✅.
+
+---
+
+## ⏱️ MINUTEUR DE LANCEMENT — ajout de périmètre (décision de Ken, 12/09)
+
+**Demande de Ken :** un **compte à rebours vers le lancement du challenge**, sur le modèle du minuteur « Pizza du Chef » de Dalcielo. **Cible tranchée : J** — le jour où le challenge commence (pas J-14, l'ouverture des créneaux).
+
+### 1. Ce qu'on reprend de Dalcielo (pattern éprouvé, en prod)
+
+Référence : `repos/dalcielo/src/components/ui/ChefValidUntilTimer.tsx` + `src/lib/chefOffer.ts`.
+
+- **un champ date au format `YYYY-MM-DD`** posé côté admin — ici, **`events.date`**, qui existe déjà : **aucune colonne à créer** ;
+- **l'affichage : 4 cases `JJ · HH · MM · SS`**, avec **`tabular-nums`** (les chiffres ne sautent pas) et **`padStart(2,'0')`** ;
+- **la case des secondes qui pulse** ;
+- **la garde d'entrée : date absente ou malformée → `return null`** — pas de zéro, pas de tiret, **rien dans le DOM** ;
+- **l'état passé : un libellé court** (« terminé »), jamais un décompte négatif.
+
+### 2. 🔴 LE PIÈGE — ne PAS copier le calcul de Dalcielo
+
+Dalcielo calcule son échéance avec `new Date(y, m-1, d, 23,59,59)` — c'est-à-dire **dans le fuseau du navigateur**. **Transposé ici, c'est exactement la faute que la règle de fuseau de ce doc interdit** (l. 265-270) : un visiteur à Paris verrait l'échéance décalée de 4 à 5 heures.
+
+**Règle qui s'applique, sans exception :**
+
+- **l'échéance se calcule en `America/Martinique`**, jamais dans le fuseau du visiteur, jamais en UTC ;
+- **jamais `toISOString()`, jamais `toLocaleDateString()` sans `timeZone`** ;
+- **même règle que la base** : `(now() AT TIME ZONE 'America/Martinique')`.
+
+### 3. ⚠️ Le helper existant NE SUFFIT PAS — il faut l'étendre
+
+`src/lib/martiniqueDate.ts` ne sait faire qu'une chose :
+
+```ts
+export function todayInMartinique(): string {   // → '2026-09-12'
+  return new Intl.DateTimeFormat('fr-CA', { timeZone: 'America/Martinique' }).format(new Date());
+}
+```
+
+Or un compte à rebours a besoin d'un **instant** (un `Date` comparable), pas d'une chaîne `YYYY-MM-DD`. **Forme TRANCHÉE par @alcyone — une seule export en plus, pas de refonte :**
+
+```ts
+// events.date est une DATE naïve ('YYYY-MM-DD'), pas un horodatage.
+// America/Martinique = -04:00 SANS heure d'été DEPUIS 1980 (vérifié 2024→2100 par
+// @vela) ; -05:00 existait avant 1980. Le littéral est donc sûr pour nos dates,
+// mais il n'est pas "permanent depuis toujours".
+// Pas d'heure d'été = pas de calcul d'offset — c'est précisément ce calcul qui
+// produit le bug Dalcielo.
+export function startOfDayMartinique(date: string): Date {
+  return new Date(`${date}T00:00:00-04:00`);
+}
+```
+
+**Pourquoi cette forme rend le bug structurellement impossible** (et pas « attention au fuseau ») : le décompte devient `startOfDayMartinique(events.date).getTime() - Date.now()` → **deux instants absolus**. Un `Date` **est** un instant, il n'a pas de fuseau : un visiteur à Paris et un à Fort-de-France calculent **le même** `remaining`. Il n'y a **aucun `timeZone` dans le calcul**, donc rien qui puisse diverger — l'invariant est dans le code, pas dans une consigne.
+
+⚠️ **`todayInMartinique()` reste** (la chaîne `'YYYY-MM-DD'`) pour les comparaisons du landing (`date >= aujourd'hui`). **Deux fonctions, deux métiers** — ne pas en surcharger une pour l'autre, sinon on recrée l'ambiguïté « date vs instant ».
+
+**Le test doit être FALSIFIABLE** (⚠️ comparer `startOfDayMartinique(x)` au littéral `new Date(x + 'T00:00:00-04:00')` compare **le même littéral à lui-même** : un offset faux passerait **vert**). Forme retenue :
+
+```ts
+const t = startOfDayMartinique('2026-09-16');
+const hm = (d: Date) => new Intl.DateTimeFormat('fr-CA', {
+  timeZone: 'America/Martinique', hour: '2-digit', minute: '2-digit',
+  hour12: false, hourCycle: 'h23',   // ⚠️ sans hourCycle, certaines versions d'ICU rendent '24:00'
+}).format(d);
+expect(hm(t)).toBe('00:00');                            // vu de Martinique = début du jour
+expect(hm(new Date(t.getTime() - 1))).toContain('23:59'); // 1 ms avant = la veille
+```
+Avec un offset en `-05:00`, ce test **rougit** (il lirait 23:00 puis 22:59) → il mesure vraiment ce qu'il prétend. Variante inattaquable, si on préfère : `expect(startOfDayMartinique('2026-09-16').toISOString()).toBe('2026-09-16T04:00:00.000Z')`.
+
+⚠️ **Et le cran d'écart VOULU, à écrire en commentaire dans `ChallengeCountdown.tsx`** — la même page porte deux définitions de « maintenant » : l'**état** du landing est `date >= aujourd'hui` (le jour J appartient encore au challenge ✅) alors que le **minuteur** disparaît dès `remaining > 0` **strict** (il s'efface exactement quand l'état bascule). Les deux sont justes, mais **elles divergent d'un cran au même endroit** → sans commentaire, le premier refactor fera dériver l'une des deux, et personne ne verra d'erreur : juste un décompte qui survit d'une journée.
+
+⚠️ **Le test existant (`src/__tests__/martiniqueDate.test.ts`) doit être étendu**, pas contourné : c'est lui qui garantit qu'à **20 h 30 locale** le front et la base disent la même chose.
+
+**Défaut proposé : l'échéance = le DÉBUT du jour J en Martinique** (le lancement, c'est le début de la journée). À valider par Ken si l'ouverture réelle se fait à une heure précise.
+
+### 4. Où il vit, et dans quels états
+
+**Composant dédié**, dans la famille existante : `src/components/events/ChallengeCountdown.tsx`. **Il ne calcule rien** — il reçoit une date et rend le décompte.
+
+| État | Le minuteur |
+|---|---|
+| **Challenge à venir** (`date` en base, J dans le futur) | **Affiché** — « Le prochain Challenge 21 jours commence dans… » |
+| **Aucun challenge en base** | **Absent du DOM** (`return null`) — pas d'échéance, donc pas de minuteur |
+| **Challenge passé / en cours** | **Absent du DOM** — cohérent avec la porte 8 : on n'annonce pas un lancement déjà eu lieu |
+
+**⚠️ Bénéfice à ne pas gâcher :** aujourd'hui, **avant J-14**, la page n'a **aucun chemin** — la fenêtre d'inscription n'est pas ouverte, et il n'y a rien à proposer au visiteur. **Le minuteur comble ce trou** : il donne une date et une raison de revenir → c'est lui qui rend l'état « bientôt » vivant, et qui donne sa cible à la newsletter.
+
+**⚠️ Anti-hydratation, obligatoire :** comme chez Dalcielo, le décompte ne s'affiche **qu'après le montage client** (`mounted`). Serveur et navigateur ne voient pas la même seconde — sans cette garde, React signale une erreur d'hydratation.
+
+### 4bis. 🔴 Le minuteur n'est PAS un deuxième dispositif signature (règles @lyra, mesurables)
+
+La page a **un seul** dispositif signature : **l'encadré Challenge**. Un compte à rebours se transforme vite en **enseigne lumineuse**, et on bascule dans le look « promo / offre flash » — l'inverse de la direction. Donc :
+
+- **Traitement d'information, pas d'urgence** : **pas de rouge, pas de cadre, pas de halo, pas d'or** (l'or reste un ornement ≤ 1 px — filets, points). Chiffres en **noir ou sapin**.
+- **`tabular-nums`** obligatoire : les chiffres ne doivent pas bouger d'une seconde à l'autre.
+- **Hiérarchie** : corps des unités **≤ 13 px**, et les chiffres **nettement sous le H1** (3,375 rem) — **le minuteur s'aligne sur le titre, jamais l'inverse**.
+- **La pulsation des secondes** = variation d'**opacité légère** — **pas** de rebond d'échelle. C'est un pouls, pas une animation de foire. Et elle se **désactive sous `prefers-reduced-motion`**.
+- **Placement** : dans l'état « le prochain Challenge 21 jours ouvre bientôt » — c'est là qu'il sert, et là qu'il ne vole la vedette à rien.
+
+**Test de recette associé** : si le minuteur devient un encadré doré au milieu du hero, la page a **deux points focaux** et le « sobre » tenu trois jours est perdu.
+
+### 5. 🔴 Ce que le minuteur ne doit PAS réintroduire
+
+- **Aucun mois à l'écran, aucune liste de rythme, aucune date qui ne soit pas une ligne en base** (règle l. 272) — le minuteur **lit** `events.date`, il n'annonce rien d'autre ;
+- **le mot « vague » reste banni** — le libellé est « Challenge 21 jours », jamais « prochaine vague ». *(Le minuteur est exactement l'endroit où ce mot reviendrait par réflexe.)*
+- **aucune promesse de résultat** — le décompte annonce un **début**, jamais un effet.
+
+### 6. Portes de recette ajoutées (@vela) — les 8 précédentes restent dues
+
+**Porte 9 — le minuteur est absent du DOM quand il n'a pas d'échéance.**
+Aucun challenge en base, **et** challenge passé → **compteur = 0**. Vérifier l'absence, **pas** un affichage masqué en CSS.
+
+**Porte 10 — la porte de fuseau, appliquée au minuteur.**
+Elle est **structurelle** (forme @alcyone) : le décompte doit être **identique** avec le fuseau du navigateur réglé sur **`Europe/Paris`** et sur **`America/Martinique`** — parce qu'il n'y a **aucun `timeZone` dans le calcul** (deux instants absolus). En complément, horloge réglée **à 20 h 30 locale Martinique** (= 00 h 30 UTC le lendemain) : **le nombre de jours ne doit pas avoir changé d'un cran**. ⚠️ Si la porte passe « parce qu'il n'y a rien à faire diverger », le noter — **c'est le résultat attendu**, pas une porte inutile.
+
+**Porte 11 — l'échéance atteinte ne ment pas.**
+Simuler un `now` postérieur à J : le décompte **disparaît ou passe à l'état passé**, il n'affiche **jamais** `-01 j` ni `00 j 00 h 00 s` figé.
+
+**Porte 12 — la traversée de minuit, sans rechargement (@vela).**
+Playwright 1.60 expose `page.clock` ✅ : régler l'horloge à **23 h 59 min 30 s**, lire le décompte, avancer à **00 h 00 min 30 s**, et exiger **la même chose qu'après un rechargement** — le minuteur disparaît **et** la page a basculé d'état. C'est le seul scénario où un visiteur qui **laisse l'onglet ouvert** (le cas d'un lien Instagram) voit autre chose qu'un visiteur qui arrive.
+⚠️ **Et il n'y a rien à assumer ici** : le minuteur **tick déjà** (les secondes pulsent) → s'il recalcule `remaining` depuis `Date.now()` à chaque tick au lieu de figer l'échéance au montage, la traversée est **automatique**. La porte ne sert qu'à vérifier qu'on n'a pas figé ce qui ne doit pas l'être.
+
+**Compléments, mesurables :**
+- **390 px** — `scrollWidth === clientWidth` avec le minuteur affiché (4 cases + libellé : c'est là que ça déborde) ;
+- **console propre** — zéro avertissement d'hydratation au chargement ;
+- **`prefers-reduced-motion`** — la pulsation des secondes doit se désactiver (accessibilité) ;
+- **pointillés = 0** — le minuteur ne se dessine **jamais** en pointillés : il a une valeur réelle ou il n'existe pas.
+
+### 7. Points à trancher avant de coder
+
+1. **L'échéance** : début de J (proposé) ou une heure précise si Catherine en fixe une ?
+2. **Le libellé exact** du décompte — « Le prochain Challenge 21 jours commence dans… » : à valider (il n'annonce rien de plus que la date en base).
+3. **@alcyone** : la forme retenue pour l'extension de `martiniqueDate.ts` (§3).
 
 ---
 
 ## DETTE ÉCRITE (ne pas confondre avec « à faire »)
+- 🕐 **Famille `toISOString()` = « aujourd'hui » calculé en UTC — bug site-wide, mesuré (@alcyone, 11/09).** Le helper `src/lib/martiniqueDate.ts` (`todayInMartinique()`) écrit pour la page challenge est **le fix** ; or le même pattern `new Date().toISOString().slice(0,10)` / `.split('T')[0]` est **déjà violé à ~10 endroits à impact client** (bascule au jour suivant dès 20 h locale) : `siteAnnouncement.ts:6` (bandeau) · `BilanBienEtre.tsx:173` + `:245` (créneaux + date min) · `Evenements.tsx:241` (liste) · `member/MesEvenements.tsx:84` (inscriptions) · `HeaderSearch.tsx:103` + `useSearch.ts:49` + `useUpcomingEvents.ts:30` (recherche + à venir) · `admin/RetraitsGamme.tsx:39` (retrait) · `admin/AdminOverview.tsx:89` (stats). **Cosmétique** (nom de CSV, date d'abonnement) : `AdminProduits`, `AdminCommunications`, `AdminEvenements`, `AdminMembers`, `AdminMemberDetail:182/288`. **Cas distinct — ne pas confondre** : `AnalyticsDashboard.tsx:53` reconvertit un `created_at` stocké. **À corriger en une passe, avec le helper unique** — pas instance par instance.
 
+- 🔤 **Lisibilité de l'admin et de l'espace membre — chantier à part entière, mesuré (@lyra, 11/09 ; signalé par @user).** Les textes de modification/labels sont **en gris pâle sur fond clair** : contrastes calculés — `/30` = **2,03:1** · `/35` = 2,35 · `/40` = 2,71 · `/45` = 3,15 · `/50` = 3,74 · `/55` = 4,42 → **tous échecs AA (4,5:1)** ; seuls `/60` (5,25:1) et `/70` (7,57:1) passent, et le projet les utilise déjà. Le motif est localisé : **`labelBase` = `text-[9px] text-black/45` (9 px à 3,15:1) porte TOUS les libellés de champs de l'admin** ; les actions sont au même niveau (« Annuler »/« Non » et le crayon de modification en 9 px `/45`, le ✎ des boosters en 9 px `/30` = 2,03:1, la corbeille en `/20` = 1,44:1). **Périmètre : 412 usages** de gris sous 60 % dans l'admin + l'espace membre (`/40` ×100, `/35` ×80, `/45` ×79, `/30` ×51, `/55` ×41, `/50` ×38). **La règle, en une ligne : aucun texte sous 60 % de noir sur fond clair dans l'admin, et aucune action sous 10 px** — *la teinte pâle et le corps minuscule se cumulent, c'est ça qui rend illisible*. **À traiter par tokens (`labelBase` en premier : une ligne corrige des dizaines d'écrans), pas par balayage** — et **pas** dans le lot de la page 21J.
 - **~25 tables** portent le `GRANT ALL` hérité Supabase (INSERT/UPDATE/DELETE pour `anon`/`authenticated`) protégées **uniquement par l'absence de policy**. Non exploitable aujourd'hui. **Priorité avant la bascule Stripe live** : `orders`, `order_items`, `subscriptions` (données d'argent) → `profiles` (avec son lot) → le reste. À traiter **avec le test de la vraie action**, jamais en relisant les `GRANT`.
 - **`bilan_slots` garde son `GRANT ALL`** alors que `bilan_bookings` est resserré → asymétrie assumée, à ne pas confondre avec « les deux tables sont protégées pareil ».
 - **Les 2 vues `v_pessobot_*`** portent INSERT/UPDATE/DELETE sans objet : testé en anon → **aucun contournement de RLS** (`42501` / ligne intacte). Privilèges à nettoyer, pas un trou.
@@ -305,6 +722,7 @@ Un membre modifie son profil → l'interface dit « enregistré », **rien n'est
 3. **Son accord** pour le crédit footer.
 4. **Le lien Easy Ta Vie.**
 5. **La recette du module « Bilan » dans son admin** (elle est la seule à pouvoir juger).
+6. **Deux visuels manquants à la carte** — **TIRAMISU GOURMAND** (shakes) et **DETOX MY BODY** (wellness) ont `image_url = null`. ✅ **Vérifié dans le code : ce n'est PAS une image cassée** — le rendu public gère l'absence (`HomeProductCarousel.tsx:52` : `imageSrc ? <img/> : placeholder`), donc le visiteur voit un **placeholder**, pas un carré brisé. Ce n'est donc **pas un bug à corriger de notre côté** : c'est **deux produits affichés sans leur visuel**. Deux questions pour elle, dans cet ordre : **① ces boissons sont-elles toujours à sa carte ?** (si non → on **retire** le produit, cf. skill `retrait-offre-site-client`) · **② si oui → c'est son visuel qu'il faut** (photos de ses propres boissons, téléversées via le champ image de l'admin — les 14 autres vivent dans le bucket **`product-images`**, `.webp`, ~39 Ko, jamais des PNG de 2 Mo dans le repo).
 
 ---
 
