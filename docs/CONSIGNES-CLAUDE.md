@@ -51,6 +51,14 @@
 >
 > ⚠️ **Il y a un QUATRIÈME point OG, et il n'est PAS une réparation** (@alcyone) : le **câblage de l'OG du challenge** — `og-challenge-1200x630.png` posé comme `og:image` de la route challenge via une **entrée dédiée dans `seoConfig.ts`** (jamais à la place du défaut, `seoConfig` est **par page**), **dimensions déclarées = dimensions du fichier**. C'est un **actif du challenge** → il vit sur la **branche challenge**, pas sur `fix/`. Sans cette ligne, l'image de @user reste **un fichier sur le disque que personne ne sert**. À vérifier dans la spec de la landing. *(Bilan : **trois** réparations de prod sur `fix/seo-og-share`, **une** entrée neuve sur la landing.)*
 
+> 🆕 **Deux ajouts trouvés en vérifiant la config (@nova, 12/09) — même famille, même branche `fix/seo-og-share`, 2 lignes :**
+> 1. **`public/robots.txt` est incomplet par rapport au `vercel.json`.** Il `Disallow` : `/admin` · `/mon-espace` · `/demo-espace` · `/mockup-luxe` · `/mockup-croquis-gerant` — mais **pas** `/connexion`, `/inscription`, `/reinitialisation-mot-de-passe`, `/suivi-commande`, qui sont pourtant protégés par `X-Robots-Tag` ✅. **Ce n'est pas une fuite** (l'en-tête couvre ces chemins), c'est **deux listes qui divergeront** : le prochain qui en touche une oubliera l'autre. → aligner les listes, ou écrire dans le fichier que **le `vercel.json` fait autorité**.
+> 2. **Son `Sitemap:` pointe sur l'apex** (`https://pessora.fr/sitemap.xml`) alors que le canonique est **`www`** — même défaut que l'`og:url` corrigé ailleurs. → `https://www.pessora.fr/sitemap.xml`.
+>
+> ℹ️ **Et une différence de sémantique qui explique pourquoi le point « `/admin` nu » ne valait que pour Vercel** : en `robots.txt`, `Disallow: /admin` **couvre déjà la racine et ses sous-chemins** ✅ ; dans `vercel.json`, `source: "/admin/(.*)"` **ne matche pas `/admin`** seul ✅. Deux syntaxes, deux comportements — à ne pas transposer de l'une à l'autre.
+>
+> ✅ **Bonne nouvelle pour le go-live** : `robots.txt` dit bien **`Allow: /`** — **il ne reste donc qu'un seul verrou** à lever au lancement (`index.html:17`), et le contrôle de l'étape (2)/(3) se fait sur **trois assertions** : `x-robots-tag` **absent** sur `/` et `/menu` en prod · **présent** sur `admin.pessora.fr` · et `robots.txt` toujours en `Allow: /`.
+
 ### 4. Les contrastes admin / espace membre — **dette mesurée, à cadrer avec Ken**
 
 **498 usages** de gris sous 60 % (**échec AA**) dans `src/pages/admin` + `src/components/admin` + `src/pages/member` + `src/components/member`. Le pire motif : `labelBase` = **9 px à 45 %** (3,15:1), et il ne vit que dans **3 fichiers** — donc **la correction n'est pas un token** : c'est un chantier **par écran**, avec un compteur avant/après. Règle : **aucun texte sous 60 % de noir, aucune action sous 10 px**. ⚠️ **Lot à part entière — ne pas le glisser dans la page challenge.**
