@@ -26,9 +26,11 @@
 - **Chaque image porte un `alt`** reprenant le libellé de la fiche — accessibilité **et** garde-fou : un libellé ne peut pas dériver de la fiche par la porte des images.
 - **Règles verrouillées** (section « Les 6 bannières », plus bas) : aucun logo, aucune interface lisible, aucune promesse de résultat, aucun visage identifiable, **une seule lumière** pour les six.
 
-### 3. Les 3 corrections SEO/OG — **préexistantes, à faire dans la même passe**
+### 3. Les 3 corrections SEO/OG — **préexistantes, à faire dans la même passe**, ⚠️ **mais sur une BRANCHE SÉPARÉE** (`fix/seo-og-share`)
 
 `index.html` : **trois** références mortes à `logo.png` (qui n'existe pas) dont **le JSON-LD** · `src/components/common/PageSEO.tsx:71-72` déclare **1200×630 en dur** alors que l'image servie est un **carré 1024×1024** → letterbox sur tout lien partagé, **déjà en prod** · `seoConfig.ts` est **par page** → l'OG du challenge est une **entrée propre**, pas un remplacement du défaut. Détail en section « PAGE CHALLENGE ».
+
+> **Pourquoi une branche séparée (et pas « dans la même passe » sur la branche du challenge)** : ce sont des **bugs de PROD préexistants** qui touchent **tout le site** — leur recette est **courte et indépendante** (l'image réellement servie + les balises), donc ils **peuvent partir tout de suite**, sans attendre les 8 portes. Embarqués dans `feat/challenge-21j-landing` (17 commits), ils **conditionneraient un correctif de prod à une recette de landing** et **gonfleraient un merge** dont on ne saurait plus dire ce qu'il valide. **Même passe, branches séparées.** *(Les bannières, elles, n'ont pas ce problème : **le composant** — l'emplacement qui tient **sans** les images — va bien sur la branche du challenge ; **les images** se posent après, hors branche, sans retoucher la page.)*
 
 ### 4. Les contrastes admin / espace membre — **dette mesurée, à cadrer avec Ken**
 
