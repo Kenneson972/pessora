@@ -166,15 +166,37 @@ export const OPPORTUNITE_OPTIONS = [
 
 ---
 
-## 📦 LE PAQUET SEO/OG RÉEL — **5 points**, pas « 3 corrections » (comptés ligne à ligne)
+## 📦 LE PAQUET SEO/OG — **8 points** · **`fix/seo-og-share` en couvre 2** ⚠️
 
-1. **🔴 APEX → WWW : 4 références, dont LE CANONICAL — c'est le plus grave.** `index.html` porte **7 références apex** :
-   - **`l.18` — `<link rel="canonical">` = `https://pessora.fr/`** ← **mesuré en live : cette URL renvoie `308` vers `https://www.pessora.fr/`**. Google reçoit donc un canonical qui pointe sur une **redirection** → **conflit canonical/redirect**, et il tranche lui-même (souvent mal, ou il ignore le signal). **Le canonical doit dire `https://www.pessora.fr/`** — le host qui **sert** réellement ;
-   - `l.19` — `alternate hreflang` (apex) · `l.30` — `og:url` (apex) · `l.54` — JSON-LD `url` (apex).
-2. **`logo.png` mort ×3** : `og:image` (`l.27`), `twitter:image` (`l.36`), JSON-LD `image` (`l.55`) → `logo-pessora.webp`. *(Déjà corrigé sur la branche.)*
-3. **`robots.txt`** : le `Sitemap:` pointe sur l'**apex** alors que le canonique est **`www`** → à corriger. Et sa liste `Disallow` **ne couvre que 5 chemins** (`/admin`, `/mon-espace`, `/demo-espace`, `/mockup-luxe`, `/mockup-croquis-gerant`) — **il manque les 4 que l'en-tête protège** : `/connexion`, `/inscription`, `/reinitialisation-mot-de-passe`, `/suivi-commande`. ✅ **Il dit `Allow: /`, donc il ne bloque RIEN** — pas une fuite, mais **deux listes qui divergeront** au premier chemin ajouté. *(Le fichier porte déjà un TODO sur le Sitemap.)*
-4. **Dimensions `og:image` menties** : 1200×630 déclarés pour un carré 1024×1024 → **déjà corrigé** (`PageSEO.tsx`).
-5. **Le câblage OG du challenge** (entrée **par-page** dans `seoConfig.ts`) → **reste sur la branche landing** ✅.
+> ⚠️ **VÉRIFIÉ SUR LA BRANCHE LE 12/09 (@alcyone, revérifié par @elise) : la branche couvre 2 points sur 8.** **NE PAS la recetter comme « prête »** — le **canonical**, la balise qui pèse le plus au lancement, pointe **toujours sur l'apex qui 308-redirige**.
+> **Cause : la consigne a grossi APRÈS le push de Claude** (il a codé les « 3 bugs » initiaux : `logo.png` + dimensions). Ce n'est pas une erreur de code — c'est une consigne qui n'est jamais revenue vers lui.
+
+| # | Point | État sur `fix/seo-og-share` |
+|---|---|---|
+| 1 | **`canonical` (`index.html:18`)** — apex → `www` | ❌ **toujours apex** |
+| 2 | **`hreflang` (`l.19`)** — apex → `www` | ❌ **toujours apex** |
+| 3 | **`og:url` (`l.30`)** — apex → `www` | ❌ **toujours apex** |
+| 4 | **JSON-LD `url` (`l.54`)** — apex → `www` | ❌ **toujours apex** |
+| 5 | **`logo.png` mort ×3** (`l.27`/`36`/`55`) → `logo-pessora.webp` | ✅ **fait** |
+| 6 | **Dimensions `og:image`** menties (1200×630 pour un carré) | ✅ **fait** — lues depuis `seoConfig` |
+| 7 | **`robots.txt`** : `Sitemap` apex → `www` **et** `Disallow` aligné sur le `vercel.json` (4 chemins manquants) | ❌ **non touché** (aucun diff) |
+| 8 | **Câblage de l'OG du challenge** : `og-challenge-1200x630.jpg` déposé **dans `public/`** **et** référencé par une **entrée dédiée** dans `seoConfig.ts` | ❌ **rien** — 0 occurrence dans `seoConfig.ts`, 0 dans `public/` |
+
+**Ce qu'on aurait laissé passer en recettant tel quel** : un **conflit canonical/redirect** en prod — Google reçoit un canonical vers une URL qui **308-redirige** (mesuré), et tranche lui-même (souvent mal, ou il ignore le signal). C'est **la balise la plus importante du SEO**, et elle serait restée fausse **le jour où on lève le `<meta>` noindex**.
+
+### ⚠️ Et le câblage de l'OG crée le PREMIER fichier partagé — donc l'ordre cesse d'être libre
+Aujourd'hui, **seule `fix/seo-og-share` touche `seoConfig.ts`** (1 commit) ; la branche landing le touche dans **0** commit. **C'est le câblage de l'OG qui les ferait se croiser.**
+→ **Décision : poser l'entrée OG DANS `fix/seo-og-share`** — **un seul écrivain par fichier**, et l'aperçu de lien réel se vérifie **dans la même passe** que les 4 `apex → www`.
+*(Si on préfère la garder côté landing, alors `fix/seo-og-share` **merge EN PREMIER** — l'ordre n'est plus libre dès qu'un fichier est partagé.)*
+
+### ✅ L'image de partage est prête — et optimisée (@lyra, mesurée par @vela)
+- **`og-challenge-1200x630.jpg` : 61 Ko** (elle pesait **380 Ko** avant : à ce poids, WhatsApp charge mal l'aperçu → **une image qui s'affiche une fois sur deux**). Vérifiée à l'œil : aucun artefact, titre net, badge net.
+- **Servir le JPEG, PAS le WebP** (il existe en 20 Ko) : le support du WebP par les **scrapers d'aperçu** est **inégal** — c'est le seul endroit où on prend **le format le plus universel**, pas le plus léger.
+- **L'entrée déclare `1200×630`** = les **vraies** dimensions du fichier (vérifiées en machine : 1200×630, baseline, sRGB, **aucun ICC, aucun EXIF** — donc pas de décalage de couleur ni de rotation chez les scrapers). **C'est exactement le bug d'`index.html` qu'on ne reproduit pas.**
+- ⚠️ **Le vrai test de cette image reste l'aperçu de lien RÉEL, après déploiement** (@vela) — pas la lecture du fichier.
+
+### 🧪 Et une règle de merge, née ici (@vela)
+**Aucun merge sans simulation préalable.** `git merge-tree` (qui ne touche pas à l'arbre) a été passé sur les 3 paires de branches : **0 fichier commun, 0 conflit, rc=0** partout → **l'ordre est libre, pour de vrai** (mesuré, pas supposé). Le jour où l'ordre cesse d'être libre, **le dry-run le dit avant le merge**, pas en résolvant vite.
 
 ### Le contrôle post-merge : **3 assertions**, avec leur mesure « AVANT » (@vela)
 | Assertion | **Aujourd'hui (mesuré)** | **Après merge (attendu)** |
