@@ -1,6 +1,14 @@
 import { motion } from 'framer-motion';
 import { Smartphone, Users, Dumbbell, Salad, MessagesSquare, Target, type LucideIcon } from 'lucide-react';
-import { useFadeUpWhenVisible } from '../../lib/motionReveal';
+import { useFadeUpWhenVisible, EDITORIAL_EASE } from '../../lib/motionReveal';
+
+/** Ralentit un reveal (respecte prefers-reduced-motion — duration:0 reste 0). */
+function slowReveal(reveal: ReturnType<typeof useFadeUpWhenVisible>, duration: number, delay: number) {
+  const isReducedMotion = (reveal.transition as { duration?: number }).duration === 0;
+  return isReducedMotion
+    ? reveal.transition
+    : { duration, ease: EDITORIAL_EASE, delay };
+}
 
 interface InclusItem {
   label: string;
@@ -66,7 +74,7 @@ function InclusRow({ item, index }: { item: InclusItem; index: number }) {
     <motion.li
       className="relative aspect-[32/9] w-full"
       {...bannerReveal}
-      transition={{ ...bannerReveal.transition, delay: index * 0.06 }}
+      transition={slowReveal(bannerReveal, 1.1, index * 0.1)}
     >
       <div className="absolute inset-0 overflow-hidden rounded-[2px]">
         {item.image ? (
@@ -90,7 +98,7 @@ function InclusRow({ item, index }: { item: InclusItem; index: number }) {
       <motion.div
         className="absolute inset-y-0 left-0 flex w-[85%] max-w-[560px] flex-col justify-center px-8 sm:w-[55%] md:px-14 lg:w-[45%]"
         {...textReveal}
-        transition={{ ...textReveal.transition, delay: index * 0.06 + 0.12 }}
+        transition={slowReveal(textReveal, 0.9, index * 0.1 + 0.25)}
       >
         <item.icon aria-hidden="true" strokeWidth={1.4} className="mb-4 text-white" style={{ width: '26px', height: '26px' }} />
         <h3
