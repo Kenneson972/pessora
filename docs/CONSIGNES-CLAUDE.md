@@ -685,6 +685,17 @@ La page a **un seul** dispositif signature : **l'encadré Challenge**. Un compte
 
 **Test de recette associé** : si le minuteur devient un encadré doré au milieu du hero, la page a **deux points focaux** et le « sobre » tenu trois jours est perdu.
 
+### 🔧 DEUX CORRECTIONS SUR LE MINUTEUR (vérifiées dans le code, @nova/@elise)
+
+**① Renommer le prop `registrationOpen` → `isUpcoming`** (`ChallengeHero.tsx` l.12/15/44/59). Il reçoit **`!isPast`** (`ChallengeLanding.tsx:33`) — donc **il ne veut pas dire `events.registration_open`**, il veut dire « *le challenge n'est pas passé* ». ⚠️ **Le risque du nom actuel** : quelqu'un « aligne » un jour ce prop sur le **champ de la base** — le réflexe est naturel, **les deux portent le même nom** — et **le minuteur disparaît pendant J-14**, c'est-à-dire **exactement la période pour laquelle il a été construit**. C'est le défaut du `has` d'aujourd'hui, appliqué à un **nom de prop** : *la valeur doit dire ce qu'elle veut dire*.
+
+**② Le CTA et le minuteur restent ENSEMBLE — le code fait déjà ça ✅, donc c'est LA RÈGLE qu'on reformule, pas le code.** Vérifié : `l.44` (le bouton « Je veux mon bilan ») et `l.59` (le décompte) partagent la **même condition** → ils apparaissent **ensemble**, ils ne se remplacent pas. La règle 3 d'@lyra disait « *quand l'inscription n'est pas ouverte, le minuteur **prend la place** du CTA* » — **c'est l'inverse du code, et le code a raison** : retirer l'action pendant **la période la plus utile** serait une perte. **Règle reformulée : le minuteur s'AJOUTE sous le CTA.**
+→ **Donc : une seule ligne à changer (le nom du prop), aucun changement de comportement.**
+
+**③ Et deux points qui ne bloquent pas :**
+- **le libellé** du décompte (« *Le prochain Challenge 21 jours commence dans…* ») attend **un mot de Ken** — il peut coder avec celui-là, on ajuste au rendu ;
+- **l'heure de lancement est tranchée** : **début du jour J** — `events.date` est une **DATE**, pas un horodatage (voir §3 du brief MINUTEUR). **Rien à décider.**
+
 ### 5. 🔴 Ce que le minuteur ne doit PAS réintroduire
 
 - **Aucun mois à l'écran, aucune liste de rythme, aucune date qui ne soit pas une ligne en base** (règle l. 272) — le minuteur **lit** `events.date`, il n'annonce rien d'autre ;
