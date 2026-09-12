@@ -35,17 +35,20 @@ export function ChallengeHero({ eventDate }: ChallengeHeroProps) {
       />
       <div className="relative mx-auto flex min-h-[480px] max-w-6xl items-center px-4 py-20 md:min-h-[600px] md:px-10 md:py-28 lg:px-[72px]">
         <div className="max-w-[26ch]">
-          <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-[9px] uppercase tracking-[0.28em] text-white/60">
-            <i aria-hidden="true" className="block h-[5px] w-[5px] rounded-full bg-gold" />
+          <span className="inline-flex items-baseline gap-2.5 text-[10px] uppercase tracking-[0.32em] text-white/55">
+            <i aria-hidden="true" className="relative top-[-1px] inline-block h-[3px] w-[3px] rounded-full bg-gold" />
             {frenchMonth(eventDate)}
           </span>
           <h1
-            className="font-display font-light leading-[1.03]"
-            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(26px, 3.4vw, 40px)', maxWidth: '15ch' }}
+            className="mt-4 font-display font-normal leading-[1.05]"
+            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px, 3.8vw, 44px)', maxWidth: '15ch' }}
           >
-            Challenge <em className="italic text-white/60">21 jours</em>
+            Challenge
+            <br />
+            <em className="italic text-gold-dim">21 jours</em>
           </h1>
-          <p className="mt-5 max-w-[38ch] text-[15px] font-light leading-relaxed text-white/80">
+          <div aria-hidden="true" className="mt-6 h-px w-12 bg-gold/40" />
+          <p className="mt-6 max-w-[36ch] text-[14px] font-light leading-[1.75] tracking-[0.01em] text-white/70">
             21 jours pour reprendre la main sur ton énergie, ta forme et tes habitudes.
           </p>
         </div>
