@@ -1,13 +1,16 @@
 function frenchMonth(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', { month: 'long' });
+  const month = new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', { month: 'long' });
+  return month.charAt(0).toUpperCase() + month.slice(1);
 }
 
 export interface ChallengeHeroProps {
   /** Date ISO (YYYY-MM-DD) du challenge affiché. */
   eventDate: string;
+  /** false quand event.date est déjà passée (porte 8) — masque le CTA d'inscription. */
+  registrationOpen?: boolean;
 }
 
-export function ChallengeHero({ eventDate }: ChallengeHeroProps) {
+export function ChallengeHero({ eventDate, registrationOpen = true }: ChallengeHeroProps) {
   return (
     <header className="relative overflow-hidden bg-surface-hero text-white">
       {/* Dégradé de repli — rendu définitif tant qu'aucun visuel réel n'est fourni.
@@ -23,7 +26,7 @@ export function ChallengeHero({ eventDate }: ChallengeHeroProps) {
       <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-24 md:px-10 md:pb-24 md:pt-32 lg:px-[72px]">
         <span className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-[9px] uppercase tracking-[0.28em] text-white/70">
           <i aria-hidden="true" className="block h-[5px] w-[5px] rounded-full bg-gold" />
-          Challenge 21 jours · Vague de {frenchMonth(eventDate)}
+          Challenge 21 jours · {frenchMonth(eventDate)}
         </span>
         <h1
           className="font-display font-light leading-[1.04]"
@@ -36,12 +39,14 @@ export function ChallengeHero({ eventDate }: ChallengeHeroProps) {
           Encadré, en collectif, avec un suivi réel — pas un défi à tenir seul.
         </p>
         <div className="mt-10 flex flex-wrap items-center gap-6">
-          <a
-            href="#inscription"
-            className="inline-flex items-center gap-2 rounded-full bg-ivory px-8 py-4 text-[10px] uppercase tracking-[0.2em] text-noir transition-colors hover:bg-gold"
-          >
-            Je veux mon bilan
-          </a>
+          {registrationOpen && (
+            <a
+              href="#inscription"
+              className="inline-flex items-center gap-2 rounded-full bg-ivory px-8 py-4 text-[10px] uppercase tracking-[0.2em] text-noir transition-colors hover:bg-gold"
+            >
+              Je veux mon bilan
+            </a>
+          )}
           <a
             href="#programme"
             className="border-b border-white/25 pb-0.5 text-[9px] uppercase tracking-[0.24em] text-white/70 transition-colors hover:border-white hover:text-white"

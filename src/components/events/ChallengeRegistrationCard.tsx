@@ -264,7 +264,7 @@ export function ChallengeRegistrationCard({ event }: ChallengeRegistrationCardPr
                     et me contacter concernant cet événement, conformément à la{' '}
                     <Link
                       to="/politique-confidentialite"
-                      className="text-gold-dim underline decoration-gold-dim/30 underline-offset-2 hover:opacity-80"
+                      className="text-black/70 underline decoration-black/30 underline-offset-2 hover:opacity-80"
                     >
                       politique de confidentialité
                     </Link>

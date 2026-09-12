@@ -12,7 +12,7 @@ export function ChallengeClosedState() {
     <div className="bg-white">
       <div className="mx-auto max-w-6xl px-4 py-20 md:px-10 md:py-28 lg:px-[72px]">
         <div className="rounded-[2px] border border-noir/10 bg-surface-card p-8 md:p-14">
-          <p className="mb-3 text-[9px] uppercase tracking-[0.32em] text-black/42">Prochaine vague</p>
+          <p className="mb-3 text-[9px] uppercase tracking-[0.32em] text-black/42">Challenge 21 jours</p>
           <h1
             className="mb-5 font-display font-normal"
             style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(21px, 2.4vw, 30px)' }}

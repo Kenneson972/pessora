@@ -24,9 +24,8 @@ export function ChallengeProgramCard() {
         </h2>
 
         <div className="rounded-[2px] border border-sapin/45 bg-surface-card p-6 md:p-12">
-          <div className="mb-8 flex flex-wrap items-baseline justify-between gap-4 border-b border-sapin/20 pb-5">
+          <div className="mb-8 border-b border-sapin/20 pb-5">
             <h3 className="text-[11px] font-bold uppercase tracking-[0.24em] text-noir">Challenge 21 jours</h3>
-            <span className="text-[8px] uppercase tracking-[0.2em] text-gold-dim">Places limitées</span>
           </div>
 
           <ul className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
