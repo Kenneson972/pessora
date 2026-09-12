@@ -187,6 +187,24 @@ Et les **6 légitimes** du domaine vivant : `contact@` (2), `demo@` (3), `norepl
 
 **@user — une seule question, et on ne peut pas la deviner** : **quelle adresse Catherine lit-elle réellement ?** Dès que tu le dis, on en fait **LA** seule (site, bot, guides, JSON-LD) et on purge les autres. C'est la **troisième** de la même famille : **`logo.png`** (fichier mort) · **`jorisliny.com`** (DNS) · **`pessora.mq`** (NXDOMAIN). **Une référence déclarée n'est pas une référence qui existe.**
 
+### ✅ Et le site public, lui, est propre (@vela)
+Les **4 pages** (`/`, `/contact`, `/mentions-legales`, `/confidentialite`) affichent **`contact@pessora.fr` partout** ✅ → **aucune adresse morte ne fait face à un visiteur**. Le `.mq` vit dans **le script du bot et les docs** — c'est-à-dire **là où un client le reçoit du bot**, sans la moindre erreur ✅.
+
+### 🔴 LE PIÈGE DU FALLBACK — vérifié dans le code (@elise), et il tombe PILE au go-live
+`supabase/functions/send-contact-email/index.ts:63` :
+```ts
+to: Deno.env.get("ADMIN_EMAIL") ?? "pessora.fr@gmail.com",
+```
+**Le fallback est `pessora.fr@gmail.com` — l'adresse bogus** (celle du vieux « 17 remplacements »). Donc **si `ADMIN_EMAIL` est absent ou vide, TOUS les messages du formulaire de contact partent vers cette adresse**, **silencieusement** ✅.
+
+⚠️ **Et c'est exactement le scénario du go-live** : on **bascule** `ADMIN_EMAIL` de la boîte de test vers celle de Catherine → **si la bascule rate, le fallback prend le relais, et personne ne voit rien**.
+
+**Correctif : SUPPRIMER le fallback** — ou le remplacer par une **erreur explicite**. Un secret d'e-mail ne se rabat pas sur une valeur par défaut : **il échoue bruyamment, ou il n'existe pas.**
+
+### ⚠️ Et deux choses que le DNS ne prouve PAS (@vela)
+1. **Un domaine qui reçoit n'est pas une boîte qui existe.** `pessora.fr` a des **MX vivants** ✅ (`mx1/mx2/mx3.mail.ovh.net`) — mais **`contact@` est-il une vraie boîte ou un alias ?** Inconnu. ⚠️ **On ne teste PAS en envoyant un mail à la cliente** : c'est **exactement** le piège de `contact@jorisoliny.com` — l'adresse **avait l'air bonne** et elle **rebondissait**. À confirmer par Catherine, ou d'un coup d'œil à la console OVH.
+2. **Le destinataire réellement configuré est INVISIBLE d'ici.** Ni l'ENVKAR ni le repo ne portent la valeur courante de `ADMIN_EMAIL` (0 occurrence). **Personne ne peut donc jurer aujourd'hui que les notifications du site atterrissent dans une boîte vivante.** Et comme le go-live **bascule** ce secret vers la boîte de Catherine, la seule preuve qui vaille est celle qu'on applique déjà aux secrets : **un secret se prouve par l'action qui l'utilise** → le go-live inclut « **une demande réelle → un e-mail réellement reçu** », **pas** « la valeur est posée » ✅.
+
 ---
 
 ## RÈGLES GÉNÉRALES (permanentes)
