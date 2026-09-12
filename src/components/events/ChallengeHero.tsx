@@ -41,13 +41,13 @@ export function ChallengeHero({ eventDate, showCta = true }: ChallengeHeroProps)
           <div>
             <span className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-[9px] uppercase tracking-[0.28em] text-white/60">
               <i aria-hidden="true" className="block h-[5px] w-[5px] rounded-full bg-gold" />
-              Challenge 21 jours · {frenchMonth(eventDate)}
+              {frenchMonth(eventDate)}
             </span>
             <h1
               className="font-display font-light leading-[1.03]"
               style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(26px, 3.4vw, 40px)', maxWidth: '15ch' }}
             >
-              Quel est ton <em className="italic text-white/60">prochain objectif&nbsp;?</em>
+              Challenge <em className="italic text-white/60">21 jours</em>
             </h1>
             <p className="mt-5 max-w-[38ch] text-[15px] font-light leading-relaxed text-white/80">
               21 jours pour reprendre la main sur ton énergie, ta forme et tes habitudes.
