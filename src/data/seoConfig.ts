@@ -68,6 +68,16 @@ export const seoConfig: Record<string, PageSEOEntry> = {
     ogDescription: 'Retrouvez PessÓra en pop-up et lors d\'événements. Run Club, ateliers, partenariats.',
     ogType: 'website',
   },
+  '/evenements/challenge-21-jours': {
+    title: 'Challenge 21 jours | PessÓra',
+    description: 'Quel est ton prochain objectif ? 21 jours pour reprendre la main sur ton énergie, ta forme et tes habitudes, avec PessÓra.',
+    ogTitle: 'Challenge 21 jours — PessÓra',
+    ogDescription: 'Quel est ton prochain objectif ? 21 jours pour reprendre la main sur ton énergie, ta forme et tes habitudes, avec PessÓra.',
+    ogImage: '/og-challenge-1200x630.jpg',
+    ogImageWidth: 1200,
+    ogImageHeight: 630,
+    ogType: 'website',
+  },
   '/pessobot': {
     title: 'PessoBot | Expert Nutrition PessÓra',
     description: 'Posez vos questions au bot nutrition PessÓra. Conseils boissons, horaires, menu et bien-être.',
