@@ -13,7 +13,7 @@ const INCLUS: InclusItem[] = [
   { label: 'Communauté 24FIT PESSORA', icon: Users },
   { label: 'Séances de sport', icon: Dumbbell },
   { label: 'Idées recettes', icon: Salad },
-  { label: 'Conseils & accompagnement', icon: MessagesSquare },
+  { label: 'Conseils & accompagnement', image: '/bannieres/conseils.jpg', icon: MessagesSquare },
   { label: 'Suivi de tes objectifs', icon: Target },
 ];
 
