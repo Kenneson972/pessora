@@ -799,6 +799,18 @@ Playwright 1.60 expose `page.clock` ✅ : régler l'horloge à **23 h 59 min 30 
 
 ## DETTE ÉCRITE (ne pas confondre avec « à faire »)
 
+---
+
+## 🆕 ADMIN CRUD CHALLENGE 21 J — trois contraintes écrites AVANT que Task 3 soit codée (12/09)
+
+La branche `feat/admin-challenge-21j-crud` **ne crée aucune table/colonne/migration** (contrainte déclarée dans son plan ✅) — donc **aucun croisement de schéma** avec la landing. Mais l'écran **écrira en base** (challenges + créneaux **en masse**) : ces trois lignes doivent être vraies **dans le code**, pas seulement dans un fil.
+
+1. 🔴 **Le lien créneau→challenge s'écrit DANS LE CODE, jamais hérité du trigger.** `fn_bilan_slot_attach_challenge` a **deux** conditions d'échec : **date hors J-14→J** *et* **challenge `active=false` (brouillon)** → dans les deux cas le créneau naît **orphelin**, **sans aucune erreur**. C'est exactement ce qui a produit les **7 orphelins d'avril/mai** que Catherine voit depuis 4 mois. Le trigger est un **filet**, pas une garantie : dès que l'écran insère, il pose `challenge_event_id` **explicitement**.
+2. 🔴 **La porte est un COUPLE, pas un seul comptage** : après génération, **①** `count(*) WHERE challenge_event_id IS NULL` **= 0** — nécessaire, mais **insuffisant** (un insert **échoué** la passe aussi ✅) — **et ②** `count(*) WHERE challenge_event_id = <id>` **= le nombre annoncé**. Le second attrape le **silence** : *un compteur qui ne distingue pas « propre » de « rien » n'est pas un compteur.*
+3. 🔴 **Le `slug` d'un challenge est IMMUABLE à l'édition.** La route stable et les liens partagés (bio Instagram, QR au bar) reposent dessus : si l'auto-slug se **régénère au renommage**, le lien déjà partagé **casse**. *Un lien partagé ne doit pas mourir d'un renommage.*
+
+💬 **Et une question ouverte, à trancher avec @user** : l'**accroche de la fiche** (« Quel est ton prochain objectif ? ») **n'est plus au head** de la branche (`63bca46`, puis revert ✅). Ce n'est donc **ni validé ni invalidé** : c'est **en mouvement** → **la porte positive ④ ne peut pas être déclarée verte** et **la branche ne se merge pas** tant que la phrase n'est pas tranchée (la remettre = règle l.506 tenue ; l'enlever = **changer la règle ET la porte**, sinon on garde une porte condamnée).
+
 - 🔴 **DEUX IMPLÉMENTATIONS DE LA MÊME FONCTIONNALITÉ — une seule peut gagner (@nova, 12/09).** Vérifié dans les deux branches :
   - `feat/bannieres-inclus` (`5488984`) → **1 ligne** `image: '/bannieres/conseils.jpg'` dans **`ChallengeProgramCard.tsx`** + `public/bannieres/conseils.jpg` (layout **A** : les 6 cartes, ratios 4:3) ;
   - `feat/challenge-21j-landing` (`a1b06d7`) → composant dédié **`ChallengeInclusBanners.tsx`** (layout **B** : **bande pleine largeur**, `aspect-[4/3] → 16/9 → 21/9 → 32/9`, **voile horizontal** + `LEFT_SCRIM`), avec **ses 5 images** dans `public/challenge-21j/`, branché dans **`ChallengeLanding.tsx:50`**.
