@@ -23,7 +23,12 @@ const TIMINGS = ['Ce mois-ci', 'Le mois prochain', 'Je souhaite en savoir plus']
 const BANNER_FALLBACK =
   'radial-gradient(120% 90% at 78% 18%, color-mix(in oklch, var(--color-gold) 22%, transparent), transparent 62%), linear-gradient(160deg, oklch(15% .01 55) 0%, oklch(9% .006 55) 55%, oklch(7% .004 55) 100%)';
 
-export function ChallengeProgramCard() {
+export interface ChallengeProgramCardProps {
+  /** true sur un challenge à date passée (porte 8) — retire le sélecteur de timings du DOM. */
+  isPast?: boolean;
+}
+
+export function ChallengeProgramCard({ isPast = false }: ChallengeProgramCardProps) {
   return (
     <section id="programme" className="sec bg-surface-muted py-16 md:py-[6.5rem]">
       <div className="mx-auto max-w-6xl px-4 md:px-10 lg:px-[72px]">
@@ -65,23 +70,25 @@ export function ChallengeProgramCard() {
             ))}
           </ul>
 
-          <div className="flex flex-wrap items-center gap-3 border-t border-noir/[0.07] pt-7">
-            <span className="mr-2 text-[9px] uppercase tracking-[0.2em] text-black/45">
-              Quand souhaites-tu commencer ?
-            </span>
-            {TIMINGS.map((t, i) => (
-              <span
-                key={t}
-                className={
-                  i === 0
-                    ? 'rounded-full bg-sapin px-4 py-2.5 text-[9px] uppercase tracking-[0.16em] text-white'
-                    : 'rounded-full border border-noir/15 px-4 py-2.5 text-[9px] uppercase tracking-[0.16em] text-black/62'
-                }
-              >
-                {t}
+          {!isPast && (
+            <div className="flex flex-wrap items-center gap-3 border-t border-noir/[0.07] pt-7">
+              <span className="mr-2 text-[9px] uppercase tracking-[0.2em] text-black/45">
+                Quand souhaites-tu commencer ?
               </span>
-            ))}
-          </div>
+              {TIMINGS.map((t, i) => (
+                <span
+                  key={t}
+                  className={
+                    i === 0
+                      ? 'rounded-full bg-sapin px-4 py-2.5 text-[9px] uppercase tracking-[0.16em] text-white'
+                      : 'rounded-full border border-noir/15 px-4 py-2.5 text-[9px] uppercase tracking-[0.16em] text-black/62'
+                  }
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>
