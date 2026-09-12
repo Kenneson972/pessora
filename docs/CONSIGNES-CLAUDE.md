@@ -38,7 +38,20 @@
 - **Chaque image porte un `alt`** reprenant le libellé de la fiche — accessibilité **et** garde-fou : un libellé ne peut pas dériver de la fiche par la porte des images.
 - **Règles verrouillées** (section « Les 6 bannières », plus bas) : aucun logo, aucune interface lisible, aucune promesse de résultat, aucun visage identifiable, **une seule lumière** pour les six.
 - 🔴 **ET L'ICÔNE MANQUE DANS LES DEUX ÉTATS — à câbler maintenant** (@vela, vérifié dans le code poussé `4048075`) : `ChallengeProgramCard.tsx` rend aujourd'hui `{item.image ? <img/> : <div style={{background: BANNER_FALLBACK}}/>}` suivi du libellé — **aucune icône**, et la liste `INCLUS` ne porte qu'un `label` et une `image?` : **le lien libellé → icône n'existe pas dans le code**. Conséquence : la porte « 6 icônes dans le DOM » échouerait **avant même la première bannière** (0 au lieu de 6), et la livraison produirait une **grille à deux vitesses** — exactement ce qu'@lyra voulait éviter.
-  - **Les 6 pictogrammes sont dessinés et prêts à coller en JSX** : `/opt/data/clients/pessora/page-challenge/icones-inclus-21j.md` (viewBox 24, trait seul, `stroke-width 1.4`, `currentColor`, même grammaire que les icônes du site).
+  - ✅ **LES 6 ICÔNES : Lucide, DÉJÀ dans le projet — on n'importe, on ne copie pas** (@user a demandé « de beaux SVG plutôt que d'en créer » ; il y a mieux que copier : **`lucide-react@0.507.0` est déjà la bibliothèque du site**, comme `Check`, `ArrowRight` ou `CalendarDays`). Même grammaire, même épaisseur, **aucun dessin à maintenir**, licence **ISC** (libre, usage commercial compris).
+    ```tsx
+    import { Smartphone, Users, Dumbbell, Salad, MessagesSquare, Target } from 'lucide-react';
+    ```
+    | inclus (fiche, mot pour mot) | Icône Lucide | Pourquoi celle-là |
+    |---|---|---|
+    | Application **GetFitNow** | `Smartphone` | un **objet**, jamais une interface ✅ (règle @vela) |
+    | communauté **24FIT PESSORA** | `Users` | le dessin maison **lâchait à 15 px** (les deux personnes fusionnent) — Lucide est **dessiné pour 24 px** ✅ |
+    | **séances de sport** | `Dumbbell` | idem : l'haltère maison devenait « un tiret à deux points » ✅ |
+    | **idées recettes** | `Salad` | (ou `Utensils`) |
+    | **conseils & accompagnement** | `MessagesSquare` | (ou `MessageCircle`) |
+    | **suivi de tes objectifs** | `Target` | **jamais une balance, jamais un mètre ruban** ✅ |
+    - ⚠️ **`stroke-width` : garder `1.4`** (celui de la maquette) — le défaut de Lucide est `2`, et la maquette définit la grammaire du bloc.
+    - ⚠️ **Ce qui ne change PAS** : la **taille en px** (20 px au-dessus du libellé, 48-56 px centrée au repli), la **couleur par le CSS** (claire — jamais en dur dans le SVG), et **le rendu réel à 20 px se vérifie** (@lyra / @vela), il ne se suppose pas. *(Les 6 SVG dessinés à la main restent la référence de **forme** — les pictogrammes se correspondent un pour un — mais le câblage passe par Lucide.)*
   - **Rendu INCONDITIONNEL** — centré dans l'état de repli, **petit au-dessus du libellé** dans l'état illustré. **Une seule règle de rendu, deux présentations** : c'est ce qui garde les 6 cartes reconnaissables quand 3 auront une photo et 3 non.
   - ⚠️ **Taille : viser ~20 px, pas 15.** Mesuré aux tailles réelles, **deux pictogrammes lâchent à 15 px** — « communauté 24FIT PESSORA » (les deux personnes fusionnent en une tache) et « séances de sport » (l'haltère devient un tiret à deux points) ; les quatre autres sont nets ✅. **Décision @lyra : 20 px, on ne redessine rien** — une seule règle vaut pour les six.
   - 🔴 **ET LA TAILLE SE FIXE EN PX — jamais en `em`, `%` ou dérivée de la largeur de la carte** (@lyra). Sinon l'icône rétrécit avec les cartes étroites et **repasse sous 15 px à 390 px** : le défaut reviendrait **précisément chez le visiteur mobile**, et il serait **invisible en test desktop**. Valeurs : **20 px** au-dessus du libellé quand la bannière est là, **48-56 px** centrée sur le dégradé sinon.
