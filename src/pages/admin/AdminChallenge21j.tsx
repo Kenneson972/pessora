@@ -101,7 +101,7 @@ const AdminChallenge21j = () => {
     setGenerating(false);
     if (result.error) { setGenResult(`Erreur : ${result.error}`); return; }
     if (result.orphaned > 0) {
-      setGenResult(`${result.inserted} créneau(x) créé(s) et rattaché(s). ⚠️ ${result.orphaned} créé(s) mais hors de la fenêtre J-14→J de ce challenge — invisibles publiquement.`);
+      setGenResult(`${result.inserted} créneau(x) créé(s) et rattaché(s). ⚠️ ${result.orphaned} créé(s) mais non rattaché(s) à ce challenge (challenge inactif, dates hors fenêtre J-14→J, ou rattaché à un autre challenge) — invisibles publiquement.`);
     } else {
       setGenResult(result.inserted === 0 ? 'Aucun nouveau créneau (déjà tous créés sur cette plage).' : `${result.inserted} créneau(x) créé(s).`);
     }
