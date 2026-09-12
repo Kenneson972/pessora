@@ -116,23 +116,30 @@ export const OPPORTUNITE_OPTIONS = [
 
 ---
 
-## 🔴 BLOQUANT TROUVÉ (`feat/x-robots-tag`, `64d2861`) — un catch-all rend l'étape (3) du go-live IMPOSSIBLE
+## ✅ `feat/x-robots-tag` — le lot est CORRECT · **fausse alerte du 12/09 corrigée ici**
 
-Le `vercel.json` de la branche porte, **avant** les règles par chemin :
+⚠️ **Correction d'une alerte erronée, écrite dans ce doc le 12/09 par @elise et @vela, et levée par @alcyone. NE RIEN SUPPRIMER.**
 
+**Ce que nous avions lu** : `source: /(.*)` + `X-Robots-Tag: noindex, nofollow` → « tout le site est noindex, l'étape (3) du go-live est morte ». **C'était FAUX : nous avions lu `source` et `headers` sans lire la clause `has`.**
+
+**Ce que dit réellement la config** :
+```json
+{"source": "/(.*)",
+ "has": [{"type":"header","key":"host","value":"admin.pessora.fr"}],
+ "headers": [{"key":"X-Robots-Tag","value":"noindex, nofollow"}]}
 ```
-/(.*)  →  X-Robots-Tag: noindex, nofollow        🔴 TOUT LE SITE
-```
+→ cette règle noindexe **le sous-domaine `admin.pessora.fr` uniquement** — ce qui est **exactement voulu** : l'admin porte des **données client**, il ne doit **jamais** être indexé. Les autres règles (`/connexion`, `/inscription`, `/mon-espace`, `/demo-espace`, `/suivi-commande`, `/mockup-luxe`, `/mockup-croquis-gerant`, `/reinitialisation-mot-de-passe`, `/admin/(.*)`) sont **sans condition** et couvrent bien les chemins techniques **du domaine `www`** ✅.
 
-**Pourquoi c'est bloquant** — la checklist elle-même décrit l'étape **(3)** comme : *« lever le `noindex, nofollow` d'`index.html` — SPA : **ce seul verrou** rend aujourd'hui toutes les routes noindex »*. **Ce n'est plus vrai** : si le catch-all reste, **lever `index.html` ne changera rien** — l'en-tête gardera **tout le site** hors de l'index, et **on croira le site ouvert alors qu'il ne le sera pas**. C'est le scénario à ne pas découvrir trois semaines après le go-live.
+**Ce qu'on aurait cassé en « corrigeant »** : supprimer ce `/(.*)` retirait la protection noindex **de l'admin**, pas du site public — le site serait resté verrouillé par le `<meta>` d'`index.html`, et **l'admin serait devenu indexable**. Le pire des cas, en miroir.
 
-**Correctif : supprimer le catch-all `X-Robots-Tag`** (le second `/(.*)` de la branche) — **et surtout PAS** celui de `main`, qui porte HSTS, CSP, X-Frame-Options, Referrer-Policy et Permissions-Policy ✅.
+**Donc : le lot est BON tel que poussé.** Il reste **le check en prod après merge**, **path par path sur `www`** — en sachant que le `<meta>` d'`index.html` masquera encore tout **jusqu'à l'étape (3)**.
 
-✅ **Aucun risque d'indexation prématurée** : `index.html:17` porte encore `<meta name="robots" content="noindex, nofollow">` — **c'est lui le verrou pré-lancement**, il reste en place, et c'est l'étape (3) qui le lèvera. Retirer le catch-all ne fait que **rendre l'étape (3) possible**.
+**Et le point « `/admin` nu non couvert » est sans objet** : `/admin` nu sur `www` redirige déjà vers le sous-domaine, qui est noindexé par le `has`.
 
-⚠️ **Et un chemin manque** : `source: "/admin/(.*)"` **ne matche PAS `/admin` tout court** (il faut un segment après). Vérifié : sur les 9 chemins techniques, **`/admin` est le seul nu manquant** — `/connexion`, `/inscription`, `/reinitialisation-mot-de-passe`, `/mon-espace`, `/demo-espace`, `/mockup-luxe`, `/mockup-croquis-gerant`, `/suivi-commande` sont bien déclarés nus ✅. → **déclarer `/admin` à part**.
+### 🔒 Le verrou SEO est VOLONTAIRE (décision de Ken) — ne pas le lever par erreur
+`index.html:17` porte `<meta name="robots" content="noindex, nofollow">` **exprès** : le SEO ne doit **pas** démarrer avant le go-live. **C'est cette balise qui verrouille le site**, et c'est **elle seule** que l'étape (3) lèvera — **au moment du lancement, pas avant**. Tant qu'elle est là, le site n'est pas indexé, **même si tout le reste est propre**.
 
-⚠️ **Et la vérification ne peut PAS se faire sur une URL de déploiement** (@vela) : `main` ne contient **aucune** règle `X-Robots-Tag`, et pourtant **tous** les chemins de son déploiement renvoient `x-robots-tag: noindex` → **cet en-tête est celui de Vercel**, pas le nôtre. **La config est la seule autorité** ; la vraie vérification se fait **après merge, sur la prod** (où « absent partout » a été mesuré aujourd'hui).
+⚠️ **La leçon, à ranger avec les autres** : **une condition (`has` / `missing`) fait partie de la règle.** Lire `source` + `headers` en sautant `has`, c'est lire une sonde **sans son filtre** — exactement ce qu'on s'interdit sur la base. Ici c'est arrivé **sur la config**, et ça a produit une instruction qui aurait **dégradé la sécurité de l'admin**.
 
 ---
 
