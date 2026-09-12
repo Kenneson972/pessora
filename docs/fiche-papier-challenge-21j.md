@@ -58,16 +58,28 @@ Que fais-tu dans la vie ? ____________________
 - **Les 3 timings** (ce mois-ci · le mois prochain · en savoir plus) → utiles pour l'inscription au challenge.
 - **Les 4 créneaux de rappel** (matin/midi/après-midi/soir) + **la clause de consentement** → modèle pour le formulaire (RGPD).
 
-### 🔴 Ce qui NE VA PAS sur le site
-- **La section « COMPLÉMENT DE REVENUS » (opportunité Herbalife).** C'est du **recrutement de distributeurs** : la règle du projet est que **le site fait la vente, il ne fait pas le recrutement** — Catherine gère cette partie en présentiel. À exclure de toute page publique.
-  *(Rappel Herbalife : le « système VIP » = programme client Wellness Rewards, à ne **jamais** présenter comme une opportunité de business. Ici, c'est explicitement l'opportunité distributeur — donc hors site.)*
+### 🔄 Ce qui NE VA PAS sur le site — **MISE À JOUR 12/09 : voir le revirement ci-dessous**
+- ~~**La section « COMPLÉMENT DE REVENUS » (opportunité Herbalife).**~~ → **PÉRIMÉ le 12/09.** Catherine **veut** cette partie sur le site. Voir la note de revirement **juste après** : la règle n'est plus « hors site », elle est « **sur le site, en choix simple, sans promesse de revenus** ».
+  *(Historique conservé pour qu'on ne se demande pas pourquoi la règle a existé : à l'origine, le raisonnement était que **le site fait la vente, il ne fait pas le recrutement** — Catherine gérait cette partie en présentiel. Le 12/09, elle a demandé qu'elle apparaisse, et Ken a cadré : « sans plus », « pas de code complexe », « ils vont gérer avec le bilan », « quand même un choix possible ».)*
 
-  > ⚠️ **À écrire partout où on utilise cette fiche** : *« cette section reste au bar, avec Catherine — elle n'entre pas dans le site »*. Sinon, dans six mois, quelqu'un ouvrira ce document, verra la section « manquante » et la rajoutera de bonne foi sur une page publique et commerciale.
+---
+
+## 🔄 REVIREMENT DU 12/09 — la règle a changé
+
+**Avant** : « cette section reste au bar, avec Catherine — elle n'entre pas dans le site ».
+**Maintenant** : **elle entre dans le site, en choix simple.**
+
+- ✅ **Une section visible** + **un choix possible** dans le **questionnaire existant** (une constante d'options, comme `OBJECTIF_OPTIONS` — le `jsonb` `post_registration_details` prend la clé **sans migration**).
+- ✅ **La gestion se fait AU BILAN**, en présentiel, avec Catherine → **rien à automatiser**, aucune fonctionnalité.
+- 🔴 **Les garde-fous, eux, ne tombent pas** : **aucune promesse de revenus** (ni montant, ni « gagnez X € », ni témoignage de gains) · **le cadre dit ce que c'est** (activité de distribution **indépendante** — ni emploi, ni salaire) · **c'est un choix, pas une relance** (pas de séquence d'e-mails).
+- Le détail complet et la passe de conformité sont dans `docs/CONSIGNES-CLAUDE.md`, section « REVIREMENT DU 12/09 ».
+
+> ⚠️ **Ce qui reste vrai** : la fiche papier **n'est pas** le formulaire du site (voir ci-dessus), et **la clause de consentement ne se recopie pas telle quelle** — elle dit *« les sujets cochés ci-dessus »*, ce qui mélange des finalités dans une seule case. Sur le site : **explicite, séparée, et à jour de ce qui est réellement proposé**.
 
 ### ⚠️ La clause de consentement ne se recopie PAS telle quelle
 La fiche dit : *« j'accepte d'être recontacté(e) par l'équipe PESSORA concernant **les sujets cochés ci-dessus** »*. Or « ci-dessus » **inclut le complément de revenus Herbalife** — donc la recopier ferait consentir le visiteur à une finalité qu'on ne publie pas, et **mélangerait plusieurs finalités dans une seule case**. Trois adaptations obligatoires pour la version en ligne :
 
-1. **Consentement explicite et séparé**, avec **uniquement les finalités du site** : bilan · challenge · recontact. **Jamais l'opportunité financière.**
+1. **Consentement explicite et séparé**, avec **les finalités réelles du site** : bilan · challenge · recontact · **et, depuis le 12/09, l'opportunité (« en savoir plus ») — en choix distinct, avec sa propre case ou sa propre option**. Ce qui reste interdit, c'est de **noyer plusieurs finalités dans une seule case** : le visiteur doit pouvoir dire oui au bilan et non à l'opportunité.
 2. **La newsletter est une finalité distincte** → sa **propre case**, jamais noyée dans le consentement de contact.
 3. **Le champ « Âge »** : le papier s'en passait, pas un formulaire public → prévoir la règle qui va avec (âge minimum, ou consentement parental pour un mineur).
 

@@ -61,6 +61,37 @@
 
 ---
 
+## 🔄 REVIREMENT DU 12/09 — « COMPLÉMENT DE REVENUS » : de HORS SITE à **sur le site, en choix simple**
+
+**Décision de Ken (12/09), après retour de Catherine : elle VEUT cette partie sur le site.** Cadrée en trois mots qui tiennent tout : **« sans plus »** · **« pas de fonctionnalité code trop complexe »** · **« ils vont gérer avec le bilan »** — plus **« quand même un choix possible »**.
+
+### Ce que ça change
+- ❌ **PÉRIMÉ** : la règle « COMPLÉMENT DE REVENUS = EXCLU du site et de tout formulaire », écrite plus bas dans ce doc **et** dans `docs/fiche-papier-challenge-21j.md`. **Elle n'est plus la règle.**
+- ✅ **NOUVELLE RÈGLE** : **une section visible**, avec **un choix possible** — et **la gestion se fait au bilan**, en présentiel, avec Catherine. **On n'automatise rien.**
+
+### Techniquement — c'est là que « pas complexe » se gagne
+**Aucune table, aucune migration, aucun formulaire dédié.** Le questionnaire post-inscription stocke déjà ses réponses dans `event_registrations.post_registration_details` — un **`jsonb`** (vérifié le 12/09 : `objectif_principal` y est **une clé**, pas une colonne) — et ses options vivent dans `src/data/postRegistrationSurvey.ts`, à côté de `OBJECTIF_OPTIONS`, `BILAN_OFFERT_OPTIONS`, `PRECOMMANDE_OPTIONS`.
+
+Donc **le « choix » = une constante d'options + un champ dans le questionnaire existant**, exactement comme les autres :
+```ts
+export const OPPORTUNITE_OPTIONS = [
+  { value: 'Oui', label: 'Oui, j’aimerais en savoir plus' },
+  { value: 'Non', label: 'Pas pour le moment' },
+];
+```
+→ **le `jsonb` prend la clé sans migration** ✅ · **rien à créer en base** ✅ · **le parcours reste le parcours** ✅.
+
+### 🔴 Les garde-fous qui RESTENT (ils ne tombaient pas avec l'exclusion)
+1. **AUCUNE promesse de revenus.** Aucun montant, aucun « gagnez X €/mois », aucun « revenus complémentaires jusqu'à… », aucun témoignage de gains. **C'est la règle n°1** — et le risque n°1 : c'est ce qui fait basculer un site commercial dans la promesse de gains.
+2. **Le cadre dit ce que c'est** : une **activité de distribution indépendante** — **ni un emploi, ni un salaire**. On ne vend **pas** un revenu, on propose **d'en parler**.
+3. **C'est un CHOIX, pas une relance.** Deux options dont « pas pour le moment », et **on n'y revient pas** : pas de séquence d'e-mails, pas de relance automatique.
+4. **On ne collecte rien de neuf** : la réponse vit dans le questionnaire existant ✅ — mais ⚠️ **@vela doit vérifier la cohérence du consentement** : le texte doit couvrir **ce qui est réellement proposé** — ni plus (pas de finalité qu'on ne publiait pas), ni moins (l'option existe maintenant).
+5. **Aucun visuel, aucun chiffre, aucun logo de l'opportunité** — même famille que les bannières : **pas de preuve inventée**.
+
+**@vela — c'est ta passe** : la phrase de consentement, le libellé exact des deux options, l'absence de toute promesse de revenus. **@lyra** — la section reste **sobre** : elle partage la page avec **l'encadré signature**, ce n'est **pas** un deuxième dispositif.
+
+---
+
 ## RÈGLES GÉNÉRALES (permanentes)
 
 - **Une branche par lot** · jamais de push direct sur `main` · **aucun merge sans recette verte de @vela**.
