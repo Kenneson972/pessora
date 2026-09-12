@@ -6,6 +6,10 @@ const OG_DEFAULTS = {
   title: 'PessÓra — Bar Protéiné & Bien-Être en Martinique',
   description: 'Shakes protéinés, wellness, énergie et coffee bar à Fort-de-France. Le 1er bar protéiné & bien-être de Martinique.',
   image: '/logo-pessora.webp',
+  // Dimensions réelles de logo-pessora.webp (carré) — jamais 1200x630 en dur,
+  // ça produit un letterbox sur tout lien partagé (bug préexistant, 12/09).
+  imageWidth: 1024,
+  imageHeight: 1024,
   type: 'website',
 };
 
@@ -37,6 +41,8 @@ const PageSEO = () => {
     const ogTitle = seo?.ogTitle ?? seo?.title ?? OG_DEFAULTS.title;
     const ogDesc = seo?.ogDescription ?? seo?.description ?? OG_DEFAULTS.description;
     const ogImage = seo?.ogImage ?? OG_DEFAULTS.image;
+    const ogImageWidth = seo?.ogImageWidth ?? OG_DEFAULTS.imageWidth;
+    const ogImageHeight = seo?.ogImageHeight ?? OG_DEFAULTS.imageHeight;
     const ogType = seo?.ogType ?? OG_DEFAULTS.type;
 
     if (seo) {
@@ -68,8 +74,8 @@ const PageSEO = () => {
     setMetaTag('og:title', ogTitle);
     setMetaTag('og:description', ogDesc);
     setMetaTag('og:image', imageUrl);
-    setMetaTag('og:image:width', '1200');
-    setMetaTag('og:image:height', '630');
+    setMetaTag('og:image:width', String(ogImageWidth));
+    setMetaTag('og:image:height', String(ogImageHeight));
     setMetaTag('og:type', ogType);
     setMetaTag('og:url', window.location.origin + location.pathname);
     setMetaTag('og:site_name', 'PessÓra');

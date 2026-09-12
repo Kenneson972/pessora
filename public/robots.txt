@@ -1,4 +1,6 @@
-# Robots — PessÓra (SPA Vite). Ajuster Sitemap si le domaine canon change (voir aussi PageSEO).
+# Robots — PessÓra (SPA Vite). vercel.json (X-Robots-Tag) fait autorité sur
+# la liste des chemins protégés — cette liste doit rester alignée avec lui.
+# Ajuster Sitemap si le domaine canon change (voir aussi PageSEO).
 User-agent: *
 Allow: /
 
@@ -7,5 +9,9 @@ Disallow: /mon-espace
 Disallow: /demo-espace
 Disallow: /mockup-luxe
 Disallow: /mockup-croquis-gerant
+Disallow: /connexion
+Disallow: /inscription
+Disallow: /reinitialisation-mot-de-passe
+Disallow: /suivi-commande
 
-Sitemap: https://pessora.fr/sitemap.xml
+Sitemap: https://www.pessora.fr/sitemap.xml

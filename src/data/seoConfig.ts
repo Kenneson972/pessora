@@ -8,6 +8,9 @@ export interface PageSEOEntry {
   ogTitle?: string;
   ogDescription?: string;
   ogImage?: string;
+  /** Dimensions réelles du fichier ogImage — jamais déclarées "au juger" (letterbox sinon). */
+  ogImageWidth?: number;
+  ogImageHeight?: number;
   ogType?: string;
 }
 
@@ -19,7 +22,9 @@ export const seoConfig: Record<string, PageSEOEntry> = {
       'Shakes protéinés, wellness, énergie et coffee bar à Fort-de-France. Le 1er bar protéiné & bien-être de Martinique.',
     ogTitle: 'PessÓra — Bar Protéiné & Bien-Être en Martinique',
     ogDescription: 'Shakes protéinés, wellness, énergie et coffee bar à Fort-de-France. Découvrez le 1er bar protéiné & bien-être de Martinique.',
-    ogImage: '/logo-pessora.webp',
+    ogImage: '/og-default-1200x630.png',
+    ogImageWidth: 1200,
+    ogImageHeight: 630,
     ogType: 'website',
   },
   '/concept': {
@@ -35,6 +40,8 @@ export const seoConfig: Record<string, PageSEOEntry> = {
     ogTitle: 'La Carte — PessÓra',
     ogDescription: 'Découvrez nos boissons protéinées, wellness, énergie et coffee. Prix, ingrédients et bienfaits.',
     ogImage: '/menu-header.webp',
+    ogImageWidth: 1024,
+    ogImageHeight: 434,
     ogType: 'website',
   },
   '/nos-produits': {
@@ -59,6 +66,16 @@ export const seoConfig: Record<string, PageSEOEntry> = {
     description: 'Retrouvez PessÓra en pop-up et lors d\'événements. Partenariats GigaFit, En Bons Thermes.',
     ogTitle: 'Événements — PessÓra',
     ogDescription: 'Retrouvez PessÓra en pop-up et lors d\'événements. Run Club, ateliers, partenariats.',
+    ogType: 'website',
+  },
+  '/evenements/challenge-21-jours': {
+    title: 'Challenge 21 jours | PessÓra',
+    description: 'Quel est ton prochain objectif ? 21 jours pour reprendre la main sur ton énergie, ta forme et tes habitudes, avec PessÓra.',
+    ogTitle: 'Challenge 21 jours — PessÓra',
+    ogDescription: 'Quel est ton prochain objectif ? 21 jours pour reprendre la main sur ton énergie, ta forme et tes habitudes, avec PessÓra.',
+    ogImage: '/og-challenge-1200x630.jpg',
+    ogImageWidth: 1200,
+    ogImageHeight: 630,
     ogType: 'website',
   },
   '/pessobot': {
