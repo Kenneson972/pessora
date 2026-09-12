@@ -721,6 +721,44 @@ créneaux visibles en anon   -> []            (aucun)
 
 **Portes @vela, dans les deux sens, quand ce sera codé** : **CTA présent ⟺ ≥ 1 créneau réservable** ✅ · **décompte présent ⟺ aucun créneau créé** (compteur = 0) — **jamais** quand le compteur > 0 et que le réservable est à 0 ✅.
 
+### 🔴 L'ORDRE DE DÉCISION DU HERO — **4 cas, mesurés sur les jours charnières**
+
+⚠️ **@vela a testé les bornes en base (le 12/09)** : le **front** et la **base** disent **la même chose** sur les 4 jours charnières ✅ — `J+15` **hors** fenêtre · **`J+14` = le jour d'ouverture** ✅ · `J+1` ✅ · **`J` = le jour du challenge, encore ouvert** ✅ (comme le `BETWEEN` de la base). **Donc la fenêtre est calculable côté front**, et l'arithmétique en millisecondes est **juste** (UTC−4, sans heure d'été depuis 1980 ✅).
+
+| Cas | Condition | Ce qui s'affiche |
+|---|---|---|
+| **1. Hors fenêtre** | avant J-14 | **Décompte** + « les inscriptions au bilan ouvrent bientôt » — **que des créneaux existent ou non** |
+| **2. Dans la fenêtre, réservable** | `bookable > 0` | **CTA** (+ décompte) |
+| **3. Dans la fenêtre, plein** | `bookable = 0` **ET** `total > 0` | « **les créneaux de bilan sont complets** » — **et le décompte PART** |
+| **4. Dans la fenêtre, rien de créé** | `bookable = 0` **ET** `total = 0` | « **pas disponibles pour le moment** » + **décompte** |
+
+⚠️ **Le cas 3 vs 4 est LE piège** (@nova) : `bookable = 0` recouvre **deux choses différentes** — « tout est pris » **et** « des créneaux existent mais on est **avant J-14** » (hors fenêtre, même un créneau **libre** n'est pas réservable ✅). Les confondre ferait afficher « **complets** » — **faux** — et **supprimerait le décompte** dans **l'état le plus probable au lancement** ✅. **D'où le cas 1 en tête : hors fenêtre, on ne dit jamais « complet ».**
+
+**Les deux messages sont GREPABLES, donc recettables :**
+- « **les inscriptions au bilan ouvrent bientôt** » → **hors fenêtre uniquement** ;
+- « **les créneaux de bilan sont complets** » → **dans la fenêtre uniquement** — ailleurs, c'est un **mensonge daté**.
+
+**Et la SORTIE (newsletter) doit être vraie dans les deux cas** (@lyra) : « **être prévenu·e du prochain challenge** » — **jamais** « de l'ouverture des inscriptions », faux quand c'est **plein** ✅.
+
+### ⚙️ Si on prend B : la fonction DOIT être `SECURITY DEFINER` (@alcyone)
+**Ce n'est pas du style — c'est toute la différence entre B et A :**
+- **en invoker (le défaut), le `SELECT count(*)` tombe sous la policy `bilan_slots_select_bookable`** → il ne compterait **que les réservables** → « 0 créé » et « tout pris » rendraient **0 tous les deux** → **B s'effondrerait en A, silencieusement, sans erreur nulle part** ✅ ;
+- **seule une fonction `SECURITY DEFINER` voit les créneaux PRIS** ✅.
+
+⚠️ **Aucune fuite** : `bilan_slots` = **5 colonnes, zéro donnée nominative** (`id`, `date`, `heure`, `disponible`, `challenge_event_id`) — le PII vit dans **`bilan_bookings`**, pas dans ce qu'on compte ✅. Un compteur ne dit pas **lesquels** sont pris ✅.
+```sql
+CREATE FUNCTION public.fn_bilan_slots_count(p_challenge_id uuid)
+RETURNS integer LANGUAGE sql SECURITY DEFINER SET search_path='public' STABLE
+AS $$
+  SELECT count(*)::int FROM public.bilan_slots s
+  JOIN public.events e ON e.id = s.challenge_event_id
+  WHERE s.challenge_event_id = p_challenge_id AND e.type='challenge' AND e.active=true
+$$;
+```
+*(Le `active=true` est le même garde que `fn_bilan_slot_bookable` : il empêche de sonder le compteur d'un challenge désactivé ✅.)*
+
+⚠️ **Un état déjà couvert, à ne pas rouvrir** : un challenge **désactivé** n'atteint **jamais** la landing (`ChallengeLandingPage` filtre `type='challenge' AND active=true AND date >= today` ✅) → il tombe sur l'état fermé ✅. Donc ces messages ne s'affichent **que** pour un challenge vivant ✅.
+
 ### 5. 🔴 Ce que le minuteur ne doit PAS réintroduire
 
 - **Aucun mois à l'écran, aucune liste de rythme, aucune date qui ne soit pas une ligne en base** (règle l. 272) — le minuteur **lit** `events.date`, il n'annonce rien d'autre ;
