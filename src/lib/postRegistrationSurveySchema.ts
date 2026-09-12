@@ -30,9 +30,13 @@ export const postRegistrationBaseSchema = z
   })
   .superRefine(objectifRefine)
 
-export const postRegistrationChallengeSchema = z.object({
-  bilan_offert: z.string().min(1, 'Choisis une réponse.'),
-})
+export const postRegistrationChallengeSchema = z
+  .object({
+    bilan_offert: z.string().min(1, 'Choisis une réponse.'),
+    objectif_principal: z.string().min(1, 'Choisis un objectif.'),
+    objectif_autre: z.string().optional(),
+  })
+  .superRefine(objectifRefine)
 
 export const postRegistrationRunClubSchema = z
   .object({
@@ -70,7 +74,7 @@ export function parsePostRegistrationPayload(
 
 /** Objet JSON envoyé au RPC (chaînes uniquement, optionnels omis si vides). */
 export function toSurveyJsonPayload(
-  parsed: PostRegistrationBasePayload | PostRegistrationRunClubPayload | PostRegistrationChallengePayload,
+  parsed: PostRegistrationBasePayload | PostRegistrationRunClubPayload,
 ): Record<string, string> {
   const out: Record<string, string> = {}
   for (const [k, v] of Object.entries(parsed)) {
