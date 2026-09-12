@@ -1,5 +1,3 @@
-import { ChallengeCountdown } from './ChallengeCountdown';
-
 function frenchMonth(dateStr: string): string {
   const month = new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', { month: 'long' });
   return month.charAt(0).toUpperCase() + month.slice(1);
@@ -15,11 +13,9 @@ export interface ChallengeHeroProps {
    * refusait déjà — deux conditions, jamais une seule.
    */
   showCta?: boolean;
-  /** event.date >= aujourd'hui ET pas "complet" — voir useChallengeAvailability. */
-  showCountdown?: boolean;
 }
 
-export function ChallengeHero({ eventDate, showCta = true, showCountdown = true }: ChallengeHeroProps) {
+export function ChallengeHero({ eventDate, showCta = true }: ChallengeHeroProps) {
   return (
     <header className="relative overflow-hidden bg-surface-hero text-white">
       {/* Dégradé de repli — rendu définitif tant qu'aucun visuel réel n'est fourni.
@@ -63,7 +59,6 @@ export function ChallengeHero({ eventDate, showCta = true, showCountdown = true 
             Ce qui est inclus
           </a>
         </div>
-        {showCountdown && <ChallengeCountdown targetDate={eventDate} />}
       </div>
     </header>
   );

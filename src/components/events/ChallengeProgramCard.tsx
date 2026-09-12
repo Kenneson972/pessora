@@ -9,10 +9,10 @@ interface InclusItem {
 }
 
 const INCLUS: InclusItem[] = [
-  { label: 'Application GetFitNow', icon: Smartphone },
-  { label: 'Communauté 24FIT PESSORA', icon: Users },
-  { label: 'Séances de sport', icon: Dumbbell },
-  { label: 'Idées recettes', icon: Salad },
+  { label: 'Application GetFitNow', icon: Smartphone, image: '/challenge-21j/inclus-getfitnow.webp' },
+  { label: 'Communauté 24FIT PESSORA', icon: Users, image: '/challenge-21j/inclus-communaute.webp' },
+  { label: 'Séances de sport', icon: Dumbbell, image: '/challenge-21j/inclus-seances-sport.webp' },
+  { label: 'Idées recettes', icon: Salad, image: '/challenge-21j/inclus-idees-recettes.webp' },
   { label: 'Conseils & accompagnement', icon: MessagesSquare },
   { label: 'Suivi de tes objectifs', icon: Target },
 ];

@@ -3,6 +3,7 @@ import type { Event } from '../../types/database';
 import { todayInMartinique } from '../../lib/martiniqueDate';
 import { useChallengeAvailability } from '../../hooks/useChallengeAvailability';
 import { ChallengeHero } from './ChallengeHero';
+import { ChallengeCountdownSection } from './ChallengeCountdownSection';
 import { ChallengeTrustBadges } from './ChallengeTrustBadges';
 import { ChallengeStatsBlock } from './ChallengeStatsBlock';
 import { ChallengeProgramCard } from './ChallengeProgramCard';
@@ -40,7 +41,8 @@ export function ChallengeLanding({ event }: ChallengeLandingProps) {
 
   return (
     <div className="bg-white">
-      <ChallengeHero eventDate={event.date} showCta={showCta} showCountdown={showCountdown} />
+      <ChallengeHero eventDate={event.date} showCta={showCta} />
+      {showCountdown && <ChallengeCountdownSection targetDate={event.date} />}
       <ChallengeTrustBadges />
       <ChallengeStatsBlock />
       <ChallengeProgramCard isPast={isPast} />
