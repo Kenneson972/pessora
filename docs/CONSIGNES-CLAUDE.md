@@ -523,6 +523,7 @@ Playwright 1.60 expose `page.clock` ✅ : régler l'horloge à **23 h 59 min 30 
 3. **Son accord** pour le crédit footer.
 4. **Le lien Easy Ta Vie.**
 5. **La recette du module « Bilan » dans son admin** (elle est la seule à pouvoir juger).
+6. **Deux visuels manquants à la carte** — **TIRAMISU GOURMAND** (shakes) et **DETOX MY BODY** (wellness) ont `image_url = null`. ✅ **Vérifié dans le code : ce n'est PAS une image cassée** — le rendu public gère l'absence (`HomeProductCarousel.tsx:52` : `imageSrc ? <img/> : placeholder`), donc le visiteur voit un **placeholder**, pas un carré brisé. Ce n'est donc **pas un bug à corriger de notre côté** : c'est **deux produits affichés sans leur visuel**. Deux questions pour elle, dans cet ordre : **① ces boissons sont-elles toujours à sa carte ?** (si non → on **retire** le produit, cf. skill `retrait-offre-site-client`) · **② si oui → c'est son visuel qu'il faut** (photos de ses propres boissons, téléversées via le champ image de l'admin — les 14 autres vivent dans le bucket **`product-images`**, `.webp`, ~39 Ko, jamais des PNG de 2 Mo dans le repo).
 
 ---
 
