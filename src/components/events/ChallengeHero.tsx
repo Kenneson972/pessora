@@ -1,3 +1,5 @@
+import { ChallengeCountdown } from './ChallengeCountdown';
+
 function frenchMonth(dateStr: string): string {
   const month = new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', { month: 'long' });
   return month.charAt(0).toUpperCase() + month.slice(1);
@@ -54,6 +56,7 @@ export function ChallengeHero({ eventDate, registrationOpen = true }: ChallengeH
             Ce qui est inclus
           </a>
         </div>
+        {registrationOpen && <ChallengeCountdown targetDate={eventDate} />}
       </div>
     </header>
   );
