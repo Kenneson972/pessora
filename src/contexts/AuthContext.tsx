@@ -280,8 +280,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (data.preferences !== undefined) patch['preferences'] = data.preferences ?? {};
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = supabase as any;
-    const { error } = await db.from('profiles').update(patch).eq('id', user.id);
+    const { data: updated, error } = await db.from('profiles').update(patch).eq('id', user.id).select('id');
     if (error) throw new Error((error as { message: string }).message);
+    if (!updated || updated.length === 0) {
+      throw new Error('Impossible d\'enregistrer vos informations. Réessayez ou contactez-nous.');
+    }
     setUser(prev =>
       prev
         ? {
