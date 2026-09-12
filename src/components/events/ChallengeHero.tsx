@@ -45,7 +45,7 @@ export function ChallengeHero({ eventDate, showCta = true }: ChallengeHeroProps)
             </span>
             <h1
               className="font-display font-light leading-[1.03]"
-              style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(34px, 5.2vw, 60px)', maxWidth: '15ch' }}
+              style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(26px, 3.4vw, 40px)', maxWidth: '15ch' }}
             >
               Quel est ton <em className="italic text-white/60">prochain objectif&nbsp;?</em>
             </h1>
