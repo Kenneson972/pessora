@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { EventItemListJsonLd } from '../components/seo/EventJsonLd';
 import { ArrowRight } from 'lucide-react';
@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabaseClient';
 import type { Event } from '../types/database';
 import { useStaggerReveal } from '../lib/motionReveal';
 import { PageHero } from '../components/layout/PageHero';
+import { todayInMartinique } from '../lib/martiniqueDate';
 
 interface EventWithCount extends Event {
   event_registrations: { count: number | string }[];
@@ -215,6 +216,7 @@ function EventCardCompact({ ev }: { ev: EventWithCount }) {
 const Evenements = () => {
   const { container, item, isReducedMotion } = useStaggerReveal();
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
   const [events, setEvents] = useState<EventWithCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -238,7 +240,7 @@ const Evenements = () => {
     };
   }, []);
 
-  const todayStr = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const todayStr = useMemo(() => todayInMartinique(), []);
 
   const upcoming = useMemo(
     () => events.filter((ev) => ev.date >= todayStr),
@@ -280,6 +282,14 @@ const Evenements = () => {
     url: `${window.location.origin}/evenements/${ev.slug}`,
   }));
 
+  useEffect(() => {
+    if (loading) return;
+    if (!location.hash) return;
+    const id = location.hash.slice(1);
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [loading, location.hash]);
+
   return (
     <div className="min-h-screen bg-white">
       <EventItemListJsonLd items={eventItems} />
@@ -291,7 +301,7 @@ const Evenements = () => {
 
       {/* ── Rubrique dédiée : Challenge 21 jours (pas de page séparée) ── */}
       {!loading && upcomingChallenges.length > 0 && (
-        <section className="border-b border-noir/[0.06] bg-noir px-4 py-14 text-white md:px-10 md:py-16 lg:px-[72px]">
+        <section id="challenge-21-jours" className="border-b border-noir/[0.06] bg-noir px-4 py-14 text-white md:px-10 md:py-16 lg:px-[72px]">
           <p className="mb-2 text-[10px] font-light uppercase tracking-[0.24em] text-white/50">
             Challenge 21 jours
           </p>

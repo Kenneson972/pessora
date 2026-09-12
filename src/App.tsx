@@ -57,6 +57,7 @@ const MesBilans = lazy(() => import('./pages/member/MesBilans'));
 const PessobotPage = lazy(() => import('./pages/PessobotPage'));
 const SuiviCommande = lazy(() => import('./pages/SuiviCommande'));
 const EvenementDetail = lazy(() => import('./pages/EvenementDetail'));
+const ChallengeLandingPage = lazy(() => import('./pages/ChallengeLandingPage'));
 const LuxeMockup = lazy(() => import('./pages/LuxeMockup'));
 const ManagerSketchMockup = lazy(() => import('./pages/ManagerSketchMockup'));
 const CommandeSucces = lazy(() => import('./pages/CommandeSucces'));
@@ -173,6 +174,7 @@ function App() {
             <Route path="/admin/*" element={<RedirectToAdminApp />} />
             <Route path="/menu/:drinkId" element={<DrinkDetail />} />
             <Route path="/evenements" element={<Evenements />} />
+            <Route path="/evenements/challenge-21-jours" element={<ChallengeLandingPage />} />
             <Route path="/evenements/:slug" element={<EvenementDetail />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/contact-partenariat" element={<ContactPartenariat />} />

@@ -16,6 +16,8 @@ import { ConfirmDialog } from '../../components/dashboard/ConfirmDialog';
 import { DashPageHeader } from '../../components/dashboard/primitives';
 import { DASH_MAIN_PAD } from '../../components/dashboard/layoutClasses';
 import { AdminErrorAlert } from '../../components/dashboard/AdminErrorAlert';
+import { slotChallengeLabel } from '../../lib/slotChallengeLabel';
+import { todayInMartinique } from '../../lib/martiniqueDate';
 
 interface BilanSlot {
   id: string;
@@ -59,20 +61,6 @@ const ORIGINE_LABELS: Record<string, string> = {
   questionnaire: 'Questionnaire',
   admin: 'Admin',
 };
-
-/**
- * État lisible du rattachement d'un créneau — un créneau orphelin ne doit
- * jamais disparaître en silence (exigence cliente). Le rattachement lui-même
- * est décidé côté serveur (trigger fn_bilan_slot_attach_challenge) ; ceci
- * n'affiche que le résultat.
- */
-function slotChallengeLabel(slot: BilanSlot, challenges: ChallengeEvent[]): string {
-  if (slot.challenge_event_id) {
-    const challenge = challenges.find((c) => c.id === slot.challenge_event_id);
-    return challenge ? `→ ${challenge.title}` : 'Rattaché (challenge introuvable)';
-  }
-  return 'Orphelin — hors de la fenêtre d’un challenge actif (J-14 → J)';
-}
 
 const STATUT_STYLES = {
   en_attente: 'bg-amber-50 text-amber-700',
@@ -673,10 +661,12 @@ const AdminBilans = () => {
                           </div>
                           <p
                             className={`mt-1.5 text-[9px] uppercase tracking-[0.1em] ${
-                              slot.challenge_event_id ? 'text-black/35' : 'text-amber-600'
+                              slot.challenge_event_id && challenges.find((c) => c.id === slot.challenge_event_id)?.active
+                                ? 'text-black/35'
+                                : 'text-amber-600'
                             }`}
                           >
-                            {slotChallengeLabel(slot, challenges)}
+                            {slotChallengeLabel(slot, challenges, todayInMartinique())}
                           </p>
                           {hasBooking && (
                             <ul className="mt-2 space-y-1.5 pl-1">
