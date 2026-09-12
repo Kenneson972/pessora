@@ -62,7 +62,7 @@ const IMAGE_FALLBACK =
 /** Voile côté texte seulement (gauche → transparent vers 65%) — le reste de
  * l'image (la bannière) reste visible et net, à droite. */
 const LEFT_SCRIM =
-  'linear-gradient(90deg, oklch(7% .004 55 / 0.88) 0%, oklch(7% .004 55 / 0.72) 30%, oklch(7% .004 55 / 0.25) 55%, transparent 72%)';
+  'linear-gradient(90deg, oklch(7% .004 55 / 0.88) 0%, oklch(7% .004 55 / 0.75) 40%, oklch(7% .004 55 / 0.32) 65%, transparent 85%)';
 
 function InclusRow({ item, index }: { item: InclusItem; index: number }) {
   const bannerReveal = useFadeUpWhenVisible();
@@ -72,7 +72,7 @@ function InclusRow({ item, index }: { item: InclusItem; index: number }) {
     // recadrage de l'image vit sur le <div> enfant juste en dessous. Jamais
     // les deux sur le même élément (bug connu, mémoire projet).
     <motion.li
-      className="relative aspect-[32/9] w-full"
+      className="relative aspect-[4/3] w-full sm:aspect-[16/9] md:aspect-[21/9] lg:aspect-[32/9]"
       {...bannerReveal}
       transition={slowReveal(bannerReveal, 1.1, index * 0.1)}
     >
