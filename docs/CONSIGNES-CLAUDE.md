@@ -11,13 +11,19 @@
 
 **Branche de travail : `feat/challenge-21j-landing`** — **19 commits déjà poussés** (dernier : `f1eafd9`), `tsc` propre, 30 tests verts (les 10 échecs `cartStore` sont préexistants). **Ne pas repartir de zéro — on FINIT ce qui est commencé.**
 
-### 1. Finir la page Challenge — 5 points (détail complet en section « À LA REPRISE »)
+### 1. Finir la page Challenge — **état au 12/09, après le push `4048075`**
 
-1. **🔴 LA PORTE 8 — c'est le blocage.** Un challenge **à date passée**, atteint par `/evenements/:slug` (donc par un **vieux lien Instagram ou un QR au bar**), propose **encore de s'inscrire**. `ChallengeLanding` ne reçoit **aucun état de date** et rend `<ChallengeRegistrationCard>` **inconditionnellement**. → **trois états** : *à venir* (landing + CTA) · *aucun* (état fermé) · *passé* (**le contenu reste** — la personne veut voir ce que c'était — mais **le CTA d'inscription ET le sélecteur de timings disparaissent**, remplacés par « ce challenge est terminé — le prochain ouvre bientôt » + newsletter). **Jamais d'inscription à un challenge fini.**
-2. **Le mot « vague » est affiché à l'écran** : `ChallengeHero.tsx:26` (« Challenge 21 jours · **Vague de** {mois} ») et `ChallengeClosedState.tsx:15` (« **Prochaine vague** »). → **« Challenge 21 jours »**, jamais « vague » — le mot n'est **pas de Catherine**, il vient de nos propres docs. *(Le mois, lui, vient de `event.date` : il est propre.)*
-3. **« Places limitées » (8 px) → à retirer.** La fiche de Catherine ne dit **pas un mot** de places limitées : c'est une **rareté non sourcée**, de la famille des chiffres et des témoignages inventés. Si elle l'affirme un jour, elle revient — à sa main.
-4. **Le lien « politique de confidentialité » sort du doré** (11 px, `gold-dim`, 4,54:1) → **noir 70 % souligné** (7,57:1) ou sapin. Un élément juridique n'est pas un ornement.
-5. **Le minuteur de lancement** → section dédiée « MINUTEUR DE LANCEMENT ». **Toutes les décisions techniques sont prises** (forme du helper, test falsifiable, cran `>=`/`>`, portes 9→12) : il ne reste **que le libellé à valider avec Ken**.
+**✅ FAIT — et re-vérifié dans le code, pas sur parole** (@elise, puis **@nova indépendamment**) :
+- **La porte 8 est fermée POUR LE BOUTON** : `ChallengeLanding.tsx:29` → `const isPast = event.date < todayInMartinique()` — **le helper du fuseau**, pas `toISOString()`, et **un challenge du jour reste ouvert** ✅ — puis `l.40` bascule `<ChallengeEndedState />` au lieu de `<ChallengeRegistrationCard />` ✅.
+- **« vague » : 0 occurrence** ✅ · **« Places limitées » : 0** ✅.
+- **Le lien « politique de confidentialité »** est passé en `text-black/70 underline` (7,57:1) ✅ — la demande d'@lyra.
+- **L'emplacement des 6 bannières** est posé (`ChallengeProgramCard`, +39 lignes), dégradé de repli, **aucun pointillé** ✅.
+
+**⚠️ RESTE — dans cet ordre :**
+
+1. **🔴 Le sélecteur de timings ment encore sur un challenge terminé** — c'est **la porte 8, un cran plus loin** (le point d'@lyra : « la rangée de timings ment aussi »). `ChallengeProgramCard.tsx` **ne reçoit aucune prop** et rend `TIMINGS` (**l.16** la constante, **l.72** le rendu) **inconditionnellement** : sur l'état passé, le visiteur venu d'un vieux lien lit toujours « **Quand souhaites-tu commencer ?** » sous l'encadré. → passer l'état (**prop `isPast`**) et **retirer le sélecteur du DOM** (pas le masquer en CSS) — **les 6 inclus restent**, c'est ce que le visiteur est venu voir.
+2. **⏱️ Le minuteur n'est pas commencé** : `ChallengeCountdown.tsx` n'existe pas et `martiniqueDate.ts` **n'a pas encore** `startOfDayMartinique`. **Tout est tranché** (section MINUTEUR) : il ne reste que **le libellé à valider avec Ken**.
+3. **🔧 `fix/seo-og-share` n'existe pas** : les **3 bugs de prod** (`logo.png` mort ×3, dimensions déclarées en dur) **sont toujours en ligne**. C'est **le lot le plus rapide à sortir**, et il ne dépend de rien.
 
 ### 2. L'amélioration du frontend — **les bannières des 6 « inclus »** (Ken les fournit)
 
@@ -356,6 +362,8 @@ Un membre modifie son profil → l'interface dit « enregistré », **rien n'est
 ---
 
 ## 🔴 À LA REPRISE — page Challenge 21 jours (revue statique du 11/09 au soir, branche `feat/challenge-21j-landing`)
+
+> ⚠️ **SECTION HISTORIQUE — état au 11/09 au soir.** Depuis, les points 1 à 4 ont été **faits et vérifiés** (`4048075` : porte 8 côté bouton, « vague » purgé, « Places limitées » retiré, lien confidentialité en noir 70 %, emplacement des bannières posé). **Pour l'état réel, lire l'ORDRE DU JOUR en tête de ce doc (§1 : ce qui est fait ✅ / ce qui reste).** Ce qui suit garde la valeur d'une trace : **pourquoi** chaque point existait.
 
 Revue statique faite par @elise (23 fichiers, **2 704 insertions**) — **la branche est bien construite** ; reste ceci **avant merge/PR** :
 
