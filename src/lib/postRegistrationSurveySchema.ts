@@ -30,7 +30,6 @@ export const postRegistrationChallengeSchema = z
 
 export const postRegistrationRunClubSchema = z
   .object({
-    precommande_offre: z.string().min(1, 'Choisis une offre.'),
     // Neutralisé (retrait du parcours Bilan public, 10/09) — voir schéma ci-dessus.
     bilan_offert: z.string().optional(),
     objectif_principal: z.string().min(1, 'Choisis un objectif.'),

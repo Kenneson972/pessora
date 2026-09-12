@@ -20,7 +20,6 @@ import {
   BILAN_OFFERT_OPTIONS,
   getPostRegistrationSteps,
   OBJECTIF_OPTIONS,
-  PRECOMMANDE_OPTIONS,
   STEP_COPY,
   type PostRegistrationStepId,
 } from '../../data/postRegistrationSurvey'
@@ -36,14 +35,12 @@ export type PostRegistrationWizardProps = {
 }
 
 type Fields = {
-  precommande_offre: string
   bilan_offert: string
   objectif_principal: string
   objectif_autre: string
 }
 
 const emptyFields = (): Fields => ({
-  precommande_offre: '',
   bilan_offert: '',
   objectif_principal: '',
   objectif_autre: '',
@@ -74,8 +71,6 @@ function mapRpcErrorMessage(raw: string): string {
 
 function validateStep(step: PostRegistrationStepId, f: Fields): string | null {
   switch (step) {
-    case 'precommande':
-      return f.precommande_offre.trim() ? null : 'Choisis une option.'
     case 'bilan':
       return f.bilan_offert.trim() ? null : 'Choisis une réponse.'
     case 'objectif': {
@@ -138,9 +133,6 @@ export function PostRegistrationWizard({
       bilan_offert: fields.bilan_offert,
       objectif_principal: fields.objectif_principal,
       objectif_autre: fields.objectif_autre.trim() || undefined,
-    }
-    if (eventType === 'run_club') {
-      raw.precommande_offre = fields.precommande_offre
     }
 
     const parsed = parsePostRegistrationPayload(eventType, raw)
@@ -242,8 +234,6 @@ export function PostRegistrationWizard({
         </p>
       </Card.Header>
       <Card.Content className="space-y-5 px-5 py-5 sm:px-6">
-        {currentStep === 'precommande' && renderOptions(PRECOMMANDE_OPTIONS, 'precommande_offre')}
-
         {currentStep === 'bilan' && renderOptions(BILAN_OFFERT_OPTIONS, 'bilan_offert')}
 
         {currentStep === 'objectif' && (
