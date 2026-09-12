@@ -11,6 +11,7 @@ const AdminOverview = lazy(() => import('./pages/admin/AdminOverview'));
 const AdminMembers = lazy(() => import('./pages/admin/AdminMembers'));
 const AdminMemberDetail = lazy(() => import('./pages/admin/AdminMemberDetail'));
 const AdminEvenements = lazy(() => import('./pages/admin/AdminEvenements'));
+const AdminChallenge21j = lazy(() => import('./pages/admin/AdminChallenge21j'));
 const AdminBilans = lazy(() => import('./pages/admin/AdminBilans'));
 const AdminCommandes = lazy(() => import('./pages/admin/AdminCommandes'));
 const ModeBar = lazy(() => import('./pages/admin/ModeBar'));
@@ -55,6 +56,11 @@ function AdminApp() {
                 <Route path="/admin/evenements" element={
                   <ProtectedAdminRoute>
                     <AdminLayout><AdminEvenements /></AdminLayout>
+                  </ProtectedAdminRoute>
+                } />
+                <Route path="/admin/challenge-21j" element={
+                  <ProtectedAdminRoute>
+                    <AdminLayout><AdminChallenge21j /></AdminLayout>
                   </ProtectedAdminRoute>
                 } />
                 <Route path="/admin/produits" element={<Navigate to="/admin/produits-gammes?tab=produits" replace />} />
