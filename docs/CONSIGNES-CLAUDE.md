@@ -322,6 +322,96 @@ Revue statique faite par @elise (23 fichiers, **2 704 insertions**) — **la bra
 
 ---
 
+## ⏱️ MINUTEUR DE LANCEMENT — ajout de périmètre (décision de Ken, 12/09)
+
+**Demande de Ken :** un **compte à rebours vers le lancement du challenge**, sur le modèle du minuteur « Pizza du Chef » de Dalcielo. **Cible tranchée : J** — le jour où le challenge commence (pas J-14, l'ouverture des créneaux).
+
+### 1. Ce qu'on reprend de Dalcielo (pattern éprouvé, en prod)
+
+Référence : `repos/dalcielo/src/components/ui/ChefValidUntilTimer.tsx` + `src/lib/chefOffer.ts`.
+
+- **un champ date au format `YYYY-MM-DD`** posé côté admin — ici, **`events.date`**, qui existe déjà : **aucune colonne à créer** ;
+- **l'affichage : 4 cases `JJ · HH · MM · SS`**, avec **`tabular-nums`** (les chiffres ne sautent pas) et **`padStart(2,'0')`** ;
+- **la case des secondes qui pulse** ;
+- **la garde d'entrée : date absente ou malformée → `return null`** — pas de zéro, pas de tiret, **rien dans le DOM** ;
+- **l'état passé : un libellé court** (« terminé »), jamais un décompte négatif.
+
+### 2. 🔴 LE PIÈGE — ne PAS copier le calcul de Dalcielo
+
+Dalcielo calcule son échéance avec `new Date(y, m-1, d, 23,59,59)` — c'est-à-dire **dans le fuseau du navigateur**. **Transposé ici, c'est exactement la faute que la règle de fuseau de ce doc interdit** (l. 265-270) : un visiteur à Paris verrait l'échéance décalée de 4 à 5 heures.
+
+**Règle qui s'applique, sans exception :**
+
+- **l'échéance se calcule en `America/Martinique`**, jamais dans le fuseau du visiteur, jamais en UTC ;
+- **jamais `toISOString()`, jamais `toLocaleDateString()` sans `timeZone`** ;
+- **même règle que la base** : `(now() AT TIME ZONE 'America/Martinique')`.
+
+### 3. ⚠️ Le helper existant NE SUFFIT PAS — il faut l'étendre
+
+`src/lib/martiniqueDate.ts` ne sait faire qu'une chose :
+
+```ts
+export function todayInMartinique(): string {   // → '2026-09-12'
+  return new Intl.DateTimeFormat('fr-CA', { timeZone: 'America/Martinique' }).format(new Date());
+}
+```
+
+Or un compte à rebours a besoin d'un **instant** (un `Date` comparable), pas d'une chaîne `YYYY-MM-DD`. **Deux options, à trancher par @alcyone** — mais **le calcul doit vivre dans `src/lib/martiniqueDate.ts`**, jamais dans le composant :
+
+1. **étendre le module** avec un `challengeStartInstant(date: string): Date` — début de journée J en Martinique ;
+2. ou une variante générique `endOfDayInMartinique(date)` / `startOfDayInMartinique(date)`.
+
+⚠️ **Martinique = UTC−4 toute l'année** (pas d'heure d'été) — le calcul doit le dire explicitement plutôt que de compter sur le runtime.
+
+⚠️ **Le test existant (`src/__tests__/martiniqueDate.test.ts`) doit être étendu**, pas contourné : c'est lui qui garantit qu'à **20 h 30 locale** le front et la base disent la même chose.
+
+**Défaut proposé : l'échéance = le DÉBUT du jour J en Martinique** (le lancement, c'est le début de la journée). À valider par Ken si l'ouverture réelle se fait à une heure précise.
+
+### 4. Où il vit, et dans quels états
+
+**Composant dédié**, dans la famille existante : `src/components/events/ChallengeCountdown.tsx`. **Il ne calcule rien** — il reçoit une date et rend le décompte.
+
+| État | Le minuteur |
+|---|---|
+| **Challenge à venir** (`date` en base, J dans le futur) | **Affiché** — « Le prochain Challenge 21 jours commence dans… » |
+| **Aucun challenge en base** | **Absent du DOM** (`return null`) — pas d'échéance, donc pas de minuteur |
+| **Challenge passé / en cours** | **Absent du DOM** — cohérent avec la porte 8 : on n'annonce pas un lancement déjà eu lieu |
+
+**⚠️ Bénéfice à ne pas gâcher :** aujourd'hui, **avant J-14**, la page n'a **aucun chemin** — la fenêtre d'inscription n'est pas ouverte, et il n'y a rien à proposer au visiteur. **Le minuteur comble ce trou** : il donne une date et une raison de revenir → c'est lui qui rend l'état « bientôt » vivant, et qui donne sa cible à la newsletter.
+
+**⚠️ Anti-hydratation, obligatoire :** comme chez Dalcielo, le décompte ne s'affiche **qu'après le montage client** (`mounted`). Serveur et navigateur ne voient pas la même seconde — sans cette garde, React signale une erreur d'hydratation.
+
+### 5. 🔴 Ce que le minuteur ne doit PAS réintroduire
+
+- **Aucun mois à l'écran, aucune liste de rythme, aucune date qui ne soit pas une ligne en base** (règle l. 272) — le minuteur **lit** `events.date`, il n'annonce rien d'autre ;
+- **le mot « vague » reste banni** — le libellé est « Challenge 21 jours », jamais « prochaine vague ». *(Le minuteur est exactement l'endroit où ce mot reviendrait par réflexe.)*
+- **aucune promesse de résultat** — le décompte annonce un **début**, jamais un effet.
+
+### 6. Portes de recette ajoutées (@vela) — les 8 précédentes restent dues
+
+**Porte 9 — le minuteur est absent du DOM quand il n'a pas d'échéance.**
+Aucun challenge en base, **et** challenge passé → **compteur = 0**. Vérifier l'absence, **pas** un affichage masqué en CSS.
+
+**Porte 10 — la porte de fuseau, appliquée au minuteur.**
+Horloge du navigateur réglée **à 20 h 30 locale Martinique** (= 00 h 30 UTC le lendemain) : **le nombre de jours ne doit pas avoir changé d'un cran**, et le libellé de date doit dire **le même jour que la base**. Même méthode que la porte 5 — si le résultat est identique avec et sans `timeZone`, la porte ne prouve rien.
+
+**Porte 11 — l'échéance atteinte ne ment pas.**
+Simuler un `now` postérieur à J : le décompte **disparaît ou passe à l'état passé**, il n'affiche **jamais** `-01 j` ni `00 j 00 h 00 s` figé.
+
+**Compléments, mesurables :**
+- **390 px** — `scrollWidth === clientWidth` avec le minuteur affiché (4 cases + libellé : c'est là que ça déborde) ;
+- **console propre** — zéro avertissement d'hydratation au chargement ;
+- **`prefers-reduced-motion`** — la pulsation des secondes doit se désactiver (accessibilité) ;
+- **pointillés = 0** — le minuteur ne se dessine **jamais** en pointillés : il a une valeur réelle ou il n'existe pas.
+
+### 7. Points à trancher avant de coder
+
+1. **L'échéance** : début de J (proposé) ou une heure précise si Catherine en fixe une ?
+2. **Le libellé exact** du décompte — « Le prochain Challenge 21 jours commence dans… » : à valider (il n'annonce rien de plus que la date en base).
+3. **@alcyone** : la forme retenue pour l'extension de `martiniqueDate.ts` (§3).
+
+---
+
 ## DETTE ÉCRITE (ne pas confondre avec « à faire »)
 - 🕐 **Famille `toISOString()` = « aujourd'hui » calculé en UTC — bug site-wide, mesuré (@alcyone, 11/09).** Le helper `src/lib/martiniqueDate.ts` (`todayInMartinique()`) écrit pour la page challenge est **le fix** ; or le même pattern `new Date().toISOString().slice(0,10)` / `.split('T')[0]` est **déjà violé à ~10 endroits à impact client** (bascule au jour suivant dès 20 h locale) : `siteAnnouncement.ts:6` (bandeau) · `BilanBienEtre.tsx:173` + `:245` (créneaux + date min) · `Evenements.tsx:241` (liste) · `member/MesEvenements.tsx:84` (inscriptions) · `HeaderSearch.tsx:103` + `useSearch.ts:49` + `useUpcomingEvents.ts:30` (recherche + à venir) · `admin/RetraitsGamme.tsx:39` (retrait) · `admin/AdminOverview.tsx:89` (stats). **Cosmétique** (nom de CSV, date d'abonnement) : `AdminProduits`, `AdminCommunications`, `AdminEvenements`, `AdminMembers`, `AdminMemberDetail:182/288`. **Cas distinct — ne pas confondre** : `AnalyticsDashboard.tsx:53` reconvertit un `created_at` stocké. **À corriger en une passe, avec le helper unique** — pas instance par instance.
 
