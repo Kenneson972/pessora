@@ -7,6 +7,39 @@
 
 ---
 
+## 🎯 REPRISE ICI — ordre du jour du 12/09 (lire en premier)
+
+**Branche de travail : `feat/challenge-21j-landing`** — 17 commits **déjà poussés**, `tsc` propre, 30 tests verts (les 10 échecs `cartStore` sont préexistants). **Ne pas repartir de zéro.**
+
+### 1. Finir la page Challenge — 5 points (détail complet en section « À LA REPRISE »)
+
+1. **🔴 LA PORTE 8 — c'est le blocage.** Un challenge **à date passée**, atteint par `/evenements/:slug` (donc par un **vieux lien Instagram ou un QR au bar**), propose **encore de s'inscrire**. `ChallengeLanding` ne reçoit **aucun état de date** et rend `<ChallengeRegistrationCard>` **inconditionnellement**. → **trois états** : *à venir* (landing + CTA) · *aucun* (état fermé) · *passé* (**le contenu reste** — la personne veut voir ce que c'était — mais **le CTA d'inscription ET le sélecteur de timings disparaissent**, remplacés par « ce challenge est terminé — le prochain ouvre bientôt » + newsletter). **Jamais d'inscription à un challenge fini.**
+2. **Le mot « vague » est affiché à l'écran** : `ChallengeHero.tsx:26` (« Challenge 21 jours · **Vague de** {mois} ») et `ChallengeClosedState.tsx:15` (« **Prochaine vague** »). → **« Challenge 21 jours »**, jamais « vague » — le mot n'est **pas de Catherine**, il vient de nos propres docs. *(Le mois, lui, vient de `event.date` : il est propre.)*
+3. **« Places limitées » (8 px) → à retirer.** La fiche de Catherine ne dit **pas un mot** de places limitées : c'est une **rareté non sourcée**, de la famille des chiffres et des témoignages inventés. Si elle l'affirme un jour, elle revient — à sa main.
+4. **Le lien « politique de confidentialité » sort du doré** (11 px, `gold-dim`, 4,54:1) → **noir 70 % souligné** (7,57:1) ou sapin. Un élément juridique n'est pas un ornement.
+5. **Le minuteur de lancement** → section dédiée « MINUTEUR DE LANCEMENT ». **Toutes les décisions techniques sont prises** (forme du helper, test falsifiable, cran `>=`/`>`, portes 9→12) : il ne reste **que le libellé à valider avec Ken**.
+
+### 2. L'amélioration du frontend — **les bannières des 6 « inclus »** (Ken les fournit)
+
+- **Prévoir l'emplacement maintenant** : un visuel par inclus, **dans l'encadré signature**, avec le libellé de la fiche **rendu en HTML par-dessus** — **jamais de texte dans l'image** (les modèles écrivent mal : « 24FIT PESSORA » sortirait déformé).
+- **Le composant doit tenir SANS les images** (dégradé de repli, comme le hero) : elles arriveront une par une, et la page ne doit pas se casser à chaque ajout.
+- **Chaque image porte un `alt`** reprenant le libellé de la fiche — accessibilité **et** garde-fou : un libellé ne peut pas dériver de la fiche par la porte des images.
+- **Règles verrouillées** (section « Les 6 bannières », plus bas) : aucun logo, aucune interface lisible, aucune promesse de résultat, aucun visage identifiable, **une seule lumière** pour les six.
+
+### 3. Les 3 corrections SEO/OG — **préexistantes, à faire dans la même passe**
+
+`index.html` : **trois** références mortes à `logo.png` (qui n'existe pas) dont **le JSON-LD** · `src/components/common/PageSEO.tsx:71-72` déclare **1200×630 en dur** alors que l'image servie est un **carré 1024×1024** → letterbox sur tout lien partagé, **déjà en prod** · `seoConfig.ts` est **par page** → l'OG du challenge est une **entrée propre**, pas un remplacement du défaut. Détail en section « PAGE CHALLENGE ».
+
+### 4. Les contrastes admin / espace membre — **dette mesurée, à cadrer avec Ken**
+
+**498 usages** de gris sous 60 % (**échec AA**) dans `src/pages/admin` + `src/components/admin` + `src/pages/member` + `src/components/member`. Le pire motif : `labelBase` = **9 px à 45 %** (3,15:1), et il ne vit que dans **3 fichiers** — donc **la correction n'est pas un token** : c'est un chantier **par écran**, avec un compteur avant/après. Règle : **aucun texte sous 60 % de noir, aucune action sous 10 px**. ⚠️ **Lot à part entière — ne pas le glisser dans la page challenge.**
+
+### 5. Puis, dans l'ordre déjà écrit : `X-Robots-Tag` par chemin → lot `profils` → passe conformité → **l'edge function de notification** (la prochaine tâche technique, spec complète en section « PROCHAIN LOT »)
+
+**Et ce qui ne dépend PAS de nous** : tout ce qui est chez Catherine (sa carte, le médiateur, le lien Easy Ta Vie, l'accord footer) + le go-live qui en découle. **On ferme tout ce qui est chez nous.**
+
+---
+
 ## RÈGLES GÉNÉRALES (permanentes)
 
 - **Une branche par lot** · jamais de push direct sur `main` · **aucun merge sans recette verte de @vela**.
