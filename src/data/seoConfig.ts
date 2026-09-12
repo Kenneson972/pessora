@@ -8,6 +8,9 @@ export interface PageSEOEntry {
   ogTitle?: string;
   ogDescription?: string;
   ogImage?: string;
+  /** Dimensions réelles du fichier ogImage — jamais déclarées "au juger" (letterbox sinon). */
+  ogImageWidth?: number;
+  ogImageHeight?: number;
   ogType?: string;
 }
 
@@ -20,6 +23,8 @@ export const seoConfig: Record<string, PageSEOEntry> = {
     ogTitle: 'PessÓra — Bar Protéiné & Bien-Être en Martinique',
     ogDescription: 'Shakes protéinés, wellness, énergie et coffee bar à Fort-de-France. Découvrez le 1er bar protéiné & bien-être de Martinique.',
     ogImage: '/logo-pessora.webp',
+    ogImageWidth: 1024,
+    ogImageHeight: 1024,
     ogType: 'website',
   },
   '/concept': {
@@ -35,6 +40,8 @@ export const seoConfig: Record<string, PageSEOEntry> = {
     ogTitle: 'La Carte — PessÓra',
     ogDescription: 'Découvrez nos boissons protéinées, wellness, énergie et coffee. Prix, ingrédients et bienfaits.',
     ogImage: '/menu-header.webp',
+    ogImageWidth: 1024,
+    ogImageHeight: 434,
     ogType: 'website',
   },
   '/nos-produits': {
