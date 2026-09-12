@@ -11,25 +11,24 @@
 
 **Branche de travail : `feat/challenge-21j-landing`** — **19 commits déjà poussés** (dernier : `f1eafd9`), `tsc` propre, 30 tests verts (les 10 échecs `cartStore` sont préexistants). **Ne pas repartir de zéro — on FINIT ce qui est commencé.**
 
-### 1. Finir la page Challenge — **état au 12/09, après le push `4048075`**
+### 1. Page Challenge — ✅ **TERMINÉE, MERGÉE, EN PROD** (landing `fe9e5e4`, 12/09)
 
-**✅ FAIT — et re-vérifié dans le code, pas sur parole** (@elise, puis **@nova indépendamment**) :
-- **La porte 8 est fermée POUR LE BOUTON** : `ChallengeLanding.tsx:29` → `const isPast = event.date < todayInMartinique()` — **le helper du fuseau**, pas `toISOString()`, et **un challenge du jour reste ouvert** ✅ — puis `l.40` bascule `<ChallengeEndedState />` au lieu de `<ChallengeRegistrationCard />` ✅.
-- **« vague » : 0 occurrence** ✅ · **« Places limitées » : 0** ✅.
-- **Le lien « politique de confidentialité »** est passé en `text-black/70 underline` (7,57:1) ✅ — la demande d'@lyra.
-- **L'emplacement des 6 bannières** est posé (`ChallengeProgramCard`, +39 lignes), dégradé de repli, **aucun pointillé** ✅.
+**Vérifié le 12/09 : plus aucune branche de CODE n'attend** (`main` = **`d316647`** : landing `fe9e5e4` · OG par défaut `c6d5765` · `x-robots-tag` `d316647` · profils `fe31739` — la seule branche non mergée est `docs/vela-lot2-trous`, des **notes**). La page est **en ligne, noindexée**, état par défaut « le prochain Challenge 21 jours ouvre bientôt » + newsletter.
 
-**⚠️ RESTE — dans cet ordre :**
+**Livré et recetté** : porte 8 (bouton **et** timings) · « vague » et « Places limitées » purgés · les **6 icônes Lucide** (`currentColor`, couleur CSS **claire**, tailles en px, voile étendu) · le **minuteur** (`startOfDayMartinique`) · les **4 cas du CTA** (`useChallengeAvailability` + `fn_bilan_slots_count`, **migration appliquée**) · l'**entrée OG** + son image (JPEG 1200×630) · les **6 emplacements de bannières** (le repli dégradé + icône tient sans aucune image).
 
-1. **🔴 Le sélecteur de timings ment encore sur un challenge terminé** — c'est **la porte 8, un cran plus loin** (le point d'@lyra : « la rangée de timings ment aussi »). `ChallengeProgramCard.tsx` **ne reçoit aucune prop** et rend `TIMINGS` (**l.16** la constante, **l.72** le rendu) **inconditionnellement** : sur l'état passé, le visiteur venu d'un vieux lien lit toujours « **Quand souhaites-tu commencer ?** » sous l'encadré. → passer l'état (**prop `isPast`**) et **retirer le sélecteur du DOM** (pas le masquer en CSS) — **les 6 inclus restent**, c'est ce que le visiteur est venu voir.
-2. **⏱️ Le minuteur n'est pas commencé** : `ChallengeCountdown.tsx` n'existe pas et `martiniqueDate.ts` **n'a pas encore** `startOfDayMartinique`. **Tout est tranché** (section MINUTEUR) : il ne reste que **le libellé à valider avec Ken**.
-3. **⚠️ `fix/seo-og-share` existe (`6befb92`) — mais elle ne couvre que 2 des 7 points du paquet SEO.** Vérifié le 12/09 en lisant le **contenu**, pas seulement la liste des fichiers (première lecture trop rapide — la mienne : *avoir vérifié quels fichiers bougent n'est pas avoir vérifié ce qu'ils font*) :
-   - **✅ fait** : `logo.png` mort → `logo-pessora.webp` (3 places : `og:image` l.27, `twitter:image` l.36, JSON-LD `image` l.55) · et les **dimensions réelles** lues par `PageSEO` (fini le `1200×630` en dur) ✅.
-   - **❌ PAS fait** : les **4 apex → www** — `canonical` **l.18**, `hreflang` **l.19**, `og:url` **l.30**, JSON-LD `url` **l.54**, **tous encore sur `pessora.fr`** (qui 308-redirige) — **et `robots.txt`, non touché** (`Sitemap` sur l'apex, `Disallow` incomplet).
-   - → **à compléter AVANT la recette.** Sinon on recette « le paquet SEO » alors que **le canonical — la balise qui pèse le plus au lancement — pointe toujours sur une redirection**. La cause n'est pas le code : **la consigne a grossi après son push** (le catalogue élargi est arrivé ensuite) — donc **ne pas relire « 3 bugs » et croire que c'est fini**.
-   - ✅ **Vérifié aussi : aucun conflit de merge entre les trois branches telles qu'elles sont aujourd'hui** (`fix/` = `index.html`, `PageSEO.tsx`, `seoConfig.ts` · `x-robots-tag` = `vercel.json` · challenge = composants/pages/libs).
-4. **🔴 ET LE CÂBLAGE DE L'OG DU CHALLENGE N'EST FAIT NULLE PART** (@nova, vérifié le 12/09/2026). `og-challenge` n'apparaît **ni dans `src/`**, **ni dans `public/`**, sur **aucune** des deux branches → **le fichier est maintenant DANS `public/`** ✅ (`og-challenge-1200x630.jpg` — **61 Ko**, 1200×630, JPEG vérifié `ffd8…ffd9`), donc il ne reste que l'**entrée par-page dans `seoConfig.ts`**. ⚠️ **Et le nom à référencer est `.jpg`** : le `.png` de 380 Ko **n'a pas été copié** (il se charge mal chez les scrapers — WhatsApp en particulier). **Les mentions `.png` qui subsistent dans ce doc sont des traces** : ce fichier **n'existe pas**, et un `og:image` qui pointe dessus rend un **404** — la même famille que `logo.png` et `pessora.mq`. **Sans ça, un lien de challenge partagé sur WhatsApp affiche encore le carré du logo.**
-   ⚠️ **Et où poser cette entrée, maintenant qu'on sait que `seoConfig.ts` est modifié par `fix/seo-og-share`** : **dans `fix/seo-og-share` elle-même**, pas sur la branche du challenge. Raison : **un seul écrivain par fichier** — sinon les deux branches se disputent `seoConfig.ts` et la seconde à merger résout un conflit « à l'aveugle ». Bonus : l'entrée part avec **la recette du partage de lien** (l'aperçu réel), donc **le câblage de l'OG du challenge et les 4 `apex → www` se vérifient dans la MÊME passe**. Si on préfère la garder côté landing, alors **merger `fix/seo-og-share` EN PREMIER** — l'ordre n'est pas libre dès qu'un fichier est partagé.
+**RESTE — rien à coder côté page, trois choses :**
+
+1. **Les bannières « inclus » (Ken les fournit)** — spec à respecter, sinon on les refait :
+   - **format exactement 4:3** (ex. **1000×750**) : la carte fait **325 px** de large, en `aspect-[4/3]` + `object-cover` → dans un autre ratio, **le CSS coupe la composition** ;
+   - **JPEG qualité ~80, ≤ 150 Ko** (325 px affichés : du 1536 px pèse 4× trop — la leçon de l'OG à 380 Ko) ;
+   - **le tiers bas reste calme et plutôt sombre** : c'est là que se posent le libellé et l'icône, **sous un voile sombre** (mesure @vela : un bas **très clair** passe encore, mais **de justesse** — 3,07:1) ;
+   - **penser petit** : à 325 px, une scène chargée devient une bouillie — **un objet, une lumière, un geste** ;
+   - **nommage** : **minuscules, sans accents, sans espaces, `.jpg`** — Vercel est **sensible à la casse** (`/bannieres/getfitnow.jpg` ne trouvera **jamais** `GETFITNOW.JPG`) — déposées dans **`public/bannieres/`**.
+2. **Le branchement** : **6 lignes de données** (`image: '/bannieres/…'` dans `INCLUS`, `ChallengeProgramCard.tsx:11`) **+ une ligne de CODE** : un **`onError`** sur le `<img>` (l.56) — **sans lui, un fichier absent ou mal nommé affiche une image cassée** en prod ; le repli actuel ne couvre que « pas d'image déclarée » (l.74). À demander à Claude **avec les 6 lignes** : ce n'est pas une branche, c'est un ajout.
+3. **Les vérifications post-merge (@vela)** : les **3 assertions `X-Robots-Tag`** (`www` **absent** · `admin` **présent** · `robots.txt` `Allow: /` — mesure « avant » : absent partout sur www ✅) · **l'OG servie aux dimensions déclarées** + **un aperçu de lien réel** (le seul test qui vaut pour une image de partage) · et **la porte contraste au pixel sur la première bannière** (≥ 3:1, une mesure **par bannière**, pas une pour la série).
+
+⏳ **Et une décision, non bloquante** : **le libellé du décompte** (« Le prochain Challenge 21 jours commence dans… »).
 
 ### 2. L'amélioration du frontend — **les bannières des 6 « inclus »** (Ken les fournit)
 
