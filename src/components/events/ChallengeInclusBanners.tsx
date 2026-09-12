@@ -51,45 +51,55 @@ const INCLUS: InclusItem[] = [
 const IMAGE_FALLBACK =
   'radial-gradient(120% 90% at 78% 18%, color-mix(in oklch, var(--color-gold) 22%, transparent), transparent 62%), linear-gradient(160deg, oklch(15% .01 55) 0%, oklch(9% .006 55) 55%, oklch(7% .004 55) 100%)';
 
+/** Voile côté texte seulement (gauche → transparent vers 65%) — le reste de
+ * l'image (la bannière) reste visible et net, à droite. */
+const LEFT_SCRIM =
+  'linear-gradient(90deg, oklch(7% .004 55 / 0.88) 0%, oklch(7% .004 55 / 0.72) 30%, oklch(7% .004 55 / 0.25) 55%, transparent 72%)';
+
 function InclusRow({ item, index }: { item: InclusItem; index: number }) {
   const reveal = useFadeUpWhenVisible();
   return (
-    <li className="grid grid-cols-1 items-center gap-6 lg:grid-cols-[42%_1fr] lg:gap-10">
-      <motion.div {...reveal} transition={{ ...reveal.transition, delay: index * 0.05 }}>
-        <item.icon aria-hidden="true" strokeWidth={1.4} className="mb-4 text-sapin" style={{ width: '26px', height: '26px' }} />
+    <li className="relative h-[420px] w-full overflow-hidden rounded-[2px] sm:h-[480px] md:h-[560px]">
+      {item.image ? (
+        <img src={item.image} alt={item.label} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+      ) : (
+        <div aria-hidden="true" className="absolute inset-0" style={{ background: IMAGE_FALLBACK }} />
+      )}
+
+      <div aria-hidden="true" className="absolute inset-0" style={{ background: LEFT_SCRIM }} />
+
+      {!item.image && (
+        <item.icon
+          aria-hidden="true"
+          strokeWidth={1.3}
+          className="absolute right-[12%] top-1/2 -translate-y-1/2 text-white/85"
+          style={{ width: '64px', height: '64px' }}
+        />
+      )}
+
+      <motion.div
+        className="absolute inset-y-0 left-0 flex w-[85%] max-w-[560px] flex-col justify-center px-8 sm:w-[55%] md:px-14 lg:w-[45%]"
+        {...reveal}
+        transition={{ ...reveal.transition, delay: index * 0.05 }}
+      >
+        <item.icon aria-hidden="true" strokeWidth={1.4} className="mb-4 text-white" style={{ width: '26px', height: '26px' }} />
         <h3
-          className="mb-3 font-display font-normal text-noir"
-          style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(19px, 2vw, 26px)' }}
+          className="mb-3 font-display font-normal text-white"
+          style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(20px, 2.4vw, 30px)' }}
         >
           {item.label}
         </h3>
-        <p className="max-w-[42ch] text-[14px] font-light leading-relaxed text-black/62">{item.description}</p>
+        <p className="max-w-[40ch] text-[14px] font-light leading-relaxed text-white/80">{item.description}</p>
       </motion.div>
-
-      <div className="relative aspect-[21/9] w-full overflow-hidden rounded-[2px] bg-noir/[0.04]">
-        {item.image ? (
-          <img src={item.image} alt={item.label} className="absolute inset-0 h-full w-full object-contain" loading="lazy" />
-        ) : (
-          <>
-            <div aria-hidden="true" className="absolute inset-0" style={{ background: IMAGE_FALLBACK }} />
-            <item.icon
-              aria-hidden="true"
-              strokeWidth={1.3}
-              className="absolute inset-0 m-auto text-white/90"
-              style={{ width: '56px', height: '56px' }}
-            />
-          </>
-        )}
-      </div>
     </li>
   );
 }
 
 /**
- * Les 6 "inclus", en rangées texte + image plutôt qu'en grille de cartes
- * (retour utilisateur, 12/09) : zone texte ~42% (titre, description) / zone
- * image ~58%, chaque rangée indépendante, le titre + la description en
- * reveal au scroll (léger décalage entre rangées).
+ * Les 6 "inclus", en grandes bannières indépendantes (retour utilisateur,
+ * 12/09) : chaque bannière est une seule image pleine largeur/hauteur —
+ * pas deux colonnes séparées — avec le texte superposé à gauche sur un
+ * voile qui s'efface vers la droite, pour laisser l'image respirer.
  */
 export function ChallengeInclusBanners() {
   return (
@@ -102,7 +112,7 @@ export function ChallengeInclusBanners() {
         >
           Ce que tu ne fais pas seul
         </h2>
-        <ul className="flex flex-col gap-14 md:gap-20">
+        <ul className="flex flex-col gap-6 md:gap-8">
           {INCLUS.map((item, index) => (
             <InclusRow key={item.label} item={item} index={index} />
           ))}
