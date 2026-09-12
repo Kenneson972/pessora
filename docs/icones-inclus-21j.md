@@ -1,5 +1,18 @@
 # Les 6 pictogrammes « inclus » — Challenge 21 jours
 
+> ⚠️ **LE CÂBLAGE NE SE FAIT PAS AVEC CES SVG — IL SE FAIT AVEC `lucide-react`** (décision du 12/09, la bibliothèque est **déjà dans le projet**, `^0.507.0`, licence ISC ; les 6 noms ont été **vérifiés dans le paquet installé** ✅). **Ce fichier reste la RÉFÉRENCE DE FORME** — ce que chaque pictogramme doit évoquer, et ce qu'il ne doit jamais évoquer. Il ne se recopie pas dans le composant.
+>
+> | inclus (libellé de la fiche) | icône Lucide à importer |
+> |---|---|
+> | Application GetFitNow | `Smartphone` — un **objet**, jamais une interface |
+> | communauté 24FIT PESSORA | `Users` |
+> | séances de sport | `Dumbbell` |
+> | idées recettes | `Salad` |
+> | conseils & accompagnement | `MessagesSquare` |
+> | suivi de tes objectifs | `Target` — **jamais une balance ni un mètre ruban** |
+>
+> **Ce qui ne change pas** : `stroke-width 1.4` (la grammaire de la maquette, pas le défaut `2` de Lucide) · la **taille en px** · la **couleur par le CSS** (**claire** — l'icône est au-dessus du voile sombre, jamais sur le fond clair de la carte) · et **le rendu réel à 20 px** se vérifie à l'œil.
+
 **Livré le 12/09/2026.** À câbler dans `ChallengeProgramCard.tsx` : un `icon` par item de `INCLUS`,
 rendu **inconditionnellement** — centré dans l'état de repli, en petit au-dessus du libellé dans l'état illustré.
 
