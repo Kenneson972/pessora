@@ -154,6 +154,41 @@ export const OPPORTUNITE_OPTIONS = [
 
 ---
 
+## 📦 LE PAQUET SEO/OG RÉEL — **5 points**, pas « 3 corrections » (comptés ligne à ligne)
+
+1. **🔴 APEX → WWW : 4 références, dont LE CANONICAL — c'est le plus grave.** `index.html` porte **7 références apex** :
+   - **`l.18` — `<link rel="canonical">` = `https://pessora.fr/`** ← **mesuré en live : cette URL renvoie `308` vers `https://www.pessora.fr/`**. Google reçoit donc un canonical qui pointe sur une **redirection** → **conflit canonical/redirect**, et il tranche lui-même (souvent mal, ou il ignore le signal). **Le canonical doit dire `https://www.pessora.fr/`** — le host qui **sert** réellement ;
+   - `l.19` — `alternate hreflang` (apex) · `l.30` — `og:url` (apex) · `l.54` — JSON-LD `url` (apex).
+2. **`logo.png` mort ×3** : `og:image` (`l.27`), `twitter:image` (`l.36`), JSON-LD `image` (`l.55`) → `logo-pessora.webp`. *(Déjà corrigé sur la branche.)*
+3. **`robots.txt`** : le `Sitemap:` pointe sur l'**apex** alors que le canonique est **`www`** → à corriger. Et sa liste `Disallow` **ne couvre que 5 chemins** (`/admin`, `/mon-espace`, `/demo-espace`, `/mockup-luxe`, `/mockup-croquis-gerant`) — **il manque les 4 que l'en-tête protège** : `/connexion`, `/inscription`, `/reinitialisation-mot-de-passe`, `/suivi-commande`. ✅ **Il dit `Allow: /`, donc il ne bloque RIEN** — pas une fuite, mais **deux listes qui divergeront** au premier chemin ajouté. *(Le fichier porte déjà un TODO sur le Sitemap.)*
+4. **Dimensions `og:image` menties** : 1200×630 déclarés pour un carré 1024×1024 → **déjà corrigé** (`PageSEO.tsx`).
+5. **Le câblage OG du challenge** (entrée **par-page** dans `seoConfig.ts`) → **reste sur la branche landing** ✅.
+
+### Le contrôle post-merge : **3 assertions**, avec leur mesure « AVANT » (@vela)
+| Assertion | **Aujourd'hui (mesuré)** | **Après merge (attendu)** |
+|---|---|---|
+| `x-robots-tag` sur **`www.pessora.fr`** (`/`, `/menu`) | **absent** ✅ | **absent** — le `<meta>` d'`index.html` suffit jusqu'à l'étape (3) |
+| `x-robots-tag` sur **`admin.pessora.fr`** (`/`, `/connexion`) | **absent** ⚠️ | **PRÉSENT** ✅ |
+| **`robots.txt`** | **`Allow: /`** ✅ | **`Allow: /`** — on ne bloque pas le public |
+
+⚠️ **Et la vérification ne peut PAS se faire sur une URL de déploiement** : `main` n'a aucune règle `X-Robots-Tag`, et pourtant **tous** ses chemins renvoient `noindex` → **cet en-tête vient de Vercel**. **La config est la seule autorité** ; le vrai contrôle se fait **après merge, sur la prod**.
+
+---
+
+## 🔴 ENCORE UNE FAMILLE — et elle n'est pas du SEO : **les adresses e-mail**
+
+**`pessora.mq` n'existe PAS en DNS** (vérifié : **NXDOMAIN**), alors que **`pessora.fr` a bien ses MX** (OVH, elle **reçoit** ✅). Or **le prompt du PessoBot donne `contact@pessora.mq` aux clients** → **un client qui demande le contact reçoit une adresse qui rebondit**, **sans la moindre erreur nulle part**. Et le JSON-LD du site déclare, lui, `contact@pessora.fr` : **deux adresses circulent, dont une morte.**
+
+**⚠️ Le nettoyage doit distinguer TROIS familles — le piège est là** (@alcyone) :
+1. **Le DOMAINE mort** : `contact@` (10) + `demo@` (9) + `admin@` (8) = **27 adresses `.mq`** → à remplacer ;
+2. ⚠️ **`pessora.mq@gmail.com` (10 occurrences) — LA GMAIL VIVANTE DE CATHERINE, À GARDER.** Elle **partage la chaîne `pessora.mq`** avec le domaine mort : un nettoyage naïf `pessora.mq → …` **purgerait la bonne boîte en même temps que l'adresse morte**. C'est **elle** que `ADMIN_EMAIL` doit viser ;
+3. **`pessora.fr@gmail.com` (14)** — bogus (le vieux « 17 remplacements ») → à remplacer aussi.
+Et les **6 légitimes** du domaine vivant : `contact@` (2), `demo@` (3), `noreply@` (1) sur **`pessora.fr`**.
+
+**@user — une seule question, et on ne peut pas la deviner** : **quelle adresse Catherine lit-elle réellement ?** Dès que tu le dis, on en fait **LA** seule (site, bot, guides, JSON-LD) et on purge les autres. C'est la **troisième** de la même famille : **`logo.png`** (fichier mort) · **`jorisliny.com`** (DNS) · **`pessora.mq`** (NXDOMAIN). **Une référence déclarée n'est pas une référence qui existe.**
+
+---
+
 ## RÈGLES GÉNÉRALES (permanentes)
 
 - **Une branche par lot** · jamais de push direct sur `main` · **aucun merge sans recette verte de @vela**.
