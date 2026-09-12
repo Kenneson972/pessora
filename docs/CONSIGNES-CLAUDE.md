@@ -90,6 +90,30 @@ export const OPPORTUNITE_OPTIONS = [
 
 **@vela — c'est ta passe** : la phrase de consentement, le libellé exact des deux options, l'absence de toute promesse de revenus. **@lyra** — la section reste **sobre** : elle partage la page avec **l'encadré signature**, ce n'est **pas** un deuxième dispositif.
 
+### 🔴 CE QUE LA SECTION EXIGE EN PLUS — « visible » ≠ « stocké »
+
+**Le `jsonb` `post_registration_details` n'est lu par AUCUN composant** (@alcyone, élargi et revérifié par @elise) : il n'apparaît que dans `src/types/database.ts`, le type généré. Conséquence — **et elle ne date pas du revirement** :
+
+- **`EventRegistrationsList.tsx`**, le seul écran qui liste les inscrits, affiche **Prénom · Nom · Téléphone · Groupe · Date** — **aucune réponse du questionnaire** : ni `objectif_principal`, ni `bilan_offert`, ni le futur `complement_revenus`. ⚠️ **`souhait_info` lui-même n'est pas dans le tableau** (il n'existe que dans l'export CSV).
+- **La file de bilan ne les porte pas non plus** : `fn_create_bilan_booking_from_registration` copie `nom · prénom · téléphone` mais **jamais `objectif_*`** — vérifié dans `prosrc` : **0 occurrence**.
+
+**Donc : le « zéro code complexe » est vrai pour le STOCKAGE, faux pour la VISIBILITÉ.** Ajouter le champ sans vue, c'est écrire un choix que **Catherine ne verra jamais**.
+
+**Le correctif** — petit mais réel : un bloc dans la **fiche d'inscription de l'admin** qui affiche les réponses du questionnaire (le `jsonb`, ou les clés nommées). ⚠️ **Et il rend service pour TOUT le questionnaire, pas seulement pour le nouveau champ** : les objectifs sont collectés **pour rien** aujourd'hui, et c'est la donnée la plus sensible du site.
+
+### Les règles de la section (à coder tel quel)
+- **Le champ est `z.string().optional()` — JAMAIS `min(1)`** (@vela). Une case qu'on **doit** cocher pour s'inscrire n'est pas un consentement **libre**, et elle contaminerait les autres consentements du même formulaire. **Aucune option pré-cochée** (un « Oui » par défaut, c'est le même problème déguisé). Le « non » est un **choix qui valide**, pas un bouton pâle à côté.
+- **Le libellé** : la fiche dit « une **opportunité financière** » — **c'est la seule phrase du bloc qui suggère un gain**, donc la seule qui ne se rattrape pas. Version retenue : *« **Envie d'en savoir plus ?** ☐ Oui, je souhaite en savoir plus sur l'**activité de distribution indépendante**. ☐ Pas pour le moment. »* — les **deux cases au même poids visuel** (@lyra : jamais un « oui » en bouton sombre face à un « non » pâle, sinon le consentement n'est plus libre).
+- **La mention qui qualifie est DANS le bloc de l'option** : « **activité de distribution indépendante — ni un emploi, ni un salaire** ». Une mise en garde à trois écrans de la case **ne qualifie pas** ce qu'on accepte.
+- **Stocker la CLÉ du libellé, pas `'Oui'`** (@vela) : le libellé **change** (on est en train de le changer) → `'Oui'` ne dira plus quoi dans six mois. Ex. `complement_revenus: 'savoir_plus_activite_independante'`. **La valeur stockée doit dire ce qu'elle veut dire.**
+- **À l'écran, la pastille porte LE MÊME MOT que la valeur stockée** — sinon l'écran et la base finissent par dire deux choses différentes, et c'est **l'écran** que Catherine lira.
+- **Lisibilité (@lyra, croise l'audit d'hier)** : corps **≥ 11 px** et noir **≥ 60 %** (5,25:1) pour les réponses du questionnaire — cet écran porte aujourd'hui ses libellés en **9 px à 45 %** (**3,15:1, échec AA**). Sinon on **déplace** le problème de la base vers l'écran.
+- **Une pastille « à recontacter »** sur la ligne de l'inscrit quand la réponse est « Oui » : sans elle, Catherine doit **relire chaque ligne** pour trouver les oui — et dans trois semaines, elle ne les cherchera plus.
+- ✅ **Accès vérifié par @vela** : `event_registrations` rend **0 ligne à l'anon** et **0 ligne à un membre** — les lignes vont **uniquement à l'admin**. Le bloc qui affichera les réponses **ne desserre pas** qui peut les lire (vérifié **avant** de mettre à l'écran des objectifs de poids et un intérêt commercial, pas après).
+
+### Porte de recette @vela (4 comptages, sur la preview)
+① **aucun montant** / « €/mois » / « gagnez » / **témoignage de revenus** dans la section ✅ · ② le formulaire **valide** avec « Pas pour le moment » **et** avec **rien de coché** ✅ · ③ **aucune case pré-cochée** ✅ · ④ **mention de qualification présente dans le bloc de l'option** ✅.
+
 ---
 
 ## RÈGLES GÉNÉRALES (permanentes)
