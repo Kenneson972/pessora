@@ -57,30 +57,40 @@ const LEFT_SCRIM =
   'linear-gradient(90deg, oklch(7% .004 55 / 0.88) 0%, oklch(7% .004 55 / 0.72) 30%, oklch(7% .004 55 / 0.25) 55%, transparent 72%)';
 
 function InclusRow({ item, index }: { item: InclusItem; index: number }) {
-  const reveal = useFadeUpWhenVisible();
+  const bannerReveal = useFadeUpWhenVisible();
+  const textReveal = useFadeUpWhenVisible();
   return (
-    <li className="relative aspect-[21/9] w-full overflow-hidden rounded-[2px]">
-      {item.image ? (
-        <img src={item.image} alt={item.label} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-      ) : (
-        <div aria-hidden="true" className="absolute inset-0" style={{ background: IMAGE_FALLBACK }} />
-      )}
+    // Le whileInView vit sur ce <li> (pas de overflow-hidden ici) — le
+    // recadrage de l'image vit sur le <div> enfant juste en dessous. Jamais
+    // les deux sur le même élément (bug connu, mémoire projet).
+    <motion.li
+      className="relative aspect-[32/9] w-full"
+      {...bannerReveal}
+      transition={{ ...bannerReveal.transition, delay: index * 0.06 }}
+    >
+      <div className="absolute inset-0 overflow-hidden rounded-[2px]">
+        {item.image ? (
+          <img src={item.image} alt={item.label} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+        ) : (
+          <div aria-hidden="true" className="absolute inset-0" style={{ background: IMAGE_FALLBACK }} />
+        )}
 
-      <div aria-hidden="true" className="absolute inset-0" style={{ background: LEFT_SCRIM }} />
+        <div aria-hidden="true" className="absolute inset-0" style={{ background: LEFT_SCRIM }} />
 
-      {!item.image && (
-        <item.icon
-          aria-hidden="true"
-          strokeWidth={1.3}
-          className="absolute right-[12%] top-1/2 -translate-y-1/2 text-white/85"
-          style={{ width: '64px', height: '64px' }}
-        />
-      )}
+        {!item.image && (
+          <item.icon
+            aria-hidden="true"
+            strokeWidth={1.3}
+            className="absolute right-[12%] top-1/2 -translate-y-1/2 text-white/85"
+            style={{ width: '64px', height: '64px' }}
+          />
+        )}
+      </div>
 
       <motion.div
         className="absolute inset-y-0 left-0 flex w-[85%] max-w-[560px] flex-col justify-center px-8 sm:w-[55%] md:px-14 lg:w-[45%]"
-        {...reveal}
-        transition={{ ...reveal.transition, delay: index * 0.05 }}
+        {...textReveal}
+        transition={{ ...textReveal.transition, delay: index * 0.06 + 0.12 }}
       >
         <item.icon aria-hidden="true" strokeWidth={1.4} className="mb-4 text-white" style={{ width: '26px', height: '26px' }} />
         <h3
@@ -91,7 +101,7 @@ function InclusRow({ item, index }: { item: InclusItem; index: number }) {
         </h3>
         <p className="max-w-[40ch] text-[14px] font-light leading-relaxed text-white/80">{item.description}</p>
       </motion.div>
-    </li>
+    </motion.li>
   );
 }
 
