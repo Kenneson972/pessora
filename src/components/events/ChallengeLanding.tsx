@@ -6,7 +6,6 @@ import { ChallengeHero } from './ChallengeHero';
 import { ChallengeCountdownSection } from './ChallengeCountdownSection';
 import { ChallengeTrustBadges } from './ChallengeTrustBadges';
 import { ChallengeStatsBlock } from './ChallengeStatsBlock';
-import { ChallengeProgramCard } from './ChallengeProgramCard';
 import { ChallengeInclusBanners } from './ChallengeInclusBanners';
 import { ChallengeBeforeAfterBlock } from './ChallengeBeforeAfterBlock';
 import { ChallengeTestimonialsBlock } from './ChallengeTestimonialsBlock';
@@ -45,7 +44,6 @@ export function ChallengeLanding({ event }: ChallengeLandingProps) {
       {showCountdown && <ChallengeCountdownSection targetDate={event.date} />}
       <ChallengeTrustBadges />
       <ChallengeStatsBlock />
-      <ChallengeProgramCard isPast={isPast} />
       <ChallengeInclusBanners />
       <ChallengeBeforeAfterBlock />
       <ChallengeTestimonialsBlock />
