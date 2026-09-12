@@ -59,7 +59,7 @@ const LEFT_SCRIM =
 function InclusRow({ item, index }: { item: InclusItem; index: number }) {
   const reveal = useFadeUpWhenVisible();
   return (
-    <li className="relative h-[420px] w-full overflow-hidden rounded-[2px] sm:h-[480px] md:h-[560px]">
+    <li className="relative aspect-[21/9] w-full overflow-hidden rounded-[2px]">
       {item.image ? (
         <img src={item.image} alt={item.label} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
       ) : (
