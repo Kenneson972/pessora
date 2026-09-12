@@ -6,24 +6,17 @@ function frenchMonth(dateStr: string): string {
 export interface ChallengeHeroProps {
   /** Date ISO (YYYY-MM-DD) du challenge affiché. */
   eventDate: string;
-  /**
-   * Le CTA suit la FENÊTRE, pas isPast (docs/CONSIGNES-CLAUDE.md, 12/09) :
-   * true seulement s'il existe ≥ 1 créneau réservable. Un challenge sans
-   * créneau rattaché affichait un CTA menant à un parcours que la RLS
-   * refusait déjà — deux conditions, jamais une seule.
-   */
-  showCta?: boolean;
 }
 
 /**
- * Refonte du 12/09 (retour utilisateur) : composition minimaliste,
- * uniquement label + titre + description courte + un seul CTA — plus de
- * lien secondaire, plus d'élément qui "remplit" l'espace. Colonne droite
- * réservée (~55-60%, vide) pour la future image, desktop uniquement ;
- * jamais un espace vide conservé artificiellement sur mobile.
+ * Refonte du 12/09 (retour utilisateur) : composition minimaliste —
+ * label (mois) + nom du challenge + description courte, aucun CTA (retiré
+ * du hero, l'inscription reste accessible plus bas sur la page). Colonne
+ * droite réservée (~55-60%, vide) pour la future image, desktop
+ * uniquement ; jamais un espace vide conservé artificiellement sur mobile.
  * Background inchangé — seule la composition du contenu a bougé.
  */
-export function ChallengeHero({ eventDate, showCta = true }: ChallengeHeroProps) {
+export function ChallengeHero({ eventDate }: ChallengeHeroProps) {
   return (
     <header className="relative overflow-hidden bg-surface-hero text-white">
       {/* Dégradé de repli — rendu définitif tant qu'aucun visuel réel n'est fourni.
@@ -52,14 +45,6 @@ export function ChallengeHero({ eventDate, showCta = true }: ChallengeHeroProps)
             <p className="mt-5 max-w-[38ch] text-[15px] font-light leading-relaxed text-white/80">
               21 jours pour reprendre la main sur ton énergie, ta forme et tes habitudes.
             </p>
-            {showCta && (
-              <a
-                href="#inscription"
-                className="mt-8 inline-flex items-center gap-2 rounded-full bg-ivory px-8 py-4 text-[10px] uppercase tracking-[0.2em] text-noir transition-colors hover:bg-gold"
-              >
-                Je veux mon bilan
-              </a>
-            )}
           </div>
           {/* Réservé pour la future image — desktop seulement, rien à mobile. */}
           <div aria-hidden="true" className="hidden lg:block" />

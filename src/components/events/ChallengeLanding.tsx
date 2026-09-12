@@ -37,12 +37,11 @@ export function ChallengeLanding({ event }: ChallengeLandingProps) {
   const isPast = event.date < todayInMartinique();
   const availability = useChallengeAvailability(event.id, event.date);
 
-  const showCta = !isPast && availability.case === 'bookable';
   const showCountdown = !isPast && availability.case !== 'full';
 
   return (
     <div className="bg-white">
-      <ChallengeHero eventDate={event.date} showCta={showCta} />
+      <ChallengeHero eventDate={event.date} />
       {showCountdown && <ChallengeCountdownSection targetDate={event.date} />}
       <ChallengeTrustBadges />
       <ChallengeStatsBlock />
