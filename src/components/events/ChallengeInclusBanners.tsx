@@ -53,6 +53,7 @@ const INCLUS: InclusItem[] = [
     label: 'Suivi de tes objectifs',
     description: "On avance ensemble vers ton objectif, étape par étape, avec un point réel sur ta progression.",
     icon: Target,
+    image: '/challenge-21j/inclus-suivi-objectifs.webp',
   },
 ];
 
