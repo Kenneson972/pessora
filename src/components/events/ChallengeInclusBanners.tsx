@@ -66,9 +66,9 @@ function InclusRow({ item, index }: { item: InclusItem; index: number }) {
         <p className="max-w-[42ch] text-[14px] font-light leading-relaxed text-black/62">{item.description}</p>
       </motion.div>
 
-      <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[2px] sm:aspect-[16/9]">
+      <div className="relative aspect-[21/9] w-full overflow-hidden rounded-[2px] bg-noir/[0.04]">
         {item.image ? (
-          <img src={item.image} alt={item.label} className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+          <img src={item.image} alt={item.label} className="absolute inset-0 h-full w-full object-contain" loading="lazy" />
         ) : (
           <>
             <div aria-hidden="true" className="absolute inset-0" style={{ background: IMAGE_FALLBACK }} />
