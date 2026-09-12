@@ -1,15 +1,27 @@
-import { Check } from 'lucide-react';
+interface InclusItem {
+  label: string;
+  /** Fournie par Catherine, une à une — le composant tient sans elle. */
+  image?: string;
+}
 
-const INCLUS = [
-  'Application GetFitNow',
-  'Communauté 24FIT PESSORA',
-  'Séances de sport',
-  'Idées recettes',
-  'Conseils & accompagnement',
-  'Suivi de tes objectifs',
+const INCLUS: InclusItem[] = [
+  { label: 'Application GetFitNow' },
+  { label: 'Communauté 24FIT PESSORA' },
+  { label: 'Séances de sport' },
+  { label: 'Idées recettes' },
+  { label: 'Conseils & accompagnement' },
+  { label: 'Suivi de tes objectifs' },
 ];
 
 const TIMINGS = ['Ce mois-ci', 'Le mois prochain', 'Je souhaite en savoir plus'];
+
+/**
+ * Une seule lumière pour les six bannières (règle équipe, 12/09) — même
+ * dégradé que ChallengeHero, sert aussi de repli tant qu'aucune image
+ * n'est fournie. Jamais de cadre pointillé "à produire" en production.
+ */
+const BANNER_FALLBACK =
+  'radial-gradient(120% 90% at 78% 18%, color-mix(in oklch, var(--color-gold) 22%, transparent), transparent 62%), linear-gradient(160deg, oklch(15% .01 55) 0%, oklch(9% .006 55) 55%, oklch(7% .004 55) 100%)';
 
 export function ChallengeProgramCard() {
   return (
@@ -30,9 +42,25 @@ export function ChallengeProgramCard() {
 
           <ul className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {INCLUS.map((item) => (
-              <li key={item} className="flex items-start gap-3 text-[13.5px] leading-relaxed text-black/78">
-                <Check size={15} strokeWidth={1.4} className="mt-0.5 shrink-0 text-sapin" aria-hidden="true" />
-                <span>{item}</span>
+              <li key={item.label} className="relative aspect-[4/3] overflow-hidden rounded-[2px]">
+                {item.image ? (
+                  <img
+                    src={item.image}
+                    alt={item.label}
+                    className="absolute inset-0 h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div aria-hidden="true" className="absolute inset-0" style={{ background: BANNER_FALLBACK }} />
+                )}
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0"
+                  style={{ background: 'linear-gradient(0deg, oklch(7% .004 55 / 0.78) 0%, oklch(7% .004 55 / 0.1) 55%, transparent 100%)' }}
+                />
+                <span className="absolute inset-x-3 bottom-3 text-[12px] font-light leading-snug text-white">
+                  {item.label}
+                </span>
               </li>
             ))}
           </ul>
