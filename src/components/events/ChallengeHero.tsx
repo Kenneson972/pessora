@@ -8,11 +8,18 @@ function frenchMonth(dateStr: string): string {
 export interface ChallengeHeroProps {
   /** Date ISO (YYYY-MM-DD) du challenge affiché. */
   eventDate: string;
-  /** event.date >= aujourd'hui (porte 8) — n'est PAS events.registration_open. */
-  isUpcoming?: boolean;
+  /**
+   * Le CTA suit la FENÊTRE, pas isPast (docs/CONSIGNES-CLAUDE.md, 12/09) :
+   * true seulement s'il existe ≥ 1 créneau réservable. Un challenge sans
+   * créneau rattaché affichait un CTA menant à un parcours que la RLS
+   * refusait déjà — deux conditions, jamais une seule.
+   */
+  showCta?: boolean;
+  /** event.date >= aujourd'hui ET pas "complet" — voir useChallengeAvailability. */
+  showCountdown?: boolean;
 }
 
-export function ChallengeHero({ eventDate, isUpcoming = true }: ChallengeHeroProps) {
+export function ChallengeHero({ eventDate, showCta = true, showCountdown = true }: ChallengeHeroProps) {
   return (
     <header className="relative overflow-hidden bg-surface-hero text-white">
       {/* Dégradé de repli — rendu définitif tant qu'aucun visuel réel n'est fourni.
@@ -41,7 +48,7 @@ export function ChallengeHero({ eventDate, isUpcoming = true }: ChallengeHeroPro
           Encadré, en collectif, avec un suivi réel — pas un défi à tenir seul.
         </p>
         <div className="mt-10 flex flex-wrap items-center gap-6">
-          {isUpcoming && (
+          {showCta && (
             <a
               href="#inscription"
               className="inline-flex items-center gap-2 rounded-full bg-ivory px-8 py-4 text-[10px] uppercase tracking-[0.2em] text-noir transition-colors hover:bg-gold"
@@ -56,7 +63,7 @@ export function ChallengeHero({ eventDate, isUpcoming = true }: ChallengeHeroPro
             Ce qui est inclus
           </a>
         </div>
-        {isUpcoming && <ChallengeCountdown targetDate={eventDate} />}
+        {showCountdown && <ChallengeCountdown targetDate={eventDate} />}
       </div>
     </header>
   );

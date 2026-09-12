@@ -10,7 +10,7 @@ export interface ChallengeEventLike {
 }
 
 /** Fenêtre de recevabilité d'un challenge : J-14 → J (même règle que fn_bilan_slot_bookable en base). */
-function isWithinBookingWindow(challengeDate: string, todayStr: string): boolean {
+export function isWithinBookingWindow(challengeDate: string, todayStr: string): boolean {
   const challenge = new Date(challengeDate + 'T00:00:00');
   const today = new Date(todayStr + 'T00:00:00');
   const windowStart = new Date(challenge);
