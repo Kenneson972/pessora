@@ -7,7 +7,7 @@ export function getPostRegistrationSteps(eventType: Event['type']): PostRegistra
     return ['precommande', 'objectif', 'gaufres']
   }
   if (eventType === 'challenge') {
-    return ['bilan', 'objectif']
+    return ['bilan']
   }
   return ['objectif']
 }
