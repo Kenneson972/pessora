@@ -206,7 +206,7 @@ Tous les composants home : `rounded-[2px]` (conforme charte graphique).
 3. **Nos coups de cœur** — `HomeProductCarousel` : carrousel boissons
 4. **Óra+ teaser** — `OraPlusTeaserStrip` : bandeau abonnement (texte court, pas de border-l)
 5. **Choisis ton moment** — `HomeSplitGammes` : 4 onglets avec photos modèle, données Supabase (`home_split_gammes`)
-6. **Nos univers** — `ImageCard` : 3 cartes (Shakes & Gaufres, Événements, Bilan 30 min) avec navigation flèches + tabs
+6. **Nos univers** — `ImageCard` : 2 cartes (Shakes, Événements) avec navigation flèches + tabs
 7. **Nos gammes** — `HomeGammesProductTiles` + `HomeGammesProductCarousel` : tuiles + carrousel produits
 8. **Avis clients** — `HomeGoogleReviews` : citations 5-10 mots, cartes 400-440px, pas d'étoiles ni âge
 9. **Événements** — CTA minimal : "Rejoins la communauté Pessóra"

@@ -10,16 +10,6 @@ const objectifRefine = (data: { objectif_principal: string; objectif_autre?: str
   }
 }
 
-const gaufreRefine = (data: { gaufre_salee: string; gaufre_salee_autre?: string }, ctx: z.RefinementCtx) => {
-  if (data.gaufre_salee === 'Autre' && !String(data.gaufre_salee_autre ?? '').trim()) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['gaufre_salee_autre'],
-      message: 'Indique quelle gaufre salée tu souhaites.',
-    })
-  }
-}
-
 export const postRegistrationBaseSchema = z
   .object({
     // Optionnel hors challenge : le bilan offert n'existe que pour ce type
@@ -40,17 +30,12 @@ export const postRegistrationChallengeSchema = z
 
 export const postRegistrationRunClubSchema = z
   .object({
-    precommande_offre: z.string().min(1, 'Choisis une offre.'),
     // Neutralisé (retrait du parcours Bilan public, 10/09) — voir schéma ci-dessus.
     bilan_offert: z.string().optional(),
     objectif_principal: z.string().min(1, 'Choisis un objectif.'),
     objectif_autre: z.string().optional(),
-    gaufre_salee: z.string().min(1, 'Choisis une gaufre salée.'),
-    gaufre_salee_autre: z.string().optional(),
-    gaufre_sucree_notes: z.string().optional(),
   })
   .superRefine(objectifRefine)
-  .superRefine(gaufreRefine)
 
 export type PostRegistrationBasePayload = z.infer<typeof postRegistrationBaseSchema>
 export type PostRegistrationRunClubPayload = z.infer<typeof postRegistrationRunClubSchema>

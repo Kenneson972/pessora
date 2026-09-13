@@ -18,10 +18,8 @@ import {
 } from '../../lib/postRegistrationSurveySchema'
 import {
   BILAN_OFFERT_OPTIONS,
-  GAUFRE_SALEE_OPTIONS,
   getPostRegistrationSteps,
   OBJECTIF_OPTIONS,
-  PRECOMMANDE_OPTIONS,
   STEP_COPY,
   type PostRegistrationStepId,
 } from '../../data/postRegistrationSurvey'
@@ -37,23 +35,15 @@ export type PostRegistrationWizardProps = {
 }
 
 type Fields = {
-  precommande_offre: string
   bilan_offert: string
   objectif_principal: string
   objectif_autre: string
-  gaufre_salee: string
-  gaufre_salee_autre: string
-  gaufre_sucree_notes: string
 }
 
 const emptyFields = (): Fields => ({
-  precommande_offre: '',
   bilan_offert: '',
   objectif_principal: '',
   objectif_autre: '',
-  gaufre_salee: '',
-  gaufre_salee_autre: '',
-  gaufre_sucree_notes: '',
 })
 
 const radioListClass = 'flex flex-col gap-3'
@@ -81,21 +71,12 @@ function mapRpcErrorMessage(raw: string): string {
 
 function validateStep(step: PostRegistrationStepId, f: Fields): string | null {
   switch (step) {
-    case 'precommande':
-      return f.precommande_offre.trim() ? null : 'Choisis une option.'
     case 'bilan':
       return f.bilan_offert.trim() ? null : 'Choisis une réponse.'
     case 'objectif': {
       if (!f.objectif_principal.trim()) return 'Choisis un objectif.'
       if (f.objectif_principal === 'Autre' && !f.objectif_autre.trim()) {
         return 'Précise ton objectif.'
-      }
-      return null
-    }
-    case 'gaufres': {
-      if (!f.gaufre_salee.trim()) return 'Choisis une gaufre salée.'
-      if (f.gaufre_salee === 'Autre' && !f.gaufre_salee_autre.trim()) {
-        return 'Indique quelle gaufre salée tu souhaites.'
       }
       return null
     }
@@ -152,12 +133,6 @@ export function PostRegistrationWizard({
       bilan_offert: fields.bilan_offert,
       objectif_principal: fields.objectif_principal,
       objectif_autre: fields.objectif_autre.trim() || undefined,
-    }
-    if (eventType === 'run_club') {
-      raw.precommande_offre = fields.precommande_offre
-      raw.gaufre_salee = fields.gaufre_salee
-      if (fields.gaufre_salee_autre.trim()) raw.gaufre_salee_autre = fields.gaufre_salee_autre
-      if (fields.gaufre_sucree_notes.trim()) raw.gaufre_sucree_notes = fields.gaufre_sucree_notes
     }
 
     const parsed = parsePostRegistrationPayload(eventType, raw)
@@ -259,8 +234,6 @@ export function PostRegistrationWizard({
         </p>
       </Card.Header>
       <Card.Content className="space-y-5 px-5 py-5 sm:px-6">
-        {currentStep === 'precommande' && renderOptions(PRECOMMANDE_OPTIONS, 'precommande_offre')}
-
         {currentStep === 'bilan' && renderOptions(BILAN_OFFERT_OPTIONS, 'bilan_offert')}
 
         {currentStep === 'objectif' && (
@@ -286,50 +259,6 @@ export function PostRegistrationWizard({
                 />
               </TextField>
             )}
-          </div>
-        )}
-
-        {currentStep === 'gaufres' && (
-          <div className="space-y-5">
-            {renderOptions(GAUFRE_SALEE_OPTIONS, 'gaufre_salee')}
-            {fields.gaufre_salee === 'Autre' && (
-              <TextField
-                value={fields.gaufre_salee_autre}
-                onChange={(v) => setFields((prev) => ({ ...prev, gaufre_salee_autre: v }))}
-                className="space-y-2"
-              >
-                <Label className="text-[10px] font-normal uppercase tracking-[0.14em] text-black/40">
-                  Ta gaufre salée « autre »
-                </Label>
-                <TextArea
-                  rows={2}
-                  placeholder="Ingrédients ou type souhaité"
-                  variant="secondary"
-                  className={cn(
-                    'w-full resize-none border-0 border-b border-noir/10 bg-transparent py-3 text-[14px] font-light text-noir',
-                    'focus-visible:border-noir',
-                  )}
-                />
-              </TextField>
-            )}
-            <TextField
-              value={fields.gaufre_sucree_notes}
-              onChange={(v) => setFields((prev) => ({ ...prev, gaufre_sucree_notes: v }))}
-              className="space-y-2"
-            >
-              <Label className="text-[10px] font-normal uppercase tracking-[0.14em] text-black/40">
-                Gaufre sucrée / shake / note (optionnel)
-              </Label>
-              <TextArea
-                rows={3}
-                placeholder="Envie du jour, allergies, préférences…"
-                variant="secondary"
-                className={cn(
-                  'w-full resize-none border-0 border-b border-noir/10 bg-transparent py-3 text-[14px] font-light text-noir',
-                  'focus-visible:border-noir',
-                )}
-              />
-            </TextField>
           </div>
         )}
 
