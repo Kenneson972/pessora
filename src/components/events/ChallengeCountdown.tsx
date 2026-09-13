@@ -41,10 +41,11 @@ const pad = (n: number) => String(n).padStart(2, '0');
  * s'affiche avant le montage client, serveur et navigateur ne voient pas la
  * même seconde.
  *
- * Traitement d'information, pas d'urgence (règles @lyra, §4bis) : jamais de
- * rouge/cadre/halo/or, chiffres en noir ou sapin, tabular-nums, pulsation
- * des secondes en opacité seule (jamais un rebond d'échelle), désactivée
- * sous prefers-reduced-motion.
+ * Traitement d'information, pas d'urgence (règles @lyra) : jamais de
+ * rouge/cadre/halo/or, chiffres en noir, tabular-nums, pulsation des
+ * secondes en opacité seule (jamais un rebond d'échelle), désactivée sous
+ * prefers-reduced-motion. Vit dans son propre bloc (ChallengeCountdownSection),
+ * plus dans le hero — décision du 12/09 (trop chargé).
  */
 export function ChallengeCountdown({ targetDate }: ChallengeCountdownProps) {
   const [mounted, setMounted] = useState(false);
@@ -63,33 +64,35 @@ export function ChallengeCountdown({ targetDate }: ChallengeCountdownProps) {
   if (!mounted || !remaining) return null;
 
   const units: { value: number; label: string }[] = [
-    { value: remaining.days, label: 'j' },
-    { value: remaining.hours, label: 'h' },
+    { value: remaining.days, label: 'jours' },
+    { value: remaining.hours, label: 'heures' },
     { value: remaining.minutes, label: 'min' },
-    { value: remaining.seconds, label: 's' },
+    { value: remaining.seconds, label: 'sec' },
   ];
 
   return (
-    <div className="mt-8 flex flex-wrap items-baseline gap-x-5 gap-y-1">
-      <span className="text-[10px] uppercase tracking-[0.2em] text-white/55">
-        Le prochain Challenge 21 jours commence dans
-      </span>
-      <div className="flex items-baseline gap-3" style={{ fontVariantNumeric: 'tabular-nums' }}>
-        {units.map((u, i) => (
-          <span key={u.label} className="flex items-baseline gap-1">
+    <div
+      className="flex items-start justify-center gap-6 sm:gap-10"
+      style={{ fontVariantNumeric: 'tabular-nums' }}
+    >
+      {units.map((u, i) => (
+        <div key={u.label} className="flex items-start gap-6 sm:gap-10">
+          <div className="flex flex-col items-center">
             <span
               className={
                 i === units.length - 1
-                  ? 'text-[13px] font-light text-white motion-safe:animate-pulse'
-                  : 'text-[13px] font-light text-white'
+                  ? 'font-display font-light text-noir motion-safe:animate-pulse'
+                  : 'font-display font-light text-noir'
               }
+              style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px, 4vw, 40px)' }}
             >
               {pad(u.value)}
             </span>
-            <span className="text-[9px] uppercase text-white/50">{u.label}</span>
-          </span>
-        ))}
-      </div>
+            <span className="mt-1.5 text-[9px] uppercase tracking-[0.2em] text-black/45">{u.label}</span>
+          </div>
+          {i < units.length - 1 && <span className="pt-1 font-display font-light text-black/20" style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px, 4vw, 40px)' }}>·</span>}
+        </div>
+      ))}
     </div>
   );
 }
