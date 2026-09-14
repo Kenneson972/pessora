@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Plus, X, Pencil, Trash2, Loader2, Download, Mail, Megaphone, Send } from 'lucide-react';
+import { Fragment, useState, useEffect, useCallback } from 'react';
+import { Plus, X, Pencil, Trash2, Loader2, Download, Mail, Megaphone, Send, MessageSquare } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
-import type { SiteAnnouncement, NewsletterSubscriber } from '../../types/database';
+import type { SiteAnnouncement, NewsletterSubscriber, ContactRequest } from '../../types/database';
 import { ConfirmDialog } from '../../components/dashboard/ConfirmDialog';
 import { DashPageHeader } from '../../components/dashboard/primitives';
 import { DASH_MAIN_PAD } from '../../components/dashboard/layoutClasses';
@@ -51,10 +51,18 @@ function announcementToForm(a: SiteAnnouncement): FormState {
   };
 }
 
+const CONTACT_TYPE_LABELS: Record<string, string> = {
+  info: 'Information',
+  reservation: 'Réservation',
+  partenariat: 'Partenariat',
+  autre: 'Autre',
+};
+
 const AdminCommunications = () => {
-  const [tab, setTab] = useState<'popups' | 'newsletter'>('popups');
+  const [tab, setTab] = useState<'popups' | 'newsletter' | 'contact'>('popups');
   const [announcements, setAnnouncements] = useState<SiteAnnouncement[]>([]);
   const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
+  const [contactRequests, setContactRequests] = useState<ContactRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | 'new' | null>(null);
@@ -62,8 +70,9 @@ const AdminCommunications = () => {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [expandedContactId, setExpandedContactId] = useState<string | null>(null);
   const [commConfirm, setCommConfirm] = useState<
-    { kind: 'announcement'; id: string } | { kind: 'subscriber'; id: string } | null
+    { kind: 'announcement'; id: string } | { kind: 'subscriber'; id: string } | { kind: 'contact'; id: string } | null
   >(null);
   const [commConfirmLoading, setCommConfirmLoading] = useState(false);
   const [nlSubject, setNlSubject] = useState('');
@@ -122,12 +131,31 @@ const AdminCommunications = () => {
     setSubscribers((data ?? []) as NewsletterSubscriber[]);
   }, []);
 
+  const loadContactRequests = useCallback(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase as any)
+      .from('contact_requests')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) { setLoadError('Impossible de charger les demandes de contact. Vérifiez votre connexion.'); return; }
+    setContactRequests((data ?? []) as ContactRequest[]);
+  }, []);
+
   const loadAll = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
-    await Promise.all([loadAnnouncements(), loadSubscribers()]);
+    await Promise.all([loadAnnouncements(), loadSubscribers(), loadContactRequests()]);
     setLoading(false);
-  }, [loadAnnouncements, loadSubscribers]);
+  }, [loadAnnouncements, loadSubscribers, loadContactRequests]);
+
+  const toggleContactRead = async (r: ContactRequest) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase as any)
+      .from('contact_requests')
+      .update({ read_at: r.read_at ? null : new Date().toISOString() })
+      .eq('id', r.id);
+    loadContactRequests();
+  };
 
   useEffect(() => {
     loadAll();
@@ -212,10 +240,14 @@ const AdminCommunications = () => {
         if (error) throw new Error(error.message);
         setEditId((prev) => (prev === id ? null : prev));
         await loadAnnouncements();
-      } else {
+      } else if (kind === 'subscriber') {
         const { error } = await db.from('newsletter_subscribers').delete().eq('id', id);
         if (error) throw new Error(error.message);
         await loadSubscribers();
+      } else {
+        const { error } = await db.from('contact_requests').delete().eq('id', id);
+        if (error) throw new Error(error.message);
+        await loadContactRequests();
       }
       setCommConfirm(null);
     } catch (e) {
@@ -224,7 +256,7 @@ const AdminCommunications = () => {
       setDeleting(null);
       setCommConfirmLoading(false);
     }
-  }, [commConfirm, loadAnnouncements, loadSubscribers]);
+  }, [commConfirm, loadAnnouncements, loadSubscribers, loadContactRequests]);
 
   const handleToggleActive = async (a: SiteAnnouncement) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -261,7 +293,7 @@ const AdminCommunications = () => {
       <DashPageHeader
         breadcrumb="Administration"
         title="Communication"
-        subtitle="Popups d’accueil et inscriptions newsletter."
+        subtitle="Popups d’accueil, inscriptions newsletter et demandes de contact."
       />
       <div className={DASH_MAIN_PAD}>
       {loadError && !loading && <AdminErrorAlert message={loadError} onRetry={loadAll} />}
@@ -286,6 +318,21 @@ const AdminCommunications = () => {
           >
             <Mail size={14} />
             Newsletter
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab('contact')}
+            className={`flex min-h-[44px] items-center gap-2 rounded-[2px] px-4 text-[10px] font-normal uppercase tracking-[0.12em] ${
+              tab === 'contact' ? 'bg-noir text-white' : 'text-black/45 hover:text-black'
+            }`}
+          >
+            <MessageSquare size={14} />
+            Contact
+            {contactRequests.some((r) => !r.read_at) && (
+              <span className="ml-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] text-white">
+                {contactRequests.filter((r) => !r.read_at).length}
+              </span>
+            )}
           </button>
         </div>
       </div>
@@ -645,6 +692,89 @@ Nous sommes ravis de vous annoncer…"
           )}
         </div>
       )}
+
+      {tab === 'contact' && (
+        <div>
+          <p className="mb-6 text-[12px] text-black/45">
+            {contactRequests.length} demande{contactRequests.length !== 1 ? 's' : ''} — envoyées aussi par email, cette liste est le filet si un message est perdu.
+          </p>
+          {contactRequests.length === 0 ? (
+            <p className="text-[12px] text-black/40">Aucune demande de contact pour l’instant.</p>
+          ) : (
+            <div className="overflow-hidden rounded-[2px] border border-noir/[0.06] bg-white">
+              <div className="overflow-x-auto">
+              <table className="w-full text-left text-[12px]">
+                <thead>
+                  <tr className="border-b border-noir/[0.06] bg-noir/[0.02] text-[9px] font-normal uppercase tracking-[0.18em] text-black/35">
+                    <th className="px-4 py-3">Type</th>
+                    <th className="px-4 py-3">Nom</th>
+                    <th className="px-4 py-3">Email</th>
+                    <th className="px-4 py-3">Reçu</th>
+                    <th className="px-4 py-3 text-center">Lu</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {contactRequests.map((r) => (
+                    <Fragment key={r.id}>
+                      <tr
+                        className={`border-b border-noir/[0.04] hover:bg-noir/[0.02] ${!r.read_at ? 'bg-sapin-subtle/40' : ''}`}
+                      >
+                        <td className="px-4 py-3 text-black/55">{CONTACT_TYPE_LABELS[r.type] ?? r.type}</td>
+                        <td className="max-w-[160px] truncate px-4 py-3 font-normal text-black">{r.nom}</td>
+                        <td className="max-w-[200px] truncate px-4 py-3 text-black/60">{r.email}</td>
+                        <td className="px-4 py-3 text-black/45">
+                          {new Date(r.created_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <button
+                            type="button"
+                            onClick={() => toggleContactRead(r)}
+                            className={`relative inline-flex h-5 w-9 rounded-full transition-colors ${r.read_at ? 'bg-noir' : 'bg-noir/20'}`}
+                            aria-label={r.read_at ? 'Marquer comme non lu' : 'Marquer comme lu'}
+                          >
+                            <span
+                              className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                                r.read_at ? 'translate-x-4' : 'translate-x-0'
+                              }`}
+                            />
+                          </button>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <button
+                            type="button"
+                            onClick={() => setExpandedContactId((prev) => (prev === r.id ? null : r.id))}
+                            className="mr-2 inline-flex h-11 w-11 items-center justify-center text-black/40 hover:text-black"
+                            aria-label="Voir le message"
+                          >
+                            <MessageSquare size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setCommConfirm({ kind: 'contact', id: r.id })}
+                            disabled={deleting === r.id}
+                            className="inline-flex h-11 w-11 items-center justify-center text-black/35 hover:text-red-600 disabled:opacity-40"
+                          >
+                            {deleting === r.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                          </button>
+                        </td>
+                      </tr>
+                      {expandedContactId === r.id && (
+                        <tr className="border-b border-noir/[0.04] bg-surface-muted/40">
+                          <td colSpan={6} className="whitespace-pre-wrap px-4 py-4 text-[12px] leading-relaxed text-black/70">
+                            {r.message}
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  ))}
+                </tbody>
+              </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
       </div>
 
       <ConfirmDialog
@@ -666,14 +796,18 @@ Nous sommes ravis de vous annoncer…"
         title={
           commConfirm?.kind === 'subscriber'
             ? 'Retirer cet email de la liste ?'
-            : 'Supprimer cette annonce ?'
+            : commConfirm?.kind === 'contact'
+              ? 'Supprimer cette demande de contact ?'
+              : 'Supprimer cette annonce ?'
         }
         description={
           commConfirm?.kind === 'subscriber'
             ? 'L’adresse sera définitivement retirée de la liste newsletter.'
-            : 'L’annonce ne s’affichera plus sur le site. Cette action est définitive.'
+            : commConfirm?.kind === 'contact'
+              ? 'Le message a aussi été envoyé par email — cette suppression ne retire que la trace en base.'
+              : 'L’annonce ne s’affichera plus sur le site. Cette action est définitive.'
         }
-        confirmLabel={commConfirm?.kind === 'subscriber' ? 'Retirer' : 'Supprimer'}
+        confirmLabel="Supprimer"
         loadingLabel={commConfirm?.kind === 'subscriber' ? 'Retrait…' : 'Suppression…'}
         loading={commConfirmLoading}
         onClose={closeCommConfirm}

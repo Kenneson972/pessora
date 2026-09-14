@@ -45,23 +45,23 @@ function ProductCard({
   const detailPath = `/menu/${item.id}`;
 
   return (
-    <article className="snap-start shrink-0 w-[calc(100vw-48px)] min-[400px]:w-[min(70vw,272px)] sm:w-[248px] scroll-ml-0">
+    <article className="snap-start shrink-0 w-[calc(100vw-64px)] min-[400px]:w-[min(78vw,340px)] sm:w-[320px] md:w-[360px] scroll-ml-0">
       <Card className="group/sq relative overflow-hidden rounded-[2px] border border-noir/[0.08] bg-white">
-        <Card.Header className="relative aspect-square overflow-hidden bg-surface-product-well p-0">
+        <Card.Header className="relative aspect-[4/5] overflow-hidden bg-surface-product-well p-0">
         {badge && <ProductBadge type={badge} />}
         {imageSrc ? (
           <img
             src={imageSrc}
             alt={item.name}
-            width={400}
-            height={400}
+            width={480}
+            height={600}
             className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover/sq:scale-[1.03]"
             loading="lazy"
             decoding="async"
           />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-b from-surface-muted to-surface-product-well">
-            {item.icon && <span className="text-[56px] leading-none opacity-[0.88]" aria-hidden>{item.icon}</span>}
+            {item.icon && <span className="text-[72px] leading-none opacity-[0.88]" aria-hidden>{item.icon}</span>}
           </div>
         )}
         <Link
@@ -130,7 +130,7 @@ export function HomeProductCarousel() {
         <div className="relative">
           <div
             ref={scrollerRef}
-            className="scrollbar-hide flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 pl-4 pr-12 sm:pl-0 sm:pr-14 md:gap-5 md:pr-16"
+            className="scrollbar-hide flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 pl-4 pr-12 sm:pl-0 sm:pr-14 md:gap-8 md:pr-16"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {rows.map(({ entry, item }) => (
