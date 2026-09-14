@@ -8,6 +8,7 @@ import { supabase } from '../../lib/supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
 import type { Event } from '../../types/database';
 import { PostRegistrationWizard } from './PostRegistrationWizard';
+import { ComplementRevenusModal } from './ComplementRevenusModal';
 import { BilanBookingWidget } from './BilanBookingWidget';
 import { isValidPhone } from '../../lib/phone';
 import { formatDateShort } from '../../lib/eventDateFormat';
@@ -178,6 +179,9 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const [editSaved, setEditSaved] = useState(false);
+  // Modal "complément de revenus" — décorrélé du questionnaire (@user, 14/09), ouvert seulement
+  // une fois bilan + objectif validés.
+  const [showComplementRevenus, setShowComplementRevenus] = useState(false);
 
   useEffect(() => {
     const stored = readStoredRegistration(event.id);
@@ -443,6 +447,15 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
               telephone={postRegistration.telephone}
               eventType={event.type}
               eventTitle={event.title}
+              onComplete={() => setShowComplementRevenus(true)}
+            />
+          )}
+
+          {showComplementRevenus && postRegistration && (
+            <ComplementRevenusModal
+              registrationId={postRegistration.id}
+              telephone={postRegistration.telephone}
+              onClose={() => setShowComplementRevenus(false)}
             />
           )}
         </div>
