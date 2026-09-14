@@ -41,7 +41,7 @@ export function CookieConsentBanner() {
         >
           <div className="mx-auto flex max-w-5xl flex-col gap-4 md:flex-row md:items-center md:justify-between md:gap-8">
             <div className="min-w-0 flex-1">
-              <p id="cookie-consent-title" className="text-[10px] font-normal uppercase tracking-[0.18em] text-black/40">
+              <p id="cookie-consent-title" className="text-[10px] font-normal uppercase tracking-[0.18em] text-black/60">
                 Cookies & données
               </p>
               <p className="mt-1.5 text-[12px] font-light leading-relaxed text-black/60">
@@ -57,14 +57,14 @@ export function CookieConsentBanner() {
               <button
                 type="button"
                 onClick={() => setShowCustomize(true)}
-                className="h-11 min-h-[44px] rounded-full border border-noir/15 px-4 text-[10px] font-normal uppercase tracking-[0.12em] text-black/55 transition-colors hover:border-noir/30 hover:text-black"
+                className="h-11 min-h-[44px] rounded-full border border-noir/15 px-4 text-[10px] font-normal uppercase tracking-[0.12em] text-black/60 transition-colors hover:border-noir/30 hover:text-black"
               >
                 Personnaliser
               </button>
               <button
                 type="button"
                 onClick={rejectOptional}
-                className="h-11 min-h-[44px] rounded-full border border-noir/15 px-4 text-[10px] font-normal uppercase tracking-[0.12em] text-black/55 transition-colors hover:border-noir/30 hover:text-black"
+                className="h-11 min-h-[44px] rounded-full border border-noir/15 px-4 text-[10px] font-normal uppercase tracking-[0.12em] text-black/60 transition-colors hover:border-noir/30 hover:text-black"
               >
                 Nécessaires uniquement
               </button>
@@ -91,7 +91,7 @@ export function CookieConsentBanner() {
             <button
               type="button"
               onClick={() => setShowCustomize(false)}
-              className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-black/40 transition-colors hover:bg-noir/[0.06] hover:text-black"
+              className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-black/60 transition-colors hover:bg-noir/[0.06] hover:text-black"
               aria-label="Fermer"
             >
               <X size={18} strokeWidth={1.5} />
@@ -99,7 +99,7 @@ export function CookieConsentBanner() {
             <h2 id="cookie-custom-title" className="pr-10 font-display text-lg font-normal text-black">
               Paramètres des cookies
             </h2>
-            <p className="mt-2 text-[11px] font-light leading-relaxed text-black/50">
+            <p className="mt-2 text-[11px] font-light leading-relaxed text-black/60">
               Détail dans la{' '}
               <Link to="/politique-confidentialite" className="text-editorial-link-underline" onClick={() => setShowCustomize(false)}>
                 politique de confidentialité
@@ -110,11 +110,11 @@ export function CookieConsentBanner() {
               <li className="flex gap-3 border-b border-noir/[0.06] pb-4">
                 <span className="min-w-0 flex-1">
                   <span className="block text-[11px] font-normal text-black">Strictement nécessaires</span>
-                  <span className="mt-0.5 block text-[10px] font-light text-black/45">
+                  <span className="mt-0.5 block text-[10px] font-light text-black/60">
                     Sécurisation de la session, panier si vous l’activez ci-dessous.
                   </span>
                 </span>
-                <span className="shrink-0 text-[10px] font-normal uppercase tracking-[0.1em] text-black/35">Toujours actifs</span>
+                <span className="shrink-0 text-[10px] font-normal uppercase tracking-[0.1em] text-black/60">Toujours actifs</span>
               </li>
               <li className="flex items-start gap-3">
                 <input
@@ -126,7 +126,7 @@ export function CookieConsentBanner() {
                 />
                 <label htmlFor="cookie-fn" className="min-w-0 cursor-pointer">
                   <span className="block text-[11px] font-normal text-black">Préférences & panier</span>
-                  <span className="mt-0.5 block text-[10px] font-light text-black/45">
+                  <span className="mt-0.5 block text-[10px] font-light text-black/60">
                     Mémoriser votre panier sur cet appareil.
                   </span>
                 </label>
@@ -141,7 +141,7 @@ export function CookieConsentBanner() {
                 />
                 <label htmlFor="cookie-an" className="min-w-0 cursor-pointer">
                   <span className="block text-[11px] font-normal text-black">Statistiques</span>
-                  <span className="mt-0.5 block text-[10px] font-light text-black/45">
+                  <span className="mt-0.5 block text-[10px] font-light text-black/60">
                     Audience anonymisée — non utilisée tant qu’aucun outil n’est branché.
                   </span>
                 </label>
@@ -151,7 +151,7 @@ export function CookieConsentBanner() {
               <button
                 type="button"
                 onClick={() => setShowCustomize(false)}
-                className="h-11 min-h-[44px] rounded-full border border-noir/12 px-4 text-[10px] font-normal uppercase tracking-[0.12em] text-black/50 hover:border-noir/25"
+                className="h-11 min-h-[44px] rounded-full border border-noir/12 px-4 text-[10px] font-normal uppercase tracking-[0.12em] text-black/60 hover:border-noir/25"
               >
                 Annuler
               </button>
