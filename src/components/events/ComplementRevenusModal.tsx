@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { X } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 
 export interface ComplementRevenusModalProps {
@@ -34,8 +33,14 @@ const OPTIONS = [
  * Règles verrouillées qui restent (docs/CONSIGNES-CLAUDE.md) : AUCUNE promesse de revenus (pas de
  * montant, pas de "gagnez X€" — la fiche elle-même n'en contient aucun), les deux options ont le
  * MÊME poids visuel (jamais un "oui" en bouton sombre face à un "non" pâle), AUCUNE option
- * pré-cochée, et le champ n'est jamais obligatoire (fermer sans répondre = ne rien stocker — la
- * croix suffit, pas besoin d'un second lien texte).
+ * pré-cochée.
+ *
+ * ⚠️ CHANGEMENT @user (14/09, 4e retour) : la croix de fermeture est retirée — "c'est un choix
+ * obligatoire". Ça remplace la règle du 12/09 qui disait l'inverse ("le champ n'est jamais
+ * obligatoire"). Ce qui reste vrai malgré ça : "Pas pour le moment" est une réponse à part entière,
+ * au même poids que "Oui" — obliger à répondre n'oblige personne à dire oui à l'opportunité elle-
+ * même. Aucun autre moyen de fermer (pas de clic sur le voile, pas d'Échap) : il faut choisir une
+ * option puis valider.
  */
 export function ComplementRevenusModal({ registrationId, telephone, onClose }: ComplementRevenusModalProps) {
   const [selected, setSelected] = useState<string | null>(null);
@@ -70,15 +75,6 @@ export function ComplementRevenusModal({ registrationId, telephone, onClose }: C
               'linear-gradient(180deg, oklch(7% .004 55 / 0.35) 0%, oklch(7% .004 55 / 0.6) 45%, oklch(7% .004 55 / 0.95) 100%)',
           }}
         />
-
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Fermer"
-          className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-[2px] transition-colors hover:bg-white/25"
-        >
-          <X size={20} strokeWidth={1.5} />
-        </button>
 
         <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8 md:p-10">
           <p className="mb-3 text-[13px] font-medium uppercase tracking-[0.24em] text-white">
