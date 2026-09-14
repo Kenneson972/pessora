@@ -433,17 +433,42 @@ Téléphone · Créneau bilan · Objectif · Complément revenus · Date d'inscr
 **c'est lui qui ment** : il propose titre, lieu, point de rendez-vous, capacité, prix, pop-up…
 **pour un challenge, dont la page ne lit rien de tout ça.**
 
-**Et la correction ferme AUSSI le doublon ② des arbitrages :**
+### ✅ DÉCISION DE KEN — 14/09/2026
 
-> **Retirer `'challenge'` des `TYPE_OPTIONS` du formulaire d'événement** (`eventEditorTypes.ts:34`).
-> Un challenge **ne se crée plus depuis « Événements »** → **un seul chemin**, le CRUD dédié.
-> **Et le mensonge disparaît en même temps que le doublon** — il n'y a plus de formulaire pour
-> promettre des champs qui ne servent à rien.
+> *« Il ne faut PAS retirer la page CRUD événement, mais pour le challenge 21j si. »*
 
-**⚠️ CE QU'IL RESTE À TRAITER APRÈS** : **les challenges DÉJÀ créés** restent des `events` avec
-`type='challenge'` → **si on les ouvre depuis la liste des Événements, on tombe encore sur le
-formulaire générique.** Il faut **rediriger** ces lignes vers `/admin/challenge-21j`
-(sinon le faux interrupteur survit sur tout l'historique).
+**Confirmation, dans les deux sens :**
+
+**① ON GARDE le formulaire d'événement.** Il sert aux **6 autres types** :
+`event` · `popup` · `atelier` · `partenariat` · `bilan` · `run_club` (`eventEditorTypes.ts:34`).
+**On n'y touche pas.**
+
+**② ON RETIRE seulement `'challenge'` de sa liste de types.** Un challenge **ne se crée plus depuis
+« Événements »** → **un seul chemin**, l'écran `Challenge 21j`.
+
+**Et le mensonge disparaît en même temps que le doublon ②** : il n'y a plus de formulaire pour
+promettre des champs qui ne servent à rien.
+
+⚠️ **Et on ne touche PAS au type `challenge` lui-même** : il reste dans `TYPE_LABELS` (les challenges
+existants continuent d'afficher « Challenge 21 jours »), dans `useAdminChallenges` (le CRUD dédié
+crée toujours avec `type='challenge'`), et dans la page Événements (ils restent séparés en haut).
+
+### ⚠️ LE POINT QUI RESTE — les challenges de l'ANCIENNE logique
+
+**Ken les a nommés : des challenges créés avec l'ancienne logique d'événement basique.**
+Ce sont des `events` avec `type='challenge'`, **et rien ne les distingue** d'un challenge créé depuis
+le CRUD dédié — **même table, même type.**
+
+**Conséquence** : **si on ouvre un de ces challenges depuis la liste des Événements, on retombe sur
+le formulaire générique** — celui qui propose lieu, image, capacité, prix.
+**Donc le faux interrupteur survivrait sur tout l'historique**, même après avoir retiré le type.
+
+**Correctif** : **toute ligne `type='challenge'` ouverte depuis la liste des Événements doit être
+redirigée vers `/admin/challenge-21j`** — édition comprise.
+
+⚠️ **À vérifier avant** : **combien de challenges existent réellement en base**, et depuis quand.
+**Si le seul est le fixture `TEST-KEN` du 12/09, le point est théorique** *(et il part à la purge)*.
+**S'il y a des challenges passés de Catherine, il est réel.** *(Lecture seule, à faire au moment du lot.)*
 
 ### ⚠️ ET LE SECOND CONSTAT DU MÊME PLAN — l'admin ment à Catherine
 
