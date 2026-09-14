@@ -231,7 +231,7 @@ function SearchPalette({
                           </span>
                           <div className="flex min-w-0 flex-1 flex-col">
                             <span className="truncate text-[13px] font-normal">{item.name}</span>
-                            <span className="text-[10px] uppercase tracking-[0.2em] text-black/60">
+                            <span className="text-[12px] uppercase tracking-[0.2em] text-black/60">
                               {CAT_LABELS[item.category] ?? item.category} · {item.price}€
                             </span>
                           </div>
@@ -265,7 +265,7 @@ function SearchPalette({
                             </span>
                             <div className="flex min-w-0 flex-1 flex-col">
                               <span className="truncate text-[13px] font-normal">{item.name}</span>
-                              <span className="text-[10px] uppercase tracking-[0.2em] text-black/60">
+                              <span className="text-[12px] uppercase tracking-[0.2em] text-black/60">
                                 {CAT_LABELS[item.category] ?? item.category} · {item.price}€
                               </span>
                             </div>
