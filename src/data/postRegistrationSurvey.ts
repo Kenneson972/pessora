@@ -12,9 +12,12 @@ export function getPostRegistrationSteps(eventType: Event['type']): PostRegistra
   return ['objectif']
 }
 
+// Cette étape n'existe QUE pour le type 'challenge' (getPostRegistrationSteps) — et le bilan y est
+// OBLIGATOIRE (CLAUDE.md, décision du 10/09 : « inscription au bilan obligatoire pour participer »).
+// ⚠️ Pas d'option « Non merci » : ça contredirait le widget de réservation juste au-dessus, qui est
+// toujours affiché et jamais skippable. Les deux options ne décrivent que QUAND le rdv est pris.
 export const BILAN_OFFERT_OPTIONS: { value: string; label: string }[] = [
-  { value: 'Oui', label: 'Oui, je souhaite profiter du bilan offert' },
-  { value: 'Non', label: 'Non merci' },
+  { value: 'Oui', label: 'Oui, je viens de réserver mon créneau' },
   { value: 'Deja reserve', label: 'J’ai déjà pris rendez-vous' },
 ]
 
@@ -45,8 +48,8 @@ export const STEP_COPY: Record<
   { title: string; description: string }
 > = {
   bilan: {
-    title: 'Bilan bien-être offert',
-    description: 'Un court bilan t’est proposé en complément de ta séance. Indique-nous ton choix.',
+    title: 'Bilan bien-être',
+    description: 'Le bilan est obligatoire pour participer au challenge — confirme que ton créneau est pris.',
   },
   objectif: {
     title: 'Ton objectif principal',

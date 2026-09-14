@@ -121,7 +121,7 @@ export interface Challenge21jRegistrationCardProps {
 export function Challenge21jRegistrationCard({ event }: Challenge21jRegistrationCardProps) {
   const { user } = useAuth();
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'duplicate' | 'full' | 'error'>('idle');
-  const [postRegistration, setPostRegistration] = useState<{ id: string; telephone: string } | null>(null);
+  const [postRegistration, setPostRegistration] = useState<{ id: string; nom: string; prenom: string; telephone: string } | null>(null);
   const [registrationCount, setRegistrationCount] = useState(event.registrationCount);
   const [ageDeclined, setAgeDeclined] = useState(false);
   const [professionOpen, setProfessionOpen] = useState(false);
@@ -178,7 +178,7 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
       return;
     }
 
-    setPostRegistration({ id: registrationId, telephone: data.telephone });
+    setPostRegistration({ id: registrationId, nom: data.nom, prenom: data.prenom, telephone: data.telephone });
     setSubmitStatus('success');
     setRegistrationCount((prev) => prev + 1);
   };
@@ -221,7 +221,10 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
           )}
 
           <div className="mt-8">
-            <BilanBookingWidget challengeEventId={event.id} />
+            <BilanBookingWidget
+              challengeEventId={event.id}
+              prefill={postRegistration ? { nom: postRegistration.nom, prenom: postRegistration.prenom, telephone: postRegistration.telephone } : undefined}
+            />
           </div>
 
           {postRegistration && (

@@ -13,6 +13,8 @@ interface Slot {
 
 interface Props {
   challengeEventId: string;
+  /** Coordonnées déjà saisies à l'inscription au challenge — évite de les redemander. */
+  prefill?: { nom: string; prenom: string; telephone: string };
 }
 
 const inputClass =
@@ -53,16 +55,18 @@ const formatSlotDate = (dateStr: string) =>
  * est le chemin principal (réservation sans compte). error===null (pas
  * de lecture de ligne) est un signal de succès suffisant ici.
  */
-export function BilanBookingWidget({ challengeEventId }: Props) {
+export function BilanBookingWidget({ challengeEventId, prefill }: Props) {
   const { user } = useAuth();
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(true);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [showHorsDate, setShowHorsDate] = useState(false);
 
-  const [nom, setNom] = useState(user?.lastName ?? '');
-  const [prenom, setPrenom] = useState(user?.firstName ?? '');
-  const [telephone, setTelephone] = useState(user?.phone ?? '');
+  // Priorité : les infos de l'inscription au challenge, tout juste saisies — pas le compte,
+  // qui peut être plus ancien ou absent (inscription invité).
+  const [nom, setNom] = useState(prefill?.nom ?? user?.lastName ?? '');
+  const [prenom, setPrenom] = useState(prefill?.prenom ?? user?.firstName ?? '');
+  const [telephone, setTelephone] = useState(prefill?.telephone ?? user?.phone ?? '');
   const [dateRdv, setDateRdv] = useState('');
   const [heureRdv, setHeureRdv] = useState('');
 
