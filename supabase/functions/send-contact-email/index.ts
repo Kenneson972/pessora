@@ -1,5 +1,6 @@
 // supabase/functions/send-contact-email/index.ts
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { z } from 'npm:zod@3';
 import { checkRateLimit } from '../_shared/rate-limiter.ts';
 import { getCorsHeaders } from '../_shared/cors.ts';
@@ -35,6 +36,24 @@ serve(async (req) => {
     }
 
     const { name, email, message, type } = parsed.data;
+
+    // Trace en base AVANT la tentative d'envoi — un Resend qui échoue ou une clé API absente ne
+    // doit jamais faire disparaître le message. Best-effort : si l'insert échoue, on log et on
+    // continue quand même vers l'email (mieux vaut un email sans trace qu'aucun des deux).
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+      const { error: insertError } = await supabase
+        .from('contact_requests')
+        .insert({ type, nom: name, email, message });
+      if (insertError) {
+        console.error('[send-contact-email] insert contact_requests failed:', insertError.message);
+      }
+    } catch (e) {
+      console.error('[send-contact-email] insert contact_requests threw:', e);
+    }
+
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
 
     if (!resendApiKey) {

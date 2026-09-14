@@ -314,6 +314,22 @@ export interface Database {
         Update: Record<string, never>
         Relationships: []
       }
+      contact_requests: {
+        Row: {
+          id: string
+          type: string
+          nom: string
+          email: string
+          message: string
+          read_at: string | null
+          created_at: string
+        }
+        // Écrite uniquement par l'edge function send-contact-email (service_role) — pas d'INSERT
+        // public, jamais depuis le front.
+        Insert: Record<string, never>
+        Update: Partial<Pick<Database['public']['Tables']['contact_requests']['Row'], 'read_at'>>
+        Relationships: []
+      }
       gamme_products: {
         Row: {
           id: string
@@ -496,6 +512,7 @@ export type OrderItem = Database['public']['Tables']['order_items']['Row']
 export type Notification = Database['public']['Tables']['notifications']['Row']
 export type SiteAnnouncement = Database['public']['Tables']['site_announcements']['Row']
 export type NewsletterSubscriber = Database['public']['Tables']['newsletter_subscribers']['Row']
+export type ContactRequest = Database['public']['Tables']['contact_requests']['Row']
 export type GammeProduct = Database['public']['Tables']['gamme_products']['Row']
 export type HomeCarouselCard = Database['public']['Tables']['home_carousel_cards']['Row']
 export type HomeSplitGamme = Database['public']['Tables']['home_split_gammes']['Row']
