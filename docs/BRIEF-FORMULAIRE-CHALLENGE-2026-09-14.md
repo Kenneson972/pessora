@@ -249,8 +249,29 @@ changera encore ; la clé, non.
 « perte de poids » **et** « plus d'énergie » a **un** objectif principal et **un** secondaire —
 **ou deux objectifs** ? **Ken / Catherine le savent ; le code ne peut pas le deviner.**
 
-**👉 Ce qu'il faut répondre** : **une seule case, ou plusieurs ?** *(et si plusieurs : laquelle est
-« la principale » ?)*
+### ✅ DÉCISION — un seul objectif *(14/09/2026)*
+
+**Ce qu'on code : UN SEUL objectif, en boutons radio.** Les 4 objectifs de la fiche, **un choix**.
+
+**Les trois raisons, dans l'ordre d'importance :**
+
+1. **Sa fiche dit « Mon objectif » — au singulier.** C'est **son** document. Si elle avait voulu
+   plusieurs, elle aurait écrit « Mes objectifs ».
+2. **La liste contient une contradiction** : « Perte de poids » et « Prise de masse / tonification »
+   **s'opposent**. Cochées ensemble, elles produisent **une donnée que Catherine ne peut pas
+   utiliser** — elle ne saura pas s'il faut un shake minceur ou un shake protéiné.
+3. **La règle de la donnée racontable** : « Perte de poids » → elle sait quoi dire. « Perte de poids
+   + énergie + habitudes » → **elle ne sait plus lequel est le vrai.**
+
+**⚠️ On ne bloque PAS sur la réponse de Catherine.** Le cas unique est codé maintenant *(c'est ce que
+sa fiche dit et ce que le serveur attend)*. Si sa réponse est « je note tout », **on ajoutera un
+objectif secondaire facultatif** — le `jsonb` l'accepte **sans migration**.
+
+**📩 La question part quand même dans sa liste — elle AFFINE, elle ne BLOQUE pas :**
+> **« Quand quelqu'un coche plusieurs cases sur ta fiche, tu fais quoi ? »**
+
+*(Et c'est la bonne formulation : elle remplit ces fiches au bar depuis des mois — **sa pratique EST
+la règle**, on n'a pas à l'inventer.)*
 
 ---
 
