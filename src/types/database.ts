@@ -88,14 +88,30 @@ export interface Database {
           nom: string
           prenom: string
           telephone: string
-          nb_personnes: string
-          souhait_info: string
+          // Champs de l'ancien formulaire (événements normaux, 6 types hors challenge) — ChallengeRegistrationCard.tsx.
+          nb_personnes: string | null
+          souhait_info: string | null
+          // Champs du formulaire dédié Challenge 21j (fiche papier de Catherine, 14/09) — Challenge21jRegistrationCard.tsx.
+          // 'age' : NULL = non répondu, 'non_renseigne' = refus explicite (jamais une chaîne vide).
+          age: string | null
+          profession: string | null
+          timing_demarrage: string | null
+          creneau_rappel: string[] | null
           post_registration_details: Json | null
           created_at: string
         }
-        Insert: Omit<Database['public']['Tables']['event_registrations']['Row'], 'id' | 'created_at' | 'post_registration_details'> & {
+        Insert: Omit<
+          Database['public']['Tables']['event_registrations']['Row'],
+          'id' | 'created_at' | 'post_registration_details' | 'nb_personnes' | 'souhait_info' | 'age' | 'profession' | 'timing_demarrage' | 'creneau_rappel'
+        > & {
           id?: string
           post_registration_details?: Json | null
+          nb_personnes?: string | null
+          souhait_info?: string | null
+          age?: string | null
+          profession?: string | null
+          timing_demarrage?: string | null
+          creneau_rappel?: string[] | null
         }
         Update: Partial<Pick<Database['public']['Tables']['event_registrations']['Row'], 'post_registration_details'>>
         Relationships: []

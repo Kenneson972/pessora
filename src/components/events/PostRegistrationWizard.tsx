@@ -18,6 +18,7 @@ import {
 } from '../../lib/postRegistrationSurveySchema'
 import {
   BILAN_OFFERT_OPTIONS,
+  CHALLENGE_OBJECTIF_OPTIONS,
   getPostRegistrationSteps,
   OBJECTIF_OPTIONS,
   STEP_COPY,
@@ -104,6 +105,8 @@ export function PostRegistrationWizard({
   const stepMeta = STEP_COPY[currentStep]
   const total = steps.length
   const isLast = stepIndex >= total - 1
+  // La fiche papier du challenge n'a pas d'option « Autre » — les 4 objectifs sont fermés.
+  const objectifOptions = eventType === 'challenge' ? CHALLENGE_OBJECTIF_OPTIONS : OBJECTIF_OPTIONS
 
   const goNext = () => {
     setStepError(null)
@@ -238,7 +241,7 @@ export function PostRegistrationWizard({
 
         {currentStep === 'objectif' && (
           <div className="space-y-4">
-            {renderOptions(OBJECTIF_OPTIONS, 'objectif_principal')}
+            {renderOptions(objectifOptions, 'objectif_principal')}
             {fields.objectif_principal === 'Autre' && (
               <TextField
                 value={fields.objectif_autre}

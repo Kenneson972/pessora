@@ -9,7 +9,7 @@ import { ChallengeStatsBlock } from './ChallengeStatsBlock';
 import { ChallengeInclusBanners } from './ChallengeInclusBanners';
 import { ChallengeBeforeAfterBlock } from './ChallengeBeforeAfterBlock';
 import { ChallengeTestimonialsBlock } from './ChallengeTestimonialsBlock';
-import { ChallengeRegistrationCard } from './ChallengeRegistrationCard';
+import { Challenge21jRegistrationCard } from './Challenge21jRegistrationCard';
 import { ChallengeEndedState } from './ChallengeEndedState';
 import { ChallengeAvailabilityNotice } from './ChallengeAvailabilityNotice';
 
@@ -51,7 +51,7 @@ export function ChallengeLanding({ event }: ChallengeLandingProps) {
         {isPast ? (
           <ChallengeEndedState />
         ) : availability.loading ? null : availability.case === 'bookable' ? (
-          <ChallengeRegistrationCard event={event} />
+          <Challenge21jRegistrationCard event={event} />
         ) : (
           <ChallengeAvailabilityNotice case={availability.case} />
         )}
