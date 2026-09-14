@@ -215,7 +215,7 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
     });
     setEditSaving(false);
     if (error) {
-      setEditError('Impossible d’enregistrer tes modifications. Réessaie ou contacte-nous sur Instagram.');
+      setEditError('Impossible d’enregistrer tes modifications. Réessaie.');
       return;
     }
     const updated: StoredRegistration = { ...existing, ...editForm };
@@ -396,7 +396,14 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
                         })}
                       </div>
                     </div>
-                    {editError && <p className="text-[11px] text-red-600">{editError}</p>}
+                    {editError && (
+                      <p className="text-[11px] text-red-600">
+                        {editError}{' '}
+                        <Link to="/contact" className="font-medium underline underline-offset-2">
+                          Écris-nous
+                        </Link>
+                      </p>
+                    )}
                     <div className="flex items-center gap-3">
                       <button
                         type="button"
@@ -466,14 +473,27 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
       {submitStatus === 'full' && (
         <div className="mb-6 flex items-start gap-3 rounded-[2px] border border-red-200/80 bg-red-50/90 p-4 text-[12px] text-red-800" role="alert">
           <AlertCircle size={15} className="shrink-0 mt-0.5" aria-hidden="true" />
-          Cet événement est complet. Suis-nous sur Instagram pour les prochaines dates.
+          <span>
+            Cet événement est complet. Les prochaines dates seront annoncées sur le site — tu peux
+            aussi{' '}
+            <Link to="/contact" className="font-medium underline underline-offset-2">
+              nous écrire
+            </Link>
+            .
+          </span>
         </div>
       )}
 
       {submitStatus === 'error' && (
         <div className="mb-6 flex items-start gap-3 rounded-[2px] border border-red-200/80 bg-red-50/90 p-4 text-[12px] text-red-800" role="alert">
           <AlertCircle size={15} className="shrink-0 mt-0.5" aria-hidden="true" />
-          Une erreur est survenue. Réessaie ou contacte-nous sur Instagram.
+          <span>
+            Une erreur est survenue. Réessaie, ou écris-nous depuis le{' '}
+            <Link to="/contact" className="font-medium underline underline-offset-2">
+              formulaire de contact
+            </Link>
+            .
+          </span>
         </div>
       )}
 

@@ -67,7 +67,7 @@ function mapRpcErrorMessage(raw: string): string {
   if (raw.includes('invalid_payload_keys')) {
     return 'Données non valides pour ce type d’événement.'
   }
-  return 'Impossible d’enregistrer tes réponses pour le moment. Réessaie ou écris-nous sur Instagram.'
+  return 'Impossible d’enregistrer tes réponses pour le moment. Réessaie, ou écris-nous depuis le formulaire de contact du site.'
 }
 
 function validateStep(step: PostRegistrationStepId, f: Fields): string | null {
