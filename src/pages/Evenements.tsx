@@ -296,36 +296,19 @@ const Evenements = () => {
   return (
     <div className="min-h-screen bg-white">
       <EventItemListJsonLd items={eventItems} />
-      {/* Hero : EXACTEMENT le même gabarit que la bannière Challenge juste en dessous (retour
-          @user, 14/09 — "sinon ça n'a pas de sens") : même ratio, même dégradé de repli, même
-          voile, même structure de texte. Pas d'image ici (page générale, pas un événement
-          précis) — le repli de la carte devient donc le rendu normal du hero. */}
-      <section className="border-b border-noir/[0.06] bg-white px-4 py-12 md:px-10 md:py-14 lg:px-[72px]">
-        <div className="relative mx-auto block max-w-6xl overflow-hidden rounded-[2px]">
-          <div className="relative aspect-[16/10] w-full sm:aspect-[21/9]">
-            <div className="absolute inset-0 bg-gradient-to-br from-sapin via-anthracite to-noir" />
-            <div className="absolute inset-0 bg-gradient-to-t from-noir/90 via-noir/35 to-transparent" />
-
-            <div className="absolute inset-0 flex flex-col justify-between p-6 md:p-9">
-              <p className="text-[10px] font-light uppercase tracking-[0.28em] text-white/60">
-                Communauté · Fort-de-France
-              </p>
-
-              <div>
-                <h1
-                  className="font-display font-normal leading-[1.02] text-white"
-                  style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(24px, 3.4vw, 38px)' }}
-                >
-                  Événements
-                </h1>
-                <p className="mt-2 max-w-xl text-[12px] font-light leading-relaxed text-white/70">
-                  Ateliers, run clubs, pop-ups et rencontres autour de Pessóra. Filtrez par
-                  catégorie ou parcourez les éditions passées.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Hero typographique — même gabarit que "La Carte" (Menu.tsx) : fond sapin plat,
+          titre centré, pas de photo ni de dégradé. Retour @user, 14/09. */}
+      <section className="bg-sapin px-4 py-20 text-center md:py-28">
+        <h1
+          className="font-display font-normal leading-[0.9] text-white"
+          style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(48px, 7vw, 80px)' }}
+        >
+          Événements
+        </h1>
+        <p className="mx-auto mt-5 max-w-lg text-[16px] font-light leading-relaxed text-white/75">
+          Ateliers, run clubs, pop-ups et rencontres autour de Pessóra. Filtrez par catégorie ou
+          parcourez les éditions passées.
+        </p>
       </section>
 
       {/* ── Rubrique dédiée : Challenge 21 jours (pas de page séparée) ── */}
