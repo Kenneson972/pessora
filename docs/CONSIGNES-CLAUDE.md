@@ -7,7 +7,79 @@
 
 ---
 
-## 🎯 REPRISE ICI — ordre du jour du 12/09 (lire en premier)
+## 🎯 REPRISE ICI — ordre du jour du 12/09, **COMPLÉTÉ LE 14/09** (lire en premier)
+
+> ### 🔴 LE FORMULAIRE D'INSCRIPTION DU CHALLENGE — décisions de @user du 14/09
+>
+> **À lire AVANT d'écrire une ligne sur `ChallengeRegistrationCard.tsx`.**
+> **La source de vérité des questions est la fiche papier de Catherine** — `docs/fiche-papier-challenge-21j.md`
+> (le document qu'elle remplit au bar). **Le formulaire actuel est celui d'un événement normal : il ne la suit pas.**
+> Détail complet et vérifié : **`docs/BRIEF-FORMULAIRE-CHALLENGE-2026-09-14.md`** · état du plan : `docs/VERIF-ITEMS-2026-09-14.md`.
+>
+> **① L'objectif se compte en UN SEUL** — boutons radio, **les 4 de la fiche** :
+> *Perte de poids · Prise de masse / tonification · Plus d'énergie · Reprendre de bonnes habitudes.*
+> 🔴 **Les 5 options actuelles (`Découverte`, `Remise en forme`, `Bien-être et lien social`, `Autre`) sont RETIRÉES.**
+> ⚠️ **On stocke la CLÉ, jamais le libellé** (`perte_de_poids`, `prise_de_masse`, `plus_energie`, `bonnes_habitudes`) —
+> *le libellé changera encore, la clé non.*
+> **Pourquoi un seul** : la fiche dit « **Mon objectif** » au singulier ; et **« Perte de poids » et « Prise de masse »
+> se contredisent** — cochées ensemble, elles donnent à Catherine **une donnée qu'elle ne peut pas utiliser**.
+>
+> **② `nb_personnes` est RETIRÉ** — c'est un champ d'événement normal (« Je viens seul »), **il n'a aucun sens
+> pour un challenge individuel**. 4 occurrences : `ChallengeRegistrationCard.tsx` **l.19, 59, 88, 211-217**.
+>
+> **③ `souhait_info` est REMPLACÉ** par **« Quand souhaites-tu commencer ? »** — les **3 timings de la fiche** :
+> *Ce mois-ci · Le mois prochain · Je souhaite en savoir plus.*
+>
+> **④ L'âge est FACULTATIF, avec l'option explicite « Je ne veux pas renseigner ».**
+> 🔴 **La clé stockée est `non_renseigne`, JAMAIS une chaîne vide** — sinon « je refuse » et « j'ai oublié »
+> redeviennent **indiscernables**. *Une absence qui VEUT DIRE un refus n'est pas une absence.*
+>
+> **⑤ « Que fais-tu dans la vie ? » : champ libre + AUTOCOMPLÉTION** — et **il y a un piège** :
+> **n'affiche pas `public/data/metiers-rome.json` à plat.**
+> Le fichier porte **14 619 libellés** (ROME 4.0, France Travail, **Licence Ouverte**) avec un champ **`src`** :
+> **`fiche` = 1 911** (la couverture métier complète) · **`principale` = 322** · **`synonyme` = 12 386**.
+> 🔴 **Trier par `src` — `fiche` et `principale` d'abord, `synonyme` en secours —, NE PAS couper la liste, 8 résultats max.**
+> *À plat, taper « maçon » renvoie trente propositions (`Maçon-limousinant`, `Maçon-boiseur`…) : ça décourage au lieu d'aider.*
+> **À charger À LA DEMANDE** (au premier clic dans le champ), **jamais dans le bundle initial** (1,24 Mo brut, 168 Ko gzippé).
+> ⚠️ **La saisie reste LIBRE** (les suggestions ne bloquent rien) : forcer le choix ferait entrer les gens dans des cases
+> qui ne leur correspondent pas — *« prof de danse » n'est dans aucune liste.*
+>
+> **⑥ À AJOUTER : les 4 créneaux de rappel** de la fiche (matin · midi · après-midi · soir).
+> ⏳ **Et une question part à Catherine** : *« préférence ou contrainte ? »* — **c'est elle qui appelle**, et les deux
+> lectures produisent **le même champ pour deux usages opposés**.
+>
+> **⑦ Le complément de revenus** entre dans le questionnaire (item ② du plan), **avec les 5 portes du consentement**.
+>
+> ---
+>
+> ### ⚠️ LE PIÈGE SERVEUR — à lire avant d'écrire une ligne
+>
+> `fn_save_post_registration_survey` (migration `20260912120000`) **rejette 4 clés obsolètes**
+> (`precommande_offre`, `gaufre_salee`, `gaufre_salee_autre`, `gaufre_sucree_notes`) **et accepte tout le reste**.
+> **→ Les nouveaux champs (`age`, `profession`, `timing_demarrage`, `creneau_rappel`, `complement_revenus`)
+> ne demandent AUCUNE migration** : le `jsonb` les prend.
+> 🔴 **MAIS deux clés restent EXIGÉES, et leur absence fait échouer la soumission** :
+> **`bilan_offert`** (pour un challenge) → `missing_bilan_offert` **P0001** ·
+> **`objectif_principal`** (tous types) → `missing_objectif_principal` **P0001**.
+> **On ne touche NI à l'une NI à l'autre.** *(C'est la panne du 10/09 : la soumission tombe au submit, sans erreur visible.)*
+>
+> ---
+>
+> ### ⚠️ DEUX CHOSES À NE PAS FAIRE — les deux ont failli être codées
+>
+> **🔴 NE PAS unifier le formulaire du challenge avec celui des événements.** @user a tranché : **il doit DIFFÉRER.**
+> ⚠️ La consigne du 12/09 « **pareil pour tous les événements** » portait sur **l'AUTO-REMPLISSAGE**
+> (`RESTES-2026-09-12.md`, item 4), **pas sur la forme du formulaire** — la relire comme « unifier » est l'erreur
+> qui a produit l'item ⒜ du `PLAN-13-09` (« on unifie la partie commune »). **Cet item est ANNULÉ.**
+>
+> **🔴 Le tag `'challenge'` ne se SUPPRIME PAS.** Il reste le **tag de travail du CRUD dédié** (`useAdminChallenges`
+> crée toujours en `type='challenge'`, la page publique le lit, les challenges existants le portent).
+> **On le retire seulement de `TYPE_OPTIONS` du formulaire d'événement** (`eventEditorTypes.ts:34`) → **un seul chemin
+> de création**, et **le formulaire arrête de promettre des champs qui ne pilotent rien**.
+> ⚠️ **Et le CRUD d'événement, lui, ne se touche pas** : il sert aux 6 autres types.
+> **⚠️ Ce qui reste à traiter après** : les challenges **de l'ancienne logique** *(créés comme un événement basique)*
+> sont des `events` `type='challenge'` **indiscernables des nouveaux** → **rediriger leur édition vers
+> `/admin/challenge-21j`**, sinon **le faux interrupteur survit sur tout l'historique**.
 
 **Branche de travail : `feat/challenge-21j-landing`** — **19 commits déjà poussés** (dernier : `f1eafd9`), `tsc` propre, 30 tests verts (les 10 échecs `cartStore` sont préexistants). **Ne pas repartir de zéro — on FINIT ce qui est commencé.**
 
@@ -840,7 +912,15 @@ La branche `feat/admin-challenge-21j-crud` **ne crée aucune table/colonne/migra
 2. **Son médiateur de la consommation.**
 3. **Son accord** pour le crédit footer.
 4. **Le lien Easy Ta Vie.**
-5. **La recette du module « Bilan » dans son admin** (elle est la seule à pouvoir juger).
+5. **⏳ DEUX QUESTIONS SUR SA FICHE PAPIER** *(ajoutées le 14/09 — le formulaire du site les attend)* :
+   - **« Quand quelqu'un coche plusieurs cases sur ta fiche, tu fais quoi ? »** → tranche **objectif unique ou multiple**.
+     *Elle remplit ces fiches au bar depuis des mois : **sa pratique EST la règle**, on n'a pas à l'inventer.*
+   - **« Le créneau de rappel : une préférence ou une contrainte pour toi ? »** → **c'est elle qui appelle**, et les deux
+     lectures produisent **le même champ pour deux usages opposés** — *si c'est une contrainte et qu'on se trompe,
+     un appel ne passe pas = une inscription perdue.*
+   - ⚠️ **Ce n'est PAS « la recette du module Bilan »** : cette ligne était **mal classée** (corrigé le 14/09).
+     **Améliorer la page Bilan est un chantier de dev** — le générateur de créneaux en masse existe déjà dans
+     `AdminChallenge21j` et doit descendre dans `AdminBilans` *(voir `docs/BRIEF-FORMULAIRE-CHALLENGE-2026-09-14.md`, §⑦)*.
 6. **Deux visuels manquants à la carte** — **TIRAMISU GOURMAND** (shakes) et **DETOX MY BODY** (wellness) ont `image_url = null`. ✅ **Vérifié dans le code : ce n'est PAS une image cassée** — le rendu public gère l'absence (`HomeProductCarousel.tsx:52` : `imageSrc ? <img/> : placeholder`), donc le visiteur voit un **placeholder**, pas un carré brisé. Ce n'est donc **pas un bug à corriger de notre côté** : c'est **deux produits affichés sans leur visuel**. Deux questions pour elle, dans cet ordre : **① ces boissons sont-elles toujours à sa carte ?** (si non → on **retire** le produit, cf. skill `retrait-offre-site-client`) · **② si oui → c'est son visuel qu'il faut** (photos de ses propres boissons, téléversées via le champ image de l'admin — les 14 autres vivent dans le bucket **`product-images`**, `.webp`, ~39 Ko, jamais des PNG de 2 Mo dans le repo).
 
 ---
