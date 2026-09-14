@@ -14,6 +14,8 @@ export interface ChallengeFormData {
   imageUrl: string;
   /** Photo plein cadre du hero (ChallengeHero.tsx) — vide = visuel par défaut du composant. */
   heroImageUrl: string;
+  /** Galerie avant/après (ChallengeBeforeAfterBlock) — bloc masqué tant qu'elle est vide. */
+  gallery: string[];
 }
 
 export function useAdminChallenges() {
@@ -57,6 +59,7 @@ export function useAdminChallenges() {
         registration_open: form.registrationOpen,
         image_url: form.imageUrl || null,
         hero_image_url: form.heroImageUrl || null,
+        gallery: form.gallery,
       })
       .select()
       .single();
@@ -79,6 +82,7 @@ export function useAdminChallenges() {
         registration_open: form.registrationOpen,
         image_url: form.imageUrl || null,
         hero_image_url: form.heroImageUrl || null,
+        gallery: form.gallery,
       })
       .eq('id', id)
       .select('id');

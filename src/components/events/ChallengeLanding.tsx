@@ -45,7 +45,7 @@ export function ChallengeLanding({ event }: ChallengeLandingProps) {
       <ChallengeTrustBadges />
       <ChallengeStatsBlock />
       <ChallengeInclusBanners />
-      <ChallengeBeforeAfterBlock />
+      <ChallengeBeforeAfterBlock gallery={event.gallery} />
       <ChallengeTestimonialsBlock />
       <div className="mx-auto max-w-6xl px-4 py-16 md:px-10 md:py-[6.5rem] lg:px-[72px]">
         {isPast ? (

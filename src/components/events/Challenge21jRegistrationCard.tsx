@@ -430,21 +430,6 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
             </div>
           )}
 
-          {Array.isArray(event.gallery) && event.gallery.length > 0 && (
-            <div className="mt-8">
-              <p className="mb-3 text-[9px] font-normal uppercase tracking-[0.2em] text-black/60">
-                Avant / après — challengers précédents
-              </p>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {event.gallery.map((url: string) => (
-                  <div key={url} className="aspect-square overflow-hidden rounded-[2px] bg-surface-product-well">
-                    <img src={url} alt="" className="h-full w-full object-cover" loading="lazy" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           <div className="mt-8">
             <BilanBookingWidget
               challengeEventId={event.id}
