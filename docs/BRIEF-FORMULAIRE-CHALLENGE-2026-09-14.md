@@ -342,14 +342,13 @@ Détail du plan : `docs/PLAN-13-09.md`. État vérifié : `docs/VERIF-ITEMS-2026
 
 # CE QUI MANQUE — état au 14/09/2026
 
-## ⏳ De CATHERINE *(rien ne peut avancer sans elle)*
+## ⏳ De CATHERINE *(rien ne peut avancer sans elle)* — 7 points, plus 8 ⚠️ voir note
 
 | # | Quoi | Ce que ça débloque |
 |---|---|---|
 | 1 | **La carte complète** (catégories + prix) | le moteur Formules, PessoBot v2 — **le plus gros reste** |
 | 2 | **Le lien Easy Ta Vie** | la livraison (le site est en Click & Collect seul) |
 | 3 | **Son médiateur de la consommation** | la mention CGV + footer — **obligation légale** |
-| 4 | **La recette de son module Bilan** | c'est **elle** qui juge si l'écran est utilisable |
 | 5 | **Confirmer que 2 visuels sont de l'ancienne carte** | s'ils le sont : **on les retire**, on ne les complète pas |
 | 6 | **« Quand quelqu'un coche plusieurs cases sur ta fiche, tu fais quoi ? »** | tranche objectif unique / multiple |
 | 7 | **« Le créneau de rappel : une préférence ou une contrainte ? »** | le sens du champ (voir §7) |
@@ -369,10 +368,56 @@ Détail du plan : `docs/PLAN-13-09.md`. État vérifié : `docs/VERIF-ITEMS-2026
 | 1 | **Les créneaux de bilan s'écrivent depuis DEUX pages** (`AdminChallenge21j` **et** `AdminBilans`) | deux écrans, **une seule donnée** |
 | 2 | **Deux chemins pour créer un challenge** (« Événements » **et** « Challenge 21j ») | deux formulaires pour un même objet |
 
-## 🔨 De la TEAM *(les 6 items du plan)*
+## 🔨 De la TEAM
 
+### Les 6 items du plan
 ① Formulaire *(ce brief)* · ② Complément de revenus · ③ Rubrique noire · ④ Rouge `conseils` ·
 ⑤ Accroche · ⑥ Newsletter — **aucun n'est terminé, aucun n'est cassé.**
+
+### ⑦ AMÉLIORER LA PAGE BILAN (CRUD) — *correction de Ken, 14/09*
+
+> *« Pas besoin de Catherine pour ça, on doit améliorer la page Bilan du CRUD en plus. »*
+
+**⚠️ La première version de ce brief classait « la recette du module Bilan » comme une attente de
+Catherine. C'ÉTAIT FAUX** — c'est un **chantier de dev**. La ligne vient de `CONSIGNES-CLAUDE.md:843`,
+qui la rangeait dans « EN ATTENTE DE CATHERINE (rien à coder) » : **mal classée, à corriger aussi.**
+
+**Ce que dit le code (`origin/main` = `6bc79e2`) :**
+
+| Page | Ce qu'elle sait faire |
+|---|---|
+| **`AdminBilans.tsx`** | `createSlotAtSelected()` (`l.211-217`) → **UN créneau à la fois** (`date` + `heure`), au clic (`l.607`). **Aucune création en masse.** |
+| **`AdminChallenge21j.tsx`** | **LE GÉNÉRATEUR EXISTE DÉJÀ** : `generateSlots` (`l.96-100`) → plage de dates, liste d'heures, jours à exclure, **déduplication**, et **un seul `INSERT` multi-lignes** (via `useAdminChallengeSlots.ts:47-51` / `lib/challengeSlotGenerator`). |
+
+**⚠️ Donc : ce n'est pas une fonctionnalité à écrire, c'est un DÉPLACEMENT.** La page Bilan doit
+récupérer ce que Challenge21j sait déjà faire.
+
+**Le plan du 12/09 le disait déjà** (`docs/superpowers/specs/2026-09-12-admin-challenge-21j-crud-design.md`,
+§B) :
+> `AdminBilans.tsx` : `createSlotAtSelected()` insère **un** créneau à la fois… **Aucun moyen de
+> peupler en une fois les ~14 jours de la fenêtre J-14→J.**
+
+**Et ça ferme le doublon ① des arbitrages** : une fois le générateur dans Bilan, **`AdminChallenge21j`
+perd les créneaux** et `AdminBilans` devient **seule maison de `bilan_slots`**.
+
+### ⚠️ LE PIÈGE À TESTER, PAS À DÉDUIRE
+
+Le générateur insère avec **`challenge_event_id` laissé à `NULL`** et compte sur le trigger
+**`fn_bilan_slot_attach_challenge`** pour rattacher le créneau au challenge (fenêtre J-14→J).
+**Le trigger s'applique à l'INSERT — donc il doit se déclencher depuis Bilan aussi.**
+**À vérifier par une mesure, pas par lecture** : insérer depuis Bilan, puis relire
+`challenge_event_id` en base.
+
+### ⚠️ ET LE SECOND CONSTAT DU MÊME PLAN — l'admin ment à Catherine
+
+> Le type `'challenge'` est une simple valeur de liste déroulante dans le formulaire d'événement —
+> **aucun champ spécifique**. Or la page publique ne lit **aucun** de ces champs (le hero et les
+> bannières sont **codés en dur** dans `ChallengeHero.tsx` / `ChallengeInclusBanners.tsx`).
+> **Modifier ces champs pour un challenge ne change rien sur le site, ce qui induit Catherine en
+> erreur.**
+
+**C'est un défaut de confiance, pas d'ergonomie** : elle croit agir, et rien ne se passe. À traiter
+dans le même lot — soit **on masque** ces champs pour un challenge, soit **on les branche**.
 
 ---
 
