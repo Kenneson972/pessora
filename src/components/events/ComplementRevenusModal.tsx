@@ -51,15 +51,24 @@ export function ComplementRevenusModal({ registrationId, telephone, onClose }: C
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-noir/40 p-4" role="dialog" aria-modal="true" aria-label="Complément de revenus">
-      <div className="w-full max-w-md rounded-[2px] bg-white p-6 shadow-lg sm:p-8">
-        <div className="mb-5 flex items-start justify-between gap-4">
-          <h3 className="font-display font-normal text-noir" style={{ fontFamily: 'var(--font-display)', fontSize: '20px' }}>
-            Envie d'en savoir plus ?
-          </h3>
-          <button type="button" onClick={onClose} aria-label="Fermer" className="shrink-0 text-black/40 hover:text-noir">
-            <X size={18} strokeWidth={1.5} />
+      <div className="w-full max-w-lg overflow-hidden rounded-[2px] bg-white shadow-lg">
+        {/* Image — remplaçable depuis /admin plus tard si besoin ; posée en dur pour tester (@user, 14/09). */}
+        <div className="relative aspect-[21/9] w-full bg-surface-muted">
+          <img src="/challenge-21j/complement-revenus.webp" alt="" className="absolute inset-0 h-full w-full object-cover" />
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fermer"
+            className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-black/70 backdrop-blur-[2px] transition-colors hover:bg-white"
+          >
+            <X size={16} strokeWidth={1.5} />
           </button>
         </div>
+
+        <div className="p-6 sm:p-8">
+        <h3 className="mb-5 font-display font-normal text-noir" style={{ fontFamily: 'var(--font-display)', fontSize: '20px' }}>
+          Envie d'en savoir plus ?
+        </h3>
 
         <p className="mb-5 text-[13px] font-light leading-relaxed text-black/60">
           Et si Pessóra pouvait aussi t'apporter une opportunité financière ? Il s'agit d'une{' '}
@@ -102,6 +111,7 @@ export function ComplementRevenusModal({ registrationId, telephone, onClose }: C
           >
             {submitting ? 'Envoi…' : 'Valider'}
           </button>
+        </div>
         </div>
       </div>
     </div>
