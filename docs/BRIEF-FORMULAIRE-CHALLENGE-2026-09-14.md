@@ -408,6 +408,43 @@ Le générateur insère avec **`challenge_event_id` laissé à `NULL`** et compt
 **À vérifier par une mesure, pas par lecture** : insérer depuis Bilan, puis relire
 `challenge_event_id` en base.
 
+### ✅ CE QUI EST DÉJÀ BON — ne pas le refaire *(vérifié 14/09 sur `6bc79e2`)*
+
+**`AdminChallenge21j.tsx` est déjà conforme au plan du 12/09.** Son formulaire ne propose **que**
+ce qui pilote réellement la page :
+
+| Champ | Ligne | Rôle |
+|---|---|---|
+| **Titre** | `l.159` | le libellé du challenge |
+| **Date de début** | `l.168` | pilote le minuteur **et** la fenêtre de réservation J-14→J |
+| **Actif (visible publiquement)** | `l.183` | ouvre/ferme le challenge |
+| `registration_open` | `useAdminChallenges.ts:47,62` | ouvre/ferme les inscriptions |
+
+**Pas d'image, pas de lieu, pas de description, pas de capacité, pas de prix** ✅
+Et le hook n'écrit que ça : `{ type: 'challenge', title, date, slug, active, registration_open }`.
+
+**Les trois briques du plan sont en place** : **A** édition (`useAdminChallenges`) · **B** créneaux
+en masse (`generateSlots`, `l.100`) · **C** inscrits enrichis — avec les colonnes **Prénom · Nom ·
+Téléphone · Créneau bilan · Objectif · Complément revenus · Date d'inscription** (`l.303`).
+
+### ⚠️ DONC LE VRAI CHANTIER : LE FORMULAIRE D'ÉVÉNEMENT, PAS LE CRUD DÉDIÉ
+
+**Le « CRUD challenge 21 » à changer, c'est celui d'`AdminEvenements` / `EventForm.tsx`** — parce que
+**c'est lui qui ment** : il propose titre, lieu, point de rendez-vous, capacité, prix, pop-up…
+**pour un challenge, dont la page ne lit rien de tout ça.**
+
+**Et la correction ferme AUSSI le doublon ② des arbitrages :**
+
+> **Retirer `'challenge'` des `TYPE_OPTIONS` du formulaire d'événement** (`eventEditorTypes.ts:34`).
+> Un challenge **ne se crée plus depuis « Événements »** → **un seul chemin**, le CRUD dédié.
+> **Et le mensonge disparaît en même temps que le doublon** — il n'y a plus de formulaire pour
+> promettre des champs qui ne servent à rien.
+
+**⚠️ CE QU'IL RESTE À TRAITER APRÈS** : **les challenges DÉJÀ créés** restent des `events` avec
+`type='challenge'` → **si on les ouvre depuis la liste des Événements, on tombe encore sur le
+formulaire générique.** Il faut **rediriger** ces lignes vers `/admin/challenge-21j`
+(sinon le faux interrupteur survit sur tout l'historique).
+
 ### ⚠️ ET LE SECOND CONSTAT DU MÊME PLAN — l'admin ment à Catherine
 
 > Le type `'challenge'` est une simple valeur de liste déroulante dans le formulaire d'événement —
