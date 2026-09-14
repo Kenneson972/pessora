@@ -34,7 +34,7 @@ export function ChallengeAvailabilityNotice({ case: state }: ChallengeAvailabili
   const { title, body, source } = COPY[state];
   return (
     <div id="inscription" className="rounded-[2px] border border-noir/10 bg-surface-card p-8 md:p-14">
-      <p className="mb-3 text-[9px] uppercase tracking-[0.32em] text-black/42">Challenge 21 jours</p>
+      <p className="mb-3 text-[10px] uppercase tracking-[0.3em] text-black/60">Challenge 21 jours</p>
       <h2
         className="mb-5 font-display font-normal"
         style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(21px, 2.4vw, 30px)' }}

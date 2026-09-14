@@ -75,7 +75,8 @@ export function ChallengeCountdown({ targetDate, variant = 'dark', compact = fal
   ];
 
   const numberColor = variant === 'light' ? 'text-white' : 'text-noir';
-  const labelColor = variant === 'light' ? 'text-white/60' : 'text-black/45';
+  // 14/09 — 45 % de noir = 2,85:1 mesuré en prod : sous AA. 60 % = 5,25:1 sur blanc.
+  const labelColor = variant === 'light' ? 'text-white/75' : 'text-black/60';
   const dotColor = variant === 'light' ? 'text-white/25' : 'text-black/20';
   const numberSize = compact ? 'clamp(18px, 2.4vw, 24px)' : 'clamp(28px, 4vw, 40px)';
   const gap = compact ? 'gap-3 sm:gap-4' : 'gap-6 sm:gap-10';
@@ -94,7 +95,8 @@ export function ChallengeCountdown({ targetDate, variant = 'dark', compact = fal
             >
               {pad(u.value)}
             </span>
-            <span className={`mt-1 text-[8px] uppercase tracking-[0.18em] ${labelColor} ${compact ? '' : 'sm:mt-1.5 sm:text-[9px] sm:tracking-[0.2em]'}`}>
+            {/* 14/09 — 8 px a 390 px = le texte le plus petit de la page. Plancher 10 px. */}
+            <span className={`mt-1 text-[10px] uppercase tracking-[0.18em] ${labelColor} ${compact ? '' : 'sm:mt-1.5 sm:text-[11px] sm:tracking-[0.2em]'}`}>
               {compact ? u.label.slice(0, 1) : u.label}
             </span>
           </div>

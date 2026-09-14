@@ -378,7 +378,7 @@ const AdminChallenge21j = () => {
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <ImageField
               label="Vignette"
-              hint="page Événements"
+              hint="page du Challenge — la bannière de la page Événements est fixe"
               value={form.imageUrl}
               pathPrefix="challenge-21j/vignette"
               onChange={(url) => setForm((f) => ({ ...f, imageUrl: url }))}
@@ -398,6 +398,16 @@ const AdminChallenge21j = () => {
               pathPrefix="challenge-21j/galerie"
               onChange={(gallery) => setForm((f) => ({ ...f, gallery }))}
             />
+            {/* 14/09 — la règle des droits à l'image vivait dans un commentaire de
+                code (ChallengeBeforeAfterBlock), c'est-à-dire là où personne ne la
+                lit. Elle est DÉPLACÉE ici, là où Catherine téléverse.
+                Le bloc reste masqué tant que la galerie est vide : une galerie
+                vide ne publie rien, et une légende manquante ne bloque pas. */}
+            <p className="mt-4 text-[11px] font-light text-black/60">
+              Ces photos sont publiées sur la page du challenge, visible par tout le monde.
+              Demande l'accord des personnes avant de les envoyer, et n'affiche jamais de
+              résultat chiffré (poids, centimètres, durée).
+            </p>
           </div>
 
           <button
