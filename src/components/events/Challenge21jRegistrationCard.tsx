@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import { CheckCircle, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
 import type { Event } from '../../types/database';
@@ -18,6 +18,49 @@ import { formatDateShort } from '../../lib/eventDateFormat';
 // Détail : docs/BRIEF-FORMULAIRE-CHALLENGE-2026-09-14.md
 
 const AGE_NON_RENSEIGNE = 'non_renseigne';
+
+// Garde-fou anti-doublon (14/09, demande @user) : un refresh de page ne doit pas permettre de
+// se réinscrire. sessionStorage (pas localStorage) survit à un F5 mais reste propre à l'onglet —
+// exactement le cas visé. La base a de toute façon une UNIQUE(event_id, telephone) (vérifié en
+// direct) qui bloquerait un doublon réel avec un message plus froid ("déjà inscrit") ; ceci
+// évite d'y arriver et propose de MODIFIER plutôt que de re-remplir.
+type StoredRegistration = {
+  id: string;
+  nom: string;
+  prenom: string;
+  telephone: string;
+  age: string;
+  profession: string;
+  timing_demarrage: string;
+  creneau_rappel: string[];
+};
+
+function storageKey(eventId: string): string {
+  return `pessora_challenge21j_registration_${eventId}`;
+}
+
+function readStoredRegistration(eventId: string): StoredRegistration | null {
+  try {
+    const raw = sessionStorage.getItem(storageKey(eventId));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed.id === 'string' && typeof parsed.telephone === 'string') {
+      return parsed as StoredRegistration;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredRegistration(eventId: string, reg: StoredRegistration): void {
+  try {
+    sessionStorage.setItem(storageKey(eventId), JSON.stringify(reg));
+  } catch {
+    // Stockage indisponible (navigation privée stricte, quota) : l'inscription reste valide en
+    // base, seul le confort "déjà inscrit" après refresh est perdu — jamais bloquant.
+  }
+}
 
 const schema = z.object({
   nom: z.string().min(2, 'Nom requis'),
@@ -120,12 +163,67 @@ export interface Challenge21jRegistrationCardProps {
 
 export function Challenge21jRegistrationCard({ event }: Challenge21jRegistrationCardProps) {
   const { user } = useAuth();
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'duplicate' | 'full' | 'error'>('idle');
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'already' | 'duplicate' | 'full' | 'error'>('idle');
   const [postRegistration, setPostRegistration] = useState<{ id: string; nom: string; prenom: string; telephone: string } | null>(null);
   const [registrationCount, setRegistrationCount] = useState(event.registrationCount);
   const [ageDeclined, setAgeDeclined] = useState(false);
   const [professionOpen, setProfessionOpen] = useState(false);
   const { ensureLoaded, suggest } = useMetierSuggestions();
+
+  // « Vous êtes déjà inscrit(e) » — chargé depuis sessionStorage, jamais depuis un état local
+  // qu'un refresh effacerait.
+  const [existing, setExisting] = useState<StoredRegistration | null>(null);
+  const [editingInfo, setEditingInfo] = useState(false);
+  const [editForm, setEditForm] = useState<Pick<StoredRegistration, 'age' | 'profession' | 'timing_demarrage' | 'creneau_rappel'> | null>(null);
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editSaved, setEditSaved] = useState(false);
+
+  useEffect(() => {
+    const stored = readStoredRegistration(event.id);
+    if (stored) {
+      setExisting(stored);
+      setPostRegistration({ id: stored.id, nom: stored.nom, prenom: stored.prenom, telephone: stored.telephone });
+      setSubmitStatus('already');
+    }
+  }, [event.id]);
+
+  const startEditInfo = () => {
+    if (!existing) return;
+    setEditForm({
+      age: existing.age,
+      profession: existing.profession,
+      timing_demarrage: existing.timing_demarrage,
+      creneau_rappel: existing.creneau_rappel,
+    });
+    setEditError(null);
+    setEditSaved(false);
+    setEditingInfo(true);
+  };
+
+  const saveEditInfo = async () => {
+    if (!existing || !editForm) return;
+    setEditSaving(true);
+    setEditError(null);
+    const { error } = await supabase.rpc('fn_update_challenge21j_registration', {
+      p_registration_id: existing.id,
+      p_telephone: existing.telephone,
+      p_age: editForm.age,
+      p_profession: editForm.profession,
+      p_timing_demarrage: editForm.timing_demarrage,
+      p_creneau_rappel: editForm.creneau_rappel,
+    });
+    setEditSaving(false);
+    if (error) {
+      setEditError('Impossible d’enregistrer tes modifications. Réessaie ou contacte-nous sur Instagram.');
+      return;
+    }
+    const updated: StoredRegistration = { ...existing, ...editForm };
+    setExisting(updated);
+    writeStoredRegistration(event.id, updated);
+    setEditSaved(true);
+    setEditingInfo(false);
+  };
 
   const { control, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -178,6 +276,18 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
       return;
     }
 
+    const stored: StoredRegistration = {
+      id: registrationId,
+      nom: data.nom,
+      prenom: data.prenom,
+      telephone: data.telephone,
+      age: ageDeclined ? AGE_NON_RENSEIGNE : data.age.trim(),
+      profession: data.profession.trim(),
+      timing_demarrage: data.timing_demarrage,
+      creneau_rappel: data.creneau_rappel,
+    };
+    writeStoredRegistration(event.id, stored);
+    setExisting(stored);
     setPostRegistration({ id: registrationId, nom: data.nom, prenom: data.prenom, telephone: data.telephone });
     setSubmitStatus('success');
     setRegistrationCount((prev) => prev + 1);
@@ -189,10 +299,10 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
         className="font-display font-light text-noir mb-8"
         style={{ fontFamily: 'var(--font-display)', fontSize: '26px' }}
       >
-        {submitStatus === 'success' ? 'Inscription confirmée !' : "Je m'inscris"}
+        {submitStatus === 'success' ? 'Inscription confirmée !' : submitStatus === 'already' ? 'Tu es déjà inscrit(e)' : "Je m'inscris"}
       </h2>
 
-      {submitStatus === 'success' && (
+      {(submitStatus === 'success' || submitStatus === 'already') && (
         <div className="w-full">
           <div aria-live="polite" className="flex flex-col items-center text-center gap-4 py-8">
             <CheckCircle size={48} strokeWidth={1} className="text-gold-dim" aria-hidden="true" />
@@ -205,6 +315,114 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
               {event.heure && <> à {event.heure.slice(0, 5)}</>}.
             </p>
           </div>
+
+          {existing && (
+            <div className="mb-8 rounded-[2px] border border-noir/[0.06] bg-surface-muted/60 p-5">
+              {!editingInfo ? (
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="text-[12px] font-light text-black/55">
+                    <p>Âge : {existing.age === AGE_NON_RENSEIGNE ? 'non renseigné' : existing.age || '—'}</p>
+                    <p>Métier : {existing.profession || '—'}</p>
+                    <p>Début souhaité : {TIMING_OPTIONS.find((o) => o.value === existing.timing_demarrage)?.label ?? '—'}</p>
+                    <p>
+                      Créneaux de rappel :{' '}
+                      {existing.creneau_rappel.length > 0
+                        ? existing.creneau_rappel.map((c) => CRENEAU_OPTIONS.find((o) => o.value === c)?.label ?? c).join(', ')
+                        : '—'}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={startEditInfo}
+                    className="shrink-0 rounded-full border border-noir/15 px-4 py-2 text-[10px] font-normal uppercase tracking-[0.12em] text-black/60 hover:border-noir/35 hover:text-noir transition-colors"
+                  >
+                    Modifier mes informations
+                  </button>
+                </div>
+              ) : (
+                editForm && (
+                  <div className="space-y-4">
+                    <div className="space-y-1">
+                      <label htmlFor="edit-profession" className={labelClass}>Que fais-tu dans la vie ?</label>
+                      <input
+                        id="edit-profession"
+                        value={editForm.profession}
+                        onChange={(e) => setEditForm((f) => (f ? { ...f, profession: e.target.value } : f))}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <p className={labelClass}>Quand souhaites-tu commencer ?</p>
+                      {TIMING_OPTIONS.map((o) => (
+                        <label key={o.value} className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="edit-timing"
+                            checked={editForm.timing_demarrage === o.value}
+                            onChange={() => setEditForm((f) => (f ? { ...f, timing_demarrage: o.value } : f))}
+                            className="accent-sapin"
+                          />
+                          <span className="text-[13px] text-black/70">{o.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                    <div className="space-y-2">
+                      <p className={labelClass}>Quand peut-on te recontacter ?</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {CRENEAU_OPTIONS.map((o) => {
+                          const checked = editForm.creneau_rappel.includes(o.value);
+                          return (
+                            <label key={o.value} className="flex items-center gap-3 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={(e) =>
+                                  setEditForm((f) =>
+                                    f
+                                      ? {
+                                          ...f,
+                                          creneau_rappel: e.target.checked
+                                            ? [...f.creneau_rappel, o.value]
+                                            : f.creneau_rappel.filter((v) => v !== o.value),
+                                        }
+                                      : f,
+                                  )
+                                }
+                                className="h-4 w-4 rounded-[2px] border border-noir/15 accent-sapin"
+                              />
+                              <span className="text-[13px] text-black/70">{o.label}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    {editError && <p className="text-[11px] text-red-600">{editError}</p>}
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        disabled={editSaving}
+                        onClick={saveEditInfo}
+                        className="rounded-full bg-noir px-5 py-2.5 text-[10px] font-normal uppercase tracking-[0.12em] text-white hover:bg-anthracite disabled:opacity-50"
+                      >
+                        {editSaving ? 'Enregistrement…' : 'Enregistrer'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingInfo(false)}
+                        className="text-[10px] font-light text-black/45 hover:text-noir"
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  </div>
+                )
+              )}
+              {editSaved && !editingInfo && (
+                <p className="mt-3 text-[11px] text-sapin">Modifications enregistrées.</p>
+              )}
+            </div>
+          )}
+
           {Array.isArray(event.gallery) && event.gallery.length > 0 && (
             <div className="mt-8">
               <p className="mb-3 text-[9px] font-normal uppercase tracking-[0.2em] text-black/60">
@@ -266,7 +484,7 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
             Les inscriptions pour cet événement ne sont plus disponibles.
           </p>
         </div>
-      ) : submitStatus !== 'success' && !isFull && (
+      ) : submitStatus !== 'success' && submitStatus !== 'already' && !isFull && (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Controller name="prenom" control={control} render={({ field }) => (
