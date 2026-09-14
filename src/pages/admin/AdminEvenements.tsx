@@ -14,9 +14,10 @@ import {
   Eye,
   EyeOff,
   RefreshCw,
+  Trophy,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ContextMenu, EmptyState, Segment } from '@heroui-pro/react';
 import { supabase } from '../../lib/supabaseClient';
 import { downloadCsv } from '../../lib/csvExport';
@@ -63,7 +64,9 @@ const EMPTY_FORM = {
 
 type FormState = typeof EMPTY_FORM;
 
-const TYPE_OPTIONS: Event['type'][] = ['challenge', 'event', 'popup', 'atelier', 'partenariat', 'bilan', 'run_club'];
+// 'challenge' retiré (14/09) : les challenges ont leur propre écran dédié (/admin/challenge-21j)
+// et sont exclus de cette liste (fetchEvents) — plus rien à filtrer ici pour ce type.
+const TYPE_OPTIONS: Event['type'][] = ['event', 'popup', 'atelier', 'partenariat', 'bilan', 'run_club'];
 const TYPE_LABELS: Record<Event['type'], string> = {
   challenge: 'Challenge 21 jours',
   event: 'Événement',
@@ -319,11 +322,15 @@ const AdminEvenements = () => {
           setEvents([]);
           return;
         }
-        // Normalize: ensure `gallery` is always a string[]
-        const normalized = (data ?? []).map((ev) => ({
-          ...ev,
-          gallery: Array.isArray(ev.gallery) ? ev.gallery : [],
-        })) as EventWithCount[];
+        // Normalize: ensure `gallery` is always a string[]. Les challenges sont exclus de cette
+        // liste (14/09) : ils ont leur propre écran dédié, /admin/challenge-21j — les afficher
+        // ici en plus fait deux endroits pour une même donnée (le doublon qu'on ferme).
+        const normalized = (data ?? [])
+          .filter((ev) => ev.type !== 'challenge')
+          .map((ev) => ({
+            ...ev,
+            gallery: Array.isArray(ev.gallery) ? ev.gallery : [],
+          })) as EventWithCount[];
         setEvents(normalized);
       });
   };
@@ -566,14 +573,22 @@ const AdminEvenements = () => {
       <DashPageHeader
         breadcrumb="Administration"
         title="Événements"
-        subtitle="Pop-ups, ateliers, partenariats — créer, éditer, gérer les inscriptions et les photos."
+        subtitle="Pop-ups, ateliers, partenariats — créer, éditer, gérer les inscriptions et les photos. Le Challenge 21 jours se gère à part."
         action={
-          <button type="button"
-            onClick={() => setView({ kind: 'create' })}
-            className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-noir text-white px-4 text-[13px] font-medium hover:bg-anthracite transition-colors"
-          >
-            <Plus size={14} /> Nouvel événement
-          </button>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/admin/challenge-21j"
+              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-noir/15 px-4 text-[13px] font-normal text-black/60 transition-colors hover:border-noir/30 hover:text-noir"
+            >
+              <Trophy size={14} strokeWidth={1.6} /> Challenge 21j
+            </Link>
+            <button type="button"
+              onClick={() => setView({ kind: 'create' })}
+              className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-noir text-white px-4 text-[13px] font-medium hover:bg-anthracite transition-colors"
+            >
+              <Plus size={14} /> Nouvel événement
+            </button>
+          </div>
         }
       />
 
