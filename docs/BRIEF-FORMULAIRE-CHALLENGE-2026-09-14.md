@@ -536,90 +536,59 @@ dans le même lot — soit **on masque** ces champs pour un challenge, soit **on
 
 ---
 
-## 🔴 ALERTE — LA BRANCHE `feat/bannieres-inclus` EST PÉRIMÉE ET DANGEREUSE
 
-**Constaté le 14/09/2026 en préparant le merge de la branche `docs/` vers `main`.**
+---
 
-**`feat/bannieres-inclus`** est ouverte depuis le **12/09** (dernier commit `5488984`,
-*« feat(bannieres): 1re ligne branchee »*), **jamais rebasée** depuis le retrait des formules
-obsoletes.
+## ⚠️ CORRECTION — LA BRANCHE `feat/bannieres-inclus` NE PRÉSENTE AUCUN RISQUE
 
-### ⚠️ Ce qu'elle réintroduit
+> **Ce brief portait une « ALERTE » disant que cette branche réintroduisait la précommande et les
+> gaufres, et qu'un merge ferait échouer les inscriptions RUN CLUB.**
+> **C'ÉTAIT FAUX. L'alerte est retirée, et voici la mesure qui la contredit.**
 
-**Elle reverse dans `src/data/postRegistrationSurvey.ts` exactement ce que Ken a déclaré obsolète
-le 12/09** — et que le merge `6bc79e2` (*retrait des formules obsolètes*) avait supprimé :
+### L'erreur, et pourquoi elle est instructive
 
-```diff
--export type PostRegistrationStepId = 'bilan' | 'objectif'
-+export type PostRegistrationStepId = 'precommande' | 'bilan' | 'objectif' | 'gaufres'
+**J'ai comparé la branche à `main`** (`git diff origin/main..origin/feat/bannieres-inclus`).
+**C'est la mauvaise comparaison** : la branche a **61 commits de retard**, donc **tout ce que `main` a
+gagné depuis** apparaît en négatif — dont le retrait des formules obsolètes.
 
-   if (eventType === 'run_club') {
--    return ['objectif']
-+    return ['precommande', 'objectif', 'gaufres']
-   }
-```
+**→ Une branche EN RETARD ne « réintroduit » rien. Elle est simplement vieille.**
+*(Et git, sur un fichier que la branche n'a pas touché, garde la version de `main` au merge.)*
 
-**Plus deux constantes recréées** : `PRECOMMANDE_OPTIONS` *(« Formule 18 € », « Formule 28 € »…)*
-et `GAUFRE_SALEE_OPTIONS` *(« Jambon fromage », « Végétarienne »…)*.
+**La bonne comparaison est `merge-base..branche`** — ce que la branche apporte **par rapport à sa
+propre base**, pas par rapport à aujourd'hui.
 
-### 🔴 Pourquoi c'est plus grave qu'un simple conflit
+### Ce que la branche apporte RÉELLEMENT
 
-**La migration `20260912120000_retrait_precommande_gaufres_rpc.sql` REJETTE ces clés côté serveur :**
-
-> *« Clés obsolètes (commande de formule + gaufres) rejetées pour TOUS les types »* —
-> `RAISE EXCEPTION 'invalid_payload_keys'` si `precommande_offre`, `gaufre_salee`,
-> `gaufre_salee_autre` ou `gaufre_sucree_notes` apparaît dans le payload.
-
-**Donc si cette branche est mergée telle quelle** : le front **envoie** des clés que le serveur
-**refuse** → **toute inscription à un RUN CLUB échoue en `invalid_payload_keys`**, au submit,
-sans erreur visible.
-
-C'est **exactement** le scénario que le scan du 14/09 avait nommé :
-> *« la migration avant le merge du front (ordre inverse = toute soumission RUN CLUB échoue) »*
-
-### ✅ VÉRIFIÉ LE 14/09 — fermer cette branche ne retire RIEN du site
-
-**Question de Ken : *« les bannières sont présentes sur le site, j'espère qu'on ne va pas les
-retirer. »* Réponse : non.**
-
-**Les bannières de l'onglet `inclure` vivent dans `main`** (`ChallengeInclusBanners.tsx`, monté par
-`ChallengeLanding.tsx:47`), **et `main` est déployé**. Preuve relevée **sur le site en ligne** — le
-chunk `assets/ChallengeLanding-C0Ua0sxO.js` servi par `www.pessora.fr` contient :
-
-```
-24FIT (×2) · GetFitNow · inclus-getfitnow · inclus-communaute · inclus-seances-sport
-« Séances de sport » · « Idées recettes » · « Communauté »
-```
-
-**→ Les bannières sont bien en ligne, et elles ne dépendent PAS de la branche.**
-
-### ⚠️ Et ce que la branche fait VRAIMENT — plus gros qu'un ajustement
-
-**Elle ne complète pas les bannières : elle les REMPLACE.**
+**Deux fichiers, et c'est tout** *(mesuré contre son point de divergence `03df150`, 12/09)* :
 
 | | |
 |---|---|
-| **Supprime** | **143 lignes** de `ChallengeInclusBanners.tsx` — dont **tout le tableau `INCLUS`** (`Application GetFitNow`, `Communauté 24FIT PESSORA`, `Séances de sport`, `Idées recettes`…) |
-| **Ajoute** | `src/components/events/ChallengeProgramCard.tsx` — **un composant qui remplace l'actuel** |
-| **Ajoute** | `public/bannieres/conseils.jpg` — l'item `conseils` déplacé hors des bannières |
-| **Résultat** | dans la branche, **`ChallengeInclusBanners` n'est plus monté nulle part** |
+| **A** | `public/bannieres/conseils.jpg` — une image |
+| **M** | `src/components/events/ChallengeProgramCard.tsx` — **une ligne** : l'item « Conseils & accompagnement » reçoit `image: '/bannieres/conseils.jpg'` |
 
-### ⚠️ Et elle a **61 commits de retard** sur `main`
+**Elle ne touche NI `postRegistrationSurvey.ts`, NI `ChallengeInclusBanners.tsx`.** ✅
 
-**2 commits, datés du 12/09, jamais rebasés.** Donc elle a été écrite **avant** tout ce qui est passé
-depuis : le retrait des formules obsolètes, le lot A, la refonte du hero, les 38 items.
+### Et surtout : `ChallengeProgramCard` N'EXISTE PLUS
 
-### Ce qu'il faut en faire
+**Le même jour, le commit `ff4caca` a créé le composant actuel :**
+> *« feat(challenge): bannières "inclus" en **pleine largeur** + **reveal au scroll** »*
 
-- **Ne PAS la merger telle quelle.**
-- **Option A (recommandée) : la fermer.** Fermer ne retire rien du site — **les bannières actuelles
-  restent** — et son sujet *(l'item `conseils`, toujours ouvert au plan §④)* **se refera sur une base
-  propre**, à partir de `main`.
-- **Option B : la rebaser** sur `main`, **et retirer** `precommande`, `gaufres`,
-  `PRECOMMANDE_OPTIONS`, `GAUFRE_SALEE_OPTIONS` — **avant** toute reprise.
+**`ChallengeInclusBanners.tsx` remplace donc `ChallengeProgramCard.tsx`** — la branche travaille sur
+**une version antérieure du même écran**, dépassée depuis.
 
-**⚠️ Dans les deux cas : l'idée de FOND de la branche — sortir l'item `conseils` des bannières
-« inclus » — reste une piste valable.** C'est le **code** qui est périmé, **pas l'intention.**
+### ✅ Réponse à la question de Ken : oui, tout est sur `main`
 
-⚠️ **Tant qu'elle reste ouverte, elle gèle aussi le doc de consignes** (règle du 12/09 : *« le doc de
-consignes est gelé tant qu'une branche est ouverte »*) — **pour un travail périmé.**
+> *« J'espère que tout est sur main, même le redimensionnement des bannières. »*
+
+**Oui.** Le composant servi en ligne est `ChallengeInclusBanners` — **créé le 12/09 par `ff4caca`, avec
+la pleine largeur et le reveal** — **il est sur `main`, et il est déployé** *(vérifié : le chunk
+`ChallengeLanding-C0Ua0sxO.js` servi par `www.pessora.fr` contient le texte des 6 inclus)*.
+
+**Rien n'est perdu. La branche est un brouillon dépassé, pas un travail en attente.**
+
+⚠️ **Ce qui reste ouvert, et que le plan ④ porte toujours** : le **contraste** des bannières
+(`w-[85%]` en mobile → `55 %`, et l'épaississement du voile). **Ce n'est pas un travail perdu — c'est
+un item jamais fait.**
+
+⚠️ **Et la branche reste à fermer** — non plus pour un danger, mais parce qu'elle **gèle le doc de
+consignes** pour un brouillon sans valeur.
