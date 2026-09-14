@@ -577,14 +577,49 @@ sans erreur visible.
 C'est **exactement** le scénario que le scan du 14/09 avait nommé :
 > *« la migration avant le merge du front (ordre inverse = toute soumission RUN CLUB échoue) »*
 
+### ✅ VÉRIFIÉ LE 14/09 — fermer cette branche ne retire RIEN du site
+
+**Question de Ken : *« les bannières sont présentes sur le site, j'espère qu'on ne va pas les
+retirer. »* Réponse : non.**
+
+**Les bannières de l'onglet `inclure` vivent dans `main`** (`ChallengeInclusBanners.tsx`, monté par
+`ChallengeLanding.tsx:47`), **et `main` est déployé**. Preuve relevée **sur le site en ligne** — le
+chunk `assets/ChallengeLanding-C0Ua0sxO.js` servi par `www.pessora.fr` contient :
+
+```
+24FIT (×2) · GetFitNow · inclus-getfitnow · inclus-communaute · inclus-seances-sport
+« Séances de sport » · « Idées recettes » · « Communauté »
+```
+
+**→ Les bannières sont bien en ligne, et elles ne dépendent PAS de la branche.**
+
+### ⚠️ Et ce que la branche fait VRAIMENT — plus gros qu'un ajustement
+
+**Elle ne complète pas les bannières : elle les REMPLACE.**
+
+| | |
+|---|---|
+| **Supprime** | **143 lignes** de `ChallengeInclusBanners.tsx` — dont **tout le tableau `INCLUS`** (`Application GetFitNow`, `Communauté 24FIT PESSORA`, `Séances de sport`, `Idées recettes`…) |
+| **Ajoute** | `src/components/events/ChallengeProgramCard.tsx` — **un composant qui remplace l'actuel** |
+| **Ajoute** | `public/bannieres/conseils.jpg` — l'item `conseils` déplacé hors des bannières |
+| **Résultat** | dans la branche, **`ChallengeInclusBanners` n'est plus monté nulle part** |
+
+### ⚠️ Et elle a **61 commits de retard** sur `main`
+
+**2 commits, datés du 12/09, jamais rebasés.** Donc elle a été écrite **avant** tout ce qui est passé
+depuis : le retrait des formules obsolètes, le lot A, la refonte du hero, les 38 items.
+
 ### Ce qu'il faut en faire
 
 - **Ne PAS la merger telle quelle.**
-- **Option A (recommandée) : la fermer.** Son sujet — l'item `conseils` des bannières — est
-  **toujours ouvert** dans le plan (§④, *« les deux jetons »*), donc **le travail se refera sur une
-  base propre**, à partir de `main`.
-- **Option B : la rebaser** sur `main` **et retirer** `precommande`, `gaufres`,
+- **Option A (recommandée) : la fermer.** Fermer ne retire rien du site — **les bannières actuelles
+  restent** — et son sujet *(l'item `conseils`, toujours ouvert au plan §④)* **se refera sur une base
+  propre**, à partir de `main`.
+- **Option B : la rebaser** sur `main`, **et retirer** `precommande`, `gaufres`,
   `PRECOMMANDE_OPTIONS`, `GAUFRE_SALEE_OPTIONS` — **avant** toute reprise.
+
+**⚠️ Dans les deux cas : l'idée de FOND de la branche — sortir l'item `conseils` des bannières
+« inclus » — reste une piste valable.** C'est le **code** qui est périmé, **pas l'intention.**
 
 ⚠️ **Tant qu'elle reste ouverte, elle gèle aussi le doc de consignes** (règle du 12/09 : *« le doc de
 consignes est gelé tant qu'une branche est ouverte »*) — **pour un travail périmé.**
