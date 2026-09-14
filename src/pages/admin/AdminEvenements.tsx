@@ -16,6 +16,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { ContextMenu, EmptyState, Segment } from '@heroui-pro/react';
 import { supabase } from '../../lib/supabaseClient';
 import { downloadCsv } from '../../lib/csvExport';
@@ -285,6 +286,7 @@ type ViewMode =
 
 const AdminEvenements = () => {
   useEffect(() => { document.title = 'Événements — Admin PessÓra'; }, []);
+  const navigate = useNavigate();
   const [events, setEvents] = useState<EventWithCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
@@ -451,6 +453,10 @@ const AdminEvenements = () => {
   };
 
   const handleRelance = useCallback((ev: EventWithCount) => {
+    // Même garde-fou que "Modifier" : relancer un challenge depuis ce formulaire créerait un
+    // second event type='challenge' hors du CRUD dédié — exactement le doublon de chemin de
+    // création qu'on ferme (docs/CONSIGNES-CLAUDE.md, 14/09).
+    if (ev.type === 'challenge') { navigate('/admin/challenge-21j'); return; }
     setRelanceInitial({
       title: ev.title,
       slug: '',
@@ -722,7 +728,14 @@ const AdminEvenements = () => {
                 ev={ev}
                 expanded={expandedId === ev.id}
                 onToggleExpanded={() => setExpandedId((prev) => (prev === ev.id ? null : ev.id))}
-                onEdit={() => setView({ kind: 'edit', id: ev.id })}
+                onEdit={() => {
+                  // Les challenges de l'ancienne logique (créés avant le CRUD dédié) sont des
+                  // events type='challenge' indiscernables des nouveaux — sans ce garde-fou, les
+                  // ouvrir ici retomberait sur le formulaire générique (lieu, capacité, prix…),
+                  // qui ne pilote rien pour ce type. Un seul écran d'édition désormais.
+                  if (ev.type === 'challenge') { navigate('/admin/challenge-21j'); return; }
+                  setView({ kind: 'edit', id: ev.id });
+                }}
                 onDelete={() => setDeleteEventId(ev.id)}
                 onToggleRegistrations={() => toggleRegistrationOpen(ev)}
                 onRelance={() => handleRelance(ev)}
