@@ -318,18 +318,31 @@ const Evenements = () => {
                 <Link
                   key={ev.id}
                   to={`/evenements/${ev.slug}`}
-                  className="group flex items-center justify-between gap-4 rounded-[2px] border border-white/15 bg-white/[0.04] p-6 transition-colors hover:bg-white/[0.08]"
+                  className="group relative flex items-center justify-between gap-4 overflow-hidden rounded-[2px] border border-white/15 p-6 transition-colors hover:border-white/30"
                 >
-                  <div>
-                    <p className="text-[10px] font-light uppercase tracking-[0.2em] text-white/45">
+                  {ev.image_url ? (
+                    <>
+                      <img
+                        src={ev.image_url}
+                        alt=""
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-noir/85 via-noir/55 to-noir/20" />
+                    </>
+                  ) : (
+                    <div className="absolute inset-0 bg-white/[0.04] group-hover:bg-white/[0.08]" />
+                  )}
+                  <div className="relative">
+                    <p className="text-[10px] font-light uppercase tracking-[0.2em] text-white/60">
                       {month} {year}
                     </p>
                     <p className="mt-1 font-display text-2xl font-normal text-white" style={{ fontFamily: 'var(--font-display)' }}>
                       {day} {month}
                     </p>
-                    <p className="mt-2 text-[12px] font-light text-white/65">{ev.title}</p>
+                    <p className="mt-2 text-[12px] font-light text-white/80">{ev.title}</p>
                   </div>
-                  <ArrowRight size={16} className="shrink-0 text-white/50 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight size={16} className="relative shrink-0 text-white/70 transition-transform group-hover:translate-x-1" />
                 </Link>
               );
             })}

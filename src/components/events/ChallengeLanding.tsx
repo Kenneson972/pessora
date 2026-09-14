@@ -40,7 +40,7 @@ export function ChallengeLanding({ event }: ChallengeLandingProps) {
 
   return (
     <div className="bg-white">
-      <ChallengeHero eventDate={event.date} />
+      <ChallengeHero eventDate={event.date} heroImageUrl={event.hero_image_url} />
       {showCountdown && <ChallengeCountdownSection targetDate={event.date} />}
       <ChallengeTrustBadges />
       <ChallengeStatsBlock />

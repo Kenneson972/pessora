@@ -67,6 +67,7 @@ export interface Database {
           type: 'run_club' | 'popup' | 'atelier' | 'event' | 'partenariat' | 'bilan' | 'challenge'
           description: string | null
           image_url: string | null
+          hero_image_url: string | null
           gallery: string[]
           places_max: number | null
           meeting_point: string | null
@@ -76,7 +77,7 @@ export interface Database {
           active: boolean
           created_at: string
         }
-        Insert: Omit<Database['public']['Tables']['events']['Row'], 'id' | 'created_at' | 'gallery'> & { gallery?: string[] }
+        Insert: Omit<Database['public']['Tables']['events']['Row'], 'id' | 'created_at' | 'gallery' | 'hero_image_url'> & { gallery?: string[]; hero_image_url?: string | null }
         Update: Partial<Omit<Database['public']['Tables']['events']['Row'], 'id' | 'created_at'>>
         Relationships: []
       }

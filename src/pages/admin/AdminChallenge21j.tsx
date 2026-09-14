@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Trophy, Plus, Trash2, Loader2 } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Trophy, Plus, Trash2, Loader2, ImagePlus } from 'lucide-react';
 import { DashPageHeader } from '../../components/dashboard/primitives';
 import { DASH_MAIN_PAD } from '../../components/dashboard/layoutClasses';
 import { AdminErrorAlert } from '../../components/dashboard/AdminErrorAlert';
@@ -8,6 +8,8 @@ import { labelBase, inputBase, formatLongDate } from '../../components/admin/eve
 import { useAdminChallenges, type ChallengeFormData } from '../../hooks/useAdminChallenges';
 import { useAdminChallengeSlots } from '../../hooks/useAdminChallengeSlots';
 import { useAdminChallengeRegistrants } from '../../hooks/useAdminChallengeRegistrants';
+import { uploadPublicImage } from '../../lib/storageUpload';
+import { formatMutationError } from '../../lib/userFacingError';
 
 const WEEKDAY_LABELS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 
@@ -20,7 +22,90 @@ function subtractDays(iso: string, days: number): string {
   return `${y}-${m}-${day}`;
 }
 
-const EMPTY_FORM: ChallengeFormData = { title: '', date: '', active: true, registrationOpen: true };
+const EMPTY_FORM: ChallengeFormData = { title: '', date: '', active: true, registrationOpen: true, imageUrl: '', heroImageUrl: '' };
+
+/** Un seul champ image, upload direct (bucket event-images) — pas de galerie ici. */
+function ImageField({
+  label,
+  hint,
+  value,
+  pathPrefix,
+  onChange,
+}: {
+  label: string;
+  hint: string;
+  value: string;
+  pathPrefix: string;
+  onChange: (url: string) => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const url = await uploadPublicImage('event-images', file, pathPrefix);
+      onChange(url);
+    } catch (err) {
+      setError(err instanceof Error ? formatMutationError(err.message) : 'Envoi impossible. Réessaie.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div>
+      <div className="mb-1.5 flex items-baseline justify-between">
+        <label className={labelBase}>{label}</label>
+        <span className="text-[9px] text-black/30">{hint}</span>
+      </div>
+      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[2px] border border-dashed border-noir/15 bg-surface-muted">
+        {value ? (
+          <>
+            <img src={value} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-noir/75 to-transparent px-3 py-2.5">
+              <button
+                type="button"
+                onClick={() => inputRef.current?.click()}
+                disabled={uploading}
+                className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-3 py-1.5 text-[10px] font-light uppercase tracking-[0.14em] text-white backdrop-blur-[2px] transition-colors hover:bg-white/20 disabled:opacity-50"
+              >
+                {uploading ? <Loader2 size={12} className="animate-spin" /> : <ImagePlus size={12} strokeWidth={1.5} />}
+                Remplacer
+              </button>
+              <button
+                type="button"
+                onClick={() => onChange('')}
+                className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-3 py-1.5 text-[10px] font-light uppercase tracking-[0.14em] text-white backdrop-blur-[2px] transition-colors hover:bg-red-500/70"
+              >
+                <Trash2 size={12} strokeWidth={1.5} />
+                Retirer
+              </button>
+            </div>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            disabled={uploading}
+            className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-black/45 transition-colors hover:bg-noir/[0.02] hover:text-black/70"
+          >
+            {uploading ? <Loader2 size={20} strokeWidth={1.5} className="animate-spin" /> : <ImagePlus size={20} strokeWidth={1.5} />}
+            <span className="text-[11px] font-light">{uploading ? 'Envoi…' : 'Ajouter une image'}</span>
+            <span className="text-[9px] uppercase tracking-[0.22em] text-black/30">JPEG · PNG · WebP · 5 Mo max</span>
+          </button>
+        )}
+        <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" disabled={uploading} onChange={handleFile} />
+      </div>
+      {error && <p className="mt-1.5 text-[11px] text-red-600">{error}</p>}
+    </div>
+  );
+}
 
 const AdminChallenge21j = () => {
   useEffect(() => { document.title = 'Challenge 21j — Admin PessÓra'; }, []);
@@ -36,7 +121,14 @@ const AdminChallenge21j = () => {
 
   useEffect(() => {
     if (selected) {
-      setForm({ title: selected.title, date: selected.date, active: selected.active ?? true, registrationOpen: selected.registration_open ?? true });
+      setForm({
+        title: selected.title,
+        date: selected.date,
+        active: selected.active ?? true,
+        registrationOpen: selected.registration_open ?? true,
+        imageUrl: selected.image_url ?? '',
+        heroImageUrl: selected.hero_image_url ?? '',
+      });
       setIsCreating(false);
     } else if (!isCreating && challenges.length > 0) {
       setSelectedId(challenges[0].id);
@@ -194,6 +286,24 @@ const AdminChallenge21j = () => {
               </label>
             </div>
           </div>
+
+          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <ImageField
+              label="Vignette"
+              hint="page Événements"
+              value={form.imageUrl}
+              pathPrefix="challenge-21j/vignette"
+              onChange={(url) => setForm((f) => ({ ...f, imageUrl: url }))}
+            />
+            <ImageField
+              label="Photo du hero"
+              hint="page du challenge"
+              value={form.heroImageUrl}
+              pathPrefix="challenge-21j/hero"
+              onChange={(url) => setForm((f) => ({ ...f, heroImageUrl: url }))}
+            />
+          </div>
+
           <button
             type="button"
             onClick={handleSaveChallenge}
