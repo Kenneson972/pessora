@@ -22,7 +22,7 @@ export function HomeBanner() {
         <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr] rounded-[2px] overflow-hidden md:h-[400px]">
           {/* Panneau texte gauche */}
           <div className="relative flex flex-col justify-center px-8 py-10 md:px-12 md:py-14 min-h-[220px] md:min-h-0 bg-sapin">
-            <p className="text-[8px] uppercase tracking-[0.28em] text-white/40 mb-3">
+            <p className="text-[10px] uppercase tracking-[0.28em] text-white/40 mb-3">
               Bien-être · PessÓra
             </p>
             <h3
@@ -49,7 +49,7 @@ export function HomeBanner() {
                 decoding="async"
               />
             ) : (
-              <div className="absolute inset-0 flex items-center justify-center text-sapin/30 text-[9px] uppercase tracking-[0.2em]">
+              <div className="absolute inset-0 flex items-center justify-center text-sapin/30 text-[10px] uppercase tracking-[0.2em]">
                 Photo à venir
               </div>
             )}
