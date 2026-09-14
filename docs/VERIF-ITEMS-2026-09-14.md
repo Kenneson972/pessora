@@ -12,7 +12,7 @@ Méthode : `git grep` sur le code **déployé** (pas sur la doc, pas sur une bra
 
 | # | Item | État | Qui |
 |---|---|---|---|
-| ① | Formulaire d'inscription | 🟡 **Partiel** — l'architecture est faite, la lisibilité non | @elise / @lyra |
+| ① | Formulaire d'inscription | 🔴 **Ouvert** — et sa prémisse était fausse (voir correction ci-dessous) | @elise / @lyra |
 | ② | Complément de revenus | 🔴 **Ouvert** — rien ne le collecte | @elise / @lyra / @alcyone |
 | ③ | Rubrique noire `/evenements` | 🔴 **Ouvert** — l'aplat noir est toujours en ligne | @lyra / @elise |
 | ④ | Rouge `conseils` (2 jetons) | 🔴 **Ouvert** — les 2 valeurs d'origine intactes | @elise |
@@ -24,13 +24,26 @@ du plan.
 
 ---
 
-## ① Le formulaire — 🟡 PARTIEL
+## ① Le formulaire — 🔴 OUVERT, et c'est l'inverse de ce que j'avais écrit
 
-**✅ Ce qui est FAIT** : l'unification est en place.
-- `src/data/postRegistrationSurvey.ts:5` → `getPostRegistrationSteps(eventType)` existe ;
-- `src/components/events/PostRegistrationWizard.tsx:95` l'utilise.
-→ **La question ⒜ du plan (« deux formulaires ou un seul ? ») est tranchée dans le code.** Un seul
-formulaire, deux types. C'est réglé.
+> ### ⚠️ CORRECTION — 14/09/2026, consigne de Ken
+> **« Pour l'unification du formulaire, j'ai bien précisé que ça doit être DIFFÉRENT des events habituels. »**
+>
+> **La première version de ce relevé disait : « l'unification est faite ✅, c'est réglé. » C'EST FAUX.**
+> Le fait que le challenge et l'événement normal **partagent le même composant est le PROBLÈME**,
+> pas la solution. L'item ⒜ du plan (« on unifie la partie commune ») **part d'une conclusion que
+> personne n'a validée** — il doit être **réécrit, pas exécuté**.
+
+**✅ Ce qui est FAIT, et qui reste vrai** : il n'y a **qu'un seul** formulaire dans le code.
+`getPostRegistrationSteps(eventType)` (`src/data/postRegistrationSurvey.ts:5`) est monté **à un seul
+endroit** — la carte challenge. Le formulaire d'événement normal (`EvenementDetail.tsx`) n'en porte
+aucune trace. **Donc la question ⒜ « deux formulaires ou un seul ? » n'a pas lieu d'être : il y en a un.**
+
+**⚠️ D'où vient la confusion** — et elle est instructive : la consigne de Ken du 12/09 était
+**« pareil pour tous les événements »**. Relue dans son contexte (`docs/RESTES-2026-09-12.md`, item 4),
+elle porte sur **l'auto-remplissage** — *« déjà présent pour nom + prénom → à étendre : téléphone +
+tous les événements »*. **Elle ne dit pas « le challenge doit être comme un événement normal ».**
+Elle a été relue comme telle, et c'est ce qui a produit « on unifie ».
 
 **🔴 Ce qui RESTE** : la lisibilité sous le seuil, et elle est **mesurée** :
 
@@ -45,9 +58,16 @@ src/components/admin/eventEditorTypes.ts:57   export const labelBase = '… text
 src/pages/admin/AdminHomeBanner.tsx:11        const labelBase = '… text-black/45 …'   ← COPIE LOCALE
 ```
 Le plan dit *« 1 ligne = des dizaines d'écrans »*. **C'est faux : il y en a deux.**
-Corriger la seule version exportée laisserait **`AdminHomeBanner` cassé** — et c'est **exactement
-le défaut « deux implémentations de la même chose »** que l'équipe traque depuis le 12/09.
-**Le correctif doit supprimer la copie locale et importer le token.**
+Corriger la seule version exportée laisserait **`AdminHomeBanner` cassé**.
+
+**⚠️ LA QUESTION À TRANCHER AVANT TOUTE LIGNE** : *le formulaire de la carte challenge doit être
+différent d'un événement habituel — sur quoi exactement ?*
+- **les champs affichés** (le challenge demande-t-il autre chose) ?
+- **l'ordre des étapes** (`formulaire → créneau → questionnaire`) ?
+- **les messages** (`duplicate` / `full`) ?
+
+**Tant que ce n'est pas dit, la team ne doit pas toucher au formulaire** — parce que la réponse
+« on unifie » et la réponse « il doit différer » produisent **des correctifs opposés**.
 
 ---
 
@@ -107,7 +127,40 @@ le constat du plan tient toujours.
 
 ## ⑥ La newsletter par événement — 🔴 OUVERT
 
-**Ce qui existe** : `supabase/functions/send-newsletter/index.ts` ✅, et **la table** `newsletter_subscribers` (`20260419150000_newsletter_site_announcements.sql:75`, `email` + `UNIQUE`) ✅.
+> ### Ce que le relevé de ce matin avait manqué — et que la salle avait pourtant écrit
+> **Le lot ⑥ n'est pas seulement « le câblage ».** `docs/RESTES-2026-09-12.md` porte **quatre autres
+> morceaux de la newsletter** qui n'étaient pas dans ma première version :
+
+**⒜ Le pop-up et l'e-mail sont des SURFACES VISUELLES, pas juste de la mécanique** *(item 22)* :
+- **pas de noir** (règle de la surface sombre unique — le hero seulement) ;
+- **pop-up fermable en un clic, et qui ne se réaffiche pas** ;
+- **l'e-mail** : palette Pessóra, pas de bandeau noir, **aucune promesse de résultat** — et il doit
+  être **validé avant le premier envoi**.
+
+**⒝ ⚠️ Le libellé du champ newsletter du formulaire est FAUX dans un cas** *(mesuré en salle)* :
+il promet *« être prévenu·e de **l'ouverture des inscriptions** »*. Or **si tous les créneaux sont
+pris**, les inscriptions **sont déjà ouvertes** → la promesse est fausse.
+**Correctif** : *« être prévenu·e du **prochain challenge** »* — vrai dans **les deux cas
+indistinguables**. *(Même défaut que le décompte : le mensonge se déplace de trois centimètres.)*
+
+**⒞ Le premier envoi dépend de la PURGE** *(item 26)* : `TEST-% = 0` **et** destinataires relus
+**avant** le premier envoi. **Pas parce qu'un yopmail dérange** — parce que **les rebonds abîment la
+réputation du domaine qui porte aussi les e-mails administratifs de Pessora.** *(Recoupe le go n°2
+« ce qui est sur Ken » : c'est le même geste.)*
+
+**⒟ `contact@pessora.fr` — à identifier avant tout envoi** *(item 32)* : le site **publie cette
+adresse** (pied de page, mentions), le MX existe — mais **personne n'a prouvé que la boîte existe.**
+⚠️ Limite à écrire : `delivered` = « accepté », **pas** « quelqu'un la lit » (un catch-all rend le
+même résultat).
+
+**⒠ Le `rua` du DMARC** *(item 34)* : le DMARC est posé (`v=DMARC1; p=none;`), mais **sans `rua` il
+ne rapportera jamais rien**. Le `rua` doit pointer sur une boîte **Karibloom**, jamais la Gmail de
+Catherine.
+
+---
+
+**Ce qui existe côté code** : `supabase/functions/send-newsletter/index.ts` ✅, et **la table**
+`newsletter_subscribers` (`20260419150000_newsletter_site_announcements.sql:75`, `email` + `UNIQUE`) ✅.
 
 **Ce qui manque** :
 - ❌ **Le câblage.** Le seul appelant de `send-newsletter` est `AdminCommunications.tsx:85` — **un envoi manuel, depuis l'admin**. **`EventForm.tsx` ne l'appelle pas** → **publier un événement ne prévient toujours personne.**
