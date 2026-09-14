@@ -125,12 +125,16 @@ export function ChallengeInclusBanners() {
   return (
     <section id="inclus" className="bg-white py-16 md:py-[6.5rem]">
       <div className="mx-auto max-w-6xl px-4 md:px-10 lg:px-[72px]">
-        <p className="mb-3 text-[9px] uppercase tracking-[0.32em] text-black/42">Ce qui est inclus</p>
+        {/* 14/09 — un seul titre par section. Le kicker « Ce qui est inclus »
+            (9 px · 42 % de noir = 3,05:1, sous AA) est retiré, et le h2 reprend
+            les mots de la fiche de Catherine, mot pour mot, comme le reste du lot.
+            « Ce que tu ne fais pas seul » est de nous : elle cède la place —
+            sciemment, pas parce qu'elle est mauvaise. */}
         <h2
           className="mb-12 font-display font-normal md:mb-16"
           style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(21px, 2.4vw, 30px)' }}
         >
-          Ce que tu ne fais pas seul
+          Quel est ton prochain objectif ?
         </h2>
         <ul className="flex flex-col gap-6 md:gap-8">
           {INCLUS.map((item, index) => (
