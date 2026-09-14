@@ -130,6 +130,54 @@ inverse fait échouer **toute** soumission RUN CLUB.
 
 ---
 
+## 4-bis. 📄 LE FICHIER DE MÉTIERS EST DANS LE DÉPÔT
+
+**`public/data/metiers-rome.json`** — **14 619 libellés**, servi statiquement à **`/data/metiers-rome.json`**.
+
+**Source** : **ROME 4.0** de **France Travail** (Répertoire Opérationnel des Métiers et des Emplois),
+extrait du jeu de données officiel `data.gouv.fr`. **Licence Ouverte (`fr-lo`)** — usage commercial
+autorisé, aucune attribution obligatoire.
+
+**Format** : `[{"label": "Maçon / Maçonne", "rome": "F1703", "src": "fiche"}, …]`
+
+| `src` | Nombre | Ce que c'est |
+|---|---|---|
+| `fiche` | **1 911** | le libellé officiel d'une fiche métier — **la couverture métier complète** |
+| `principale` | **322** | une appellation principale rattachée à une fiche |
+| `synonyme` | **12 386** | les autres appellations (« Mareyeur », « Accastilleur »…) |
+
+**Poids** : **1 236 Ko brut · 168 Ko gzippé.** → ⚠️ **à charger À LA DEMANDE** (au premier clic dans
+le champ), **jamais dans le bundle initial.**
+
+### ⚠️ LA RÈGLE DE TRI — elle décide de l'utilité du champ
+
+**N'afficher que les 14 619 dans l'ordre alphabétique rendrait le champ inutilisable** : quelqu'un qui
+tape « maçon » recevrait *Maçon-limousinant · Maçon-boiseur · Maçon-carcasseur · Maçon-plâtrier…*
+**Trente propositions découragent au lieu d'aider.**
+
+**Donc on trie par `src`, on ne coupe PAS la liste :**
+
+1. `fiche` et `principale` d'abord (**2 233 entrées** — ce sont les vrais métiers) ;
+2. `synonyme` **en secours** — c'est ce qui permet de trouver en tapant *« accastilleur »*,
+   *« mareyeur »*, *« bûcheron »* ;
+3. **8 résultats affichés au maximum**.
+
+**Couper la liste ferait perdre les mots rares — qui sont exactement ce qu'une autocomplétion doit
+rattraper.** Garder les 14 619 et **trier** est la seule forme qui marche dans les deux cas.
+
+### ⚠️ Ce que le fichier NE couvre PAS
+
+**Le ROME est national.** Quelques métiers très locaux n'y figurent pas — **« coupeur de canne »**
+n'existe pas *(son « canneur » est un rempailleur de chaises : autre métier)*.
+**Vérifié en revanche : présent** — maçon, plombier, coiffeur, infirmier, aide-soignant, vendeur,
+caissier, chauffeur, cuisinier, serveur en restauration, paysagiste, menuisier, électricien, peintre
+en bâtiment, mécanicien, barman, pâtissier, boucher, jardinier, pompier, gendarme,
+**planteur de bananes, opérateur en distillerie, marin-pêcheur, matelot de pêche.**
+
+**Si on veut les métiers locaux manquants, il faut les ajouter à la main — et sourcés, pas inventés.**
+
+---
+
 ## 5. Le geste, dans l'ordre
 
 1. **Retirer `nb_personnes`** — les 4 occurrences (`l.19, 59, 88, 211-217`). ⚠️ Vérifier qu'aucun
@@ -289,3 +337,43 @@ la règle**, on n'a pas à l'inventer.)*
 
 *@elise — 14/09/2026. Source : `origin/main` = `6bc79e2`. Fiche : `docs/fiche-papier-challenge-21j.md`.
 Détail du plan : `docs/PLAN-13-09.md`. État vérifié : `docs/VERIF-ITEMS-2026-09-14.md`.*
+
+---
+
+# CE QUI MANQUE — état au 14/09/2026
+
+## ⏳ De CATHERINE *(rien ne peut avancer sans elle)*
+
+| # | Quoi | Ce que ça débloque |
+|---|---|---|
+| 1 | **La carte complète** (catégories + prix) | le moteur Formules, PessoBot v2 — **le plus gros reste** |
+| 2 | **Le lien Easy Ta Vie** | la livraison (le site est en Click & Collect seul) |
+| 3 | **Son médiateur de la consommation** | la mention CGV + footer — **obligation légale** |
+| 4 | **La recette de son module Bilan** | c'est **elle** qui juge si l'écran est utilisable |
+| 5 | **Confirmer que 2 visuels sont de l'ancienne carte** | s'ils le sont : **on les retire**, on ne les complète pas |
+| 6 | **« Quand quelqu'un coche plusieurs cases sur ta fiche, tu fais quoi ? »** | tranche objectif unique / multiple |
+| 7 | **« Le créneau de rappel : une préférence ou une contrainte ? »** | le sens du champ (voir §7) |
+| 8 | **Son accord pour le crédit footer** | à acter |
+
+## ⏳ De KEN *(deux go)*
+
+| # | Quoi | Pourquoi |
+|---|---|---|
+| 1 | **Le go pour le test d'en-tête** de la newsletter | c'est le seul geste **irréversible** |
+| 2 | **Le go pour la purge des créneaux legacy** | ce sont peut-être les vrais créneaux d'avril de Catherine |
+
+## ⏳ À TRANCHER *(Ken + métier, pas le code)*
+
+| # | Quoi | Le fait |
+|---|---|---|
+| 1 | **Les créneaux de bilan s'écrivent depuis DEUX pages** (`AdminChallenge21j` **et** `AdminBilans`) | deux écrans, **une seule donnée** |
+| 2 | **Deux chemins pour créer un challenge** (« Événements » **et** « Challenge 21j ») | deux formulaires pour un même objet |
+
+## 🔨 De la TEAM *(les 6 items du plan)*
+
+① Formulaire *(ce brief)* · ② Complément de revenus · ③ Rubrique noire · ④ Rouge `conseils` ·
+⑤ Accroche · ⑥ Newsletter — **aucun n'est terminé, aucun n'est cassé.**
+
+---
+
+*Mis à jour le 14/09/2026 par @elise. Fichier : `public/data/metiers-rome.json` (ROME 4.0, Licence Ouverte).*
