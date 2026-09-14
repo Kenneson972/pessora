@@ -533,3 +533,58 @@ dans le même lot — soit **on masque** ces champs pour un challenge, soit **on
 ---
 
 *Mis à jour le 14/09/2026 par @elise. Fichier : `public/data/metiers-rome.json` (ROME 4.0, Licence Ouverte).*
+
+---
+
+## 🔴 ALERTE — LA BRANCHE `feat/bannieres-inclus` EST PÉRIMÉE ET DANGEREUSE
+
+**Constaté le 14/09/2026 en préparant le merge de la branche `docs/` vers `main`.**
+
+**`feat/bannieres-inclus`** est ouverte depuis le **12/09** (dernier commit `5488984`,
+*« feat(bannieres): 1re ligne branchee »*), **jamais rebasée** depuis le retrait des formules
+obsoletes.
+
+### ⚠️ Ce qu'elle réintroduit
+
+**Elle reverse dans `src/data/postRegistrationSurvey.ts` exactement ce que Ken a déclaré obsolète
+le 12/09** — et que le merge `6bc79e2` (*retrait des formules obsolètes*) avait supprimé :
+
+```diff
+-export type PostRegistrationStepId = 'bilan' | 'objectif'
++export type PostRegistrationStepId = 'precommande' | 'bilan' | 'objectif' | 'gaufres'
+
+   if (eventType === 'run_club') {
+-    return ['objectif']
++    return ['precommande', 'objectif', 'gaufres']
+   }
+```
+
+**Plus deux constantes recréées** : `PRECOMMANDE_OPTIONS` *(« Formule 18 € », « Formule 28 € »…)*
+et `GAUFRE_SALEE_OPTIONS` *(« Jambon fromage », « Végétarienne »…)*.
+
+### 🔴 Pourquoi c'est plus grave qu'un simple conflit
+
+**La migration `20260912120000_retrait_precommande_gaufres_rpc.sql` REJETTE ces clés côté serveur :**
+
+> *« Clés obsolètes (commande de formule + gaufres) rejetées pour TOUS les types »* —
+> `RAISE EXCEPTION 'invalid_payload_keys'` si `precommande_offre`, `gaufre_salee`,
+> `gaufre_salee_autre` ou `gaufre_sucree_notes` apparaît dans le payload.
+
+**Donc si cette branche est mergée telle quelle** : le front **envoie** des clés que le serveur
+**refuse** → **toute inscription à un RUN CLUB échoue en `invalid_payload_keys`**, au submit,
+sans erreur visible.
+
+C'est **exactement** le scénario que le scan du 14/09 avait nommé :
+> *« la migration avant le merge du front (ordre inverse = toute soumission RUN CLUB échoue) »*
+
+### Ce qu'il faut en faire
+
+- **Ne PAS la merger telle quelle.**
+- **Option A (recommandée) : la fermer.** Son sujet — l'item `conseils` des bannières — est
+  **toujours ouvert** dans le plan (§④, *« les deux jetons »*), donc **le travail se refera sur une
+  base propre**, à partir de `main`.
+- **Option B : la rebaser** sur `main` **et retirer** `precommande`, `gaufres`,
+  `PRECOMMANDE_OPTIONS`, `GAUFRE_SALEE_OPTIONS` — **avant** toute reprise.
+
+⚠️ **Tant qu'elle reste ouverte, elle gèle aussi le doc de consignes** (règle du 12/09 : *« le doc de
+consignes est gelé tant qu'une branche est ouverte »*) — **pour un travail périmé.**
