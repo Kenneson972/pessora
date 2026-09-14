@@ -57,21 +57,22 @@ export function ComplementRevenusModal({ registrationId, telephone, onClose }: C
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-white" role="dialog" aria-modal="true" aria-label="Complément de revenus">
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label="Fermer"
-        className="fixed right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/85 text-black/70 backdrop-blur-[2px] transition-colors hover:bg-white sm:right-6 sm:top-6"
-      >
-        <X size={18} strokeWidth={1.5} />
-      </button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-noir/50 p-4 py-8" role="dialog" aria-modal="true" aria-label="Complément de revenus">
+      <div className="relative w-full max-w-2xl overflow-hidden rounded-[2px] bg-white shadow-2xl">
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Fermer"
+          className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/85 text-black/70 backdrop-blur-[2px] transition-colors hover:bg-white"
+        >
+          <X size={18} strokeWidth={1.5} />
+        </button>
 
-      <div className="relative h-[42vh] min-h-[220px] w-full sm:h-[48vh]">
-        <img src="/challenge-21j/complement-revenus.webp" alt="" className="absolute inset-0 h-full w-full object-cover" />
-      </div>
+        <div className="relative aspect-[16/9] w-full">
+          <img src="/challenge-21j/complement-revenus.webp" alt="" className="absolute inset-0 h-full w-full object-cover" />
+        </div>
 
-      <div className="mx-auto max-w-lg px-6 py-8 sm:px-8 sm:py-10">
+        <div className="px-6 py-8 sm:px-8 sm:py-10">
         <p className="mb-2 text-[10px] font-light uppercase tracking-[0.24em] text-black/45">
           Complément de revenus
         </p>
@@ -117,6 +118,7 @@ export function ComplementRevenusModal({ registrationId, telephone, onClose }: C
           >
             {submitting ? 'Envoi…' : 'Valider'}
           </button>
+        </div>
         </div>
       </div>
     </div>
