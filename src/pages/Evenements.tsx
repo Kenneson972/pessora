@@ -7,7 +7,6 @@ import { EmptyState, Segment } from '@heroui-pro/react';
 import { supabase } from '../lib/supabaseClient';
 import type { Event } from '../types/database';
 import { useStaggerReveal } from '../lib/motionReveal';
-import { PageHero } from '../components/layout/PageHero';
 import { todayInMartinique } from '../lib/martiniqueDate';
 import { ChallengeCountdown } from '../components/events/ChallengeCountdown';
 
@@ -297,11 +296,23 @@ const Evenements = () => {
   return (
     <div className="min-h-screen bg-white">
       <EventItemListJsonLd items={eventItems} />
-      <PageHero
-        eyebrow="Communauté · Fort-de-France"
-        title="Événements"
-        subtitle="Ateliers, run clubs, pop-ups et rencontres autour de Pessóra. Filtrez par catégorie ou parcourez les éditions passées."
-      />
+      {/* Hero long format, même esprit que la bannière Challenge juste en dessous — retour
+          @user du 14/09 : l'ancien PageHero (blanc, texte seul) tranchait avec elle. */}
+      <section className="relative overflow-hidden border-b border-noir/[0.06] bg-gradient-to-br from-sapin via-sapin/80 to-anthracite px-4 py-16 text-white md:px-10 md:py-20 lg:px-[72px]">
+        <p className="mb-3 text-[10px] font-light uppercase tracking-[0.28em] text-white/60">
+          Communauté · Fort-de-France
+        </p>
+        <h1
+          className="max-w-2xl font-display font-normal leading-[1.02] text-white"
+          style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(32px, 4.6vw, 52px)' }}
+        >
+          Événements
+        </h1>
+        <p className="mt-4 max-w-xl text-[13px] font-light leading-relaxed text-white/70">
+          Ateliers, run clubs, pop-ups et rencontres autour de Pessóra. Filtrez par catégorie ou
+          parcourez les éditions passées.
+        </p>
+      </section>
 
       {/* ── Rubrique dédiée : Challenge 21 jours (pas de page séparée) ── */}
       {!loading && upcomingChallenges.length > 0 && (
