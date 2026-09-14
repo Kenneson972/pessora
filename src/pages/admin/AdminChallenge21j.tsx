@@ -546,8 +546,10 @@ const AdminChallenge21j = () => {
                         </td>
                         <td className="px-3 py-2 text-[12px]">{r.objectif ?? <span className="text-black/30">—</span>}</td>
                         <td className="px-3 py-2 text-[12px]">
-                          {r.complementRevenus ? (
-                            <span className="rounded-full bg-sapin-subtle px-3 py-1 text-[10px] text-sapin">{r.complementRevenus}</span>
+                          {r.complementRevenus === 'decouvrir_opportunite_herbalife' ? (
+                            <span className="rounded-full bg-sapin-subtle px-3 py-1 text-[10px] text-sapin">Intéressé(e) — à recontacter</span>
+                          ) : r.complementRevenus === 'pas_pour_le_moment' ? (
+                            <span className="rounded-full bg-noir/5 px-3 py-1 text-[10px] text-black/50">Pas pour le moment</span>
                           ) : (
                             <span className="text-black/30">—</span>
                           )}
