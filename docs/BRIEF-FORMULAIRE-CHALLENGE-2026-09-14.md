@@ -453,6 +453,55 @@ promettre des champs qui ne servent à rien.
 existants continuent d'afficher « Challenge 21 jours »), dans `useAdminChallenges` (le CRUD dédié
 crée toujours avec `type='challenge'`), et dans la page Événements (ils restent séparés en haut).
 
+### 🔴 « ARCHIVER » l'ancien challenge — oui, mais pas « supprimer »
+
+**Décision de Ken (14/09)** : les challenges créés avec l'ancienne logique **sont bien des
+challenges 21 jours** → **on les archive.**
+
+⚠️ **ARCHIVER = DÉSACTIVER.** Jamais supprimer la ligne `events`.
+
+**Pourquoi c'est une règle, pas une précaution** : un challenge porte des **données de Catherine** —
+ses **inscriptions** (`event_registrations`), ses **créneaux** (`bilan_slots`), ses **réservations de
+bilan** (`bilan_bookings`). Ce sont **des personnes réelles qui se sont inscrites et qui ont un
+rendez-vous.** Effacer le challenge, c'est effacer leur rendez-vous.
+
+**Donc** : `active = false` → il disparaît du public, **et tout son contenu reste lisible dans le CRUD
+dédié** (qui liste les challenges **passés et futurs**, `AdminChallenge21j.tsx:142`).
+**Il faut aussi purger les fixtures** (`TEST-KEN`), mais c'est la purge go-live, **un autre geste.**
+
+---
+
+### 🔴 « HÉRITER » la logique du 21 pour un challenge 7j / 30j — NON
+
+⚠️ **Ken a conclu, le 14/09 : « si y'a des nouveaux challenges type 7j / 30j, ça sera mieux qu'il
+hérite de la logique du 21 ». C'est l'INVERSE de ce que ce brief dit — et voici pourquoi.**
+
+**Un challenge 7 jours et un challenge 21 jours ne sont PAS la même chose.** Si un 7 jours héritait du
+type `challenge`, **il prendrait tout, tel quel** :
+
+| Ce qu'il hériterait | Ce que ça donnerait sur un challenge 7 jours |
+|---|---|
+| Le hero `ChallengeHero.tsx` | **un H1 qui dit « Challenge 21 jours »** |
+| Le décompte et la fenêtre **J-14 → J** | **des créneaux de bilan ouverts 14 jours avant** — pour un challenge qui en dure 7 |
+| Les **6 inclus** (`ChallengeInclusBanners`) | un texte qui parle de 21 jours |
+| `getPostRegistrationSteps('challenge')` | **l'étape bilan** imposée, alors qu'elle n'a peut-être pas de sens |
+
+**→ Un « Challenge 7 jours » s'afficherait comme un 21 jours.** C'est **le faux interrupteur en pire** :
+cette fois ce n'est pas l'admin qui ment, c'est **le site entier**.
+
+**⚠️ LA DISTINCTION QUI COMPTE, ET QU'IL FAUT TENIR :**
+
+- **HÉRITER** = prendre **le type et toute sa logique figée** → **NON.** ❌
+- **RÉUTILISER LES BRIQUES** = reprendre **le code** (un hero, un décompte, une liste de créneaux)
+  en **paramétrant la durée** → **OUI, et c'est même souhaitable.** ✅
+
+**Dit autrement : on réutilise la MÉCANIQUE, on ne réutilise pas la PROMESSE.**
+*« 21 jours »* est une promesse faite au visiteur — **elle ne se recopie pas sur un autre format.**
+
+**Donc un challenge 7j / 30j, le jour où Catherine en parle = un nouveau type**, avec sa durée, son
+décompte, sa fenêtre de bilan **et ses propres inclus**. **Le travail se fera en réutilisant les
+briques, pas en héritant du type.** *(À anticiper à ce moment-là — pas maintenant.)*
+
 ### ⚠️ LE POINT QUI RESTE — les challenges de l'ANCIENNE logique
 
 **Ken les a nommés : des challenges créés avec l'ancienne logique d'événement basique.**
