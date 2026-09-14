@@ -4,7 +4,10 @@ import { supabase } from '../../lib/supabaseClient';
 export interface ComplementRevenusModalProps {
   registrationId: string;
   telephone: string;
-  onClose: () => void;
+  /** Reçoit la réponse enregistrée — 'decouvrir_opportunite_herbalife' ou
+   *  'pas_pour_le_moment'. Les deux sont des VALEURS : l'appelant peut donc
+   *  arrêter de rouvrir le modal, y compris quand la réponse est « non ». */
+  onClose: (reponse: string) => void;
 }
 
 // Les deux seules valeurs — la clé dit ce qu'elle veut dire, le libellé pourra changer sans elle
@@ -46,6 +49,12 @@ export function ComplementRevenusModal({ registrationId, telephone, onClose }: C
   const [selected, setSelected] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 14/09 — le téléphone vient de l'inscription : si la comparaison serveur échoue
+  // (format différent de celui saisi au départ), le visiteur ne pouvait NI corriger
+  // NI sortir — le modal n'a pas de croix, par décision. On ouvre donc une porte de
+  // secours SEULEMENT dans ce cas : le champ reste absent du chemin normal.
+  const [telephoneSaisi, setTelephoneSaisi] = useState(telephone);
+  const [corrigerTel, setCorrigerTel] = useState(false);
 
   const submit = async () => {
     if (!selected) return;
@@ -53,15 +62,24 @@ export function ComplementRevenusModal({ registrationId, telephone, onClose }: C
     setError(null);
     const { error: err } = await supabase.rpc('fn_save_complement_revenus', {
       p_registration_id: registrationId,
-      p_telephone: telephone,
+      p_telephone: telephoneSaisi,
       p_complement_revenus: selected,
     });
     setSubmitting(false);
     if (err) {
-      setError('Impossible d’enregistrer ta réponse. Réessaie ou ferme cette fenêtre.');
+      // Le message nomme la SORTIE, jamais la valeur : la RPC ne renvoie pas le
+      // numéro enregistré, et c'est très bien ainsi.
+      if (err.message.includes('telephone_mismatch')) {
+        setError('Ce numéro ne correspond pas à celui de ton inscription — c’est celui que tu as saisi au départ.');
+        setCorrigerTel(true);
+      } else if (err.message.includes('missing_complement_revenus')) {
+        setError('Choisis une réponse avant de valider.');
+      } else {
+        setError('Impossible d’enregistrer ta réponse pour le moment. Réessaie — le bouton reste actif.');
+      }
       return;
     }
-    onClose();
+    onClose(selected);
   };
 
   return (
@@ -108,7 +126,32 @@ export function ComplementRevenusModal({ registrationId, telephone, onClose }: C
             ))}
           </div>
 
-          {error && <p className="mt-3 text-[11px] text-red-200">{error}</p>}
+          {error && (
+            <p className="mt-3 text-[13px] font-normal leading-snug text-red-300" role="alert">
+              {error}
+            </p>
+          )}
+
+          {/* Porte de secours : ouverte UNIQUEMENT si la comparaison du téléphone a
+              échoué. Le chemin normal ne voit jamais ce champ — et sans lui, un
+              « telephone_mismatch » laissait le visiteur sans correction possible
+              sur un modal qu'il n'a pas le droit de fermer. */}
+          {corrigerTel && (
+            <label className="mt-3 block max-w-2xl">
+              <span className="mb-1.5 block text-[13px] font-normal text-white/85">
+                Le numéro de ton inscription
+              </span>
+              <input
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                value={telephoneSaisi}
+                onChange={(e) => setTelephoneSaisi(e.target.value)}
+                className="w-full rounded-[2px] border border-white/30 bg-white/10 px-3 py-2.5 text-[14px] text-white placeholder:text-white/45 focus:border-white/60 focus:outline-none"
+                placeholder="06 XX XX XX XX"
+              />
+            </label>
+          )}
 
           <div className="mt-6 flex justify-end">
             <button
