@@ -60,14 +60,14 @@ export function ComplementRevenusModal({ registrationId, telephone, onClose }: C
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-noir/60 p-3 py-6 sm:p-6" role="dialog" aria-modal="true" aria-label="Complément de revenus">
-      <div className="relative w-full max-w-4xl overflow-hidden rounded-[2px] shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-noir/70 p-2 py-4 sm:p-4" role="dialog" aria-modal="true" aria-label="Complément de revenus">
+      <div className="relative w-full max-w-[96vw] overflow-hidden rounded-[2px] shadow-2xl lg:max-w-6xl">
         <img src="/challenge-21j/complement-revenus.webp" alt="" className="h-auto w-full" />
         <div
           className="absolute inset-0"
           style={{
             background:
-              'linear-gradient(180deg, oklch(7% .004 55 / 0.15) 0%, oklch(7% .004 55 / 0.55) 55%, oklch(7% .004 55 / 0.92) 100%)',
+              'linear-gradient(180deg, oklch(7% .004 55 / 0.35) 0%, oklch(7% .004 55 / 0.6) 45%, oklch(7% .004 55 / 0.95) 100%)',
           }}
         />
 
@@ -75,23 +75,23 @@ export function ComplementRevenusModal({ registrationId, telephone, onClose }: C
           type="button"
           onClick={onClose}
           aria-label="Fermer"
-          className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-[2px] transition-colors hover:bg-white/25"
+          className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-[2px] transition-colors hover:bg-white/25"
         >
-          <X size={18} strokeWidth={1.5} />
+          <X size={20} strokeWidth={1.5} />
         </button>
 
-        <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8">
-          <p className="mb-2 text-[10px] font-light uppercase tracking-[0.24em] text-white/60">
+        <div className="absolute inset-x-0 bottom-0 p-5 sm:p-8 md:p-10">
+          <p className="mb-3 text-[13px] font-medium uppercase tracking-[0.24em] text-white">
             Complément de revenus
           </p>
           <h3
-            className="mb-5 max-w-xl font-display font-normal leading-[1.1] text-white"
-            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(20px, 2.6vw, 28px)' }}
+            className="mb-6 max-w-2xl font-display font-normal leading-[1.1] text-white"
+            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(22px, 3.2vw, 34px)' }}
           >
             Et si Pessóra pouvait aussi t'apporter une opportunité financière ?
           </h3>
 
-          <div className="max-w-xl space-y-2" role="radiogroup" aria-label="Et si Pessóra pouvait aussi t'apporter une opportunité financière ?">
+          <div className="max-w-2xl space-y-2" role="radiogroup" aria-label="Et si Pessóra pouvait aussi t'apporter une opportunité financière ?">
             {OPTIONS.map((o) => (
               <label
                 key={o.value}
