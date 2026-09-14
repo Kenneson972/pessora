@@ -324,18 +324,15 @@ const Evenements = () => {
                   className="group relative block overflow-hidden rounded-[2px]"
                 >
                   <div className="relative aspect-[16/10] w-full sm:aspect-[21/9]">
-                    {/* Repli : dégradé sapin (couleur de marque), jamais un aplat noir plat —
-                        même logique de secours que les cartes d'événement classiques. */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-sapin via-anthracite to-noir" />
-                    {ev.image_url && (
-                      <img
-                        src={ev.image_url}
-                        alt=""
-                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-                        loading="lazy"
-                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                      />
-                    )}
+                    {/* Image statique dédiée à cette bannière — pas la vignette admin
+                        (events.image_url, utilisée ailleurs : rubrique challenge de la landing,
+                        cartes d'événement). Décision @user, 14/09 : sans rapport avec le CRUD. */}
+                    <img
+                      src="/challenge-21j/banniere-evenements.webp"
+                      alt=""
+                      className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                      loading="lazy"
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-noir/90 via-noir/35 to-transparent" />
 
                     <div className="absolute inset-0 flex flex-col justify-between p-6 md:p-9">
