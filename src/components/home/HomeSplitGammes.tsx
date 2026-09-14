@@ -116,7 +116,12 @@ export function HomeSplitGammes() {
                 <PhotoSlot src={active.main_image_url} alt={active.eyebrow} />
               </motion.div>
             </AnimatePresence>
-            <div className="absolute inset-0 bg-gradient-to-t from-noir/55 via-transparent to-transparent pointer-events-none" />
+            {/* 14/09 — le scrim existant (`from-noir/55`) ne suffisait pas : sur une
+                photo claire (blanc), le fond compose tombe a rgb(115,115,115) et le
+                `text-white/58` de l'eyebrow n'y lit que 2,78:1. On renforce le scrim
+                et on remonte l'eyebrow — la photo reste visible, c'est un voile, pas
+                un aplat. */}
+            <div className="absolute inset-0 bg-gradient-to-t from-noir/75 via-noir/35 to-transparent pointer-events-none" />
             <AnimatePresence mode="wait">
               <motion.div
                 key={`overlay-${active.key}`}
@@ -126,7 +131,7 @@ export function HomeSplitGammes() {
                 exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.28, ease: EDITORIAL_EASE }}
               >
-                <p className="text-[8.5px] uppercase tracking-[0.22em] text-white/58 mb-1.5">{active.eyebrow}</p>
+                <p className="text-[10px] uppercase tracking-[0.22em] text-white mb-1.5">{active.eyebrow}</p>
                 <h3 className="text-[18px] md:text-[22px] font-light text-white leading-snug mb-4">{active.title}</h3>
                 <Button
                   variant="ghost"

@@ -41,11 +41,23 @@ export function HomeGammeBanner() {
             className="relative flex flex-col justify-center px-8 py-10 md:px-12 md:py-14 min-h-[220px] md:min-h-0"
             style={{ backgroundColor: colors.panel }}
           >
-            <p className="text-[8px] uppercase tracking-[0.28em] text-white/40 mb-3">
+            {/* 14/09 — le panneau porte une couleur de MARQUE qui change a chaque gamme
+                (rgb(98,78,52), rgb(105,113,91)…). Mesure a l'oeil et au calcul : le
+                meme `text-white/40` lit 2,68:1 sur l'une et passe sur l'autre — donc
+                aucun reglage d'opacite ne tient sur les quatre. On pose un scrim
+                (la recette des bannieres inclus), qui rend le contraste independant
+                de la gamme affichee, et on remonte l'eyebrow d'un cran.
+                Le scrim reste LEGER et desature vers la droite : la couleur de marque
+                du panneau doit rester lisible, on ne la remplace pas. */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-gradient-to-r from-noir/45 via-noir/25 to-noir/5"
+            />
+            <p className="relative text-[10px] uppercase tracking-[0.28em] text-white/75 mb-3">
               {featured.eyebrow}
             </p>
             <h3
-              className="font-display font-normal text-white leading-[1.06] mb-7"
+              className="relative font-display font-normal text-white leading-[1.06] mb-7"
               style={{ fontSize: 'clamp(22px, 2.4vw, 34px)' }}
             >
               {featured.title}
@@ -54,7 +66,7 @@ export function HomeGammeBanner() {
               variant="ghost"
               size="sm"
               onPress={() => navigate(featured.link_to)}
-              className="self-start h-11 min-h-[44px] rounded-full border border-white/35 text-white text-[9px] uppercase tracking-[0.16em] hover:border-white hover:bg-white/10 px-5 transition-colors duration-200"
+              className="relative self-start h-11 min-h-[44px] rounded-full border border-white/45 text-white text-[10px] uppercase tracking-[0.16em] hover:border-white hover:bg-white/10 px-5 transition-colors duration-200"
             >
               Voir la gamme
             </Button>
