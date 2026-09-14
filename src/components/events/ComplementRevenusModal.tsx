@@ -53,7 +53,7 @@ export function ComplementRevenusModal({ registrationId, telephone, onClose }: C
   // (format différent de celui saisi au départ), le visiteur ne pouvait NI corriger
   // NI sortir — le modal n'a pas de croix, par décision. On ouvre donc une porte de
   // secours SEULEMENT dans ce cas : le champ reste absent du chemin normal.
-  const [telephoneSaisi, setTelephoneSaisi] = useState(telephone);
+  const [telephoneSaisi, setTelephoneSaisi] = useState('');
   const [corrigerTel, setCorrigerTel] = useState(false);
 
   const submit = async () => {
@@ -62,7 +62,11 @@ export function ComplementRevenusModal({ registrationId, telephone, onClose }: C
     setError(null);
     const { error: err } = await supabase.rpc('fn_save_complement_revenus', {
       p_registration_id: registrationId,
-      p_telephone: telephoneSaisi,
+      // Le champ de secours ne peut PAS inventer un numéro : la fonction compare
+      // contre `v_reg.telephone` (celui stocké) et n'écrit JAMAIS `telephone`.
+      // Le second facteur reste donc intact, et la phrase « ce numéro ne
+      // correspond pas à celui de ton inscription » reste vraie.
+      p_telephone: telephoneSaisi.trim() || telephone,
       p_complement_revenus: selected,
     });
     setSubmitting(false);
@@ -126,31 +130,36 @@ export function ComplementRevenusModal({ registrationId, telephone, onClose }: C
             ))}
           </div>
 
+          {/* Le champ de secours vit DANS le bloc du message d'erreur (retour
+              d'@lyra) : posé à côté, il se lirait comme un champ en double au lieu
+              d'une correction. Et il n'est JAMAIS pré-rempli — un champ qui
+              réaffiche le numéro déjà refusé invite à le renvoyer tel quel.
+              Deux jetons de couleur, un par surface : ici le fond est le voile
+              oklch(7%) du modal, donc teinte CLAIRE (red-300, ~10:1) — red-600
+              tomberait à ~3,6:1. Sur fond blanc mesuré, c'est red-600 (4,83:1). */}
           {error && (
-            <p className="mt-3 text-[13px] font-normal leading-snug text-red-300" role="alert">
-              {error}
-            </p>
-          )}
-
-          {/* Porte de secours : ouverte UNIQUEMENT si la comparaison du téléphone a
-              échoué. Le chemin normal ne voit jamais ce champ — et sans lui, un
-              « telephone_mismatch » laissait le visiteur sans correction possible
-              sur un modal qu'il n'a pas le droit de fermer. */}
-          {corrigerTel && (
-            <label className="mt-3 block max-w-2xl">
-              <span className="mb-1.5 block text-[13px] font-normal text-white/85">
-                Le numéro de ton inscription
-              </span>
-              <input
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel"
-                value={telephoneSaisi}
-                onChange={(e) => setTelephoneSaisi(e.target.value)}
-                className="w-full rounded-[2px] border border-white/30 bg-white/10 px-3 py-2.5 text-[14px] text-white placeholder:text-white/45 focus:border-white/60 focus:outline-none"
-                placeholder="06 XX XX XX XX"
-              />
-            </label>
+            <div
+              className="mt-3 max-w-2xl rounded-[2px] border border-red-300/40 bg-red-950/40 p-3 backdrop-blur-[2px]"
+              role="alert"
+            >
+              <p className="text-[13px] font-normal leading-snug text-red-300">{error}</p>
+              {corrigerTel && (
+                <label className="mt-2.5 block">
+                  <span className="mb-1.5 block text-[13px] font-normal text-white/85">
+                    Le numéro de ton inscription
+                  </span>
+                  <input
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    value={telephoneSaisi}
+                    onChange={(e) => setTelephoneSaisi(e.target.value)}
+                    className="w-full rounded-[2px] border border-white/30 bg-white/10 px-3 py-2.5 text-[14px] text-white placeholder:text-white/45 focus:border-white/60 focus:outline-none"
+                    placeholder="06 XX XX XX XX"
+                  />
+                </label>
+              )}
+            </div>
           )}
 
           <div className="mt-6 flex justify-end">
