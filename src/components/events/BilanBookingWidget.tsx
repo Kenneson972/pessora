@@ -202,8 +202,8 @@ export function BilanBookingWidget({ challengeEventId, prefill }: Props) {
         <CheckCircle size={32} strokeWidth={1.25} className="text-sapin" aria-hidden />
         <p className="text-[13px] text-black/70">
           {selectedSlot
-            ? 'Ta demande de jour est envoyée — Catherine te confirme l’heure rapidement.'
-            : 'Ta demande est envoyée — Catherine te recontacte pour fixer le jour et l’heure.'}
+            ? 'Ta demande de jour est envoyée — l’équipe Pessóra te confirme l’heure rapidement.'
+            : 'Ta demande est envoyée — l’équipe Pessóra te recontacte pour fixer le jour et l’heure.'}
         </p>
       </div>
     );
@@ -253,7 +253,7 @@ export function BilanBookingWidget({ challengeEventId, prefill }: Props) {
           ) : null}
           {availableDates.length > 0 && (
             <p className="-mt-3 mb-6 text-[11px] font-light text-black/40">
-              Catherine te confirme l’heure exacte pour ce jour.
+              L’équipe Pessóra te confirme l’heure exacte pour ce jour.
             </p>
           )}
           {availableDates.length === 0 && (
