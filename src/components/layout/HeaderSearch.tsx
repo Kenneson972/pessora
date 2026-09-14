@@ -231,7 +231,7 @@ function SearchPalette({
                           </span>
                           <div className="flex min-w-0 flex-1 flex-col">
                             <span className="truncate text-[13px] font-normal">{item.name}</span>
-                            <span className="text-[9px] uppercase tracking-[0.2em] text-black/40">
+                            <span className="text-[10px] uppercase tracking-[0.2em] text-black/60">
                               {CAT_LABELS[item.category] ?? item.category} · {item.price}€
                             </span>
                           </div>
@@ -265,7 +265,7 @@ function SearchPalette({
                             </span>
                             <div className="flex min-w-0 flex-1 flex-col">
                               <span className="truncate text-[13px] font-normal">{item.name}</span>
-                              <span className="text-[9px] uppercase tracking-[0.2em] text-black/40">
+                              <span className="text-[10px] uppercase tracking-[0.2em] text-black/60">
                                 {CAT_LABELS[item.category] ?? item.category} · {item.price}€
                               </span>
                             </div>
@@ -298,7 +298,7 @@ function SearchPalette({
                             </span>
                             <div className="flex min-w-0 flex-1 flex-col">
                               <span className="truncate text-[13px] font-normal">{p.name}</span>
-                              <span className="text-[9px] uppercase tracking-[0.2em] text-black/40">
+                              <span className="text-[10px] uppercase tracking-[0.2em] text-black/60">
                                 {CAT_LABELS[p.category] ?? p.category}
                                 {p.price != null
                                   ? ` · ${p.price.toFixed(2).replace('.', ',')}€`
@@ -366,7 +366,7 @@ function EventPaletteItem({ ev }: { ev: SearchEvent }) {
       </span>
       <div className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-[13px] font-normal">{ev.title}</span>
-        <span className="text-[9px] uppercase tracking-[0.2em] text-black/40">
+        <span className="text-[10px] uppercase tracking-[0.2em] text-black/60">
           {TYPE_LABELS[ev.type] ?? ev.type}
           {ev.heure ? ` · ${ev.heure.slice(0, 5)}` : ''}
         </span>
