@@ -4,6 +4,10 @@ import { startOfDayMartinique } from '../../lib/martiniqueDate';
 export interface ChallengeCountdownProps {
   /** Date ISO (YYYY-MM-DD) du début du challenge — events.date. */
   targetDate: string;
+  /** 'light' = chiffres blancs, pour un fond sombre/photo (ex. bannière Événements). Défaut : noir sur blanc. */
+  variant?: 'dark' | 'light';
+  /** Version resserrée (taille + espacements réduits) pour un aperçu, jamais le bloc principal de la landing. */
+  compact?: boolean;
 }
 
 interface Remaining {
@@ -47,7 +51,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
  * prefers-reduced-motion. Vit dans son propre bloc (ChallengeCountdownSection),
  * plus dans le hero — décision du 12/09 (trop chargé).
  */
-export function ChallengeCountdown({ targetDate }: ChallengeCountdownProps) {
+export function ChallengeCountdown({ targetDate, variant = 'dark', compact = false }: ChallengeCountdownProps) {
   const [mounted, setMounted] = useState(false);
   const [remaining, setRemaining] = useState<Remaining | null>(null);
 
@@ -70,27 +74,35 @@ export function ChallengeCountdown({ targetDate }: ChallengeCountdownProps) {
     { value: remaining.seconds, label: 'sec' },
   ];
 
+  const numberColor = variant === 'light' ? 'text-white' : 'text-noir';
+  const labelColor = variant === 'light' ? 'text-white/60' : 'text-black/45';
+  const dotColor = variant === 'light' ? 'text-white/25' : 'text-black/20';
+  const numberSize = compact ? 'clamp(18px, 2.4vw, 24px)' : 'clamp(28px, 4vw, 40px)';
+  const gap = compact ? 'gap-3 sm:gap-4' : 'gap-6 sm:gap-10';
+
   return (
     <div
-      className="flex items-start justify-center gap-6 sm:gap-10"
+      className={`flex items-start justify-center ${gap}`}
       style={{ fontVariantNumeric: 'tabular-nums' }}
     >
       {units.map((u, i) => (
-        <div key={u.label} className="flex items-start gap-6 sm:gap-10">
+        <div key={u.label} className={`flex items-start ${gap}`}>
           <div className="flex flex-col items-center">
             <span
-              className={
-                i === units.length - 1
-                  ? 'font-display font-light text-noir motion-safe:animate-pulse'
-                  : 'font-display font-light text-noir'
-              }
-              style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px, 4vw, 40px)' }}
+              className={`font-display font-light ${numberColor} ${i === units.length - 1 ? 'motion-safe:animate-pulse' : ''}`}
+              style={{ fontFamily: 'var(--font-display)', fontSize: numberSize }}
             >
               {pad(u.value)}
             </span>
-            <span className="mt-1.5 text-[9px] uppercase tracking-[0.2em] text-black/45">{u.label}</span>
+            <span className={`mt-1 text-[8px] uppercase tracking-[0.18em] ${labelColor} ${compact ? '' : 'sm:mt-1.5 sm:text-[9px] sm:tracking-[0.2em]'}`}>
+              {compact ? u.label.slice(0, 1) : u.label}
+            </span>
           </div>
-          {i < units.length - 1 && <span className="pt-1 font-display font-light text-black/20" style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px, 4vw, 40px)' }}>·</span>}
+          {i < units.length - 1 && (
+            <span className={`pt-1 font-display font-light ${dotColor}`} style={{ fontFamily: 'var(--font-display)', fontSize: numberSize }}>
+              ·
+            </span>
+          )}
         </div>
       ))}
     </div>
