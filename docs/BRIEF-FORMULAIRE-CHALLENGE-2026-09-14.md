@@ -515,9 +515,18 @@ le formulaire générique** — celui qui propose lieu, image, capacité, prix.
 **Correctif** : **toute ligne `type='challenge'` ouverte depuis la liste des Événements doit être
 redirigée vers `/admin/challenge-21j`** — édition comprise.
 
-⚠️ **À vérifier avant** : **combien de challenges existent réellement en base**, et depuis quand.
-**Si le seul est le fixture `TEST-KEN` du 12/09, le point est théorique** *(et il part à la purge)*.
-**S'il y a des challenges passés de Catherine, il est réel.** *(Lecture seule, à faire au moment du lot.)*
+### ✅ TRANCHÉ PAR KEN — 14/09/2026
+
+> *« Non, y'a que des challenges test dans tous les cas. »*
+
+**Donc le point est THÉORIQUE, et il se règle tout seul :** il n'y a **aucun challenge réel** en base à
+rediriger. **Les seules lignes `type='challenge'` sont des fixtures** — **elles partent à la purge
+go-live**, et **le jour où Catherine créera son premier vrai challenge, il naîtra dans le CRUD dédié**
+*(c'est le seul chemin qui restera après le retrait de `TYPE_OPTIONS`)*.
+
+**→ La redirection n'est plus un prérequis.** Elle devient **une sécurité gratuite** le jour où on
+touchera à la liste des Événements : **tant qu'il n'y a pas de challenge réel, elle ne protège rien
+de réel** — mais **elle coûte peu**, et **le premier challenge de Catherine sera le premier concerné.**
 
 ### ⚠️ ET LE SECOND CONSTAT DU MÊME PLAN — l'admin ment à Catherine
 
