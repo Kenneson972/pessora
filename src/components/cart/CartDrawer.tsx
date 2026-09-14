@@ -199,7 +199,7 @@ export function CartDrawer() {
               )}
               <Sheet.Footer className="flex flex-col border-t border-noir/[0.06] bg-white px-4 py-2 md:px-5">
                 <div className="mb-1 flex items-baseline justify-between gap-3">
-                  <span className="text-[8px] font-normal uppercase tracking-[0.16em] text-black/40">Total</span>
+                  <span className="text-[10px] font-normal uppercase tracking-[0.16em] text-black/40">Total</span>
                   <span className="text-[15px] font-normal tabular-nums text-black">{formatEurFr(total)}</span>
                 </div>
                 {!barStatus.loading && (
@@ -252,7 +252,7 @@ export function CartDrawer() {
                   </a>
                   <button
                     type="button"
-                    className={cn(focusRing, 'inline-flex items-center justify-center min-h-[36px] rounded-full text-[8px] uppercase tracking-[0.12em] text-black/30 hover:text-black/50')}
+                    className={cn(focusRing, 'inline-flex items-center justify-center min-h-[36px] rounded-full text-[12px] uppercase tracking-[0.12em] text-black/30 hover:text-black/50')}
                     onClick={() => {
                       if (confirmClear) { clearCart(); setPickupTime(''); setGuestName(''); setGuestPhone(''); setConfirmClear(false); }
                       else { setConfirmClear(true); setTimeout(() => setConfirmClear(false), 3000); }

@@ -52,7 +52,7 @@ function FooterGroupLabel({
   return (
     <p
       className={cn(
-        'mb-2 text-[8px] font-light uppercase tracking-[0.34em] text-white/45 sm:text-[9px]',
+        'mb-2 text-[10px] font-light uppercase tracking-[0.34em] text-white/45 sm:text-[10px]',
         align === 'end' ? 'text-right' : 'text-left',
         className,
       )}
@@ -115,7 +115,7 @@ const FooterCol = ({
     <div className={cn('min-w-0', end ? 'text-right' : 'text-left')}>
       <p
         className={cn(
-          'mb-2 text-[8px] font-light uppercase tracking-[0.32em] text-white/45 sm:text-[9px]',
+          'mb-2 text-[10px] font-light uppercase tracking-[0.32em] text-white/45 sm:text-[10px]',
           end ? 'text-right' : 'text-left',
         )}
       >
