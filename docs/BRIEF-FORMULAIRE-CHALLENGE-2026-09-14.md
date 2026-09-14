@@ -160,12 +160,29 @@ la même chose qu'une absence. **Donc la clé stockée doit être du type
 `'non_renseigne'`** — **jamais** une chaîne vide, sinon les deux cas redeviennent indiscernables.
 *(Même règle que pour le consentement : une donnée doit pouvoir être racontée à voix haute.)*
 
-**⒝ ⚠️ L'auto-remplissage de « Que fais-tu dans la vie ? » ne peut pas marcher aujourd'hui.**
-Le profil ne porte **que** `prenom`, `nom`, `telephone`. **La profession n'existe nulle part.**
-→ **Pour la pré-remplir à la 2ᵉ inscription, il faut d'abord la STOCKER** (profil ou dernière
-inscription). **Sinon « auto-remplissage » ne veut rien dire pour ce champ.**
-⚠️ Et la règle de la salle tient *(RESTES, §B)* : **valider la donnée AVANT de pré-remplir** — un
-numéro jamais validé amorce un numéro incomplet, que l'utilisateur ne découvre qu'au refus serveur.
+**⒝ ⚠️ CORRECTION — « auto-remplissage » veut dire AUTOCOMPLÉTION, pas pré-remplissage.**
+*(précision de Ken, 14/09 : « quand la personne commence à taper "med", ça écrit médecin »)*
+
+**Ma première lecture était fausse** : j'avais compris « pré-remplir le champ depuis le profil du
+compte ». **Ce n'est pas ça.** Il s'agit d'une **liste de suggestions qui s'ouvre pendant la frappe.**
+
+**Ce que ça implique, et qui n'existe pas aujourd'hui** : une autocomplétion **a besoin d'un
+dictionnaire de métiers**. Il n'y en a **aucun** dans le projet. Trois voies possibles :
+1. **une liste statique** de métiers courants (ordre de grandeur : 50-100 entrées) — la plus simple,
+   **aucune dépendance**, et suffisante pour un champ de qualification ;
+2. **une API de suggestion** — ⚠️ coût réseau *et* **fuite de frappe** (chaque lettre part chez un
+   tiers, et c'est une donnée personnelle en cours de saisie) ;
+3. **l'autocomplétion native du navigateur** (`autocomplete="organization-title"`) — ⚠️ **elle ne
+   propose pas « médecin » à partir de « med »** : elle restitue ce que **le navigateur** a déjà
+   mémorisé. **Ça ne répond pas à la demande** si la liste doit être la même pour tout le monde.
+
+**👉 Recommandation : la première** (liste statique locale). Et la règle de la salle tient
+*(RESTES, §B)* : **valider la donnée AVANT de la réutiliser** — une valeur non validée qui remonte
+d'une inscription à l'autre se propage sans contrôle.
+
+⚠️ **Point à trancher** : la saisie reste-t-elle **libre** (on peut écrire « prof de danse » sans que
+ça soit dans la liste), ou faut-il **choisir dans la liste** ? La première est plus juste, la seconde
+donne une donnée exploitable. **Ce n'est pas la même colonne dans l'admin.**
 
 ---
 
@@ -189,34 +206,51 @@ créneau mal rempli = **un appel qui ne passe pas = une inscription perdue.**
 
 ---
 
-## 8. Les deux jeux d'options — ce qui les sépare vraiment
+## 8. ✅ LES OBJECTIFS — Ken a tranché : **on change**
 
-**Ce ne sont pas deux versions de la même liste. Ce sont deux questions différentes.**
+> *« Je veux les mêmes trucs que la fiche, donc on va faire des cases "perte de poids" etc comme sur
+> la fiche. **Donc on change.** »* — Ken, 14/09/2026
 
-| | **Code** (`postRegistrationSurvey.ts:22-26`) | **Fiche** |
+**Décision : les 4 objectifs de la fiche REMPLACENT les 5 du code. Ce sont des CASES.**
+
+| | **Code aujourd'hui** (`postRegistrationSurvey.ts:22-26`) | **La fiche — ce qu'on fait** |
 |---|---|---|
-| **La question posée** | *pourquoi tu viens* | *quel est ton objectif* |
-| « Découverte / curiosité » | ✅ | — |
-| « Remise en forme » | ✅ *(vague)* | — |
-| **« Perte de poids »** | ✅ | ✅ **la seule commune** |
-| « Bien-être et lien social » | ✅ *(venir **pour les gens**)* | — |
-| « Autre » | ✅ *(échappatoire)* | — |
-| « Prise de masse / tonification » | — | ✅ *(venir **pour un résultat physique**)* |
-| « Plus d'énergie » | — | ✅ |
-| « Reprendre de bonnes habitudes » | — | ✅ |
+| | Découverte / curiosité | ❌ retiré |
+| | Remise en forme | ❌ retiré |
+| 1 | Perte de poids | ✅ **Perte de poids** |
+| | Bien-être et lien social | ❌ retiré |
+| | Autre | ⏳ *à confirmer — voir ci-dessous* |
+| 2 | — | ✅ **Prise de masse / tonification** |
+| 3 | — | ✅ **Plus d'énergie** |
+| 4 | — | ✅ **Reprendre de bonnes habitudes** |
 
-**La différence tient en une ligne** : les options du code décrivent **un état d'esprit** (« je viens
-découvrir », « je viens pour le lien social ») ; celles de la fiche décrivent **un objectif**
-(« je veux de l'énergie », « je veux reprendre des habitudes »).
+**Et la clé stockée suit la règle déjà posée** (`docs/CONSIGNES-CLAUDE.md:153`) : **on stocke la CLÉ,
+pas le libellé** — `perte_de_poids`, `prise_de_masse`, `plus_energie`, `bonnes_habitudes`. Le libellé
+changera encore ; la clé, non.
 
-**⚠️ Et c'est là que ça compte pour Catherine** : la fiche est **le document qu'elle remplit au bar**
-pour recruter. **Ce sont ces catégories-là qu'elle utilise pour relancer les gens.** Si le site
-collecte des catégories qu'**elle n'emploie pas**, la colonne de son admin **ne lui servira à rien** —
-et on retombe dans le défaut du complément de revenus : **un écran qui affiche des mots sans usage.**
+### 🔴 ⚠️ UNE CONTRADICTION À TRANCHER AVANT DE CODER
 
-**👉 La question, en une ligne** : **on garde les 4 objectifs de la fiche — et est-ce qu'on ajoute
-« Autre »** (et/ou « Découverte », qui couvre le cas « je ne sais pas encore ») ?
-**Le reste du code (`Remise en forme`, `Bien-être et lien social`) n'existe pas sur sa fiche.**
+**La fiche pose 4 cases. Le serveur exige UN objectif.**
+
+`fn_save_post_registration_survey` lève **`missing_objectif_principal` (P0001)** si
+`objectif_principal` est vide — **au singulier**. Or la fiche laisse **cocher plusieurs cases** (quatre
+`☐` indépendants, pas un `○`).
+
+**Donc deux formes possibles, et elles ne produisent pas la même colonne dans l'admin :**
+
+- **(a) Choix UNIQUE** *(boutons radio)* → une seule case cochée → `objectif_principal` reçoit
+  directement la valeur. **Simple, et compatible avec le serveur tel qu'il est.**
+- **(b) Choix MULTIPLE** *(cases à cocher)* → il faut **décider ce qui va dans `objectif_principal`**
+  (la première cochée ? une case « objectif principal » distincte des autres ?), et **stocker les
+  autres ailleurs** dans le `jsonb`. Sinon la 2ᵉ et la 3ᵉ case sont **perdues** — et Catherine voit
+  **un seul** de ses objectifs.
+
+⚠️ **Et c'est une décision de MÉTIER, pas de code** : sur la fiche papier, une personne qui coche
+« perte de poids » **et** « plus d'énergie » a **un** objectif principal et **un** secondaire —
+**ou deux objectifs** ? **Ken / Catherine le savent ; le code ne peut pas le deviner.**
+
+**👉 Ce qu'il faut répondre** : **une seule case, ou plusieurs ?** *(et si plusieurs : laquelle est
+« la principale » ?)*
 
 ---
 
@@ -225,9 +259,10 @@ et on retombe dans le défaut du complément de revenus : **un écran qui affich
 *(les 4 questions de la première version — mises à jour du 14/09)*
 
 - **L'âge** → ✅ **TRANCHÉ** : facultatif, avec « Je ne veux pas renseigner ».
-- **« Que fais-tu dans la vie ? »** → ✅ **TRANCHÉ** : champ libre + auto-remplissage *(⚠️ voir §6 ⒝)*.
+- **« Que fais-tu dans la vie ? »** → ✅ **TRANCHÉ** : champ libre + **autocomplétion** *(⚠️ voir §6 ⒝)*.
+- **Les options d'objectif** → ✅ **TRANCHÉ** : les 4 de la fiche remplacent celles du code *(§8)*.
+  ⏳ **Reste** : une case ou plusieurs ? *(§8, la contradiction serveur)*
 - **Le créneau de rappel** → ⏳ **à Catherine** (§7).
-- **Les options d'objectif** → ⏳ **Ken a demandé la différence** (§8).
 
 ---
 
