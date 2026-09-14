@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 function frenchMonth(dateStr: string): string {
   const month = new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', { month: 'long' });
   return month.charAt(0).toUpperCase() + month.slice(1);
@@ -24,10 +26,16 @@ const DEFAULT_HERO_IMAGE = '/challenge-21j/hero-visuel.webp';
  * reste le repli si elle n'en a pas encore choisi une — jamais de rupture visuelle.
  */
 export function ChallengeHero({ eventDate, heroImageUrl }: ChallengeHeroProps) {
+  // 14/09 — la photo est éditable par Catherine. Deux replis, pas un :
+  // `heroImageUrl` vide -> visuel par défaut ; URL CASSÉE (fichier supprimé du
+  // storage) -> même visuel par défaut, sinon on afficherait un cadre vide.
+  const [imageCassee, setImageCassee] = useState(false);
+  const src = !imageCassee && heroImageUrl ? heroImageUrl : DEFAULT_HERO_IMAGE;
   return (
     <header className="relative overflow-hidden bg-surface-hero text-white">
       <img
-        src={heroImageUrl || DEFAULT_HERO_IMAGE}
+        src={src}
+        onError={() => setImageCassee(true)}
         alt="Challenge 21 jours"
         className="absolute inset-0 h-full w-full object-cover"
         loading="eager"

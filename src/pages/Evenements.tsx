@@ -74,7 +74,10 @@ function EventRow({
           reverse ? 'md:col-start-6' : 'md:col-start-1'
         }`}
       >
-        {ev.image_url ? (
+        {/* Le dégradé est TOUJOURS rendu (dessous) : si l'URL est cassée, on
+            masque l'image et le repli apparaît — au lieu d'un cadre cassé. */}
+        <div className="absolute inset-0 bg-gradient-to-br from-neutral-200 via-neutral-300 to-anthracite" />
+        {ev.image_url && (
           <img
             src={ev.image_url}
             alt={ev.title}
@@ -82,9 +85,8 @@ function EventRow({
             height={900}
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
             loading="lazy"
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-neutral-200 via-neutral-300 to-anthracite" />
         )}
 
         {/* Voile bas pour date */}
@@ -179,15 +181,16 @@ function EventCardCompact({ ev }: { ev: EventWithCount }) {
       className="group block min-w-0 opacity-75 outline-none ring-offset-2 transition-opacity duration-300 hover:opacity-100 focus-visible:ring-2 focus-visible:ring-noir/60"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100">
-        {ev.image_url ? (
+        {/* Même règle que la carte à venir : le dégradé est toujours dessous. */}
+        <div className="absolute inset-0 bg-gradient-to-br from-neutral-200 via-neutral-300 to-anthracite" />
+        {ev.image_url && (
           <img
             src={ev.image_url}
             alt={ev.title ?? ''}
             className="absolute inset-0 h-full w-full object-cover"
             loading="lazy"
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-neutral-200 via-neutral-300 to-anthracite" />
         )}
         <div className="absolute inset-0 bg-white/35 mix-blend-lighten" />
         <span className="absolute right-3 top-3 rounded-[1px] bg-noir/75 px-2 py-1 text-[9px] font-light uppercase tracking-[0.22em] text-white/85">
