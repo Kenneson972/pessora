@@ -80,6 +80,8 @@ const AdminChallenge21j = () => {
   const [generating, setGenerating] = useState(false);
   const [genResult, setGenResult] = useState<string | null>(null);
   const [confirmDeleteSlot, setConfirmDeleteSlot] = useState<string | null>(null);
+  const [confirmDeleteAllSlots, setConfirmDeleteAllSlots] = useState(false);
+  const [deletingAllSlots, setDeletingAllSlots] = useState(false);
 
   useEffect(() => {
     if (selected) {
@@ -207,9 +209,21 @@ const AdminChallenge21j = () => {
           <>
             {/* Brique B — créneaux */}
             <div className="mb-10 rounded-[2px] border border-noir/[0.08] bg-white p-6">
-              <p className="mb-4 text-[10px] font-medium uppercase tracking-[0.2em] text-black/45">
-                Créneaux de bilan — {selected.title}
-              </p>
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-black/45">
+                  Créneaux de bilan — {selected.title}
+                </p>
+                {slotsHook.slots.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDeleteAllSlots(true)}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-red-200 px-3 py-1.5 text-[9px] font-normal uppercase tracking-[0.14em] text-red-500 hover:border-red-300 hover:text-red-700 transition-colors"
+                  >
+                    <Trash2 size={11} strokeWidth={1.4} />
+                    Tout supprimer ({slotsHook.slots.length})
+                  </button>
+                )}
+              </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
                   <label className={labelBase}>Du</label>
@@ -345,6 +359,20 @@ const AdminChallenge21j = () => {
         onConfirm={async () => {
           if (confirmDeleteSlot) await slotsHook.deleteSlot(confirmDeleteSlot);
           setConfirmDeleteSlot(null);
+        }}
+      />
+
+      <ConfirmDialog
+        open={confirmDeleteAllSlots}
+        title={`Supprimer les ${slotsHook.slots.length} créneaux ?`}
+        description="Tous les créneaux de bilan de ce challenge seront retirés définitivement — y compris ceux déjà réservés (la réservation reste, seul le créneau disparaît). Cette action ne peut pas être annulée."
+        confirmLabel={deletingAllSlots ? 'Suppression…' : 'Tout supprimer'}
+        onClose={() => setConfirmDeleteAllSlots(false)}
+        onConfirm={async () => {
+          setDeletingAllSlots(true);
+          await slotsHook.deleteAllSlots();
+          setDeletingAllSlots(false);
+          setConfirmDeleteAllSlots(false);
         }}
       />
     </div>

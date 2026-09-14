@@ -98,5 +98,19 @@ export function useAdminChallengeSlots(challengeEventId: string | null) {
     refetch();
   };
 
-  return { slots, loading, error, refetch, generateSlots, toggleDisponible, deleteSlot };
+  const deleteAllSlots = async (): Promise<{ deleted: number; error: string | null }> => {
+    if (!challengeEventId) return { deleted: 0, error: 'Aucun challenge sélectionné.' };
+    setError(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error: err } = await (supabase as any)
+      .from('bilan_slots')
+      .delete()
+      .eq('challenge_event_id', challengeEventId)
+      .select('id');
+    if (err) { setError(err.message); return { deleted: 0, error: err.message }; }
+    refetch();
+    return { deleted: data?.length ?? 0, error: null };
+  };
+
+  return { slots, loading, error, refetch, generateSlots, toggleDisponible, deleteSlot, deleteAllSlots };
 }
