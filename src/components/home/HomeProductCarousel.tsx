@@ -11,7 +11,7 @@ function ProductBadge({ type }: { type: HomeCarouselBadge }) {
   return (
     <Chip
       className={cn(
-        'pointer-events-none absolute left-2 top-2 z-[2] flex max-h-[72px] items-center justify-center px-1.5 py-2 text-[10px] font-medium uppercase leading-none tracking-[0.12em] text-white shadow-sm',
+        'pointer-events-none absolute left-2 top-2 z-[2] flex items-center justify-center px-1.5 py-2 text-[10px] font-medium uppercase leading-none tracking-[0.12em] text-white shadow-sm',
         '[writing-mode:vertical-rl] rotate-180',
         'bg-editorial-badge'
       )}
