@@ -20,7 +20,7 @@ export const EventRegistrationsList = ({ eventId }: { eventId: string }) => {
   const [addError, setAddError] = useState<string | null>(null);
 
   const startEdit = (r: typeof registrations[number]) => {
-    setEditingId(r.id); setEditForm({ prenom: r.prenom, nom: r.nom, telephone: r.telephone, nb_personnes: r.nb_personnes, souhait_info: r.souhait_info }); setConfirmDeleteId(null);
+    setEditingId(r.id); setEditForm({ prenom: r.prenom, nom: r.nom, telephone: r.telephone, nb_personnes: r.nb_personnes ?? '', souhait_info: r.souhait_info ?? '' }); setConfirmDeleteId(null);
   };
   const handleSave = async (id: string) => { if (!editForm.prenom.trim() || !editForm.nom.trim()) return; setSaving(true); try { await updateRegistrant(id, { prenom: editForm.prenom.trim(), nom: editForm.nom.trim(), telephone: editForm.telephone, nb_personnes: editForm.nb_personnes }); setEditingId(null); } finally { setSaving(false); } };
   const handleDelete = async (id: string) => { setDeleting(true); try { await deleteRegistrant(id); } finally { setDeleting(false); setConfirmDeleteId(null); } };

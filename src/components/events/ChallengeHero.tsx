@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 function frenchMonth(dateStr: string): string {
   const month = new Date(dateStr + 'T00:00:00').toLocaleDateString('fr-FR', { month: 'long' });
   return month.charAt(0).toUpperCase() + month.slice(1);
@@ -6,7 +8,11 @@ function frenchMonth(dateStr: string): string {
 export interface ChallengeHeroProps {
   /** Date ISO (YYYY-MM-DD) du challenge affiché. */
   eventDate: string;
+  /** Photo éditable depuis /admin/challenge-21j (events.hero_image_url). Vide = visuel par défaut. */
+  heroImageUrl?: string | null;
 }
+
+const DEFAULT_HERO_IMAGE = '/challenge-21j/hero-visuel.webp';
 
 /**
  * Refonte du 12/09 (retour utilisateur) : l'image occupe tout le hero
@@ -15,12 +21,21 @@ export interface ChallengeHeroProps {
  * voile qui s'efface vers la droite, même traitement que
  * ChallengeInclusBanners. Aucun CTA dans le hero (retiré, l'inscription
  * reste accessible plus bas sur la page).
+ *
+ * 14/09 : la photo devient éditable par Catherine (admin/challenge-21j). Le visuel codé en dur
+ * reste le repli si elle n'en a pas encore choisi une — jamais de rupture visuelle.
  */
-export function ChallengeHero({ eventDate }: ChallengeHeroProps) {
+export function ChallengeHero({ eventDate, heroImageUrl }: ChallengeHeroProps) {
+  // 14/09 — la photo est éditable par Catherine. Deux replis, pas un :
+  // `heroImageUrl` vide -> visuel par défaut ; URL CASSÉE (fichier supprimé du
+  // storage) -> même visuel par défaut, sinon on afficherait un cadre vide.
+  const [imageCassee, setImageCassee] = useState(false);
+  const src = !imageCassee && heroImageUrl ? heroImageUrl : DEFAULT_HERO_IMAGE;
   return (
     <header className="relative overflow-hidden bg-surface-hero text-white">
       <img
-        src="/challenge-21j/hero-visuel.webp"
+        src={src}
+        onError={() => setImageCassee(true)}
         alt="Challenge 21 jours"
         className="absolute inset-0 h-full w-full object-cover"
         loading="eager"

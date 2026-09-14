@@ -37,17 +37,19 @@ interface ChallengeEvent {
 
 interface BilanBooking {
   id: string;
-  slot_id: string;
+  slot_id: string | null;
   user_id: string;
   nom: string;
   prenom: string;
   email: string;
   telephone: string | null;
   message: string | null;
+  date_rdv: string | null;
+  heure_rdv: string | null;
   statut: 'en_attente' | 'confirme' | 'annule';
   origine: 'visiteur' | 'questionnaire' | 'admin' | null;
   created_at: string;
-  bilan_slots: BilanSlot;
+  bilan_slots: BilanSlot | null;
 }
 
 const STATUT_LABELS = {
@@ -184,6 +186,31 @@ const AdminBilans = () => {
     fetchBookings();
   };
 
+  /**
+   * L'heure du créneau (formulaire challenge, 14/09) : la visiteuse ne choisit plus que le JOUR,
+   * c'est ici — au moment où Catherine confirme la demande — qu'elle donne l'heure exacte.
+   * Deux cas selon l'origine de la demande :
+   * - liée à un bilan_slots (slot_id) : on modifie l'heure du créneau lui-même (reste cohérent
+   *   avec l'onglet "Créneaux", qui lit la même colonne) ;
+   * - hors créneau (slot_id NULL, demande "je souhaite en savoir plus" / pas de jour dispo) : on
+   *   modifie directement heure_rdv sur la demande.
+   */
+  const updateBookingHeure = async (booking: BilanBooking, heure: string) => {
+    if (!heure) return;
+    if (booking.slot_id) {
+      const current = booking.bilan_slots?.heure?.slice(0, 5);
+      if (heure === current) return;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase as any).from('bilan_slots').update({ heure }).eq('id', booking.slot_id);
+      await fetchSlots();
+    } else {
+      if (heure === booking.heure_rdv?.slice(0, 5)) return;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase as any).from('bilan_bookings').update({ heure_rdv: heure }).eq('id', booking.id);
+    }
+    fetchBookings();
+  };
+
   const requestDeleteBooking = (id: string) => {
     setConfirmDelete({ kind: 'booking', id });
   };
@@ -261,7 +288,7 @@ const AdminBilans = () => {
   const bookingsBySlot = useMemo(() => {
     const map = new Map<string, BilanBooking[]>();
     for (const b of bookings) {
-      if (b.statut === 'annule') continue;
+      if (b.statut === 'annule' || !b.slot_id) continue;
       const arr = map.get(b.slot_id) ?? [];
       arr.push(b);
       map.set(b.slot_id, arr);
@@ -357,7 +384,12 @@ const AdminBilans = () => {
                   <tbody>
                     {filteredBookings.map((b) => {
                       const slot = b.bilan_slots;
-                      const d = slot ? parseISODate(slot.date) : null;
+                      // Hors créneau (slot_id NULL) : la date/heure vivent directement sur la
+                      // demande (date_rdv/heure_rdv), pas sur un bilan_slots — jusqu'ici jamais
+                      // affichées ici.
+                      const dateStr = slot?.date ?? b.date_rdv;
+                      const heureStr = (slot?.heure ?? b.heure_rdv)?.slice(0, 5) ?? '';
+                      const d = dateStr ? parseISODate(dateStr) : null;
                       return (
                         <tr
                           key={b.id}
@@ -382,9 +414,15 @@ const AdminBilans = () => {
                                     year: 'numeric',
                                   })}
                                 </p>
-                                <p className="text-[10px] text-black/40">
-                                  {slot.heure?.slice(0, 5)}
-                                </p>
+                                <input
+                                  type="time"
+                                  defaultValue={heureStr}
+                                  onBlur={(e) => updateBookingHeure(b, e.target.value)}
+                                  disabled={b.statut === 'annule'}
+                                  step={300}
+                                  title={slot ? 'Modifie l’heure du créneau' : 'Donne l’heure du rdv (demande hors créneau)'}
+                                  className="mt-1 h-9 w-[92px] rounded-[2px] border border-noir/10 bg-surface-muted px-2 text-[11px] text-black/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-noir/20 disabled:opacity-40"
+                                />
                               </div>
                             ) : (
                               <span className="text-black/30">—</span>

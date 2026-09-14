@@ -7,8 +7,8 @@ import { EmptyState, Segment } from '@heroui-pro/react';
 import { supabase } from '../lib/supabaseClient';
 import type { Event } from '../types/database';
 import { useStaggerReveal } from '../lib/motionReveal';
-import { PageHero } from '../components/layout/PageHero';
 import { todayInMartinique } from '../lib/martiniqueDate';
+import { ChallengeCountdown } from '../components/events/ChallengeCountdown';
 
 interface EventWithCount extends Event {
   event_registrations: { count: number | string }[];
@@ -74,7 +74,10 @@ function EventRow({
           reverse ? 'md:col-start-6' : 'md:col-start-1'
         }`}
       >
-        {ev.image_url ? (
+        {/* Le dégradé est TOUJOURS rendu (dessous) : si l'URL est cassée, on
+            masque l'image et le repli apparaît — au lieu d'un cadre cassé. */}
+        <div className="absolute inset-0 bg-gradient-to-br from-neutral-200 via-neutral-300 to-anthracite" />
+        {ev.image_url && (
           <img
             src={ev.image_url}
             alt={ev.title}
@@ -82,9 +85,8 @@ function EventRow({
             height={900}
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
             loading="lazy"
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-neutral-200 via-neutral-300 to-anthracite" />
         )}
 
         {/* Voile bas pour date */}
@@ -179,15 +181,16 @@ function EventCardCompact({ ev }: { ev: EventWithCount }) {
       className="group block min-w-0 opacity-75 outline-none ring-offset-2 transition-opacity duration-300 hover:opacity-100 focus-visible:ring-2 focus-visible:ring-noir/60"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100">
-        {ev.image_url ? (
+        {/* Même règle que la carte à venir : le dégradé est toujours dessous. */}
+        <div className="absolute inset-0 bg-gradient-to-br from-neutral-200 via-neutral-300 to-anthracite" />
+        {ev.image_url && (
           <img
             src={ev.image_url}
             alt={ev.title ?? ''}
             className="absolute inset-0 h-full w-full object-cover"
             loading="lazy"
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-neutral-200 via-neutral-300 to-anthracite" />
         )}
         <div className="absolute inset-0 bg-white/35 mix-blend-lighten" />
         <span className="absolute right-3 top-3 rounded-[1px] bg-noir/75 px-2 py-1 text-[9px] font-light uppercase tracking-[0.22em] text-white/85">
@@ -293,43 +296,77 @@ const Evenements = () => {
   return (
     <div className="min-h-screen bg-white">
       <EventItemListJsonLd items={eventItems} />
-      <PageHero
-        eyebrow="Communauté · Fort-de-France"
-        title="Événements"
-        subtitle="Ateliers, run clubs, pop-ups et rencontres autour de Pessóra. Filtrez par catégorie ou parcourez les éditions passées."
-      />
+      {/* Hero typographique — même gabarit que "La Carte" (Menu.tsx) : fond sapin plat,
+          titre centré, pas de photo ni de dégradé. Retour @user, 14/09. */}
+      <section className="bg-sapin px-4 py-20 text-center md:py-28">
+        <h1
+          className="font-display font-normal leading-[0.9] text-white"
+          style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(48px, 7vw, 80px)' }}
+        >
+          Événements
+        </h1>
+        <p className="mx-auto mt-5 max-w-lg text-[16px] font-light leading-relaxed text-white/75">
+          Ateliers, run clubs, pop-ups et rencontres autour de Pessóra. Filtrez par catégorie ou
+          parcourez les éditions passées.
+        </p>
+      </section>
 
       {/* ── Rubrique dédiée : Challenge 21 jours (pas de page séparée) ── */}
       {!loading && upcomingChallenges.length > 0 && (
-        <section id="challenge-21-jours" className="border-b border-noir/[0.06] bg-noir px-4 py-14 text-white md:px-10 md:py-16 lg:px-[72px]">
-          <p className="mb-2 text-[10px] font-light uppercase tracking-[0.24em] text-white/50">
-            Challenge 21 jours
-          </p>
-          <h2
-            className="mb-8 font-display font-normal leading-none text-white"
-            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(26px, 3vw, 34px)' }}
-          >
-            Prochaines éditions
-          </h2>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <section id="challenge-21-jours" className="border-b border-noir/[0.06] bg-white px-4 py-12 md:px-10 md:py-14 lg:px-[72px]">
+          <div className="mx-auto flex max-w-6xl flex-col gap-6">
             {upcomingChallenges.map((ev) => {
               const { day, month, year } = splitDate(ev.date);
               return (
                 <Link
                   key={ev.id}
                   to={`/evenements/${ev.slug}`}
-                  className="group flex items-center justify-between gap-4 rounded-[2px] border border-white/15 bg-white/[0.04] p-6 transition-colors hover:bg-white/[0.08]"
+                  className="group relative block overflow-hidden rounded-[2px]"
                 >
-                  <div>
-                    <p className="text-[10px] font-light uppercase tracking-[0.2em] text-white/45">
-                      {month} {year}
-                    </p>
-                    <p className="mt-1 font-display text-2xl font-normal text-white" style={{ fontFamily: 'var(--font-display)' }}>
-                      {day} {month}
-                    </p>
-                    <p className="mt-2 text-[12px] font-light text-white/65">{ev.title}</p>
+                  <div className="relative aspect-[16/10] w-full sm:aspect-[21/9]">
+                    {/* Repli : dégradé sapin (couleur de marque), jamais un aplat noir plat —
+                        même logique de secours que les cartes d'événement classiques. */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-sapin via-anthracite to-noir" />
+                    {ev.image_url && (
+                      <img
+                        src={ev.image_url}
+                        alt=""
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                        loading="lazy"
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-noir/90 via-noir/35 to-transparent" />
+
+                    <div className="absolute inset-0 flex flex-col justify-between p-6 md:p-9">
+                      <div className="flex items-start justify-between gap-4">
+                        <p className="text-[10px] font-light uppercase tracking-[0.28em] text-white/60">
+                          Challenge 21 jours
+                        </p>
+                        <ArrowRight size={18} className="shrink-0 text-white/70 transition-transform group-hover:translate-x-1.5" />
+                      </div>
+
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                        <div>
+                          <p className="text-[11px] font-light uppercase tracking-[0.2em] text-white/60">
+                            {day} {month} {year}
+                          </p>
+                          <h2
+                            className="mt-1 font-display font-normal leading-[1.02] text-white"
+                            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(24px, 3.4vw, 38px)' }}
+                          >
+                            {ev.title}
+                          </h2>
+                        </div>
+                        <div className="shrink-0 sm:pb-1">
+                          <p className="mb-2 text-[8px] font-light uppercase tracking-[0.24em] text-white/45">
+                            Démarre dans
+                          </p>
+                          <ChallengeCountdown targetDate={ev.date} variant="light" compact />
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <ArrowRight size={16} className="shrink-0 text-white/50 transition-transform group-hover:translate-x-1" />
                 </Link>
               );
             })}

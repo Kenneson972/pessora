@@ -31,7 +31,12 @@ export const EMPTY_FORM = {
 
 export type FormState = typeof EMPTY_FORM;
 
-export const TYPE_OPTIONS: Event['type'][] = ['challenge', 'event', 'popup', 'atelier', 'partenariat', 'bilan', 'run_club'];
+// 'challenge' est retiré : un seul chemin de création reste (/admin/challenge-21j), le formulaire
+// générique arrête de promettre des champs (lieu, capacité, prix…) qui ne pilotent rien pour ce
+// type (docs/CONSIGNES-CLAUDE.md, section formulaire événement du 14/09). Le type 'challenge' lui-
+// même n'est PAS retiré : il reste dans TYPE_LABELS (les challenges existants affichent toujours
+// "Challenge 21 jours") et dans useAdminChallenges (le CRUD dédié crée toujours type='challenge').
+export const TYPE_OPTIONS: Event['type'][] = ['event', 'popup', 'atelier', 'partenariat', 'bilan', 'run_club'];
 
 export const TYPE_LABELS: Record<Event['type'], string> = {
   challenge: 'Challenge 21 jours',

@@ -9,7 +9,7 @@ import { ChallengeStatsBlock } from './ChallengeStatsBlock';
 import { ChallengeInclusBanners } from './ChallengeInclusBanners';
 import { ChallengeBeforeAfterBlock } from './ChallengeBeforeAfterBlock';
 import { ChallengeTestimonialsBlock } from './ChallengeTestimonialsBlock';
-import { ChallengeRegistrationCard } from './ChallengeRegistrationCard';
+import { Challenge21jRegistrationCard } from './Challenge21jRegistrationCard';
 import { ChallengeEndedState } from './ChallengeEndedState';
 import { ChallengeAvailabilityNotice } from './ChallengeAvailabilityNotice';
 
@@ -40,18 +40,18 @@ export function ChallengeLanding({ event }: ChallengeLandingProps) {
 
   return (
     <div className="bg-white">
-      <ChallengeHero eventDate={event.date} />
+      <ChallengeHero eventDate={event.date} heroImageUrl={event.hero_image_url} />
       {showCountdown && <ChallengeCountdownSection targetDate={event.date} />}
       <ChallengeTrustBadges />
       <ChallengeStatsBlock />
       <ChallengeInclusBanners />
-      <ChallengeBeforeAfterBlock />
+      <ChallengeBeforeAfterBlock gallery={event.gallery} />
       <ChallengeTestimonialsBlock />
       <div className="mx-auto max-w-6xl px-4 py-16 md:px-10 md:py-[6.5rem] lg:px-[72px]">
         {isPast ? (
           <ChallengeEndedState />
         ) : availability.loading ? null : availability.case === 'bookable' ? (
-          <ChallengeRegistrationCard event={event} />
+          <Challenge21jRegistrationCard event={event} />
         ) : (
           <ChallengeAvailabilityNotice case={availability.case} />
         )}

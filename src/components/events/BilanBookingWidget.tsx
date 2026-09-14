@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
@@ -13,6 +13,8 @@ interface Slot {
 
 interface Props {
   challengeEventId: string;
+  /** Coordonnées déjà saisies à l'inscription au challenge — évite de les redemander. */
+  prefill?: { nom: string; prenom: string; telephone: string };
 }
 
 const inputClass =
@@ -53,16 +55,22 @@ const formatSlotDate = (dateStr: string) =>
  * est le chemin principal (réservation sans compte). error===null (pas
  * de lecture de ligne) est un signal de succès suffisant ici.
  */
-export function BilanBookingWidget({ challengeEventId }: Props) {
+export function BilanBookingWidget({ challengeEventId, prefill }: Props) {
   const { user } = useAuth();
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(true);
+  // On ne fait choisir que le JOUR — l'heure est décidée par Catherine (elle gère ses créneaux
+  // depuis /admin/challenge-21j). selectedSlot reste la référence technique envoyée en base ;
+  // selectedDate est ce que la visiteuse voit et choisit.
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [showHorsDate, setShowHorsDate] = useState(false);
 
-  const [nom, setNom] = useState(user?.lastName ?? '');
-  const [prenom, setPrenom] = useState(user?.firstName ?? '');
-  const [telephone, setTelephone] = useState(user?.phone ?? '');
+  // Priorité : les infos de l'inscription au challenge, tout juste saisies — pas le compte,
+  // qui peut être plus ancien ou absent (inscription invité).
+  const [nom, setNom] = useState(prefill?.nom ?? user?.lastName ?? '');
+  const [prenom, setPrenom] = useState(prefill?.prenom ?? user?.firstName ?? '');
+  const [telephone, setTelephone] = useState(prefill?.telephone ?? user?.phone ?? '');
   const [dateRdv, setDateRdv] = useState('');
   const [heureRdv, setHeureRdv] = useState('');
 
@@ -91,40 +99,69 @@ export function BilanBookingWidget({ challengeEventId }: Props) {
 
   const contactValid = nom.trim().length >= 2 && prenom.trim().length >= 2 && isValidPhone(telephone);
 
+  // Un jour peut porter plusieurs heures (créneaux Catherine) — la visiteuse ne voit que le jour,
+  // trié une seule fois par date.
+  const availableDates = useMemo(() => {
+    const seen = new Set<string>();
+    const dates: string[] = [];
+    for (const s of slots) {
+      if (!seen.has(s.date)) {
+        seen.add(s.date);
+        dates.push(s.date);
+      }
+    }
+    return dates;
+  }, [slots]);
+
   const submitSlot = async () => {
-    if (!selectedSlot || !contactValid) return;
-    const slot = slots.find((s) => s.id === selectedSlot);
-    if (!slot) return;
+    if (!selectedDate || !contactValid) return;
 
     setStatus('submitting');
     setErrorMsg(null);
 
-    const { error } = await supabase.from('bilan_bookings').insert({
-      slot_id: selectedSlot,
-      user_id: user?.id ?? null,
-      nom: nom.trim(),
-      prenom: prenom.trim(),
-      telephone: telephone.trim(),
-      email: user?.email ?? null,
-      date_rdv: slot.date,
-      heure_rdv: slot.heure,
-    });
+    // Plusieurs heures possibles pour ce jour (créées par Catherine) : on essaie chacune dans
+    // l'ordre jusqu'à ce qu'une réservation passe. L'index unique sur bilan_bookings.slot_id
+    // (bilan_bookings_slot_unique_active) est le vrai garde-fou sous concurrence — cette boucle
+    // ne fait qu'absorber le cas où une autre personne vient de prendre la même heure.
+    const candidates = slots.filter((s) => s.date === selectedDate);
+    let lastError: { code?: string } | null = null;
 
-    if (error) {
-      setErrorMsg(mapBilanError(error, 'slot'));
-      setStatus(error.code === '23505' ? 'conflict' : 'error');
-      if (error.code === '23505') {
-        setSlots((prev) => prev.filter((s) => s.id !== selectedSlot));
-        setSelectedSlot(null);
+    for (const slot of candidates) {
+      const { error } = await supabase.from('bilan_bookings').insert({
+        slot_id: slot.id,
+        user_id: user?.id ?? null,
+        nom: nom.trim(),
+        prenom: prenom.trim(),
+        telephone: telephone.trim(),
+        email: user?.email ?? null,
+        date_rdv: slot.date,
+        heure_rdv: slot.heure,
+      });
+
+      if (!error) {
+        // Le trigger serveur ferme le créneau (disponible=false) au même
+        // moment — l'état local doit refléter ça immédiatement, pas attendre
+        // un futur rechargement de la liste.
+        setSlots((prev) => prev.filter((s) => s.id !== slot.id));
+        setSelectedSlot(slot.id);
+        setStatus('success');
+        return;
       }
-      return;
+
+      lastError = error;
+      if (error.code === '23505') {
+        // Cette heure vient d'être prise par quelqu'un d'autre : on la retire et on tente
+        // la suivante du même jour, sans que la visiteuse ait à s'en rendre compte.
+        setSlots((prev) => prev.filter((s) => s.id !== slot.id));
+        continue;
+      }
+      // Autre erreur (rate limit, etc.) : inutile d'essayer les heures suivantes.
+      break;
     }
 
-    // Le trigger serveur ferme le créneau (disponible=false) au même
-    // moment — l'état local doit refléter ça immédiatement, pas attendre
-    // un futur rechargement de la liste.
-    setSlots((prev) => prev.filter((s) => s.id !== selectedSlot));
-    setStatus('success');
+    setErrorMsg(mapBilanError(lastError, 'slot'));
+    setStatus(candidates.length === 0 ? 'error' : 'conflict');
+    setSelectedDate(null);
   };
 
   const submitHorsDate = async () => {
@@ -165,8 +202,8 @@ export function BilanBookingWidget({ challengeEventId }: Props) {
         <CheckCircle size={32} strokeWidth={1.25} className="text-sapin" aria-hidden />
         <p className="text-[13px] text-black/70">
           {selectedSlot
-            ? 'Ta demande de créneau est envoyée — Catherine te confirme rapidement.'
-            : 'Ta demande est envoyée — Catherine te recontacte pour fixer l’heure exacte.'}
+            ? 'Ta demande de jour est envoyée — Catherine te confirme l’heure rapidement.'
+            : 'Ta demande est envoyée — Catherine te recontacte pour fixer le jour et l’heure.'}
         </p>
       </div>
     );
@@ -195,25 +232,31 @@ export function BilanBookingWidget({ challengeEventId }: Props) {
         <p className="text-[12px] text-black/40">Chargement des créneaux…</p>
       ) : !showHorsDate ? (
         <>
-          {slots.length > 0 ? (
+          {availableDates.length > 0 ? (
             <div className="mb-6 flex flex-wrap gap-2">
-              {slots.map((slot) => (
+              {availableDates.map((date) => (
                 <button
-                  key={slot.id}
+                  key={date}
                   type="button"
-                  onClick={() => setSelectedSlot(slot.id)}
-                  aria-pressed={selectedSlot === slot.id}
+                  onClick={() => setSelectedDate(date)}
+                  aria-pressed={selectedDate === date}
                   className={`rounded-full border px-4 py-2 text-[11px] font-normal uppercase tracking-[0.08em] transition-colors ${
-                    selectedSlot === slot.id
+                    selectedDate === date
                       ? 'border-noir bg-noir text-white'
                       : 'border-noir/15 text-black/55 hover:border-noir/35 hover:text-black'
                   }`}
                 >
-                  {formatSlotDate(slot.date)} · {slot.heure.slice(0, 5)}
+                  {formatSlotDate(date)}
                 </button>
               ))}
             </div>
-          ) : (
+          ) : null}
+          {availableDates.length > 0 && (
+            <p className="-mt-3 mb-6 text-[11px] font-light text-black/40">
+              Catherine te confirme l’heure exacte pour ce jour.
+            </p>
+          )}
+          {availableDates.length === 0 && (
             <p className="mb-6 text-[12px] font-light text-black/50">
               Aucun créneau ouvert pour l’instant.{' '}
               <button type="button" onClick={() => setShowHorsDate(true)} className="text-editorial-link-underline text-black/70 hover:text-black">
@@ -257,14 +300,14 @@ export function BilanBookingWidget({ challengeEventId }: Props) {
 
       <button
         type="button"
-        disabled={status === 'submitting' || !contactValid || (showHorsDate ? !dateRdv || !heureRdv : !selectedSlot)}
+        disabled={status === 'submitting' || !contactValid || (showHorsDate ? !dateRdv || !heureRdv : !selectedDate)}
         onClick={showHorsDate ? submitHorsDate : submitSlot}
         className="mt-6 w-full rounded-full bg-noir py-4 text-[11px] font-normal uppercase tracking-[0.14em] text-white transition-colors hover:bg-anthracite disabled:opacity-50"
       >
-        {status === 'submitting' ? 'Envoi…' : showHorsDate ? 'Envoyer ma demande' : 'Réserver ce créneau'}
+        {status === 'submitting' ? 'Envoi…' : showHorsDate ? 'Envoyer ma demande' : 'Réserver ce jour'}
       </button>
 
-      {!showHorsDate && slots.length > 0 && (
+      {!showHorsDate && availableDates.length > 0 && (
         <button
           type="button"
           onClick={() => setShowHorsDate(true)}

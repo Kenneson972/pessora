@@ -10,6 +10,12 @@ export interface ChallengeFormData {
   date: string;
   active: boolean;
   registrationOpen: boolean;
+  /** Vignette — rubrique dédiée de la page Événements. */
+  imageUrl: string;
+  /** Photo plein cadre du hero (ChallengeHero.tsx) — vide = visuel par défaut du composant. */
+  heroImageUrl: string;
+  /** Galerie avant/après (ChallengeBeforeAfterBlock) — bloc masqué tant qu'elle est vide. */
+  gallery: string[];
 }
 
 export function useAdminChallenges() {
@@ -44,7 +50,17 @@ export function useAdminChallenges() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any)
       .from('events')
-      .insert({ type: 'challenge', title: form.title, date: form.date, slug, active: form.active, registration_open: form.registrationOpen })
+      .insert({
+        type: 'challenge',
+        title: form.title,
+        date: form.date,
+        slug,
+        active: form.active,
+        registration_open: form.registrationOpen,
+        image_url: form.imageUrl || null,
+        hero_image_url: form.heroImageUrl || null,
+        gallery: form.gallery,
+      })
       .select()
       .single();
     if (error) return { data: null, error: error.message };
@@ -59,7 +75,15 @@ export function useAdminChallenges() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any)
       .from('events')
-      .update({ title: form.title, date: form.date, active: form.active, registration_open: form.registrationOpen })
+      .update({
+        title: form.title,
+        date: form.date,
+        active: form.active,
+        registration_open: form.registrationOpen,
+        image_url: form.imageUrl || null,
+        hero_image_url: form.heroImageUrl || null,
+        gallery: form.gallery,
+      })
       .eq('id', id)
       .select('id');
     if (error) return { error: error.message };
