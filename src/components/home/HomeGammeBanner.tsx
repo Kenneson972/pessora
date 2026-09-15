@@ -41,7 +41,7 @@ export function HomeGammeBanner() {
             className="relative flex flex-col justify-center px-8 py-10 md:px-12 md:py-14 min-h-[220px] md:min-h-0"
             style={{ backgroundColor: colors.panel }}
           >
-            <p className="text-[8px] uppercase tracking-[0.28em] text-white/40 mb-3">
+            <p className="text-[10px] uppercase tracking-[0.28em] text-white/40 mb-3">
               {featured.eyebrow}
             </p>
             <h3
@@ -54,7 +54,7 @@ export function HomeGammeBanner() {
               variant="ghost"
               size="sm"
               onPress={() => navigate(featured.link_to)}
-              className="self-start h-11 min-h-[44px] rounded-full border border-white/35 text-white text-[9px] uppercase tracking-[0.16em] hover:border-white hover:bg-white/10 px-5 transition-colors duration-200"
+              className="self-start h-11 min-h-[44px] rounded-full border border-white/35 text-white text-[12px] uppercase tracking-[0.16em] hover:border-white hover:bg-white/10 px-5 transition-colors duration-200"
             >
               Voir la gamme
             </Button>
@@ -83,7 +83,7 @@ export function HomeGammeBanner() {
                     decoding="async"
                   />
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center text-black/20 text-[9px] uppercase tracking-[0.2em]">
+                  <div className="absolute inset-0 flex items-center justify-center text-black/20 text-[10px] uppercase tracking-[0.2em]">
                     Photo à venir
                   </div>
                 )}

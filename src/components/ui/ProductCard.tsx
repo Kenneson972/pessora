@@ -91,10 +91,10 @@ export const ProductCard = ({
             <span
               key={i}
               className={cn(
-                'inline-block rounded-[2px] px-2 py-0.5 text-[7px] font-medium uppercase tracking-[0.1em]',
+                'inline-block rounded-[2px] px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.1em]',
                 b.style === 'accent'
                   ? 'bg-sapin-subtle text-sapin border border-sapin/15'
-                  : 'bg-noir/[0.04] text-black/45 border border-noir/[0.08]',
+                  : 'bg-noir/[0.04] text-black/60 border border-noir/[0.08]',
               )}
             >
               {b.label}

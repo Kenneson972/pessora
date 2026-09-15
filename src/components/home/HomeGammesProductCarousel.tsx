@@ -39,7 +39,7 @@ function ProductCard({ product, index, rangeId }: { product: GammeProduct; index
               loading="lazy"
             />
           ) : (
-            <span className="text-[9px] uppercase tracking-[0.18em] text-black/25">Photo à venir</span>
+            <span className="text-[10px] uppercase tracking-[0.18em] text-black/25">Photo à venir</span>
           )}
         </div>
         <div className="p-3">

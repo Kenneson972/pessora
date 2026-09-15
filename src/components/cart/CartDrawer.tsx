@@ -190,22 +190,22 @@ export function CartDrawer() {
                     className="h-10 min-h-[40px] w-full rounded-full border border-noir/[0.12] bg-white px-4 text-[12px] text-black placeholder:text-black/30 outline-none focus:border-noir/30"
                   />
                   {guestName && !guestNameValid && (
-                    <p className="text-[9px] text-red-400">2 caractères minimum</p>
+                    <p className="text-[10px] text-red-400">2 caractères minimum</p>
                   )}
                   {guestPhone && !guestPhoneValid && (
-                    <p className="text-[9px] text-red-400">Format : 06 XX XX XX XX</p>
+                    <p className="text-[10px] text-red-400">Format : 06 XX XX XX XX</p>
                   )}
                 </div>
               )}
               <Sheet.Footer className="flex flex-col border-t border-noir/[0.06] bg-white px-4 py-2 md:px-5">
                 <div className="mb-1 flex items-baseline justify-between gap-3">
-                  <span className="text-[8px] font-normal uppercase tracking-[0.16em] text-black/40">Total</span>
+                  <span className="text-[12px] font-normal uppercase tracking-[0.16em] text-black/60">Total</span>
                   <span className="text-[15px] font-normal tabular-nums text-black">{formatEurFr(total)}</span>
                 </div>
                 {!barStatus.loading && (
                   <p className="mb-1 text-[9px] text-black/35 text-center">{barStatus.isOpen ? `⏱ ~${barStatus.estimatedWaitMinutes} min` : '🔴 Bar fermé'}</p>
                 )}
-                {checkoutError && <p className="mb-1 text-[9px] text-red-500">{checkoutError}</p>}
+                {checkoutError && <p className="mb-1 text-[10px] text-red-500">{checkoutError}</p>}
 
                 {gammeBlockedGuest ? (
                   <div className="mb-1 rounded-[2px] border border-sapin/15 bg-sapin-subtle px-3 py-2 text-center">
@@ -252,7 +252,7 @@ export function CartDrawer() {
                   </a>
                   <button
                     type="button"
-                    className={cn(focusRing, 'inline-flex items-center justify-center min-h-[36px] rounded-full text-[8px] uppercase tracking-[0.12em] text-black/30 hover:text-black/50')}
+                    className={cn(focusRing, 'inline-flex items-center justify-center min-h-[36px] rounded-full text-[12px] uppercase tracking-[0.12em] text-black/30 hover:text-black/50')}
                     onClick={() => {
                       if (confirmClear) { clearCart(); setPickupTime(''); setGuestName(''); setGuestPhone(''); setConfirmClear(false); }
                       else { setConfirmClear(true); setTimeout(() => setConfirmClear(false), 3000); }

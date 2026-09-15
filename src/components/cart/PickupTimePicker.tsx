@@ -74,7 +74,7 @@ export function PickupTimePicker({ businessHours, value, onChange }: PickupTimeP
       <div className="px-4 py-2.5 md:px-5 border-t border-noir/[0.06]">
         <div className="flex items-center gap-1.5 mb-1">
           <Clock size={11} strokeWidth={1.3} className="text-sapin/45" />
-          <span className="text-[8px] font-normal uppercase tracking-[0.16em] text-black/45">Créneau de retrait</span>
+          <span className="text-[10px] font-normal uppercase tracking-[0.16em] text-black/45">Créneau de retrait</span>
         </div>
         <p className="text-[10px] font-light text-black/40">
           {new Date().getDay() === 0 ? "Fermé le dimanche." : "Aucun créneau aujourd'hui."}
@@ -87,7 +87,7 @@ export function PickupTimePicker({ businessHours, value, onChange }: PickupTimeP
     <div className="px-4 py-2.5 md:px-5 border-t border-noir/[0.06]">
       <div className="flex items-center gap-1.5 mb-1.5">
         <Clock size={11} strokeWidth={1.3} className="text-sapin/45" />
-        <span className="text-[8px] font-normal uppercase tracking-[0.16em] text-black/45">Créneau de retrait</span>
+        <span className="text-[10px] font-normal uppercase tracking-[0.16em] text-black/45">Créneau de retrait</span>
       </div>
       <div className="flex flex-wrap gap-1 max-h-[80px] overflow-y-auto">
         {slots.map((slot) => {

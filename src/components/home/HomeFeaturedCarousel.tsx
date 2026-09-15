@@ -10,7 +10,7 @@ function PlaceholderCard({ eyebrow, title }: { eyebrow: string; title: string })
   return (
     <div className="flex-shrink-0 w-[min(280px,85vw)] min-[400px]:w-[310px] h-[400px] rounded-[2px] overflow-hidden bg-noir/[0.06] relative snap-start">
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-black/20">
-        <span className="text-[9px] uppercase tracking-[0.18em]">Photo à venir</span>
+        <span className="text-[10px] uppercase tracking-[0.18em]">Photo à venir</span>
       </div>
       <div className="absolute inset-0 bg-gradient-to-t from-noir/70 via-noir/20 to-transparent flex flex-col justify-end p-5">
         <p className="text-[8.5px] uppercase tracking-[0.22em] text-white/55 mb-1.5">{eyebrow}</p>
@@ -33,7 +33,7 @@ function CardItem({ card }: { card: { id: string; eyebrow: string; title: string
         />
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-noir/[0.06] text-black/20">
-          <span className="text-[9px] uppercase tracking-[0.18em]">Photo à venir</span>
+          <span className="text-[10px] uppercase tracking-[0.18em]">Photo à venir</span>
         </div>
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-noir/68 via-noir/10 to-transparent flex flex-col justify-end p-5">

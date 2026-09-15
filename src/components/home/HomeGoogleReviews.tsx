@@ -47,7 +47,7 @@ export function HomeGoogleReviews() {
             <span className="text-[22px] font-light leading-none tracking-[-0.02em] text-black md:text-[26px]">
               {roundedRating}
             </span>
-            <span className="pb-[2px] text-[9px] font-light tracking-[0.12em] text-black/40">
+            <span className="pb-[2px] text-[10px] font-light tracking-[0.12em] text-black/40">
               {googleReviewsData.reviewCountLabel}
             </span>
           </div>
@@ -74,7 +74,7 @@ export function HomeGoogleReviews() {
                 <p className="mb-4 text-[15px] font-light leading-[1.38] text-black/82 md:text-[17px]">
                   "{review.quote}"
                 </p>
-                <p className="text-[8px] font-normal uppercase tracking-[0.18em] text-black/56">{review.author}</p>
+                <p className="text-[10px] font-normal uppercase tracking-[0.18em] text-black/56">{review.author}</p>
               </Card.Content>
             </Card>
           ))}

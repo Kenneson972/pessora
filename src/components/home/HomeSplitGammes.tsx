@@ -21,7 +21,7 @@ function PhotoSlot({ src, alt }: { src: string | null; alt: string }) {
   }
   return (
     <div className="absolute inset-0 bg-noir/[0.06] flex flex-col items-center justify-center gap-2 text-black/25">
-      <span className="text-[9px] uppercase tracking-[0.16em]">Photo à venir</span>
+      <span className="text-[10px] uppercase tracking-[0.16em]">Photo à venir</span>
     </div>
   );
 }
