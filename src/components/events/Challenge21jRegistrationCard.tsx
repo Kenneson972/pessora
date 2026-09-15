@@ -498,7 +498,7 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
       {event.registration_open === false ? (
         <div className="text-center py-8">
           <p className="text-[13px] font-normal text-black mb-2">Inscriptions fermées</p>
-          <p className="text-[11px] font-light text-black/40">
+          <p className="text-[12px] font-normal text-black/60">
             Les inscriptions pour cet événement ne sont plus disponibles.
           </p>
         </div>
