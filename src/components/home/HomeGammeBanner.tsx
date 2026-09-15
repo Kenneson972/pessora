@@ -95,7 +95,7 @@ export function HomeGammeBanner() {
                     decoding="async"
                   />
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center text-black/20 text-[9px] uppercase tracking-[0.2em]">
+                  <div className="absolute inset-0 flex items-center justify-center text-black/60 text-[10px] uppercase tracking-[0.2em]">
                     Photo à venir
                   </div>
                 )}
