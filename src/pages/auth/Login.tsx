@@ -9,6 +9,7 @@ import { formatAuthError } from '../../lib/userFacingError';
 import { authInputClass, authLabelClass, authFieldErrorRing } from '../../lib/authFormStyles';
 import { AuthSplitLayout } from '../../components/auth/AuthSplitLayout';
 import { loginSchema, type LoginFormValues } from '../../lib/authSchemas';
+import { ADMIN_ORIGIN, ADMIN_LOGIN_URL, doitRefuserConnexionAdmin } from '../../lib/adminOrigin';
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -36,7 +37,7 @@ function GoogleIcon({ className }: { className?: string }) {
 const Login = () => {
   useEffect(() => { document.title = 'Connexion — PessÓra'; }, []);
   const navigate = useNavigate();
-  const { login, loginWithGoogle, resetPassword } = useAuth();
+  const { login, loginWithGoogle, resetPassword, logout } = useAuth();
   const [submitError, setSubmitError] = useState('');
   const [loading, setLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
@@ -55,6 +56,24 @@ const Login = () => {
     setLoading(true);
     try {
       const loggedIn = await login(values.email, values.password);
+      // 15/09 — on se connecte la ou la session va vivre.
+      // La session Supabase vit dans le localStorage de l'ORIGINE : elle ne suit pas une
+      // bascule d'hote. Sur www, connecter un admin le deconnecte aussitot et le fait
+      // retomber sur un ecran identique SANS UN MOT — il conclut que son mot de passe ne
+      // marche pas, et il appelle la cliente pour une panne qui est de notre cote.
+      // On le DIT, et on le deconnecte : une session rangee sur le mauvais hote est pire
+      // que pas de session, parce qu'elle fait croire que la connexion a marche.
+      // 🔴 Un admin sur l'HOTE ADMIN n'est JAMAIS refuse — c'est SA porte. Sans cette
+      //    clause, le correctif du 14/09 refusait aussi le bon chemin et Catherine ne
+      //    pouvait plus entrer du tout (vu en prod, pas en tsc/tests/revue).
+      if (doitRefuserConnexionAdmin(loggedIn?.role)) {
+        await logout();
+        setSubmitError(
+          `Votre compte administrateur s'ouvre sur ${ADMIN_ORIGIN} — la session ne suit pas d'un domaine à l'autre. Connectez-vous depuis ${ADMIN_LOGIN_URL}`,
+        );
+        setLoading(false);
+        return;
+      }
       navigate(loggedIn?.role === 'admin' ? '/admin' : '/mon-espace');
     } catch (e) {
       const msg = e instanceof Error ? e.message : '';
@@ -123,7 +142,7 @@ const Login = () => {
                   setSubmitError(e instanceof Error ? e.message : 'Erreur lors de l\'envoi');
                 }
               }}
-              className="text-[10px] text-black/40 hover:text-black transition-colors underline underline-offset-2"
+              className="inline-flex min-h-[44px] items-center text-[12px] text-black/60 hover:text-black transition-colors underline underline-offset-2"
             >
               Mot de passe oublié ?
             </button>
@@ -194,6 +213,15 @@ const Login = () => {
         <Link to="/inscription" className="text-editorial-link-underline inline-block">
           Créer un compte
         </Link>
+      </p>
+      {/* 15/09 — deux portes nommees (regle @lyra) : la cliente d'un cote, Catherine de l'autre.
+          On choisit sa porte AVANT de taper son mot de passe, parce que la session ne peut pas
+          traverser les hotes. Sans cette ligne, un compte admin n'a aucun chemin qui marche. */}
+      <p className="mt-3 text-center text-[11px] text-black/60">
+        Vous gérez la boutique ?{' '}
+        <a href={ADMIN_LOGIN_URL} className="text-editorial-link-underline inline-block">
+          Espace pro
+        </a>
       </p>
     </AuthSplitLayout>
   );
