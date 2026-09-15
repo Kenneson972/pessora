@@ -9,7 +9,7 @@ import { formatAuthError } from '../../lib/userFacingError';
 import { authInputClass, authLabelClass, authFieldErrorRing } from '../../lib/authFormStyles';
 import { AuthSplitLayout } from '../../components/auth/AuthSplitLayout';
 import { loginSchema, type LoginFormValues } from '../../lib/authSchemas';
-import { ADMIN_ORIGIN, ADMIN_LOGIN_URL, doitRefuserConnexionAdmin } from '../../lib/adminOrigin';
+import { ADMIN_ORIGIN, ADMIN_LOGIN_URL, doitRefuserConnexionAdmin, doitAfficherPorteAdmin } from '../../lib/adminOrigin';
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -216,13 +216,17 @@ const Login = () => {
       </p>
       {/* 15/09 — deux portes nommees (regle @lyra) : la cliente d'un cote, Catherine de l'autre.
           On choisit sa porte AVANT de taper son mot de passe, parce que la session ne peut pas
-          traverser les hotes. Sans cette ligne, un compte admin n'a aucun chemin qui marche. */}
-      <p className="mt-3 text-center text-[11px] text-black/60">
-        Vous gérez la boutique ?{' '}
-        <a href={ADMIN_LOGIN_URL} className="text-editorial-link-underline inline-block">
-          Espace pro
-        </a>
-      </p>
+          traverser les hotes. Sans cette ligne, un compte admin n'a aucun chemin qui marche.
+          ⚠️ UNIQUEMENT sur le site public : cette page est partagee entre les deux hotes, et
+          sur admin.pessora.fr la porte renverrait vers la page ou l'on est deja (mesure @vela). */}
+      {doitAfficherPorteAdmin() && (
+        <p className="mt-3 text-center text-[11px] text-black/60">
+          Vous gérez la boutique ?{' '}
+          <a href={ADMIN_LOGIN_URL} className="text-editorial-link-underline inline-block">
+            Espace pro
+          </a>
+        </p>
+      )}
     </AuthSplitLayout>
   );
 };

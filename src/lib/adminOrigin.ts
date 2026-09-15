@@ -48,3 +48,13 @@ export const isAdminHost = (host?: string): boolean => {
  */
 export const doitRefuserConnexionAdmin = (role?: string, host?: string): boolean =>
   role === 'admin' && !isAdminHost(host);
+
+/**
+ * Faut-il montrer la porte « Espace pro » ?
+ *
+ * Uniquement depuis le site public. Sur admin.pessora.fr, la porte renverrait vers la
+ * page ou l'on est deja — mesure @vela : « une porte qui renvoie la ou on est deja ».
+ * La page de connexion est PARTAGEE entre les deux hotes, donc la condition vit ici,
+ * pas dans le JSX.
+ */
+export const doitAfficherPorteAdmin = (host?: string): boolean => !isAdminHost(host);

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   isAdminHost,
   doitRefuserConnexionAdmin,
+  doitAfficherPorteAdmin,
   ADMIN_LOGIN_URL,
   ADMIN_HOST,
 } from '../lib/adminOrigin';
@@ -55,5 +56,13 @@ describe('la porte nommee', () => {
   it('pointe la CONNEXION de l admin, pas sa racine', () => {
     expect(ADMIN_LOGIN_URL).toBe(`https://${ADMIN_HOST}/connexion`);
     expect(ADMIN_LOGIN_URL.endsWith('/connexion')).toBe(true);
+  });
+
+  it('🔴 s affiche sur le site public, et JAMAIS sur l hote admin', () => {
+    // La page de connexion est PARTAGEE entre les deux hotes : sur admin.pessora.fr,
+    // la porte renverrait vers la page ou l'on est deja (mesure @vela).
+    expect(doitAfficherPorteAdmin('www.pessora.fr')).toBe(true);
+    expect(doitAfficherPorteAdmin('admin.pessora.fr')).toBe(false);
+    expect(doitAfficherPorteAdmin('admin.pessora.fr:4173')).toBe(false);
   });
 });
