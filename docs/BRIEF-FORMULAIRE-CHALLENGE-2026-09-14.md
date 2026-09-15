@@ -228,9 +228,82 @@ dictionnaire de métiers**. Il n'y en a **aucun** dans le projet. Trois voies po
 *(RESTES, §B)* : **valider la donnée AVANT de la réutiliser** — une valeur non validée qui remonte
 d'une inscription à l'autre se propage sans contrôle.
 
-⚠️ **Point à trancher** : la saisie reste-t-elle **libre** (on peut écrire « prof de danse » sans que
-ça soit dans la liste), ou faut-il **choisir dans la liste** ? La première est plus juste, la seconde
-donne une donnée exploitable. **Ce n'est pas la même colonne dans l'admin.**
+✅ **TRANCHÉ LE 14/09 — saisie LIBRE, avec la liste en AIDE.** On peut toujours écrire « prof de danse »
+même si ce n'est pas dans la liste : **l'autocomplétion propose, elle ne contraint pas.**
+
+**Pourquoi** : forcer le choix ferait entrer les gens dans des cases qui ne leur correspondent pas, et
+**Catherine doit pouvoir lire ce qu'ils font vraiment**. Ce n'est pas la même colonne dans l'admin
+(texte libre = pas de filtre possible) — **et c'est le prix qu'on accepte.**
+
+⚠️ **Et la règle de dégradation qui va avec** : si le fichier des métiers ne charge pas (4G antillaise,
+blocage réseau, fetch en échec), **le champ reste une saisie libre, silencieusement** — pas d'erreur
+affichée, pas de blocage de la soumission, pas de champ désactivé en attendant. **L'autocomplétion est
+une aide, jamais une condition.**
+
+### 🔴 TRANCHÉ LE 14/09 — OÙ VONT ÂGE / PROFESSION / CRÉNEAU DE RAPPEL
+
+**La contradiction, dite franchement** : ce brief affirmait deux choses incompatibles — « ajouter ces
+champs dans le formulaire **initial** » et « **aucune migration**, le `jsonb` les prend ». **Le `jsonb`
+n'est pas dans le flux initial** : il est rempli **plus tard** par le RPC du questionnaire
+(`fn_save_post_registration_survey`), **et ce RPC refuse d'écrire si la colonne n'est pas `NULL`**
+(`already_completed`). **Les deux affirmations ne peuvent pas être vraies en même temps.**
+
+**✅ DÉCISION (14/09) : OPTION 2 — des COLONNES sur `event_registrations`.**
+
+**Pourquoi, et la raison est dans la fiche** : sur la feuille de Catherine, **âge** et
+**« que fais-tu dans la vie ? »** sont dans le bloc « **TES INFORMATIONS** » — ce qu'on demande pour
+**identifier la personne**, avant tout le reste. Et les **4 créneaux de rappel** sont sous
+« **QUAND PEUT-ON TE RECONTACTER ?** » — une **préférence de contact**, pas une réponse au
+questionnaire. **Donc ils vivent dans le formulaire initial**, comme `nb_personnes` et `souhait_info`
+aujourd'hui.
+
+⚠️ **Et le `jsonb` est structurellement exclu**, pas seulement malcommode : y déposer ces champs
+**avant** le questionnaire ferait **échouer la soumission du questionnaire** (`already_completed`) —
+**la panne du 10/09, par une autre porte.**
+
+**La migration complète, cinq lignes** (nullable, additive — **elle ne casse rien**) :
+
+```sql
+ALTER TABLE public.event_registrations
+  ADD COLUMN age text, ADD COLUMN profession text, ADD COLUMN creneau_rappel text;
+ALTER TABLE public.event_registrations
+  ALTER COLUMN nb_personnes DROP DEFAULT, ALTER COLUMN souhait_info DROP DEFAULT;
+```
+
+**Les deux `DROP DEFAULT` ne sont pas du zèle** : `nb_personnes` a un `DEFAULT 'Je viens seul'` et
+`souhait_info` un `DEFAULT 'Non merci'`. **« On arrête de l'écrire » ≠ « la valeur disparaît »** :
+sans les `DROP DEFAULT`, la base continuerait de fabriquer une réponse que personne n'a donnée — et
+`souhait_info` parle maintenant de **timings**, donc afficherait « Non merci » à côté d'un choix
+d'horaire.
+
+⚠️ **Et un commentaire à écrire dans la migration elle-même** (les lignes antérieures portent les
+valeurs fabriquées **ou** l'ancien booléen) :
+
+> *Les valeurs préexistantes de `nb_personnes` / `souhait_info` ne se lisent pas comme des réponses :
+> soit le défaut fabriqué (`'Je viens seul'` / `'Non merci'`), soit l'ancien booléen (`'1'` / `'false'`).*
+
+**Mesuré le 14/09 (@vela)** : **une seule ligne** porte les valeurs fabriquées, et c'est **`T2`** —
+déjà dans l'inventaire de purge. **Aucun `UPDATE SET NULL` n'est nécessaire** : la purge l'emporte.
+
+**✅ Et le grant : RIEN À FAIRE (vérifié le 14/09, @nova puis @alcyone en base).** `anon` a l'`INSERT`
+**au niveau TABLE** sur `event_registrations` ✅ — et la policy `event_registrations_insert_public`
+ne `CHECK` que `user_id` et l'état de l'événement, **pas les colonnes**. Donc une colonne ajoutée est
+**immédiatement insérable** : **aucun grant, aucune policy, aucun RLS à toucher.**
+
+**⚠️ Hors périmètre de ce lot, mais à ne pas oublier avant la mise en ligne** : le **volet RGPD**.
+Le consentement en ligne dit « *mes données (**nom, prénom, téléphone**) … pour **gérer mon
+inscription*** », et la §2 de la politique ne nomme **ni les objectifs, ni l'âge, ni le métier, ni les
+créneaux de rappel**. Après ce lot, le formulaire collectera **~8 données sous une phrase qui en
+décrit 3 et une finalité qui en décrit une**. **Ce n'est pas du code : c'est deux phrases, et elles
+passent par la salle.** Critère, écrit plus haut dans ce brief : *« une donnée doit pouvoir être
+racontée à voix haute »*.
+
+**⚠️ Et une conséquence côté admin (@lyra)** : la liste des inscrits de Catherine affiche
+**7 colonnes** — les trois nouveaux champs n'y sont pas. On collecterait donc la profession et le
+créneau de rappel **sans qu'elle les voie nulle part** (le cas `complement_revenus`, dans l'autre
+sens). **Le créneau de rappel est actionnable** — c'est **quand elle appelle** : il doit être
+**visible dans la liste**. Âge et profession peuvent vivre **dans le détail de la ligne**, mais
+**un écran doit les montrer**.
 
 ---
 
@@ -276,7 +349,12 @@ créneau mal rempli = **un appel qui ne passe pas = une inscription perdue.**
 pas le libellé** — `perte_de_poids`, `prise_de_masse`, `plus_energie`, `bonnes_habitudes`. Le libellé
 changera encore ; la clé, non.
 
-### 🔴 ⚠️ UNE CONTRADICTION À TRANCHER AVANT DE CODER
+### ✅ TRANCHÉ LE 14/09 — UN SEUL objectif (radio)
+
+**DÉCISION DE KEN (14/09) : choix UNIQUE, boutons radio, les 4 options de la fiche.** Les 5 options
+actuelles sont retirées. **Pourquoi** : la fiche dit « **Mon objectif** » au singulier, et « Perte de
+poids » et « Prise de masse » se **contredisent** — cochées ensemble, elles donnent à Catherine une
+donnée inutilisable. **Elle remplit ces fiches au bar depuis des mois : sa pratique EST la règle.**
 
 **La fiche pose 4 cases. Le serveur exige UN objectif.**
 

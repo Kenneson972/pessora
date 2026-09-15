@@ -60,7 +60,37 @@
 > *C'est la panne du 10/09. On ne recommence pas.*
 > ✅ **Bonne nouvelle en revanche** : le RPC **rejette 4 clés obsolètes** (`precommande_offre`,
 > `gaufre_salee`, `gaufre_salee_autre`, `gaufre_sucree_notes`) **et accepte tout le reste** →
-> **les nouveaux champs ne demandent AUCUNE migration.**
+> **les champs du QUESTIONNAIRE ne demandent aucune migration.**
+>
+> 🔴 **MAIS LES TROIS CHAMPS DU FORMULAIRE INITIAL, SI — et c'est tranché (14/09).**
+> **Âge, profession et créneau de rappel vont en COLONNES sur `event_registrations`**, pas dans le
+> `jsonb`. **Pourquoi** : le `jsonb` (`post_registration_details`) est rempli **plus tard**, par le RPC
+> du questionnaire — **et ce RPC refuse d'écrire si la colonne n'est pas `NULL`** (`already_completed`).
+> Y déposer ces champs **avant** le questionnaire ferait **échouer la soumission** : la panne du 10/09,
+> par une autre porte. La fiche confirme : ce sont des « **TES INFORMATIONS** », pas des réponses.
+>
+> **La migration — tu l'ÉCRIS, tu ne l'appliques pas** (@alcyone l'applique en base) :
+>
+> ```sql
+> ALTER TABLE public.event_registrations
+>   ADD COLUMN age text, ADD COLUMN profession text, ADD COLUMN creneau_rappel text;
+> ALTER TABLE public.event_registrations
+>   ALTER COLUMN nb_personnes DROP DEFAULT, ALTER COLUMN souhait_info DROP DEFAULT;
+> ```
+>
+> ⚠️ **Les deux `DROP DEFAULT` sont obligatoires, pas du zèle** : `nb_personnes` a un
+> `DEFAULT 'Je viens seul'` et `souhait_info` un `DEFAULT 'Non merci'`. **« On arrête de l'écrire »
+> n'est pas « la valeur disparaît »** → sans eux, **la base fabrique une réponse que personne n'a
+> donnée**, et `souhait_info` (qui parle maintenant de **timings**) afficherait « Non merci » à côté
+> d'un choix d'horaire.
+>
+> ⚠️ **Et un commentaire dans la migration**, à cause des lignes déjà écrites :
+> *les valeurs préexistantes de `nb_personnes` / `souhait_info` ne se lisent pas comme des réponses —
+> soit le défaut fabriqué, soit l'ancien booléen (`'1'` / `'false'`).*
+>
+> ✅ **Rien d'autre à toucher** : `anon` a l'`INSERT` **au niveau table** et la policy ne `CHECK` que
+> `user_id` + l'état de l'événement → **aucun grant, aucune policy, aucun RLS** (vérifié en base le
+> 14/09). **Et `nb_personnes` : on arrête de l'écrire, on ne la supprime PAS.**
 >
 > **② Le token `labelBase` existe EN DOUBLE.**
 > ```
