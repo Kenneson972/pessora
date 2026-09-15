@@ -132,7 +132,7 @@ export function HomeSplitGammes() {
                   variant="ghost"
                   size="sm"
                   onPress={() => navigate(active.link_to)}
-                  className="self-start h-9 min-h-9 rounded-full border border-white/30 bg-white/15 backdrop-blur-sm px-4 text-[12px] uppercase tracking-[0.14em] text-white hover:bg-white/25"
+                  className="self-start h-9 min-h-9 rounded-full border border-white/30 bg-white/15 backdrop-blur-sm px-4 text-[9px] uppercase tracking-[0.14em] text-white hover:bg-white/25"
                 >
                   Voir la gamme
                 </Button>
