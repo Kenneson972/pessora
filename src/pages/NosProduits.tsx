@@ -98,10 +98,17 @@ function RangeSection({
               />
             )}
             <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-noir/70 via-noir/20 to-transparent" />
-            <span className="absolute bottom-6 left-6 rounded-[1px] border border-white/20 px-3 py-1 text-[10px] font-light uppercase tracking-[0.24em] text-white/85">
+            {/* 14/09 — deux textes vivaient sur la photo, hors du seul scrim de la
+                carte (qui couvre le bas, et ou il tombe a 20 % des la mi-hauteur) :
+                  - le sous-titre, blanc/85 -> mesure 2,5 a 2,6:1 selon la photo ;
+                  - le compteur, blanc/70, en HAUT a droite -> 2,2 a 2,4:1.
+                Le sous-titre passe en blanc PUR (il est dans la zone la plus dense du
+                scrim) ; le compteur recoit un fond propre, parce qu'un badge lisible
+                n'a pas besoin que la photo soit sombre. */}
+            <span className="absolute bottom-6 left-6 rounded-[1px] border border-white/25 px-3 py-1 text-[10px] font-light uppercase tracking-[0.24em] text-white">
               {range.subtitle}
             </span>
-            <span className="absolute right-5 top-5 text-[10px] font-light uppercase tracking-[0.22em] text-white/70">
+            <span className="absolute right-5 top-5 rounded-[1px] bg-noir/60 px-2 py-1 text-[10px] font-light uppercase tracking-[0.22em] text-white backdrop-blur-[2px]">
               {range.products.length} produits
             </span>
           </div>
