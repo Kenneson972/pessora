@@ -77,7 +77,7 @@ function GalleryField({
         </button>
         <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple className="sr-only" disabled={uploading} onChange={handleFiles} />
       </div>
-      <p className="mb-2 text-[9px] text-black/30">
+      <p className="mb-2 text-[10px] text-black/30">
         Photos réelles de participants uniquement — jamais de banque d'images. Section masquée sur la page tant qu'elle est vide.
       </p>
       {value.length === 0 ? (
@@ -149,7 +149,7 @@ function ImageField({
     <div>
       <div className="mb-1.5 flex items-baseline justify-between">
         <label className={labelBase}>{label}</label>
-        <span className="text-[9px] text-black/30">{hint}</span>
+        <span className="text-[10px] text-black/30">{hint}</span>
       </div>
       <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[2px] border border-dashed border-noir/15 bg-surface-muted">
         {value ? (
@@ -184,7 +184,7 @@ function ImageField({
           >
             {uploading ? <Loader2 size={20} strokeWidth={1.5} className="animate-spin" /> : <ImagePlus size={20} strokeWidth={1.5} />}
             <span className="text-[11px] font-light">{uploading ? 'Envoi…' : 'Ajouter une image'}</span>
-            <span className="text-[9px] uppercase tracking-[0.22em] text-black/30">JPEG · PNG · WebP · 5 Mo max</span>
+            <span className="text-[10px] uppercase tracking-[0.22em] text-black/30">JPEG · PNG · WebP · 5 Mo max</span>
           </button>
         )}
         <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" disabled={uploading} onChange={handleFile} />
@@ -322,7 +322,7 @@ const AdminChallenge21j = () => {
               >
                 <Trophy size={11} strokeWidth={1.5} />
                 {c.title} — {formatLongDate(c.date)}
-                {!c.active && <span className="text-[9px] uppercase text-black/35">(inactif)</span>}
+                {!c.active && <span className="text-[10px] uppercase text-black/35">(inactif)</span>}
               </button>
             ))}
           </div>
@@ -433,7 +433,7 @@ const AdminChallenge21j = () => {
                   <button
                     type="button"
                     onClick={() => setConfirmDeleteAllSlots(true)}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-red-200 px-3 py-1.5 text-[9px] font-normal uppercase tracking-[0.14em] text-red-500 hover:border-red-300 hover:text-red-700 transition-colors"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-red-200 px-3 py-1.5 text-[12px] font-normal uppercase tracking-[0.14em] text-red-500 hover:border-red-300 hover:text-red-700 transition-colors"
                   >
                     <Trash2 size={11} strokeWidth={1.4} />
                     Tout supprimer ({slotsHook.slots.length})
@@ -485,7 +485,7 @@ const AdminChallenge21j = () => {
                   <thead>
                     <tr className="border-b border-noir/[0.06]">
                       {['Date', 'Heure', 'Disponible', ''].map((h) => (
-                        <th key={h} className="px-3 py-2 text-left text-[9px] uppercase tracking-[0.18em] text-black/35">{h}</th>
+                        <th key={h} className="px-3 py-2 text-left text-[10px] uppercase tracking-[0.18em] text-black/35">{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -498,7 +498,7 @@ const AdminChallenge21j = () => {
                           <button
                             type="button"
                             onClick={() => slotsHook.toggleDisponible(s)}
-                            className={`rounded-full px-3 py-1 text-[9px] uppercase tracking-[0.14em] ${
+                            className={`rounded-full px-3 py-1 text-[12px] uppercase tracking-[0.14em] ${
                               s.disponible ? 'bg-sapin-subtle text-sapin' : 'bg-noir/5 text-black/40'
                             }`}
                           >
@@ -531,7 +531,7 @@ const AdminChallenge21j = () => {
                   <thead>
                     <tr className="border-b border-noir/[0.06]">
                       {['Prénom', 'Nom', 'Téléphone', 'Créneau bilan', 'Objectif', 'Complément revenus', "Date d'inscription"].map((h) => (
-                        <th key={h} className="px-3 py-2 text-left text-[9px] uppercase tracking-[0.18em] text-black/35">{h}</th>
+                        <th key={h} className="px-3 py-2 text-left text-[10px] uppercase tracking-[0.18em] text-black/35">{h}</th>
                       ))}
                     </tr>
                   </thead>

@@ -374,7 +374,7 @@ const AdminBilans = () => {
                       {['Client', 'Email', 'Créneau', 'Message', 'Origine', 'Statut', ''].map((h) => (
                         <th
                           key={h}
-                          className="px-5 py-3 text-left text-[8px] font-normal uppercase tracking-[0.25em] text-black/35"
+                          className="px-5 py-3 text-left text-[10px] font-normal uppercase tracking-[0.25em] text-black/35"
                         >
                           {h}
                         </th>
@@ -440,7 +440,7 @@ const AdminBilans = () => {
                           </td>
                           <td className="px-5 py-4">
                             <span
-                              className={`text-[8px] uppercase tracking-[0.12em] px-2 py-[3px] rounded-[2px] ${STATUT_STYLES[b.statut]}`}
+                              className={`text-[10px] uppercase tracking-[0.12em] px-2 py-[3px] rounded-[2px] ${STATUT_STYLES[b.statut]}`}
                             >
                               {STATUT_LABELS[b.statut]}
                             </span>
@@ -535,7 +535,7 @@ const AdminBilans = () => {
                 {WEEKDAYS_SHORT.map((w) => (
                   <div
                     key={w}
-                    className="bg-white py-2 text-center text-[9px] uppercase tracking-[0.18em] text-black/35"
+                    className="bg-white py-2 text-center text-[10px] uppercase tracking-[0.18em] text-black/35"
                   >
                     {w}
                   </div>
@@ -577,14 +577,14 @@ const AdminBilans = () => {
                         <div className="mt-1.5 space-y-0.5">
                           <div className="flex items-center gap-1">
                             <span className="inline-block w-1.5 h-1.5 rounded-full bg-noir" />
-                            <span className="text-[9px] text-black/55">
+                            <span className="text-[10px] text-black/55">
                               {dispo}/{total} dispo
                             </span>
                           </div>
                           {reserved > 0 && (
                             <div className="flex items-center gap-1">
                               <span className="inline-block w-1.5 h-1.5 rounded-full bg-gold-dim" />
-                              <span className="text-[9px] text-gold-dim">
+                              <span className="text-[10px] text-gold-dim">
                                 {reserved} réservé{reserved > 1 ? 's' : ''}
                               </span>
                             </div>
@@ -615,7 +615,7 @@ const AdminBilans = () => {
             {/* Panneau latéral : jour sélectionné */}
             <aside className="bg-white rounded-[2px] border border-noir/[0.06] p-5 self-start">
               <header className="mb-4">
-                <p className="text-[9px] uppercase tracking-[0.22em] text-black/35">
+                <p className="text-[10px] uppercase tracking-[0.22em] text-black/35">
                   Jour sélectionné
                 </p>
                 <h3 className="mt-1 text-[14px] font-normal text-noir">
@@ -630,7 +630,7 @@ const AdminBilans = () => {
 
               {/* Ajout créneau */}
               <div className="bg-surface-muted/60 rounded-[2px] border border-noir/[0.06] p-3 mb-5">
-                <label className="block text-[9px] uppercase tracking-[0.2em] text-black/40 mb-1.5">
+                <label className="block text-[10px] uppercase tracking-[0.2em] text-black/40 mb-1.5">
                   Nouveau créneau
                 </label>
                 <div className="flex gap-2">
@@ -654,7 +654,7 @@ const AdminBilans = () => {
 
               {/* Liste créneaux du jour */}
               <div>
-                <p className="text-[9px] uppercase tracking-[0.22em] text-black/40 mb-2">
+                <p className="text-[10px] uppercase tracking-[0.22em] text-black/40 mb-2">
                   Créneaux ({selectedSlots.length})
                 </p>
                 {selectedSlots.length === 0 ? (
@@ -681,7 +681,7 @@ const AdminBilans = () => {
                             />
                             <button type="button"
                               onClick={() => toggleSlotDisponible(slot)}
-                              className={`flex-1 text-center text-[8px] uppercase tracking-[0.12em] h-11 rounded-[2px] transition-colors ${
+                              className={`flex-1 text-center text-[12px] uppercase tracking-[0.12em] h-11 rounded-[2px] transition-colors ${
                                 slot.disponible
                                   ? 'bg-sapin-subtle text-sapin hover:bg-noir/5 hover:text-black/40'
                                   : 'bg-noir/5 text-black/30 hover:bg-sapin-subtle hover:text-sapin'
@@ -698,7 +698,7 @@ const AdminBilans = () => {
                             </button>
                           </div>
                           <p
-                            className={`mt-1.5 text-[9px] uppercase tracking-[0.1em] ${
+                            className={`mt-1.5 text-[10px] uppercase tracking-[0.1em] ${
                               slot.challenge_event_id && challenges.find((c) => c.id === slot.challenge_event_id)?.active
                                 ? 'text-black/35'
                                 : 'text-amber-600'
@@ -722,7 +722,7 @@ const AdminBilans = () => {
                                     </p>
                                   </div>
                                   <span
-                                    className={`shrink-0 text-[8px] uppercase tracking-[0.12em] px-2 py-[3px] rounded-[2px] ${STATUT_STYLES[b.statut]}`}
+                                    className={`shrink-0 text-[10px] uppercase tracking-[0.12em] px-2 py-[3px] rounded-[2px] ${STATUT_STYLES[b.statut]}`}
                                   >
                                     {STATUT_LABELS[b.statut]}
                                   </span>
