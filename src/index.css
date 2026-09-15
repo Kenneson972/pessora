@@ -332,3 +332,16 @@
 .ora-cell-slider .cell-slider__thumb::after {
   background: var(--color-noir);
 }
+
+/* ─────────────── Segment (HeroUI Pro) — lisibilité de l'état non sélectionné ─────────────── */
+/* Mesuré en ligne à 390 px le 14/09 : l'item NON sélectionné sortait à
+   oklch(0.5517 0.0138 285.94) = 4,06:1 sur blanc — sous AA (4,5:1), et c'était
+   le SEUL défaut de contraste du site public.
+   On ne touche QUE le non-sélectionné : l'état sélectionné est à oklch(21%),
+   soit ~16:1, et il porte la hiérarchie visuelle — l'assombrir aussi ferait
+   disparaître la distinction entre « choisi » et « à choisir ».
+   45 % de luminosité sur blanc = ~5,4:1, ce qui garde la marge voulue (cible
+   ≥ 5:1, pas 4,5 tout juste). */
+.segment__item:not([data-selected]) {
+  color: oklch(45% 0.014 286);
+}
