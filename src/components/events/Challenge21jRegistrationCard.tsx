@@ -34,6 +34,13 @@ type StoredRegistration = {
   profession: string;
   timing_demarrage: string;
   creneau_rappel: string[];
+  /** Réponse au modal « complément de revenus ». Absente = question pas encore
+   *  posée → le modal doit se rouvrir (14/09). 'decouvrir_opportunite_herbalife'
+   *  et 'pas_pour_le_moment' sont des VALEURS : un refus s'écrit, il ne s'omet pas. */
+  complement_revenus?: string;
+  /** Marqueur persistant : le questionnaire bilan+objectif a été validé. Sert à
+   *  rouvrir le modal au rechargement, sans dépendre d'un état local. */
+  wizard_done?: boolean;
 };
 
 function storageKey(eventId: string): string {
@@ -447,15 +454,32 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
               telephone={postRegistration.telephone}
               eventType={event.type}
               eventTitle={event.title}
-              onComplete={() => setShowComplementRevenus(true)}
+              onComplete={() => {
+                // Marqueur PERSISTANT : l'ouverture du modal ne peut pas dépendre
+                // du seul état local, sinon un F5 après le questionnaire le referme
+                // et « complément de revenus » reste vide pour cette personne.
+                const s = readStoredRegistration(event.id);
+                if (s) writeStoredRegistration(event.id, { ...s, wizard_done: true });
+                setShowComplementRevenus(true);
+              }}
             />
           )}
 
-          {showComplementRevenus && postRegistration && (
+          {/* Ouvert tant que la RÉPONSE MANQUE — et jamais après.
+              - questionnaire fait (marqueur persistant) ET réponse absente -> ouvert
+              - réponse enregistrée ('decouvrir_opportunite_herbalife' ou
+                'pas_pour_le_moment' : les DEUX sont des valeurs) -> ne revient plus,
+                y compris après F5. */}
+          {postRegistration && (showComplementRevenus || existing?.wizard_done) && !existing?.complement_revenus && (
             <ComplementRevenusModal
               registrationId={postRegistration.id}
               telephone={postRegistration.telephone}
-              onClose={() => setShowComplementRevenus(false)}
+              onClose={(reponse) => {
+                const s = readStoredRegistration(event.id);
+                if (s) writeStoredRegistration(event.id, { ...s, complement_revenus: reponse });
+                if (existing) setExisting({ ...existing, complement_revenus: reponse });
+                setShowComplementRevenus(false);
+              }}
             />
           )}
         </div>
