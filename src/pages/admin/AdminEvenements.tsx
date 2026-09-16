@@ -60,6 +60,7 @@ const EMPTY_FORM = {
   popup_subtitle: '',
   popup_message: '',
   popup_cta_label: "S'inscrire",
+  popup_image_url: '',
 };
 
 type FormState = typeof EMPTY_FORM;
@@ -431,7 +432,7 @@ const AdminEvenements = () => {
         active: form.popup_active,
         slug: form.slug,
         eventDate: form.date,
-        imageUrl: form.image_url || null,
+        imageUrl: form.popup_image_url || form.image_url || null,
         title: (form.popup_title || form.title).trim(),
         subtitle: (form.popup_subtitle || '').trim() || null,
         message: (form.popup_message || '').trim() || null,
