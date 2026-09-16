@@ -12,7 +12,9 @@ export interface ChallengeRegistrantDetailModalProps {
 }
 
 const rowClass = 'flex items-baseline justify-between gap-4 border-b border-noir/[0.05] py-2.5 last:border-0';
-const labelClass = 'text-[10px] uppercase tracking-[0.14em] text-black/40';
+// `text-black/40` = 2,85:1 sur fond blanc -> sous WCAG AA (4,5:1). `/60` = 5,74:1.
+// Mesuré le 16/09/2026, avant d'ajouter les lignes email / newsletter à cette fiche.
+const labelClass = 'text-[10px] uppercase tracking-[0.14em] text-black/60';
 const valueClass = 'text-[12px] text-black text-right';
 
 const BILAN_STATUT_LABEL: Record<string, string> = {
@@ -95,7 +97,7 @@ export function ChallengeRegistrantDetailModal({ registrant, onClose, onDelete }
                       </div>
                     ))}
                     {surveyEntries.length === 0 && (
-                      <p className="pt-2 text-[11px] text-black/30">Questionnaire pas encore rempli.</p>
+                      <p className="pt-2 text-[11px] text-black/60">Questionnaire pas encore rempli.</p>
                     )}
                     {registrant.age && (
                       <div className={rowClass}>
@@ -132,7 +134,7 @@ export function ChallengeRegistrantDetailModal({ registrant, onClose, onDelete }
                       <button
                         type="button"
                         onClick={() => setConfirmDelete(true)}
-                        className="inline-flex items-center gap-1.5 text-[11px] font-light text-red-400 transition-colors hover:text-red-600"
+                        className="inline-flex items-center gap-1.5 text-[11px] font-light text-red-600 transition-colors hover:text-red-700"
                       >
                         <Trash2 size={13} strokeWidth={1.6} />
                         Supprimer l'inscription
@@ -146,7 +148,7 @@ export function ChallengeRegistrantDetailModal({ registrant, onClose, onDelete }
                       </button>
                     </div>
                     {deleteError && (
-                      <p className="mt-2 text-[11px] text-red-500">{deleteError}</p>
+                      <p className="mt-2 text-[11px] text-red-600">{deleteError}</p>
                     )}
                   </Sheet.Footer>
                 </>
