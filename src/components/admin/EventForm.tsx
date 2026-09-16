@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowLeft, ExternalLink, RefreshCw, Trash2 } from 'lucide-react';
+import { ArrowLeft, ExternalLink, ImagePlus, Loader2, RefreshCw, Trash2, X } from 'lucide-react';
 import { DashEyebrow } from '../../components/dashboard/primitives';
 import { EventGalleryManager } from './EventGalleryManager';
 import { fetchPopupForEventSlug } from '../../lib/eventPopup';
+import { uploadPublicImage } from '../../lib/storageUpload';
 import { formatMutationError } from '../../lib/userFacingError';
 import type { EventWithCount, FormState } from './eventEditorTypes';
 import { EMPTY_FORM, TYPE_OPTIONS, TYPE_LABELS, slugify, formatLongDate, inputBase, labelBase } from './eventEditorTypes';
@@ -24,6 +25,9 @@ export const EventForm = ({ initial, existing, relanceFrom, onSave, onCancel, on
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [popupLoaded, setPopupLoaded] = useState(!existing);
+  const [popupImageUploading, setPopupImageUploading] = useState(false);
+  const [popupImageError, setPopupImageError] = useState<string | null>(null);
+  const popupImageInputRef = useRef<HTMLInputElement>(null);
   const prefersReducedMotion = useReducedMotion();
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
@@ -35,7 +39,20 @@ export const EventForm = ({ initial, existing, relanceFrom, onSave, onCancel, on
     fetchPopupForEventSlug(existing.slug).then((p) => {
       if (cancelled) return;
       if (p) {
-        setForm((f) => ({ ...f, popup_id: p.id, popup_enabled: true, popup_active: p.active, popup_title: p.title, popup_subtitle: p.subtitle ?? '', popup_message: p.message ?? '', popup_cta_label: p.cta_label ?? "S'inscrire" }));
+        setForm((f) => ({
+          ...f,
+          popup_id: p.id,
+          popup_enabled: true,
+          popup_active: p.active,
+          popup_title: p.title,
+          popup_subtitle: p.subtitle ?? '',
+          popup_message: p.message ?? '',
+          popup_cta_label: p.cta_label ?? "S'inscrire",
+          // Le pop-up recyclait toujours la couverture de l'événement avant l'ajout de ce
+          // champ — ne traiter l'image stockée comme "dédiée" que si elle diffère de la
+          // couverture, sinon le champ reste vide (= "utilise la couverture").
+          popup_image_url: p.image_url && p.image_url !== f.image_url ? p.image_url : '',
+        }));
       }
       setPopupLoaded(true);
     });
@@ -47,7 +64,23 @@ export const EventForm = ({ initial, existing, relanceFrom, onSave, onCancel, on
   };
 
   const resetPopupFromEvent = () => {
-    setForm((f) => ({ ...f, popup_title: f.title, popup_subtitle: TYPE_LABELS[f.type], popup_message: f.description || '', popup_cta_label: "S'inscrire" }));
+    setForm((f) => ({ ...f, popup_title: f.title, popup_subtitle: TYPE_LABELS[f.type], popup_message: f.description || '', popup_cta_label: "S'inscrire", popup_image_url: '' }));
+  };
+
+  const handlePopupImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setPopupImageUploading(true);
+    setPopupImageError(null);
+    try {
+      const url = await uploadPublicImage('event-images', file, `${pathSlug}-popup`);
+      set('popup_image_url', url);
+    } catch (err) {
+      setPopupImageError(err instanceof Error ? formatMutationError(err.message) : 'Envoi impossible. Réessayez.');
+    } finally {
+      setPopupImageUploading(false);
+    }
   };
 
   const handleSave = async () => {
@@ -83,7 +116,7 @@ export const EventForm = ({ initial, existing, relanceFrom, onSave, onCancel, on
           <header className="pb-2">
             <DashEyebrow className="mb-2">{existing ? "Modifier l'événement" : relanceFrom ? "Relancer l'événement" : 'Nouvel événement'}</DashEyebrow>
             <h2 className="font-display text-[clamp(1.5rem,4vw,2.2rem)] leading-[1.05] tracking-[-0.02em] text-noir" style={{ fontFamily: 'var(--font-display)' }}>{form.title || (existing ? existing.title : 'Sans titre')}</h2>
-            {form.slug && (<p className="mt-2 text-[11px] font-light text-black/60"><span className="text-black/60">pessora.fr/evenements/</span><span className="text-black/80">{form.slug}</span></p>)}
+            {form.slug && (<p className="mt-2 text-[11px] font-light text-black/60"><span className="text-black/60">pessora.fr/evenements/</span><span className="text-black/60">{form.slug}</span></p>)}
           </header>
 
           <section className="rounded-[2px] border border-noir/[0.06] bg-white p-5 sm:p-6">
@@ -154,7 +187,38 @@ export const EventForm = ({ initial, existing, relanceFrom, onSave, onCancel, on
                 <div><label className={labelBase}>Accroche (kicker)</label><input className={inputBase} value={form.popup_subtitle} placeholder={TYPE_LABELS[form.type]} onChange={(e) => set('popup_subtitle', e.target.value)} /></div>
                 <div><label className={labelBase}>Message (optionnel)</label><textarea className={`${inputBase} min-h-[72px] resize-y`} value={form.popup_message} placeholder={form.description || 'Une phrase courte — 1 à 2 lignes.'} onChange={(e) => set('popup_message', e.target.value)} /></div>
                 <div><label className={labelBase}>Libellé bouton</label><input className={inputBase} value={form.popup_cta_label} placeholder="S'inscrire" onChange={(e) => set('popup_cta_label', e.target.value)} /></div>
-                <div className="rounded-[2px] border border-noir/[0.05] bg-white px-3 py-2.5 text-[10px] leading-relaxed text-black/55"><p><span className="text-black/60">Lien : </span><span className="text-black/70">/evenements/{pathSlug}</span></p>{form.date && (<p className="mt-1"><span className="text-black/60">Expire après : </span><span className="text-black/70">{formatLongDate(form.date)}</span></p>)}<p className="mt-1"><span className="text-black/60">Image : </span><span className="text-black/70">{form.image_url ? 'Couverture de l\'événement' : 'Aucune (ajoutez une couverture)'}</span></p></div>
+                <div>
+                  <div className="mb-1.5 flex items-baseline justify-between">
+                    <label className={labelBase}>Image dédiée (optionnel)</label>
+                    <button
+                      type="button"
+                      onClick={() => popupImageInputRef.current?.click()}
+                      disabled={popupImageUploading}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-noir/15 px-3 py-1.5 text-[10px] font-light uppercase tracking-[0.14em] text-black/55 transition-colors hover:border-noir/30 hover:text-noir disabled:opacity-50"
+                    >
+                      {popupImageUploading ? <Loader2 size={12} className="animate-spin" /> : <ImagePlus size={12} strokeWidth={1.5} />}
+                      {popupImageUploading ? 'Envoi…' : form.popup_image_url ? 'Changer' : 'Ajouter'}
+                    </button>
+                    <input ref={popupImageInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" disabled={popupImageUploading} onChange={handlePopupImageChange} />
+                  </div>
+                  {form.popup_image_url ? (
+                    <div className="relative w-24 overflow-hidden rounded-[2px] border border-noir/[0.08]">
+                      <img src={form.popup_image_url} alt="" className="aspect-square w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => set('popup_image_url', '')}
+                        aria-label="Retirer l'image dédiée"
+                        className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-noir/70 text-white transition-colors hover:bg-noir"
+                      >
+                        <X size={11} strokeWidth={2} />
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-[10px] text-black/60">Aucune image dédiée — la couverture de l'événement sera utilisée.</p>
+                  )}
+                  {popupImageError && <p className="mt-1.5 text-[10px] text-red-700">{popupImageError}</p>}
+                </div>
+                <div className="rounded-[2px] border border-noir/[0.05] bg-white px-3 py-2.5 text-[10px] leading-relaxed text-black/55"><p><span className="text-black/60">Lien : </span><span className="text-black/70">/evenements/{pathSlug}</span></p>{form.date && (<p className="mt-1"><span className="text-black/60">Expire après : </span><span className="text-black/70">{formatLongDate(form.date)}</span></p>)}</div>
                 <button type="button" onClick={resetPopupFromEvent} className="self-start text-[10px] font-light uppercase tracking-[0.14em] text-black/60 hover:text-noir border-b border-noir/20 pb-px transition-colors">Réinitialiser depuis l'événement</button>
               </div>
             )}

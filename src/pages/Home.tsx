@@ -13,6 +13,7 @@ import { HomeSplitGammes } from '../components/home/HomeSplitGammes';
 import { HomeBanner } from '../components/home/HomeBanner';
 import { HomeGammesProductTiles } from '../components/home/HomeGammesProductTiles';
 import { HomeGammesProductCarousel } from '../components/home/HomeGammesProductCarousel';
+import { HomeChallengeBanner } from '../components/home/HomeChallengeBanner';
 import { publicAssetWithCache } from '../lib/publicAsset';
 import { BackgroundVideo } from '../components/common/BackgroundVideo';
 
@@ -233,6 +234,9 @@ const Home = () => {
       </section>
 
       <HomeGoogleReviews />
+
+      {/* ─── Challenge 21 jours — visible uniquement si un challenge est à venir ─── */}
+      <HomeChallengeBanner />
 
       {/* ─── Événements ─── */}
       <section className="bg-white section-vertical-padding">

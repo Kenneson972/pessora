@@ -27,6 +27,7 @@ export const EMPTY_FORM = {
   popup_subtitle: '',
   popup_message: '',
   popup_cta_label: "S'inscrire",
+  popup_image_url: '',
 };
 
 export type FormState = typeof EMPTY_FORM;
