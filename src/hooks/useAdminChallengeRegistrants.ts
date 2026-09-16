@@ -12,8 +12,12 @@ export interface ChallengeRegistrantRow {
   created_at: string;
   objectif: string | null;
   complementRevenus: string | null;
-  bilan: { date: string; heure: string } | null;
+  bilan: { date: string; heure: string; statut: 'en_attente' | 'confirme' | 'annule' } | null;
   details: unknown;
+  age: string | null;
+  profession: string | null;
+  timingDemarrage: string | null;
+  creneauRappel: string[] | null;
 }
 
 function readDetail(details: unknown, key: string): string | null {
@@ -57,8 +61,12 @@ export function useAdminChallengeRegistrants(challengeEventId: string | null) {
             created_at: r.created_at,
             objectif: readDetail(details, 'objectif_principal'),
             complementRevenus: readDetail(details, 'complement_revenus'),
-            bilan: match ? { date: match.date_rdv, heure: match.heure_rdv } : null,
+            bilan: match ? { date: match.date_rdv, heure: match.heure_rdv, statut: match.statut as 'en_attente' | 'confirme' | 'annule' } : null,
             details,
+            age: r.age,
+            profession: r.profession,
+            timingDemarrage: r.timing_demarrage,
+            creneauRappel: r.creneau_rappel,
           };
         });
         setRows(enriched);
@@ -70,7 +78,14 @@ export function useAdminChallengeRegistrants(challengeEventId: string | null) {
   useEffect(() => { refetch(); }, [refetch]);
 
   const deleteRegistrant = useCallback(async (id: string) => {
-    await (supabase as any).from('event_registrations').delete().eq('id', id);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error: deleteError } = await (supabase as any)
+      .from('event_registrations')
+      .delete()
+      .eq('id', id)
+      .select();
+    if (deleteError) throw new Error(deleteError.message);
+    if (!data || data.length === 0) throw new Error("Suppression refusée ou inscription introuvable.");
     refetch();
   }, [refetch]);
 

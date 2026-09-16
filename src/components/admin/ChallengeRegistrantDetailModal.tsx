@@ -15,9 +15,29 @@ const rowClass = 'flex items-baseline justify-between gap-4 border-b border-noir
 const labelClass = 'text-[10px] uppercase tracking-[0.14em] text-black/40';
 const valueClass = 'text-[12px] text-black text-right';
 
+const BILAN_STATUT_LABEL: Record<string, string> = {
+  en_attente: 'En attente',
+  confirme: 'Confirmé',
+  annule: 'Annulé',
+};
+
+const TIMING_LABEL: Record<string, string> = {
+  ce_mois_ci: 'Ce mois-ci',
+  mois_prochain: 'Le mois prochain',
+  en_savoir_plus: 'Je souhaite en savoir plus',
+};
+
+const CRENEAU_LABEL: Record<string, string> = {
+  matin: 'Matin',
+  midi: 'Midi',
+  apres_midi: 'Après-midi',
+  soir: 'Soir',
+};
+
 export function ChallengeRegistrantDetailModal({ registrant, onClose, onDelete }: ChallengeRegistrantDetailModalProps) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const isOpen = registrant !== null;
   const surveyEntries = registrant ? formatSurveyDetails(registrant.details) : [];
@@ -25,10 +45,13 @@ export function ChallengeRegistrantDetailModal({ registrant, onClose, onDelete }
   const handleDelete = async () => {
     if (!registrant) return;
     setDeleting(true);
+    setDeleteError(null);
     try {
       await onDelete(registrant.id);
       setConfirmDelete(false);
       onClose();
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : "La suppression a échoué.");
     } finally {
       setDeleting(false);
     }
@@ -60,7 +83,9 @@ export function ChallengeRegistrantDetailModal({ registrant, onClose, onDelete }
                     <div className={rowClass}>
                       <span className={labelClass}>Bilan réservé</span>
                       <span className={valueClass}>
-                        {registrant.bilan ? `${registrant.bilan.date} à ${registrant.bilan.heure.slice(0, 5)}` : 'Pas encore réservé'}
+                        {registrant.bilan
+                          ? `${registrant.bilan.date} à ${registrant.bilan.heure.slice(0, 5)} · ${BILAN_STATUT_LABEL[registrant.bilan.statut] ?? registrant.bilan.statut}`
+                          : 'Pas encore réservé'}
                       </span>
                     </div>
                     {surveyEntries.map((entry) => (
@@ -72,24 +97,57 @@ export function ChallengeRegistrantDetailModal({ registrant, onClose, onDelete }
                     {surveyEntries.length === 0 && (
                       <p className="pt-2 text-[11px] text-black/30">Questionnaire pas encore rempli.</p>
                     )}
+                    {registrant.age && (
+                      <div className={rowClass}>
+                        <span className={labelClass}>Âge</span>
+                        <span className={valueClass}>{registrant.age}</span>
+                      </div>
+                    )}
+                    {registrant.profession && (
+                      <div className={rowClass}>
+                        <span className={labelClass}>Profession</span>
+                        <span className={valueClass}>{registrant.profession}</span>
+                      </div>
+                    )}
+                    {registrant.timingDemarrage && (
+                      <div className={rowClass}>
+                        <span className={labelClass}>Envie de commencer</span>
+                        <span className={valueClass}>
+                          {TIMING_LABEL[registrant.timingDemarrage] ?? registrant.timingDemarrage}
+                        </span>
+                      </div>
+                    )}
+                    {registrant.creneauRappel && registrant.creneauRappel.length > 0 && (
+                      <div className={rowClass}>
+                        <span className={labelClass}>Créneau de rappel souhaité</span>
+                        <span className={valueClass}>
+                          {registrant.creneauRappel.map((c) => CRENEAU_LABEL[c] ?? c).join(', ')}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
-                  <Sheet.Footer className="mt-6 flex justify-between p-0">
-                    <button
-                      type="button"
-                      onClick={() => setConfirmDelete(true)}
-                      className="inline-flex items-center gap-1.5 text-[11px] font-light text-red-400 transition-colors hover:text-red-600"
-                    >
-                      <Trash2 size={13} strokeWidth={1.6} />
-                      Supprimer l'inscription
-                    </button>
-                    <button
-                      type="button"
-                      onClick={onClose}
-                      className="h-10 px-4 rounded-[2px] border border-noir/15 text-[10px] font-light uppercase tracking-[0.12em] text-black/55 transition-colors hover:text-noir hover:border-noir/25"
-                    >
-                      Fermer
-                    </button>
+                  <Sheet.Footer className="mt-6 flex flex-col gap-2 p-0">
+                    <div className="flex justify-between">
+                      <button
+                        type="button"
+                        onClick={() => setConfirmDelete(true)}
+                        className="inline-flex items-center gap-1.5 text-[11px] font-light text-red-400 transition-colors hover:text-red-600"
+                      >
+                        <Trash2 size={13} strokeWidth={1.6} />
+                        Supprimer l'inscription
+                      </button>
+                      <button
+                        type="button"
+                        onClick={onClose}
+                        className="h-10 px-4 rounded-[2px] border border-noir/15 text-[10px] font-light uppercase tracking-[0.12em] text-black/55 transition-colors hover:text-noir hover:border-noir/25"
+                      >
+                        Fermer
+                      </button>
+                    </div>
+                    {deleteError && (
+                      <p className="mt-2 text-[11px] text-red-500">{deleteError}</p>
+                    )}
                   </Sheet.Footer>
                 </>
               )}
