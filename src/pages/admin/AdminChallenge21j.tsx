@@ -4,6 +4,7 @@ import { DashPageHeader } from '../../components/dashboard/primitives';
 import { DASH_MAIN_PAD } from '../../components/dashboard/layoutClasses';
 import { AdminErrorAlert } from '../../components/dashboard/AdminErrorAlert';
 import { ConfirmDialog } from '../../components/dashboard/ConfirmDialog';
+import { ChallengeRegistrantDetailModal } from '../../components/admin/ChallengeRegistrantDetailModal';
 import { labelBase, inputBase, formatLongDate } from '../../components/admin/eventEditorTypes';
 import { useAdminChallenges, type ChallengeFormData } from '../../hooks/useAdminChallenges';
 import { useAdminChallengeSlots } from '../../hooks/useAdminChallengeSlots';
@@ -252,6 +253,8 @@ const AdminChallenge21j = () => {
 
   const slotsHook = useAdminChallengeSlots(selected?.id ?? null);
   const registrantsHook = useAdminChallengeRegistrants(selected?.id ?? null);
+  const [selectedRegistrantId, setSelectedRegistrantId] = useState<string | null>(null);
+  const selectedRegistrant = registrantsHook.rows.find((r) => r.id === selectedRegistrantId) ?? null;
 
   const [genStart, setGenStart] = useState('');
   const [genEnd, setGenEnd] = useState('');
@@ -537,7 +540,11 @@ const AdminChallenge21j = () => {
                   </thead>
                   <tbody>
                     {registrantsHook.rows.map((r) => (
-                      <tr key={r.id} className="border-b border-noir/[0.03]">
+                      <tr
+                        key={r.id}
+                        onClick={() => setSelectedRegistrantId(r.id)}
+                        className="cursor-pointer border-b border-noir/[0.03] transition-colors hover:bg-noir/[0.02]"
+                      >
                         <td className="px-3 py-2 text-[12px]">{r.prenom}</td>
                         <td className="px-3 py-2 text-[12px]">{r.nom}</td>
                         <td className="px-3 py-2 text-[12px] text-black/60">{r.telephone}</td>
@@ -592,6 +599,12 @@ const AdminChallenge21j = () => {
           setDeletingAllSlots(false);
           setConfirmDeleteAllSlots(false);
         }}
+      />
+
+      <ChallengeRegistrantDetailModal
+        registrant={selectedRegistrant}
+        onClose={() => setSelectedRegistrantId(null)}
+        onDelete={registrantsHook.deleteRegistrant}
       />
     </div>
   );

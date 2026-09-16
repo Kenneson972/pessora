@@ -236,7 +236,7 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
     setEditingInfo(false);
   };
 
-  const { control, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const { control, handleSubmit, watch, setValue, getValues, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       nom: user?.lastName ?? '',
@@ -249,6 +249,13 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
       privacyAccepted: false,
     },
   });
+
+  useEffect(() => {
+    if (!user) return;
+    if (getValues('nom') === '' && user.lastName) setValue('nom', user.lastName, { shouldValidate: false });
+    if (getValues('prenom') === '' && user.firstName) setValue('prenom', user.firstName, { shouldValidate: false });
+    if (getValues('telephone') === '' && user.phone) setValue('telephone', user.phone, { shouldValidate: false });
+  }, [user, getValues, setValue]);
 
   const professionValue = watch('profession');
   const suggestions = useMemo(() => suggest(professionValue ?? ''), [professionValue, suggest]);

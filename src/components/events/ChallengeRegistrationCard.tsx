@@ -5,7 +5,7 @@ import { CheckCircle, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Event } from '../../types/database';
 import { PostRegistrationWizard } from './PostRegistrationWizard';
 import { BilanBookingWidget } from './BilanBookingWidget';
@@ -50,7 +50,7 @@ export function ChallengeRegistrationCard({ event }: ChallengeRegistrationCardPr
   const [postRegistration, setPostRegistration] = useState<{ id: string; telephone: string } | null>(null);
   const [registrationCount, setRegistrationCount] = useState(event.registrationCount);
 
-  const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const { control, handleSubmit, getValues, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       nom: user?.lastName ?? '',
@@ -61,6 +61,13 @@ export function ChallengeRegistrationCard({ event }: ChallengeRegistrationCardPr
       privacyAccepted: false,
     },
   });
+
+  useEffect(() => {
+    if (!user) return;
+    if (getValues('nom') === '' && user.lastName) setValue('nom', user.lastName, { shouldValidate: false });
+    if (getValues('prenom') === '' && user.firstName) setValue('prenom', user.firstName, { shouldValidate: false });
+    if (getValues('telephone') === '' && user.phone) setValue('telephone', user.phone, { shouldValidate: false });
+  }, [user, getValues, setValue]);
 
   const placesDispo = event.places_max ? event.places_max - registrationCount : null;
   const isFull = placesDispo !== null && placesDispo <= 0;
