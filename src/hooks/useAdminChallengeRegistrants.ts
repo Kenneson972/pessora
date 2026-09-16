@@ -13,6 +13,7 @@ export interface ChallengeRegistrantRow {
   objectif: string | null;
   complementRevenus: string | null;
   bilan: { date: string; heure: string } | null;
+  details: unknown;
 }
 
 function readDetail(details: unknown, key: string): string | null {
@@ -57,6 +58,7 @@ export function useAdminChallengeRegistrants(challengeEventId: string | null) {
             objectif: readDetail(details, 'objectif_principal'),
             complementRevenus: readDetail(details, 'complement_revenus'),
             bilan: match ? { date: match.date_rdv, heure: match.heure_rdv } : null,
+            details,
           };
         });
         setRows(enriched);
@@ -67,5 +69,10 @@ export function useAdminChallengeRegistrants(challengeEventId: string | null) {
 
   useEffect(() => { refetch(); }, [refetch]);
 
-  return { rows, loading, error, refetch };
+  const deleteRegistrant = useCallback(async (id: string) => {
+    await (supabase as any).from('event_registrations').delete().eq('id', id);
+    refetch();
+  }, [refetch]);
+
+  return { rows, loading, error, refetch, deleteRegistrant };
 }
