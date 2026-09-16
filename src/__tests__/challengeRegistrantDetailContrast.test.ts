@@ -113,8 +113,6 @@ function loadPalette(): Map<string, [number, number, number]> {
   return palette;
 }
 
-const WHITE: [number, number, number] = [255, 255, 255];
-
 function contrastOnWhite(rgb: [number, number, number]): number {
   return 1.05 / (luminanceFromSrgb(rgb) + 0.05);
 }
