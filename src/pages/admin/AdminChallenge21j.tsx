@@ -402,7 +402,8 @@ const AdminChallenge21j = () => {
               onChange={(gallery) => setForm((f) => ({ ...f, gallery }))}
             />
             {/* 14/09 — la règle des droits à l'image vivait dans un commentaire de
-                code (ChallengeBeforeAfterBlock), c'est-à-dire là où personne ne la
+                code (aujourd'hui ParticipantPhotosBlock, ex-ChallengeBeforeAfterBlock),
+                c'est-à-dire là où personne ne la
                 lit. Elle est DÉPLACÉE ici, là où Catherine téléverse.
                 Le bloc reste masqué tant que la galerie est vide : une galerie
                 vide ne publie rien, et une légende manquante ne bloque pas. */}

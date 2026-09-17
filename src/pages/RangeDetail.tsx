@@ -6,6 +6,7 @@ import { useGammeCatalog } from '../hooks/useGammeCatalog';
 import { ArrowLeft, ShoppingBag } from 'lucide-react';
 import { PageShell } from '../components/layout/PageShell';
 import SkinProtocol from '../components/nosproduits/SkinProtocol';
+import { SkinBeforeAfterSection } from '../components/nosproduits/SkinBeforeAfterSection';
 import { useFadeUpWhenVisible, useStaggerReveal } from '../lib/motionReveal';
 import type { GammeProduct } from '../types/database';
 import { toSlug } from '../lib/toSlug';
@@ -214,6 +215,8 @@ const RangeDetail = () => {
           )}
         </PageShell>
       </section>
+
+      {rangeId === 'skin' && <SkinBeforeAfterSection />}
     </div>
   );
 };
