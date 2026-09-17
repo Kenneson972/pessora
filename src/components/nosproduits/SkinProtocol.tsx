@@ -51,7 +51,7 @@ const SkinProtocol = ({ products }: { products: GammeProduct[] }) => {
               return (
                 <motion.li key={step.geste} variants={item} className="min-w-0">
                   <div className="flex items-baseline gap-3">
-                    <span className="font-display text-[12px] tabular-nums text-black/45">
+                    <span className="font-display text-[12px] tabular-nums text-black/60">
                       {String(index + 1).padStart(2, '0')}
                     </span>
                     <h3
@@ -97,7 +97,7 @@ const SkinProtocol = ({ products }: { products: GammeProduct[] }) => {
                       >
                         « {step.mention} »
                       </p>
-                      <footer className="mt-1 text-[10px] font-normal uppercase tracking-[0.12em] text-black/45">
+                      <footer className="mt-1 text-[10px] font-normal uppercase tracking-[0.12em] text-black/60">
                         {step.mentionSource}
                       </footer>
                     </blockquote>
@@ -108,7 +108,7 @@ const SkinProtocol = ({ products }: { products: GammeProduct[] }) => {
           </motion.ol>
 
           <motion.p
-            className="mx-auto mt-14 max-w-2xl text-center text-[11px] font-normal uppercase tracking-[0.12em] text-black/45"
+            className="mx-auto mt-14 max-w-2xl text-center text-[11px] font-normal uppercase tracking-[0.12em] text-black/60"
             {...fadeIntro}
           >
             Ce protocole décrit des gestes, pas un effet.
