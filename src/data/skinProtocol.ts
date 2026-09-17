@@ -40,7 +40,13 @@ export type SkinProtocolStep = {
 export const SKIN_PROTOCOL_STEPS: SkinProtocolStep[] = [
   { geste: 'Nettoyer', keyword: ['nettoyant'] },
   { geste: 'Tonifier', keyword: ['tonique'] },
-  { geste: 'Traiter', keyword: ['sérum', 'serum'] },
+  // 17/09 — « Traiter » était le SEUL des cinq gestes sans source dans ses fiches :
+  // vérifié sur les 15 produits Skin actifs en base, « traiter » n'apparaît dans aucune
+  // description. C'est aussi le seul mot vague du bloc. Remplacé par ce que l'étape
+  // contient vraiment, avec le mot qu'emploie déjà son catalogue (la sous-catégorie
+  // s'appelle `serum`) : « Les sérums ». Les quatre autres gestes restent — « nettoie »,
+  // « tonifie », « contour des yeux », « hydratation / protection » sont ses mots.
+  { geste: 'Les sérums', keyword: ['sérum', 'serum'] },
   { geste: 'Le contour des yeux', keyword: ['contour yeux', 'contour des yeux'] },
   { geste: 'Hydrater & protéger', keyword: ['fps'] },
 ];
