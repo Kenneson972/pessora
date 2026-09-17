@@ -18,7 +18,7 @@ J'autorise Catherine EDOUARD (PESSÓRA) à publier les deux photos me représent
 - [ ] le site pessora.fr (pages Skin et Challenge)
 - [ ] les réseaux sociaux de PESSÓRA (Instagram, Facebook)
 
-Je peux demander le retrait de ces photos à tout moment, sans avoir à me justifier : elles seront retirées.
+Je peux demander le retrait de ces photos à tout moment, sans avoir à me justifier : elles sont retirées du site et leurs fichiers effacés — le lien ne fonctionne plus. Un simple mot suffit.
 
 La légende publiée avec ces photos décrit le protocole suivi ; elle ne promet aucun résultat. Elle est écrite par PESSÓRA.
 
