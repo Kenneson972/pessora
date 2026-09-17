@@ -64,7 +64,9 @@ const SkinProtocol = ({ products }: { products: GammeProduct[] }) => {
       <PageShell>
         <div className="rounded-[2px] bg-surface-product-well px-6 py-12 md:px-12 md:py-16">
           <motion.div className="mx-auto max-w-2xl text-center" {...fadeIntro}>
-            <p className="text-editorial-tagline mb-3">Le protocole</p>
+            <p className="mb-3 font-sans text-[0.5rem] font-normal uppercase tracking-[0.42em] text-black/60">
+              Le protocole
+            </p>
             <h2
               id="skin-protocole"
               className="font-display font-normal tracking-[-0.01em] text-black"
