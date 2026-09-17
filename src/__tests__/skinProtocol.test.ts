@@ -29,13 +29,29 @@ import { SKIN_PRODUCT_NOTICES } from '../data/skinProtocol';
  *    unique `src/data/skinProtocol.ts` — un seul lieu d'édition, comme pour un champ.
  *
  * ⚠️ Pourquoi la règle 4 est écrite en PHRASES et non en « interdit tout `«…»` de
- * `src/**` » : la prose du site utilise légitimement les guillemets français. Mesuré le
- * 17/09/2026 : **11 occurrences dans 219 fichiers**, dont **4 de la prose légitime**
- * (`Concept.tsx`, `MentionsLegales.tsx`, `ManagerSketchMockup.tsx`). Une règle « tout
- * guillemet » aurait donc mis la suite au rouge sur du contenu sain — le faux rouge, la
- * pire des familles. Le résidu assumé : une phrase **neuve et inventée** citée dans un
- * nouveau composant n'est pas attrapée ; ce qui est attrapé, c'est tout ce qui vient de
- * la fiche publiée ou du fallback, c'est-à-dire le défaut qui s'est réellement produit.
+ * `src/**` » : la prose du site utilise légitimement les guillemets français. Chiffres
+ * mesurés le 17/09/2026 **sur `main` (`daf455a`)** — donc sans ce fichier de test, dont
+ * les commentaires citent volontairement des exemples de guillemets et font bouger le
+ * brut de quelques unités —, avec la commande de reproduction, parce que trois personnes
+ * ont d'abord lu trois nombres différents de la même chose :
+ *
+ *   `git grep -o '«' -- src | wc -l`  →  **83** caractères (commentaires INCLUS)
+ *   `git grep -l '«' -- src | wc -l`  →  **39** fichiers, sur **234** dans `src/`
+ *
+ *   (ces deux-là sont mesurés sur `main` ; ils comptent AUSSI les guillemets des
+ *   commentaires, donc une branche qui retouche ce fichier les fait bouger de quelques
+ *   unités — les donner pour ce qu'ils sont : un ordre de grandeur reproductible)
+ *
+ *   et ce que la RÈGLE voit réellement (commentaires retirés + interpolations
+ *   neutralisées, `__tests__` exclu) : **11 occurrences dans 8 fichiers**, dont **4 de
+ *   prose légitime** (`Concept.tsx`, `MentionsLegales.tsx` ×3, `ManagerSketchMockup.tsx`).
+ *   C'est cette troisième mesure qui justifie la règle en phrases, pas les deux premières.
+ *
+ * Une règle « tout guillemet » aurait donc mis la suite au rouge sur du contenu sain — le
+ * faux rouge, la pire des familles. Le résidu assumé : une phrase **neuve et inventée**
+ * citée dans un nouveau composant n'est pas attrapée ; ce qui est attrapé, c'est tout ce
+ * qui vient de la fiche publiée ou du fallback, c'est-à-dire le défaut qui s'est
+ * réellement produit.
  *
  * Statique volontairement — aucun appel base dans la suite : ce test ne prouve pas que la
  * phrase est toujours sur la fiche live (ça, c'est la recette sur le déployé, qui compare
