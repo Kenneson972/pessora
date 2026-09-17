@@ -8,12 +8,15 @@
 CREATE TABLE IF NOT EXISTS public.gamme_galleries (
   id         UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   gamme      TEXT UNIQUE NOT NULL,          -- 'skin' | 'sport' | 'wellness' (aligné sur gamme_products.gamme)
-  gallery    TEXT[] NOT NULL DEFAULT '{}',  -- URLs publiques (gamme-gallery-images)
+  pairs      JSONB NOT NULL DEFAULT '[]',  -- [{"avant": url, "apres": url, "legende": null}] — une paire = l'avant et l'après de la même personne
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 COMMENT ON TABLE public.gamme_galleries IS
-  'Photos avant/après déposées par Catherine, une ligne par gamme.';
+  'Paires avant/après déposées par Catherine, une ligne par gamme (pairs = jsonb).';
+
+COMMENT ON COLUMN public.gamme_galleries.pairs IS
+  'JSONB : [{"avant": url, "apres": url, "legende": null}]. Une paire incomplète ne doit jamais être publiée (filtrée côté front).';
 
 ALTER TABLE public.gamme_galleries ENABLE ROW LEVEL SECURITY;
 
@@ -49,8 +52,8 @@ CREATE POLICY "gamme_galleries_admin_delete"
   USING (public.is_admin());
 
 -- Ligne 'skin' pré-créée (galerie vide) : le bloc reste invisible tant qu'elle est vide.
-INSERT INTO public.gamme_galleries (gamme, gallery)
-VALUES ('skin', '{}')
+INSERT INTO public.gamme_galleries (gamme, pairs)
+VALUES ('skin', '[]')
 ON CONFLICT (gamme) DO NOTHING;
 
 -- updated_at rafraîchi à chaque modification — fonction canonique set_updated_at()
