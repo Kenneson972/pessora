@@ -14,7 +14,7 @@ export interface ChallengeFormData {
   imageUrl: string;
   /** Photo plein cadre du hero (ChallengeHero.tsx) — vide = visuel par défaut du composant. */
   heroImageUrl: string;
-  /** Galerie avant/après (ChallengeBeforeAfterBlock) — bloc masqué tant qu'elle est vide. */
+  /** Photos partagées des participant·es (ParticipantPhotosBlock) — bloc masqué tant que la galerie est vide. */
   gallery: string[];
 }
 

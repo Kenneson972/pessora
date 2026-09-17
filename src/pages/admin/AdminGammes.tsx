@@ -14,6 +14,7 @@ import type { GammeProduct } from '../../types/database';
 import { slugify } from '../../components/admin/AdminProductEditorForm';
 import { ProductImageDropzone } from '../../components/admin/ProductImageDropzone';
 import { uploadPublicImage } from '../../lib/storageUpload';
+import { GammeGalleryEditor } from '../../components/admin/GammeGalleryEditor';
 
 const GAMMES = [
   { key: 'sport', label: 'Sport', subcategories: [
@@ -524,6 +525,8 @@ const AdminGammes = () => {
             </Segment>
           </div>
         </div>
+
+        {gamme !== 'all' && <GammeGalleryEditor gamme={gamme as GammeKey} />}
 
         {/* Editor Modal */}
         <Modal state={editorOverlay}>
