@@ -69,7 +69,7 @@ VALUES (
   'gamme-gallery-images',
   true,
   5242880,
-  ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
+  ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif']
 )
 ON CONFLICT (id) DO NOTHING;
 
