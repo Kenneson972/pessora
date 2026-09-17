@@ -74,9 +74,11 @@ const schema = z.object({
   telephone: z.string().refine(isValidPhone, 'Vérifiez votre numéro de téléphone'),
   age: z
     .string()
+    .trim()
     .min(1, 'Âge requis')
     .refine((v) => /^\d{1,3}$/.test(v), 'Âge invalide')
-    .refine((v) => Number(v) >= 18, 'La participation est réservée aux personnes majeures (18 ans et plus).'),
+    .refine((v) => Number(v) >= 18, 'La participation est réservée aux personnes majeures (18 ans et plus).')
+    .refine((v) => Number(v) <= 120, 'Vérifie ton âge.'),
   profession: z.string(),
   timing_demarrage: z.string().min(1, 'Choisis une réponse'),
   creneau_rappel: z.array(z.string()),

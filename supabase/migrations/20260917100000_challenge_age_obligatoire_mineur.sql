@@ -38,9 +38,9 @@ BEGIN
         USING ERRCODE = 'P0001';
     END IF;
 
-    -- 3. majorité (>= 18)
-    IF NEW.age::int < 18 THEN
-      RAISE EXCEPTION 'Age inferieur a 18 ans - participation reservee aux personnes majeures.'
+    -- 3. majorité + borne haute (18 à 120 ans — évite qu'une frappe type '199' s'affiche dans la liste)
+    IF NEW.age::int NOT BETWEEN 18 AND 120 THEN
+      RAISE EXCEPTION 'Age hors plage 18-120 ans - participation reservee aux personnes majeures.'
         USING ERRCODE = 'P0001';
     END IF;
   END IF;
