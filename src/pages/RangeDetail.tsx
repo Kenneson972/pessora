@@ -5,6 +5,7 @@ import { rangesData } from '../data/productsData';
 import { useGammeCatalog } from '../hooks/useGammeCatalog';
 import { ArrowLeft, ShoppingBag } from 'lucide-react';
 import { PageShell } from '../components/layout/PageShell';
+import SkinProtocol from '../components/nosproduits/SkinProtocol';
 import { useFadeUpWhenVisible, useStaggerReveal } from '../lib/motionReveal';
 import type { GammeProduct } from '../types/database';
 import { toSlug } from '../lib/toSlug';
@@ -129,6 +130,8 @@ const RangeDetail = () => {
           </motion.p>
         </PageShell>
       </section>
+
+      {rangeId === 'skin' && !loading && <SkinProtocol products={products} />}
 
       <section className="pb-20 pt-4 md:pb-28">
         <PageShell>
