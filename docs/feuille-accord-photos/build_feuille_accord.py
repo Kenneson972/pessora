@@ -47,11 +47,14 @@ AUT_P1 = "J'autorise Catherine EDOUARD (PESSÓRA) à publier les deux photos me 
 CASES = ["le site pessora.fr (pages Skin et Challenge)",
          "les réseaux sociaux de PESSÓRA (Instagram, Facebook)"]
 AUT_P2 = "Je peux demander le retrait de ces photos à tout moment, sans avoir à me justifier : elles seront retirées."
+AUT_P4 = ("La légende publiée avec ces photos décrit le protocole suivi ; elle ne promet aucun résultat. "
+          "Elle est écrite par PESSÓRA.")
 AUT_P3 = "Si la personne a moins de 18 ans, cette autorisation est signée par son parent ou son tuteur."
 
 S3 = "3. Les deux photos"
 PHOTOS = ["Même lumière, même angle, même distance, même cadrage.",
           "Une photo « avant », une photo « après » — sans filtre : c'est ce qui rend la comparaison lisible.",
+          "Les deux photos vont ensemble : si l'une des deux manque, rien n'est publié sur le site.",
           "La légende décrit le protocole suivi, jamais un résultat promis."]
 
 PIED = ("PESSÓRA — Catherine EDOUARD, entrepreneur individuel, Fort-de-France (Cluny). "
@@ -156,7 +159,7 @@ for case in CASES:
     c.drawString((M + 10.0) * mm, y(cur), case)
     cur += 8.0
 cur += 1.0
-for para in (AUT_P2,):
+for para in (AUT_P2, AUT_P4):
     c.setFillColor(NOIR)
     c.setFont("Sans", 3.3 * mm)
     for line in wrap(para, "Sans", 3.3 * mm, CW):
@@ -171,7 +174,7 @@ for line in wrap(AUT_P3, "Sans", 2.9 * mm, CW):
 
 # ---------------------------------------------------------------- 3. les deux photos
 cur = section(S3, cur + 4.0)
-BOX_H = 26.0
+BOX_H = 31.0
 c.setStrokeColor(LINE)
 c.setLineWidth(0.25 * mm)
 c.rect(M * mm, y(cur + BOX_H), CW * mm, BOX_H * mm, stroke=1, fill=0)
@@ -223,6 +226,8 @@ MD.write_text(
         *[f"- [ ] {case}" for case in CASES],
         "",
         AUT_P2,
+        "",
+        AUT_P4,
         "",
         f"_{AUT_P3}_",
         "",

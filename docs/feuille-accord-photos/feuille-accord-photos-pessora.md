@@ -20,12 +20,15 @@ J'autorise Catherine EDOUARD (PESSÓRA) à publier les deux photos me représent
 
 Je peux demander le retrait de ces photos à tout moment, sans avoir à me justifier : elles seront retirées.
 
+La légende publiée avec ces photos décrit le protocole suivi ; elle ne promet aucun résultat. Elle est écrite par PESSÓRA.
+
 _Si la personne a moins de 18 ans, cette autorisation est signée par son parent ou son tuteur._
 
 ## 3. Les deux photos
 
 - Même lumière, même angle, même distance, même cadrage.
 - Une photo « avant », une photo « après » — sans filtre : c'est ce qui rend la comparaison lisible.
+- Les deux photos vont ensemble : si l'une des deux manque, rien n'est publié sur le site.
 - La légende décrit le protocole suivi, jamais un résultat promis.
 
 Date : ......................   Signature : ......................
