@@ -1,21 +1,21 @@
 import { useGammeGallery } from '../../hooks/useGammeGallery';
-import { ParticipantPhotosBlock } from '../common/ParticipantPhotosBlock';
+import { BeforeAfterPairsBlock } from '../common/BeforeAfterPairsBlock';
 
 /**
- * Bloc « photos partagées » de la page d'une gamme (Skin) — avant/après déposé par
- * Catherine depuis son admin.
+ * Section avant/après de la page d'une gamme (Skin) — photos déposées par Catherine
+ * depuis son admin, appariées deux à deux (avant / après).
  *
- * Le composant porte lui-même sa lecture : `RangeDetail` rend `<SkinBeforeAfterSection />`
- * et n'a besoin ni d'un état ni d'un hook supplémentaire (il reste lisible, et la page
- * ne fait la requête que pour la gamme concernée).
+ * Le composant porte sa propre lecture : `RangeDetail` rend `<SkinBeforeAfterSection />`
+ * sans état ni hook supplémentaire (et sans ajouter un hook après son retour anticipé).
  *
- * Rien à montrer tant qu'elle n'a rien déposé : la lecture rend `null` et le bloc
- * DISPARAÎT — pas de cadre vide, pas de photo de démonstration, pas de photo achetée.
+ * Rien à montrer tant qu'aucune paire n'est complète : la lecture rend une liste vide et
+ * le bloc DISPARAÎT — pas de cadre vide, pas de photo de démonstration, pas de photo
+ * achetée, et jamais une moitié de paire.
  */
 export function SkinBeforeAfterSection() {
-  const { gallery, loading } = useGammeGallery('skin');
+  const { pairs, loading } = useGammeGallery('skin');
   if (loading) return null;
-  return <ParticipantPhotosBlock gallery={gallery} />;
+  return <BeforeAfterPairsBlock pairs={pairs} />;
 }
 
 export default SkinBeforeAfterSection;

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { formatMutationError, formatSupabaseDataError } from '../../lib/userFacingError';
-import { GalleryField } from './GalleryField';
+import { BeforeAfterPairsField } from './BeforeAfterPairsField';
+import { paireComplete, type BeforeAfterPair } from '../../lib/beforeAfter';
 
 type GammeKey = 'sport' | 'skin' | 'wellness';
 
@@ -12,26 +13,28 @@ const LABELS: Record<GammeKey, string> = {
 };
 
 /**
- * Écran de dépôt — photos partagées d'une gamme (avant/après).
+ * Écran de dépôt — avant/après apparié d'une gamme.
  *
- * Catherine dépose et retire ses photos ICI, et nulle part ailleurs : sa galerie
- * n'est PAS celle des produits (`gamme_products.gallery`, les flacons). Si on
- * confondait les deux, ses crèmes s'afficheraient sous le titre « Photos partagées
- * par les participant·es » — une erreur qui se voit chez elle et pas chez nous.
+ * Catherine dépose **deux photos de la même personne** (avant, après) depuis son admin,
+ * et nulle part ailleurs : ce n'est PAS la galerie des produits (`gamme_products.gallery`,
+ * les flacons). Si on confondait les deux, ses crèmes s'afficheraient sous le titre
+ * « Photos partagées par les participant·es » — une erreur qui se voit chez elle et pas
+ * chez nous.
  *
- * Deux principes :
- * - **la consigne d'accord vit ici**, à l'endroit où elle téléverse (pas dans un
- *   commentaire de code que personne ne lit) ;
- * - **rien n'est publié tant qu'elle n'a rien mis** — le bloc reste invisible sur la
- *   page, il n'y a jamais de cadre vide. Le dire ici, parce que c'est la question
- *   qu'elle se posera : « pourquoi je ne vois rien sur le site ? ».
+ * Trois principes, chacun vérifiable à l'écran :
+ * - **la consigne d'accord vit ici**, là où elle téléverse (autorisation écrite, même
+ *   lumière / même angle / même distance, aucune légende qui promette un résultat) ;
+ * - **une paire incomplète ne se publie pas** — et l'écran le dit au moment du dépôt
+ *   plutôt que de laisser dormir une moitié en silence ;
+ * - **rien n'est publié tant qu'aucune paire n'est complète** : le bloc reste invisible
+ *   sur la page. On le dit, parce que c'est la question qu'elle se posera.
  *
- * La lecture est en `maybeSingle()` (pas `.single()`) : la ligne peut être absente
- * (elle est pré-créée vide par la migration, mais un DELETE admin est autorisé) et
- * `.single()` jetterait. Ici, absent = liste vide, jamais une erreur à l'écran.
+ * Lecture en `maybeSingle()` (pas `.single()`) : la ligne peut être absente et `.single()`
+ * jetterait. Côté admin, une erreur de lecture DOIT se voir : le visiteur a le droit de
+ * ne rien voir, pas Catherine.
  */
 export function GammeGalleryEditor({ gamme }: { gamme: GammeKey }) {
-  const [gallery, setGallery] = useState<string[]>([]);
+  const [pairs, setPairs] = useState<BeforeAfterPair[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -42,16 +45,25 @@ export function GammeGalleryEditor({ gamme }: { gamme: GammeKey }) {
     setError(null);
     const { data, error: readError } = await (supabase as any)
       .from('gamme_galleries')
-      .select('gallery')
+      .select('pairs')
       .eq('gamme', gamme)
       .maybeSingle();
     if (readError) {
-      // ici, l'erreur DOIT se voir : le visiteur a le droit de ne rien voir, pas
-      // Catherine — sinon elle dépose dans le vide sans comprendre pourquoi.
       setError(formatSupabaseDataError(readError.message));
-      setGallery([]);
+      setPairs([]);
     } else {
-      setGallery(Array.isArray(data?.gallery) ? (data!.gallery as string[]).filter(Boolean) : []);
+      const brut = Array.isArray(data?.pairs) ? data!.pairs : [];
+      // on garde les paires telles quelles (même incomplètes : c'est SON travail en
+      // cours, on ne lui supprime rien) — c'est l'affichage public qui filtre.
+      setPairs(
+        (brut as unknown[])
+          .filter((p): p is Record<string, unknown> => Boolean(p) && typeof p === 'object')
+          .map((p) => ({
+            avant: typeof p.avant === 'string' ? p.avant : '',
+            apres: typeof p.apres === 'string' ? p.apres : '',
+            legende: typeof p.legende === 'string' && p.legende ? p.legende : null,
+          })),
+      );
     }
     setLoading(false);
   }, [gamme]);
@@ -60,47 +72,46 @@ export function GammeGalleryEditor({ gamme }: { gamme: GammeKey }) {
     void load();
   }, [load]);
 
+  const completes = pairs.filter(paireComplete).length;
+
   const save = async () => {
     setSaving(true);
     setError(null);
     setSaved(false);
+    // on n'enregistre QUE des paires complètes : une moitié ne doit pas partir en base
+    // sans que l'écran l'ait dit.
+    const aEcrire = pairs.filter(paireComplete);
     const { error: writeError } = await (supabase as any)
       .from('gamme_galleries')
-      .upsert({ gamme, gallery }, { onConflict: 'gamme' });
+      .upsert({ gamme, pairs: aEcrire }, { onConflict: 'gamme' });
     setSaving(false);
     if (writeError) {
       setError(formatMutationError(writeError.message));
       return;
     }
+    setPairs(aEcrire);
     setSaved(true);
   };
+
+  const incompletes = pairs.length - completes;
 
   return (
     <div className="mb-8 rounded-[2px] border border-noir/[0.06] bg-white p-5 sm:p-6">
       <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-black/60">
-        Photos partagées — gamme {LABELS[gamme]}
+        Avant / après — gamme {LABELS[gamme]}
       </p>
       <p className="mb-4 mt-2 text-[11px] font-light leading-relaxed text-black/60">
-        Ces photos s'affichent en bas de la page « {LABELS[gamme]} », visibles par tout le monde.
-        Demande l'accord des personnes avant de les envoyer, et n'affiche jamais de résultat chiffré
-        (poids, centimètres, durée). Pour lire un avant/après, les deux photos doivent être prises
-        sous la même lumière, le même angle et à la même distance.
+        Deux photos de la <strong className="font-normal">même personne</strong>, prises sous la même
+        lumière, le même angle et à la même distance. Demande l'accord écrit avant de les envoyer, et
+        écris une légende qui décrit le <strong className="font-normal">protocole suivi</strong> —
+        jamais un résultat. Ces photos s'affichent en bas de la page « {LABELS[gamme]} », visibles par
+        tout le monde.
       </p>
 
       {loading ? (
         <p className="text-[11px] font-light text-black/60">Chargement…</p>
       ) : (
-        <GalleryField
-          value={gallery}
-          bucket="gamme-gallery-images"
-          pathPrefix={`gammes/${gamme}`}
-          label="Photos de la gamme"
-          hint="Photos réelles de participantes uniquement — jamais de banque d'images. Tant qu'il n'y a aucune photo enregistrée, le bloc reste invisible sur la page."
-          onChange={(urls) => {
-            setGallery(urls);
-            setSaved(false);
-          }}
-        />
+        <BeforeAfterPairsField value={pairs} gamme={gamme} onChange={(p) => { setPairs(p); setSaved(false); }} />
       )}
 
       {error && (
@@ -109,7 +120,7 @@ export function GammeGalleryEditor({ gamme }: { gamme: GammeKey }) {
         </p>
       )}
 
-      <div className="mt-4 flex items-center gap-3">
+      <div className="mt-4 flex flex-wrap items-center gap-3">
         <button
           type="button"
           onClick={save}
@@ -119,9 +130,16 @@ export function GammeGalleryEditor({ gamme }: { gamme: GammeKey }) {
           {saving ? 'Enregistrement…' : 'Enregistrer'}
         </button>
         {saved && <span className="text-[11px] font-light text-sapin">Enregistré.</span>}
-        {!loading && gallery.length === 0 && !saved && (
+        {!loading && completes === 0 && !saved && (
           <span className="text-[11px] font-light text-black/60">
-            Aucune photo : le bloc n'apparaît pas encore sur le site.
+            Aucune paire complète : rien n'apparaît encore sur le site.
+          </span>
+        )}
+        {incompletes > 0 && (
+          <span className="text-[11px] font-light text-black/60">
+            {incompletes} paire{incompletes > 1 ? 's' : ''} incomplète{incompletes > 1 ? 's' : ''} :
+            elle{incompletes > 1 ? 's' : ''} ne ser{incompletes > 1 ? 'ont' : 'a'} pas enregistrée
+            {incompletes > 1 ? 's' : ''}.
           </span>
         )}
       </div>
