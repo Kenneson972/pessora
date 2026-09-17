@@ -44,6 +44,17 @@ En base ce jour : **un seul challenge** — `TEST-KEN-Challenge 21 jours`, date 
 soit le sien est daté **avant le 24/09**, soit **après le 24/09** le banc sort **seul** du filtre par sa date
 — sans rien supprimer, sans fermer ses inscriptions (décision du 14/09 : le filet est le `noindex`, jamais la suppression).
 
+## Régénérer
+
+```bash
+uv venv /tmp/a6env --python 3.13
+uv pip install --python /tmp/a6env/bin/python pillow qrcode reportlab pypdf opencv-python-headless
+/tmp/a6env/bin/python build_carte_a6.py
+```
+
+Le contrôle de sortie : extraire l'image du PDF (`pypdf`) et décoder le QR (`cv2.QRCodeDetector`) — il doit rendre
+l'URL **caractère pour caractère**, pas « un QR qui a l'air bon ».
+
 ## Recette du tirage (pas de l'écran)
 
 Scanner le **PDF imprimé** — pas le fichier — avec **deux téléphones (iOS + Android)**, et vérifier que ça ouvre la
