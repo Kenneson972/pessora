@@ -46,7 +46,8 @@ S2 = "2. Autorisation"
 AUT_P1 = "J'autorise Catherine EDOUARD (PESSÓRA) à publier les deux photos me représentant — l'une avant, l'autre après — sur :"
 CASES = ["le site pessora.fr (pages Skin et Challenge)",
          "les réseaux sociaux de PESSÓRA (Instagram, Facebook)"]
-AUT_P2 = "Je peux demander le retrait de ces photos à tout moment, sans avoir à me justifier : elles seront retirées."
+AUT_P2 = ("Je peux demander le retrait de ces photos à tout moment, sans avoir à me justifier : elles sont "
+          "retirées du site et leurs fichiers effacés — le lien ne fonctionne plus. Un simple mot suffit.")
 AUT_P4 = ("La légende publiée avec ces photos décrit le protocole suivi ; elle ne promet aucun résultat. "
           "Elle est écrite par PESSÓRA.")
 AUT_P3 = "Si la personne a moins de 18 ans, cette autorisation est signée par son parent ou son tuteur."
