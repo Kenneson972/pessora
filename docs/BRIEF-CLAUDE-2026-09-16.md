@@ -17,7 +17,7 @@ cd /opt/data/repos/pessora-<ta-branche> && ln -s /opt/data/repos/pessora/node_mo
 - **Jamais le `main` local** : il est **en retard de 12 commits** (`7348142` contre `origin/main` = `faac1bd`). Un `git checkout main` te laisserait sur une `main` d'avant le push — sans la bannière, sans les correctifs — en croyant être à jour.
 - **Pas de `npm install`** : le symlink de `node_modules` suffit (c'est ainsi que les suites tournent).
 - Vérifie `git rev-parse --abbrev-ref HEAD` en tête de script : ce clone est partagé.
-- ⚠️ **Ce brief n'est pas dans `main`** — il vit sur la branche `docs/brief-claude-2026-09-16` (`37b33c6`), tant que Ken n'a pas mergé.
+- ⚠️ **Ce brief n'est pas dans `main`** — il vit sur la branche `docs/brief-claude-2026-09-16` (tip **`d84b98e`**), tant que Ken n'a pas mergé.
 
 ---
 
@@ -26,6 +26,47 @@ cd /opt/data/repos/pessora-<ta-branche> && ln -s /opt/data/repos/pessora/node_mo
 **On ne promet que ce qu'on livre, et rien ne part vers une personne qui n'a pas dit oui.**
 
 Les 4 items sont des déclinaisons de cette phrase. Si un arbitrage est ambigu, c'est elle qui tranche.
+
+---
+
+## ARBITRAGES FIGÉS EN SALLE — 16/09 au soir (ne pas rouvrir sans un fait neuf)
+
+Ce qui a été **mesuré** ce soir. Ces choix sont des conséquences de mesures, pas des préférences.
+
+### Base — dans la MÊME migration que les 4 tables + la vue (@alcyone)
+
+- **Prédicat NÉGATIF, jamais de `CHECK (source IN (…))`.** Une liste fermée tue chaque surface future : les littéraux réels sont **6** — `footer`, `challenge-closed`, `challenge-ended`, `challenge-full`, `challenge-not-yet-created`, `challenge-outside-window` (relevé `origin/main`, concordant vela/alcyone).
+- **`lower(source) LIKE 'test-%'`** → `newsletter_sendable` exclut les lignes de test. Nouvelle surface réelle → **zéro migration** ; nouvelle surface de test → un mot dans le prédicat.
+- **Nom de surface du banc = `test-bench`** (minuscules — `LIKE` est sensible à la casse, on ne parie pas là-dessus).
+- **`DEFAULT 'footer'` levé en base ET `source` rendu requis côté écran** : le vrai piège était `NewsletterSignup.tsx:35` (défaut JS `source = 'footer'` + prop optionnelle) — un insert non nommé devenait un faux abonné du footer. Deux filets.
+- **Aucune colonne d'événement sur `newsletter_subscribers`** (`id, email, consent, source, created_at`) → l'exclusion ne peut **pas** être un rattachement à l'événement, elle vit sur `source`. Et `consent` ne trie rien : la policy INSERT force `consent = true`.
+- **L'envoi passe à `/emails/batch`** (100/appel, un `to` par destinataire) avec `newsletter_sends` = **une ligne par destinataire** (`campaign_id`, `status`, `resend_id`, `error`). Le `bcc` unique et son `count: emails.length` décoratif disparaissent — sans ça, `sent/failed/unknown` est un état inventé.
+- **Tous les consommateurs lisent la vue, un seul prédicat** : le compteur, le filtre « Jamais demandé », l'export CSV **et la fonction d'envoi** — `send-newsletter/index.ts:63` lit aujourd'hui la **table** en service_role sans filtre (ni `consent`, ni `source`) puis envoie en bcc : une exclusion posée dans la vue y serait purement décorative.
+- **Le lien de désinscription manque** (`grep` désinscription/unsubscribe dans la fonction = **0**) alors que le pied revendique l'inscription : non conforme LCEN L.34-5. GO gate, il tient à la table `token` (@lyra).
+
+### Écrans (@lyra — `lot/lyra-source-required` @ **`a5616be`**, **non poussé**)
+
+- `source` **requis** dans `NewsletterSignupProps` → `npx tsc --noEmit` = **0 erreur** sur `a5616be` ; baseline sur `faac1bd` = 0 erreur en 22 s. **`tsc` marche en local même si le build ne marche pas** — c'est un filet qu'on n'exploitait pas.
+- Vocabulaire de provenance à **3 niveaux, dans cet ordre** : ① correspondance exacte sur les 6 littéraux → ② famille par préfixe (`challenge-*` → « challenge », `import-*` → « import ») → ③ repli explicite « provenance non précisée » + la date. **Jamais le slug à l'écran**, et un seul module (pas de dictionnaire qui dérive du prédicat).
+- La colonne « État » ne dit **jamais plus que la donnée**.
+
+### Ce que la recette doit rendre (@vela)
+
+1. Le chiffre affiché = celui **retourné par le serveur** — `AdminCommunications.tsx:104` fait aujourd'hui `json.count ?? subscribers.length`, un repli client peut annoncer 40 destinataires quand le serveur en a accepté 12. Pas de `count` serveur ⟹ pas de chiffre.
+2. Une ligne sans ligne d'envoi s'affiche « jamais envoyé », **jamais** « Échoué ».
+3. Compteur, filtre « Jamais demandé » et export CSV rendent **le même nombre**, et l'export ne tape jamais la table.
+4. Aperçu (4 interrupteurs) : 0 ligne d'envoi, compteur inchangé.
+
+### Constaté ABSENT en base au 16/09 (mesuré, pas déduit)
+
+`information_schema` ne rend qu'**une** table `newsletter_subscribers` — **ni `newsletter_sends`, ni `newsletter_sendable`**. La colonne « État » et l'écran de reprise ne se lisent aujourd'hui dans rien : ils naissent dans la migration.
+
+### Reste à trancher par Ken — rien d'autre ne se code avant
+
+- **GO migration** (additif) : il débloque ②, ③, 3bis **et** la réécriture de l'envoi.
+- **① L'inscription du banc écrit-elle une ligne en base ?** Oui → `source='test-bench'` + exclusion négative (l'exclusion devient testable par Ken lui-même). Non → aucune exclusion à écrire.
+- **② `kenne972@hotmail.fr`** : seule ligne de la table (`source='footer'` = le défaut, `consent=true`, `created_at 2026-04-21`), donc **d'avant la mise en ligne** — ni marqueur `TEST-`, ni acquisition. Si elle reste dans la vue, le compteur **nomme l'adresse à côté du chiffre** ; on ne soustrait jamais en silence, et on ne l'exclut pas sur `source` (ça tuerait tous les vrais footer avec).
+- **Merge de la garde `59e462c`** — revérifié ce soir : **toujours pas dans `main`**.
 
 ---
 
