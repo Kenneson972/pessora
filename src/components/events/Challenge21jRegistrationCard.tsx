@@ -18,8 +18,6 @@ import { formatDateShort } from '../../lib/eventDateFormat';
 // générique des 6 autres types d'événement (ChallengeRegistrationCard.tsx, non touché).
 // Détail : docs/BRIEF-FORMULAIRE-CHALLENGE-2026-09-14.md
 
-const AGE_NON_RENSEIGNE = 'non_renseigne';
-
 // Garde-fou anti-doublon (14/09, demande @user) : un refresh de page ne doit pas permettre de
 // se réinscrire. sessionStorage (pas localStorage) survit à un F5 mais reste propre à l'onglet —
 // exactement le cas visé. La base a de toute façon une UNIQUE(event_id, telephone) (vérifié en
@@ -74,7 +72,13 @@ const schema = z.object({
   nom: z.string().min(2, 'Nom requis'),
   prenom: z.string().min(2, 'Prénom requis'),
   telephone: z.string().refine(isValidPhone, 'Vérifiez votre numéro de téléphone'),
-  age: z.string(), // chiffres, chaîne vide (facultatif) ou AGE_NON_RENSEIGNE
+  age: z
+    .string()
+    .trim()
+    .min(1, 'Âge requis')
+    .refine((v) => /^\d{1,3}$/.test(v), 'Âge invalide')
+    .refine((v) => Number(v) >= 18, 'La participation est réservée aux personnes majeures (18 ans et plus).')
+    .refine((v) => Number(v) <= 120, 'Vérifie ton âge.'),
   profession: z.string(),
   timing_demarrage: z.string().min(1, 'Choisis une réponse'),
   creneau_rappel: z.array(z.string()),
@@ -174,7 +178,6 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'already' | 'duplicate' | 'full' | 'error'>('idle');
   const [postRegistration, setPostRegistration] = useState<{ id: string; nom: string; prenom: string; telephone: string } | null>(null);
   const [registrationCount, setRegistrationCount] = useState(event.registrationCount);
-  const [ageDeclined, setAgeDeclined] = useState(false);
   const [professionOpen, setProfessionOpen] = useState(false);
   const { ensureLoaded, suggest } = useMetierSuggestions();
 
@@ -283,7 +286,7 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
         nom: data.nom,
         prenom: data.prenom,
         telephone: data.telephone,
-        age: ageDeclined ? AGE_NON_RENSEIGNE : (data.age.trim() || null),
+        age: data.age.trim(),
         profession: data.profession.trim() || null,
         timing_demarrage: data.timing_demarrage,
         creneau_rappel: data.creneau_rappel.length > 0 ? data.creneau_rappel : null,
@@ -299,7 +302,7 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
       nom: data.nom,
       prenom: data.prenom,
       telephone: data.telephone,
-      age: ageDeclined ? AGE_NON_RENSEIGNE : data.age.trim(),
+      age: data.age.trim(),
       profession: data.profession.trim(),
       timing_demarrage: data.timing_demarrage,
       creneau_rappel: data.creneau_rappel,
@@ -339,7 +342,7 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
               {!editingInfo ? (
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="text-[12px] font-light text-black/55">
-                    <p>Âge : {existing.age === AGE_NON_RENSEIGNE ? 'non renseigné' : existing.age || '—'}</p>
+                    <p>Âge : {existing.age || '—'}</p>
                     <p>Métier : {existing.profession || '—'}</p>
                     <p>Début souhaité : {TIMING_OPTIONS.find((o) => o.value === existing.timing_demarrage)?.label ?? '—'}</p>
                     <p>
@@ -565,28 +568,16 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
 
             <Controller name="age" control={control} render={({ field }) => (
               <div className="space-y-1">
-                <label htmlFor="age" className={labelClass}>Âge</label>
+                <label htmlFor="age" className={labelClass}>Âge *</label>
                 <input
                   id="age"
                   {...field}
                   type="text"
                   inputMode="numeric"
-                  disabled={ageDeclined}
-                  placeholder="Facultatif"
-                  className={`${inputClass} ${ageDeclined ? 'opacity-40' : ''}`}
+                  placeholder="18 ans minimum"
+                  className={inputClass}
                 />
-                <label className="mt-1 flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={ageDeclined}
-                    onChange={(e) => {
-                      setAgeDeclined(e.target.checked);
-                      if (e.target.checked) setValue('age', '');
-                    }}
-                    className="h-3.5 w-3.5 rounded-[2px] border border-noir/15 accent-sapin"
-                  />
-                  <span className="text-[11px] font-light text-black/60">Je ne veux pas renseigner</span>
-                </label>
+                {errors.age?.message && <p className="text-[11px] text-red-600">{errors.age.message}</p>}
               </div>
             )} />
           </div>
