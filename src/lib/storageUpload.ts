@@ -24,7 +24,12 @@ function safeFileName(name: string): string {
 }
 
 export async function uploadPublicImage(
-  bucket: 'product-images' | 'event-images' | 'carousel-images' | 'split-gammes-images',
+  bucket:
+    | 'product-images'
+    | 'event-images'
+    | 'carousel-images'
+    | 'split-gammes-images'
+    | 'gamme-gallery-images',
   file: File,
   pathPrefix: string
 ): Promise<string> {
