@@ -4,7 +4,7 @@ import { uploadPublicImage } from '../../lib/storageUpload';
 import { formatMutationError } from '../../lib/userFacingError';
 
 const GALLERY_MAX = 12;
-const labelBase = 'text-[10px] font-medium uppercase tracking-[0.2em] text-black/45';
+const labelBase = 'text-[10px] font-medium uppercase tracking-[0.2em] text-black/60';
 
 /** iPhone : HEIC/HEIF. Le navigateur d'un iPhone les décode, celui d'un Android non. */
 const estHeic = (file: File) =>
@@ -93,13 +93,13 @@ export function GalleryField({
     <div>
       <div className="mb-1.5 flex items-baseline justify-between">
         <label className={labelBase}>
-          {label} <span className="ml-1 text-black/30">({value.length})</span>
+          {label} <span className="ml-1 text-black/60">({value.length})</span>
         </label>
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
-          className="inline-flex items-center gap-1.5 rounded-full border border-noir/15 px-3 py-1.5 text-[10px] font-light uppercase tracking-[0.14em] text-black/55 transition-colors hover:border-noir/30 hover:text-noir disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-full border border-noir/15 px-3 py-1.5 text-[10px] font-light uppercase tracking-[0.14em] text-black/60 transition-colors hover:border-noir/30 hover:text-noir disabled:opacity-50"
         >
           {uploading ? <Loader2 size={12} className="animate-spin" /> : <ImagePlus size={12} strokeWidth={1.5} />}
           {uploading ? 'Envoi…' : 'Ajouter'}
@@ -114,7 +114,7 @@ export function GalleryField({
           onChange={handleFiles}
         />
       </div>
-      <p className="mb-2 text-[10px] text-black/30">{hint}</p>
+      <p className="mb-2 text-[10px] text-black/60">{hint}</p>
       {error && (
         <p role="alert" className="mb-2 text-[13px] leading-snug text-red-600">
           {error}
@@ -124,7 +124,7 @@ export function GalleryField({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="flex aspect-[16/6] w-full flex-col items-center justify-center gap-2 rounded-[2px] border border-dashed border-noir/15 bg-white text-black/40 transition-colors hover:border-noir/30 hover:text-black/60"
+          className="flex aspect-[16/6] w-full flex-col items-center justify-center gap-2 rounded-[2px] border border-dashed border-noir/15 bg-white text-black/60 transition-colors hover:border-noir/30 hover:text-black/60"
         >
           <ImagePlus size={20} strokeWidth={1.5} />
           <span className="text-[11px] font-light">Aucune photo</span>
@@ -141,7 +141,7 @@ export function GalleryField({
                 type="button"
                 onClick={() => remove(idx)}
                 aria-label="Retirer cette photo"
-                className="absolute right-1 top-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/85 text-red-500 opacity-0 backdrop-blur-[2px] transition-opacity hover:bg-red-500 hover:text-white group-hover:opacity-100 focus:opacity-100"
+                className="absolute right-1 top-1 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/85 text-red-600 opacity-0 backdrop-blur-[2px] transition-opacity hover:bg-red-600 hover:text-white group-hover:opacity-100 focus:opacity-100"
               >
                 <Trash2 size={11} strokeWidth={1.6} />
               </button>

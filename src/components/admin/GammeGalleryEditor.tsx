@@ -77,7 +77,7 @@ export function GammeGalleryEditor({ gamme }: { gamme: GammeKey }) {
 
   return (
     <div className="mb-8 rounded-[2px] border border-noir/[0.06] bg-white p-5 sm:p-6">
-      <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-black/45">
+      <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-black/60">
         Photos partagées — gamme {LABELS[gamme]}
       </p>
       <p className="mb-4 mt-2 text-[11px] font-light leading-relaxed text-black/60">
@@ -88,7 +88,7 @@ export function GammeGalleryEditor({ gamme }: { gamme: GammeKey }) {
       </p>
 
       {loading ? (
-        <p className="text-[11px] font-light text-black/45">Chargement…</p>
+        <p className="text-[11px] font-light text-black/60">Chargement…</p>
       ) : (
         <GalleryField
           value={gallery}
@@ -120,7 +120,7 @@ export function GammeGalleryEditor({ gamme }: { gamme: GammeKey }) {
         </button>
         {saved && <span className="text-[11px] font-light text-sapin">Enregistré.</span>}
         {!loading && gallery.length === 0 && !saved && (
-          <span className="text-[11px] font-light text-black/45">
+          <span className="text-[11px] font-light text-black/60">
             Aucune photo : le bloc n'apparaît pas encore sur le site.
           </span>
         )}
