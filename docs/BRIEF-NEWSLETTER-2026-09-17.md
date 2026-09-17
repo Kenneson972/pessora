@@ -212,6 +212,14 @@ téléphone** — c'est la seule preuve qui vaille, et elle se tire avec Ken.
   elle exerce la règle d'exclusion `test-%`, et elle n'est jamais comptée comme une cliente.
 - **Adresse de test pour la désinscription** : une adresse **nommée `test-…`** (pas une fausse
   cliente, pas la seule adresse réelle de la liste).
+- **Statut d'envoi** : le lire en base suppose un **webhook Resend signé** qui alimente
+  `newsletter_sends.status` — **la clé Resend actuelle est en envoi seul** (`401
+  restricted_api_key`, testé le 17/09) et ne permet pas de relire un statut `delivered`/`bounced`.
+  Un mot de Ken : **webhook** (à préférer — la donnée reste chez la cliente), ou **clé à accès
+  complet** (secret, donc sa décision et pas celle de Claude). Sans l'un des deux, le critère
+  fonctionnel ① (« un e-mail arrive vraiment ») ne peut pas être prouvé.
+  Si le webhook est retenu, **il doit refuser tout appel non signé** — sinon n'importe qui peut
+  marquer ses abonnées comme « bounced » et les couper de ses envois.
 
 ---
 
