@@ -81,7 +81,7 @@ const SkinProtocol = ({ products }: { products: GammeProduct[] }) => {
                               />
                             </span>
                           )}
-                          <span className="max-w-[9rem] text-[11px] font-light leading-tight text-black/60">
+                          <span className="max-w-[12rem] text-[11px] font-light leading-tight text-black/60">
                             {product.name}
                           </span>
                         </li>
@@ -92,7 +92,7 @@ const SkinProtocol = ({ products }: { products: GammeProduct[] }) => {
                   {step.mention && (
                     <blockquote className="mt-4 border-l border-noir/[0.12] pl-4">
                       <p
-                        className="font-display text-[14px] font-light italic leading-snug text-black/60"
+                        className="text-pretty font-display text-[14px] font-light italic leading-snug text-black/60"
                         style={{ fontFamily: 'var(--font-display)' }}
                       >
                         « {step.mention} »
