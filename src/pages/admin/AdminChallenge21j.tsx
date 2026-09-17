@@ -12,6 +12,7 @@ import { useAdminChallengeRegistrants } from '../../hooks/useAdminChallengeRegis
 import { uploadPublicImage } from '../../lib/storageUpload';
 import { formatMutationError } from '../../lib/userFacingError';
 import { GalleryField } from '../../components/admin/GalleryField';
+import { supprimerFichiersRetires } from '../../lib/storageCleanup';
 
 const WEEKDAY_LABELS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 
@@ -118,6 +119,8 @@ const AdminChallenge21j = () => {
   const [form, setForm] = useState<ChallengeFormData>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  /** Nettoyage du stockage après un retrait de photo (retrait = dépublier ET effacer). */
+  const [galleryCleanupInfo, setGalleryCleanupInfo] = useState<string | null>(null);
 
   const selected = useMemo(() => challenges.find((c) => c.id === selectedId) ?? null, [challenges, selectedId]);
 
@@ -160,9 +163,25 @@ const AdminChallenge21j = () => {
       return;
     }
     if (!selected) { setSaving(false); setFormError('Aucun challenge sélectionné.'); return; }
+    const urlsAvant = selected.gallery ?? [];
     const result = await updateChallenge(selected.id, form);
     setSaving(false);
     if (result.error) { setFormError(result.error); return; }
+
+    // Même défaut que la galerie d'une gamme, corrigé ici aussi : retirer une photo de
+    // la galerie la dépubliait mais **laissait le fichier en ligne**, téléchargeable par
+    // son URL — alors que la page affiche « Publiées avec l'accord des personnes
+    // photographiées ». La policy admin suffit pour l'effacer (mesuré @vela 17/09).
+    try {
+      const effaces = await supprimerFichiersRetires('event-images', urlsAvant, form.gallery);
+      if (effaces.length > 0) setGalleryCleanupInfo(`${effaces.length} fichier(s) retiré(s) du stockage.`);
+    } catch (err) {
+      setGalleryCleanupInfo(
+        'Enregistré, mais les photos retirées n’ont pas pu être effacées du stockage — ' +
+          'réenregistre pour retenter. Tant que ça n’a pas abouti, elles restent ' +
+          `téléchargeables par leur lien. (${err instanceof Error ? formatMutationError(err.message) : 'erreur'})`,
+      );
+    }
   };
 
   const slotsHook = useAdminChallengeSlots(selected?.id ?? null);
@@ -326,6 +345,11 @@ const AdminChallenge21j = () => {
               Demande l'accord des personnes avant de les envoyer, et n'affiche jamais de
               résultat chiffré (poids, centimètres, durée).
             </p>
+            {galleryCleanupInfo && (
+              <p className="mt-2 text-[11px] font-light leading-snug text-black/60">
+                {galleryCleanupInfo}
+              </p>
+            )}
           </div>
 
           <button
