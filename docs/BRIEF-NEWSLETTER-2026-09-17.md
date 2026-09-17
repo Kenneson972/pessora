@@ -117,7 +117,7 @@ fermez cette page : votre inscription reste active. »
 Page (POST) : « Votre désinscription est enregistrée — Vous ne recevrez plus d'e-mails
 de la part de PessÓra. Pour revenir, il suffit de vous réinscrire depuis le site. »
 
-Lien déjà utilisé ou inconnu : « Ce lien n'est plus valable — il a déjà été utilisé, ou
+Lien déjà utilisé ou inconnu : « Ce lien n'est plus valide — il a déjà été utilisé, ou
 l'adresse n'est plus inscrite. Dans tous les cas, vous ne recevrez plus d'e-mails de
 notre part. » (jamais 500, idempotent)
 
@@ -183,7 +183,7 @@ Contraintes : aucune promo ni offre dans ces écrans · « Se désinscrire » é
    propre ligne, corps ≥ 13 px, contraste **mesuré ≥ 4,5:1 contre le fond réel**, lien texte.
 2. **Capture 390 px sans zoomer** : aucun texte coupé ni débordant, bouton ≥ 44 px.
 3. **Les états sont visuellement distincts** : « rien n'a encore été modifié », « c'est retiré »,
-   « ce lien n'est plus valable » — **un échec ne ressemble jamais à un succès**.
+   « ce lien n'est plus valide » — **un échec ne ressemble jamais à un succès**.
 4. **Aucune promo, aucun CTA boutique** : le seul lien sortant est le site.
 5. **Le mot-symbole est le vrai fichier** servi depuis le stockage, jamais un texte qui l'imite.
 6. **Même gabarit que les 5 mails existants** : un sixième gabarit différent est un refus.
