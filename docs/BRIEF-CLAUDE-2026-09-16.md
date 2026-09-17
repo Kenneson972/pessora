@@ -44,9 +44,12 @@ Ce qui a été **mesuré** ce soir. Ces choix sont des conséquences de mesures,
 - **Tous les consommateurs lisent la vue, un seul prédicat** : le compteur, le filtre « Jamais demandé », l'export CSV **et la fonction d'envoi** — `send-newsletter/index.ts:63` lit aujourd'hui la **table** en service_role sans filtre (ni `consent`, ni `source`) puis envoie en bcc : une exclusion posée dans la vue y serait purement décorative.
 - **Le lien de désinscription manque** (`grep` désinscription/unsubscribe dans la fonction = **0**) alors que le pied revendique l'inscription : non conforme LCEN L.34-5. GO gate, il tient à la table `token` (@lyra).
 
-### Écrans (@lyra — `lot/lyra-source-required` @ **`a5616be`**, **non poussé**)
+### Écrans (@lyra — `lot/lyra-source-required` @ **`088ab84`**, **poussée sur `origin`**)
 
-- `source` **requis** dans `NewsletterSignupProps` → `npx tsc --noEmit` = **0 erreur** sur `a5616be` ; baseline sur `faac1bd` = 0 erreur en 22 s. **`tsc` marche en local même si le build ne marche pas** — c'est un filet qu'on n'exploitait pas.
+- ⚠️ **`a5616be` est périmé — ne plus le citer comme recetté** : le prop `source` est ensuite passé en **union fermée**, son « vert » ne porte plus. Toute recette se fait sur `088ab84`.
+- `088ab84` = **4 fichiers, 39 +, 6 −**, `npx tsc --noEmit` = **exit 0** (recette @vela, mesurée sur la sortie, 21 s) ; baseline sur `faac1bd` = 0 erreur en ~25 s. **`tsc` marche en local même si le build ne marche pas** — c'est un filet qu'on n'exploitait pas.
+- Vocabulaire d'**écriture** : union **fermée** des 6 littéraux dans **un seul module** (`src/lib/newsletterSources.ts`) → une faute de frappe ne compile pas (le chemin *variable* de `ChallengeAvailabilityNotice` était le trou) ; élargissement d'**une ligne** `NewsletterSource | \`test-${string}\`` pour la surface du banc. Le banc **réutilise `NewsletterSignup`** — jamais son propre insert, sinon la garde de frappe ne surveille plus le chemin qu'on veut surveiller.
+- Le dictionnaire admin sera un `Record<NewsletterSource, string>` → tsc casse si une surface entre sans son mot.
 - Vocabulaire de provenance à **3 niveaux, dans cet ordre** : ① correspondance exacte sur les 6 littéraux → ② famille par préfixe (`challenge-*` → « challenge », `import-*` → « import ») → ③ repli explicite « provenance non précisée » + la date. **Jamais le slug à l'écran**, et un seul module (pas de dictionnaire qui dérive du prédicat).
 - La colonne « État » ne dit **jamais plus que la donnée**.
 
