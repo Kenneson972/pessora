@@ -271,8 +271,13 @@ téléphone** — c'est la seule preuve qui vaille, et elle se tire avec Ken.
 illisible, et personne ne le verra (le cliquet de contraste scanne `src/**` en classes `text-*` ;
 le corps des mails est en **styles en ligne** : aucun autre instrument ne regarde ces fichiers).
 
-**A. Rebase.** `feat/newsletter-v2-impl` **n'est pas descendante de `main`** (8 commits en avance) :
-le « rebase sur la ligne à jour » est un vrai rebase, **pas un fast-forward**.
+**A. La ligne de `main` est déjà dedans — mesuré le 18/09 à 13h55.** Claude a **mergé** `origin/main`
+dans la branche (`b8a14a7 Merge remote-tracking branch 'origin/main' into feat/newsletter-v2-impl`)
+au lieu de rebaser : **`main` est donc ancêtre de la branche**, et le merge final sera un
+**fast-forward**. **Décision (Élise, 18/09) : on garde ce merge, on ne re-rebase pas** — réécrire un
+historique déjà poussé ferait bouger les 2 commits de @lyra pour un gain cosmétique, c'est plus de
+risque que de bénéfice. **Ce qui compte : le SHA recetté sera le SHA de `main`.** Rien à faire côté
+rebase — **ne relance pas de `git rebase`.**
 
 **B. Trois corrections de couleur — dans cet ordre, et une seule valeur suffit (`#6b6b6b`) :**
 
@@ -280,7 +285,7 @@ le « rebase sur la ligne à jour » est un vrai rebase, **pas un fast-forward**
 |---|---|---|---|
 | ① | `supabase/functions/newsletter-request-resubscribe/index.ts` | pied `#888` 11 px sur `#f5f3f0` = **3,20:1** (sous AA) | `#6b6b6b` → **4,81:1** |
 | ② | `supabase/functions/_shared/sendOrderConfirmation.ts` | « Des questions ?… » `#888` 12 px / blanc = **3,54:1** ; « © PessÓra · Fort-de-France, Martinique » `#999` 11 px = **2,85:1** | `#6b6b6b` → **5,33:1** |
-| ③ | `supabase/functions/email-templates/01..05` (×2 lignes `#888888`) | **3,20:1** | `#6b6b6b` |
+| ③ | `email-templates/01-confirmation.html` … `05-change-email.html` — **à la racine du repo**, PAS sous `supabase/functions/` (×2 lignes `#888888` : l'adresse et « Message automatique ») | **3,20:1** | `#6b6b6b` |
 
 ⚠️ **① est un fichier AJOUTÉ par ce lot** — sans la correction, le lot publie le défaut qu'on
 répare juste à côté. **② est déjà en production aujourd'hui** (c'est le mail que reçoit une
@@ -298,9 +303,14 @@ qui part**. Recette associée : déclencher un **vrai magic-link** vers une boî
 l'encre **dans le HTML reçu**, pas dans le fichier (@vela). **Le commit ne prouve pas cet envoi** —
 personne ne doit le dire « vérifié » sans ça.
 
-**E. La gate s'attache au tip FINAL** — v2 rebasé **+** les 2 commits de lyra — **pas à `0899a9c`**
-(ce SHA ne contient ni le rebase ni les corrections). @alcyone recette ce tip-là, **fichier par
-fichier** (dont `GABARIT`).
+**E. La gate s'attache au tip FINAL** — la branche avec le merge de `main` **+** les 2 commits de
+lyra — **pas à `0899a9c`** (ce SHA ne contient ni l'un ni les autres). @alcyone recette ce tip-là,
+**fichier par fichier** (dont `GABARIT`), et c'est aussi le tip qui partira en fast-forward.
+
+**G. Comment lire ce brief.** `git fetch` puis
+`git show origin/docs/newsletter-v2-spec:docs/BRIEF-NEWSLETTER-2026-09-17.md` — **ne fais pas de
+`checkout` de la branche de doc** : tu écris sur `feat/newsletter-v2-impl`, et 3 corrections
+atterries sur la branche de doc feraient comparer des branches décalées à la recette.
 
 **F. Rien d'autre ne bouge** : aucun prix, aucun abonnement Stripe, aucun produit du catalogue.
 
