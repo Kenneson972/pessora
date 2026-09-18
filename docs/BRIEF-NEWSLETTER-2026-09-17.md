@@ -262,4 +262,48 @@ téléphone** — c'est la seule preuve qui vaille, et elle se tire avec Ken.
 
 ---
 
+## 8. ADDENDUM 18/09/2026 — LES MAILS FONT PARTIE DE CE LOT
+
+> Ajouté par Élise le 18/09 au matin, d'après les mesures de @lyra et @vela (relevé
+> indépendant, recompté deux fois). **À lire avant de coder.** Chiffres mesurés, pas estimés.
+
+**Deux choses à faire dans le même lot** — sinon le mail part chez les abonnées avec une ligne
+illisible, et personne ne le verra (le cliquet de contraste scanne `src/**` en classes `text-*` ;
+le corps des mails est en **styles en ligne** : aucun autre instrument ne regarde ces fichiers).
+
+**A. Rebase.** `feat/newsletter-v2-impl` **n'est pas descendante de `main`** (8 commits en avance) :
+le « rebase sur la ligne à jour » est un vrai rebase, **pas un fast-forward**.
+
+**B. Trois corrections de couleur — dans cet ordre, et une seule valeur suffit (`#6b6b6b`) :**
+
+| # | Fichier | Défaut mesuré | Correction |
+|---|---|---|---|
+| ① | `supabase/functions/newsletter-request-resubscribe/index.ts` | pied `#888` 11 px sur `#f5f3f0` = **3,20:1** (sous AA) | `#6b6b6b` → **4,81:1** |
+| ② | `supabase/functions/_shared/sendOrderConfirmation.ts` | « Des questions ?… » `#888` 12 px / blanc = **3,54:1** ; « © PessÓra · Fort-de-France, Martinique » `#999` 11 px = **2,85:1** | `#6b6b6b` → **5,33:1** |
+| ③ | `supabase/functions/email-templates/01..05` (×2 lignes `#888888`) | **3,20:1** | `#6b6b6b` |
+
+⚠️ **① est un fichier AJOUTÉ par ce lot** — sans la correction, le lot publie le défaut qu'on
+répare juste à côté. **② est déjà en production aujourd'hui** (c'est le mail que reçoit une
+cliente après commande) : c'est le seul des trois qui est visible tout de suite.
+Les 5 templates de ③ portent **déjà** `#6b6b6b` ailleurs : la cible est l'encre maison, **rien d'inventé**.
+
+**C. N'écris PAS la garde.** La garde de contraste des gabarits est apportée **par @lyra après**
+ces corrections, **dans ce même lot**, comme preuve. Deux commits écrivant la même constante
+(la table des fonds) = exactement le cas du **+3/−3 qui s'annule** au merge et masque une
+régression : on ne le crée pas.
+
+**D. Hors de ton périmètre (geste manuel, aucun code) :** le collage des 5 templates d'auth dans
+le **Dashboard Supabase** (Authentication → Email Templates) — **le fichier du repo n'est pas ce
+qui part**. Recette associée : déclencher un **vrai magic-link** vers une boîte QA et mesurer
+l'encre **dans le HTML reçu**, pas dans le fichier (@vela). **Le commit ne prouve pas cet envoi** —
+personne ne doit le dire « vérifié » sans ça.
+
+**E. La gate s'attache au tip FINAL** — v2 rebasé **+** les 2 commits de lyra — **pas à `0899a9c`**
+(ce SHA ne contient ni le rebase ni les corrections). @alcyone recette ce tip-là, **fichier par
+fichier** (dont `GABARIT`).
+
+**F. Rien d'autre ne bouge** : aucun prix, aucun abonnement Stripe, aucun produit du catalogue.
+
+---
+
 *Élise — 17/09/2026, d'après les arbitrages de la salle PESSORA 2.*
