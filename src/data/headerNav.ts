@@ -6,7 +6,6 @@ import {
   Package,
   UtensilsCrossed,
 } from 'lucide-react';
-import { PILLARS, PILLAR_NAMES } from './pillars';
 
 /** Navigation principale — alignée sur les routes réelles du site */
 export const PRIMARY_NAV: {
@@ -33,19 +32,15 @@ export function isPrimaryNavActive(pathname: string, itemPath: string, matchExac
 export type SubNavItem = { label: string; href: string };
 
 /**
- * Barre du menu — **générée depuis la table des piliers**, aucun libellé recopié.
+ * (Retiré le 17/09) `SUBNAV_MENU` — 4 entrées « Wellness / Énergie / Shakes / Coffee ».
  *
- * Avant : 4 entrées écrites à la main (`Wellness`, `Énergie`, `Shakes`, `Coffee`) qui
- * envoyaient `?gamme=wellness|energie|shakes|coffee` — des mots que la page ne comprend
- * plus depuis le passage aux 3 piliers, donc **3 des 4 entrées menaient à une page vide**
- * (« Aucun produit »). Ici les deux moitiés du problème disparaissent ensemble : le libellé
- * ET le lien viennent de `PILLAR_NAMES` / `PILLARS`, la même table que lit la page.
- * Une quatrième entrée ne pourra donc plus être inventée sans toucher la table.
+ * Ce bloc n'avait **aucun consommateur** : rien ne le rendait, et `getSubNavForPath('/menu')`
+ * renvoie `null` — la page « La carte » n'a **jamais** eu de barre secondaire (mesuré : 0 lien
+ * `?gamme=` dans le DOM de `/menu`). C'était donc un **troisième vocabulaire mort**, et le
+ * laisser était un piège : on a lu deux fois ses vieux mots comme s'ils étaient cliquables.
+ * Le filtre de la page (4 entrées : Tout · Mega Thé · Protein Shake · Coffee) est le seul
+ * contrôle réel, et la résolution des liens entrants vit dans `src/data/pillars.ts`.
  */
-export const SUBNAV_MENU: SubNavItem[] = [
-  { label: 'Tous', href: '/menu' },
-  ...PILLARS.map((pilier) => ({ label: PILLAR_NAMES[pilier], href: `/menu?gamme=${pilier}` })),
-];
 
 export const SUBNAV_EVENEMENTS: SubNavItem[] = [
   { label: 'Tous', href: '/evenements' },
