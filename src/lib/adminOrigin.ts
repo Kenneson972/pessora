@@ -18,6 +18,14 @@ export const ADMIN_HOST = 'admin.pessora.fr';
 export const ADMIN_LOGIN_URL = `${ADMIN_ORIGIN}/connexion`;
 
 /**
+ * Le site public — distinct de l'admin. Dans le bundle admin (AdminApp.tsx), la route
+ * "/" fait Navigate vers "/admin" : un <Link to="/"> de react-router-dom y boucle sur
+ * le dashboard au lieu de sortir vers le site. "Retour au site" doit donc être une
+ * vraie sortie d'origine (<a href>), jamais un <Link> interne au routeur admin.
+ */
+export const PUBLIC_ORIGIN = 'https://www.pessora.fr';
+
+/**
  * L'hote courant est-il celui de l'admin ?
  * Le port est ignore (une preview sert admin.pessora.fr:4173).
  */

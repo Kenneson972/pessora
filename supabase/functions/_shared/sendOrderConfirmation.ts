@@ -103,12 +103,12 @@ function buildEmailHtml(orders: OrderRow[], siteUrl: string): string {
           </tr>
           <tr>
             <td style="padding:0 32px 32px;text-align:center;border-top:1px solid #f0efeb;">
-              <p style="margin:20px 0 4px;font-size:12px;color:#888;">Des questions ? Répondez directement à cet e-mail ou écrivez-nous sur WhatsApp.</p>
+              <p style="margin:20px 0 4px;font-size:12px;color:#6b6b6b;">Des questions ? Répondez directement à cet e-mail ou écrivez-nous sur WhatsApp.</p>
               <a href="https://wa.me/596696440404" style="color:#1E3529;font-size:12px;text-decoration:underline;">+596 696 44 04 04</a>
             </td>
           </tr>
         </table>
-        <p style="margin:20px 0 0;font-size:11px;color:#999;">© PessÓra · Fort-de-France, Martinique</p>
+        <p style="margin:20px 0 0;font-size:11px;color:#6b6b6b;">© PessÓra · Fort-de-France, Martinique</p>
       </td>
     </tr>
   </table>

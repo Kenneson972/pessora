@@ -40,7 +40,7 @@ export function NewsletterSignup({
   source,
 }: NewsletterSignupProps) {
   const honeypotRef = useRef<HTMLInputElement>(null);
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'duplicate' | 'error'>('idle');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'duplicate' | 'confirmation_sent' | 'error'>('idle');
   const {
     register,
     handleSubmit,
@@ -64,7 +64,23 @@ export function NewsletterSignup({
     });
     if (error) {
       if (error.code === '23505') {
-        setStatus('duplicate');
+        // email est unique : un second INSERT après désabonnement échoue ici. Règle
+        // dure (17/09) : aucun consentement ne s'écrit sans la personne — pas de
+        // fonction qui prend une adresse. Ça demande un e-mail de confirmation ; le
+        // clic sur le lien reçu écrit le "oui" (voir newsletter-resubscribe).
+        try {
+          const { data: res, error: reqError } = await supabase.functions.invoke('newsletter-request-resubscribe', {
+            method: 'POST',
+            body: { email: data.email.trim().toLowerCase() },
+          });
+          if (reqError) {
+            setStatus('error');
+            return;
+          }
+          setStatus(res?.outcome === 'confirmation_sent' ? 'confirmation_sent' : 'duplicate');
+        } catch {
+          setStatus('error');
+        }
         reset();
         return;
       }
@@ -238,8 +254,13 @@ export function NewsletterSignup({
       {status === 'success' && (
         <p className={cn('mt-2 text-[11px] font-light tracking-wide', isLight ? 'text-noir/80' : 'text-ivory/90')}>Merci — vous êtes inscrit·e.</p>
       )}
+      {status === 'confirmation_sent' && (
+        <p className={cn('mt-2 text-[11px] font-light tracking-wide', isLight ? 'text-noir/80' : 'text-ivory/90')}>
+          Merci — regardez vos e-mails : votre inscription sera active après confirmation.
+        </p>
+      )}
       {status === 'duplicate' && (
-        <p className={cn('mt-2 text-[11px] font-light', isLight ? 'text-black/45' : 'text-white/50')}>Cette adresse est déjà inscrite.</p>
+        <p className={cn('mt-2 text-[11px] font-light', isLight ? 'text-black/60' : 'text-white/60')}>Cette adresse est déjà inscrite.</p>
       )}
       {status === 'error' && (
         <p className={cn('mt-2 text-[11px] font-light', isLight ? 'text-red-600' : 'text-red-300/90')}>Impossible de finaliser. Réessayez plus tard.</p>

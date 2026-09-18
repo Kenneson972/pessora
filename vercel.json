@@ -178,6 +178,24 @@
           "value": "noindex, nofollow"
         }
       ]
+    },
+    {
+      "source": "/newsletter/desinscription",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/newsletter/reinscription",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
     }
   ]
 }

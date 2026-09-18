@@ -304,12 +304,60 @@ export interface Database {
           email: string
           consent: boolean
           source: string
+          /** Preuve de consentement DATÉE — source de vérité du « oui » (consent seul, non). */
+          consented_at: string | null
+          /** Écrit uniquement par fn_unsubscribe / fn_resubscribe / fn_admin_set_subscription — jamais un UPDATE direct. */
+          unsubscribed_at: string | null
+          /** 'self' (la personne, via son lien) ou 'admin' (geste de l'admin) — deux retraits distincts, jamais fusionnés. */
+          unsubscribed_by: 'self' | 'admin' | null
+          unsubscribe_token: string
           created_at: string
         }
         Insert: {
           email: string
           consent?: boolean
           source?: string
+        }
+        Update: Record<string, never>
+        Relationships: []
+      }
+      newsletter_campaigns: {
+        Row: {
+          id: string
+          /** promo | challenge | evenement | info — union TS (src/lib/newsletterTypes.ts), pas de CHECK fermé. */
+          type: string
+          subject: string
+          body: string
+          image_url: string | null
+          event_id: string | null
+          created_at: string
+        }
+        Insert: {
+          type: string
+          subject: string
+          body: string
+          image_url?: string | null
+          event_id?: string | null
+        }
+        Update: Record<string, never>
+        Relationships: []
+      }
+      newsletter_sends: {
+        Row: {
+          id: string
+          campaign_id: string
+          subscriber_id: string | null
+          email: string
+          status: 'pending' | 'delivered' | 'bounced' | 'failed' | 'unknown'
+          resend_id: string | null
+          error: string | null
+          sent_at: string
+        }
+        Insert: {
+          campaign_id: string
+          subscriber_id?: string | null
+          email: string
+          status?: 'pending' | 'delivered' | 'bounced' | 'failed' | 'unknown'
         }
         Update: Record<string, never>
         Relationships: []

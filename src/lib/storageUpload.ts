@@ -29,7 +29,8 @@ export async function uploadPublicImage(
     | 'event-images'
     | 'carousel-images'
     | 'split-gammes-images'
-    | 'gamme-gallery-images',
+    | 'gamme-gallery-images'
+    | 'newsletter-images',
   file: File,
   pathPrefix: string
 ): Promise<string> {
