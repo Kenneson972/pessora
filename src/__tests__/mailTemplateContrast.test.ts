@@ -196,6 +196,15 @@ SOURCE[FICHIER_AUTH] = lire(FICHIER_AUTH);
 // --- découverte --------------------------------------------------------------
 const IGNORES = ['node_modules', 'dist', '.git', '__tests__', '.superpowers', '.cursor', '.agents'];
 
+/**
+ * Un fichier d'essai vit parfois **à côté du code** (`supabase/functions/x.test.ts`), pas
+ * seulement dans `__tests__`. Mesuré le 18/09 : sans ce filtre, une garde qui **cite**
+ * `<!DOCTYPE html>` dans son commentaire se compte elle-même comme 9ᵉ surface et rend un
+ * ROUGE pour un non-défaut. C'est le faux rouge que @vela a attrapé dans son propre
+ * instrument, un cran plus loin que ce que `__tests__` couvrait.
+ */
+const MOTIF_ESSAI = /\.(test|spec)\.[cm]?[jt]sx?$/;
+
 function fichiersSous(racine: string, extensions: string[]): string[] {
   const trouves: string[] = [];
   const parcourir = (dossier: string) => {
@@ -206,7 +215,7 @@ function fichiersSous(racine: string, extensions: string[]): string[] {
       return;
     }
     for (const e of entrees) {
-      if (IGNORES.includes(e.name)) continue;
+      if (IGNORES.includes(e.name) || MOTIF_ESSAI.test(e.name)) continue;
       const chemin = dossier + '/' + e.name;
       if (e.isDirectory()) parcourir(chemin);
       else if (extensions.some((x) => e.name.endsWith(x))) trouves.push(chemin);
