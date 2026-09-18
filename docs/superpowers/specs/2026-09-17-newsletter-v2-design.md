@@ -217,10 +217,17 @@ confirmez ci-dessous. »), le bouton **« Me désinscrire »** *(pas « Confirme
 | État affiché | Calcul |
 |---|---|
 | **Inscrit·e** | `consented_at` renseigné **et** `unsubscribed_at` vide |
-| **Désinscrit·e** | `unsubscribed_at` renseigné |
+| **Désinscrit·e** | `unsubscribed_at` renseigné **et** retrait par la personne (son lien) |
+| **Retiré·e au bar** | `unsubscribed_at` renseigné **et** retrait par l'admin (`fn_admin_set_subscription`) |
 | **Jamais demandé** | `consented_at` vide |
 
 - Chaque ligne porte **sa provenance et sa date** (« oui, 16/09 » · « import du bar, 12/09 »).
+- 🔴 **DEUX RETRAITS DISTINCTS, jamais fusionnés** : « **Désinscrit·e, elle-même 17/09** » (la
+  personne a cliqué son lien) ≠ « **Retiré·e au bar, 17/09** » (geste de l'admin). Le mot est une
+  **provenance**, pas un jugement — et sans cette distinction, Catherine ne peut pas savoir si sa
+  cliente est partie d'elle-même ou si c'est le bar : la fonction d'admin serait *datée* mais pas
+  *attribuée*, donc auditables « à moitié ». `fn_admin_set_subscription` écrit **la provenance en
+  même temps que la date**.
 - **Filtre « Jamais demandé »** = sa liste d'invitation, son outil de tous les jours.
 - **Compteur en mots** : « Envoyer à 12 personnes — celles qui ont dit oui » ; à zéro :
   « Personne n'a dit oui — rien à envoyer », bouton inactif. Deuxième ligne obligatoire :

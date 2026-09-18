@@ -1,5 +1,10 @@
 # BRIEF NEWSLETTER — Pessóra — 17/09/2026
 
+> 🔒 **RÈGLE DES DOCUMENTS.** *Tout item du brainstorm de Ken reste dans ce document. S'il gêne une
+> garde, on garde l'item et on contraint le **comment** — ou on demande avant. Aucun retrait sans une
+> ligne qui dit pourquoi.* Et ce qui n'est pas écrit dans ce que Claude lit n'existe pas pour lui :
+> une décision qui ne vit que dans le fil du chat sera réinventée (ou oubliée) à la passe suivante.
+
 > **Déclinaison technique :** `docs/superpowers/specs/2026-09-17-newsletter-v2-design.md` — **révision 2**
 > (les deux documents vivent sur la branche `docs/newsletter-v2-spec`). En cas de désaccord,
 > **ce brief gagne**.
@@ -223,6 +228,12 @@ téléphone** — c'est la seule preuve qui vaille, et elle se tire avec Ken.
 
 - Le nombre de tests exécutés fait partie de la preuve : **un run qui n'exécute rien ressemble
   exactement à une baseline**. Annonce le compte, pas le silence.
+- ⚠️ **Un compte absolu ne se cite qu'avec trois précisions** (règle du 17/09, mesurée deux fois) :
+  **la révision**, **la présence du `.env`**, et le fait que **« 10 rouges » = `cartStore` seul**.
+  Motif : `menuCatalog.test.ts` **ne se collecte pas** sans `.env` (erreur de chargement) → un
+  worktree nu perd **8 cas** en silence et ressemble à une régression. Un vert signé dans un
+  worktree nu est donc **plus faible** qu'il n'y paraît : copier `.env` avant de mesurer
+  (`cp /opt/data/repos/pessora/.env .env`).
 - La suite de contraste est fail-closed ; l'arbre de référence est celui de `main`.
 - Éprouve tes gardes **par mutation** (casse la garde, vérifie que le test rougit, restaure) :
   un test qui n'a jamais rougi ne prouve rien.
