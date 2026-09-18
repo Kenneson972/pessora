@@ -386,6 +386,29 @@ paiements **en production** (clé live). Son redéploiement se fait **seul**, av
 Ken**, une fois vérifié que le code de la branche est bien celui qui tourne aujourd'hui. **Personne ne
 le déploie « au passage »**, et **ni Claude ni Élise ne le font sans ce GO nommé.**
 
+**La commande de ④, avec le drapeau — il n'est pas négociable :**
+
+```
+npx supabase functions deploy stripe-webhook --no-verify-jwt --project-ref tulhiipucrnyejheuitv
+```
+
+`config.toml` **ne déclare aucune section `[functions.*]`** : un déploiement **nu** repart sur le
+**défaut** de la plateforme (`verify_jwt = True`) → les appels de Stripe prendraient
+`UNAUTHORIZED_NO_AUTH_HEADER` et **les confirmations de commande s'arrêteraient en silence**. État
+mesuré avant ④ : `stripe-webhook` est en `verify_jwt = False`, sa fonction répond `{"error":"Invalid
+signature"}` à un POST sans en-tête.
+
+⚠️ **Le contrôle de ④ se lit dans le CORPS, jamais dans le code HTTP — les deux cas rendent `401`** :
+
+| Corps de la réponse | Ce qui parle | Verdict |
+|---|---|---|
+| `{"error":"Invalid signature"}` | **la fonction** | ✅ Stripe arrive jusqu'à elle |
+| `{"code":"UNAUTHORIZED_NO_AUTH_HEADER",…}` | **la plateforme** | ❌ elle coupe — les commandes ne se confirment plus |
+
+*(Vérifié le 18/09 : le premier est le corps de `stripe-webhook`, le second celui de `send-newsletter`,
+dont la fonction protégée n'est pas atteinte. Un contrôle qui ne regarde que le `401` ne distingue
+pas les deux.)*
+
 **L'ORDRE COMPTE — les deux moitiés du même maillon.** La migration (`newsletter_v2.sql`) est appliquée
 par **@alcyone**, après relecture et **go nommé de Ken** (§0.4) ; les fonctions sont déployées par
 **Ken**. **Ne déploie pas les fonctions avant que la migration soit en base** : elles parlent à des
