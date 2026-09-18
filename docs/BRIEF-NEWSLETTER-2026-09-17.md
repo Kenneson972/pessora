@@ -439,4 +439,36 @@ déploiement est fait — il ne le sera qu'après le GO.
 
 ---
 
+## 10. REPRISE APRÈS LE MERGE DIRECT DU 18/09 — `main` n'est PAS complet
+
+> Mesuré par Élise le 18/09 à 15h05 sur `origin/main` = `f621fbd`.
+
+**Le lot est passé sur `main` par un merge direct, sans la gate.** Ce qui est **bien** dedans :
+les **14 couleurs** (`#6b6b6b`, vérifié fichier par fichier), le **câblage `List-Unsubscribe`**
+vers la fonction, les gabarits et le CRUD. Ce qui **manque**, et c'est mesuré :
+
+| Manque | État sur `main` |
+|---|---|
+| La correction de l'étiquette « Paiement confirmé » | **ABSENTE** — `sendOrderConfirmation.ts` l. 82 garde `color:#1E3529;opacity:0.5` = **2,91:1** |
+| La garde des mails | **ABSENTE** (`mailTemplateContrast.test.ts` n'est pas sur `main`) — elle vit sur `lot/lyra-garde-mail` (`9a6a885`), **5 commits** d'écart avec `main` → **rebase nécessaire**, plus un fast-forward |
+| Le revoke `check_rate_limit` | **appliqué ad-hoc en base, non versionné** → drift à fermer par un fichier de migration |
+
+**Ce que la cliente reçoit aujourd'hui, dit exactement** : `stripe-webhook` **n'a pas été
+redéployé** (corps déployé lu : `#999` ×3, `#888` ×3, `#6b6b6b` ×0). Le mail de commande part donc
+toujours avec ses **trois** défauts d'origine — mais **rien n'est perdu** : un **seul** redéploiement,
+**après** la correction de l'étiquette, les corrige tous les trois d'un coup.
+
+**Ordre de reprise (aucune étape sautable) :**
+1. **@lyra** rebase sa garde sur `main` → **@alcyone** merge (un seul SHA, la garde devient la preuve) ;
+2. **@alcyone** commite le revoke en **fichier de migration** (postérieur à `20260917210111`) ;
+3. **@vela** recette live (les 4 signatures + `42501`) ;
+4. **`stripe-webhook`** : redéploiement **seul**, sur **GO nommé de Ken** — et **seulement après 1 et 2**,
+   sinon on remet en production le mail à 2,91:1.
+
+**Le fait à garder, sans le maquiller :** la gate n'a pas servi sur ce merge. Le code corrigé est bien
+en ligne dans le repo, mais **sans son test** — c'est-à-dire sans rien qui empêche le prochain commit
+de le redéfaire. C'est exactement ce que la garde existe pour empêcher.
+
+---
+
 *Élise — 17/09/2026, d'après les arbitrages de la salle PESSORA 2.*
