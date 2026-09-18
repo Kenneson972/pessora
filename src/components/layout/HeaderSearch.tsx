@@ -9,19 +9,12 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Calendar, Package } from 'lucide-react';
 import { Kbd } from '@heroui/react';
 import { Command, EmptyState } from '@heroui-pro/react';
-import { menuItems as staticMenuItems } from '../../data/menuData';
+import { menuItems as staticMenuItems, getPillar, PILLAR_NAMES } from '../../data/menuData';
 import type { MenuItem } from '../../data/menuData';
 import { loadMenuCatalog } from '../../lib/menuCatalog';
 import { supabase } from '../../lib/supabaseClient';
 import { useSearch } from '../../hooks/useSearch';
 import type { SearchEvent } from '../../hooks/useSearch';
-
-const CAT_LABELS: Record<string, string> = {
-  wellness: 'Wellness',
-  energie: 'Énergie',
-  shakes: 'Shake',
-  coffee: 'Coffee',
-};
 
 const TYPE_LABELS: Record<string, string> = {
   run_club: 'Course',
@@ -221,7 +214,7 @@ function SearchPalette({
                         <Command.Item
                           key={`menu-${item.id}`}
                           id={`/menu/${item.id}`}
-                          textValue={`${item.name} ${CAT_LABELS[item.category] ?? item.category}`}
+                          textValue={`${item.name} ${PILLAR_NAMES[getPillar(item.category)]}`}
                         >
                           <span
                             className="inline-flex h-6 w-6 shrink-0 items-center justify-center text-[18px]"
@@ -232,7 +225,7 @@ function SearchPalette({
                           <div className="flex min-w-0 flex-1 flex-col">
                             <span className="truncate text-[13px] font-normal">{item.name}</span>
                             <span className="text-[12px] uppercase tracking-[0.2em] text-black/60">
-                              {CAT_LABELS[item.category] ?? item.category} · {item.price}€
+                              {PILLAR_NAMES[getPillar(item.category)]} · {item.price}€
                             </span>
                           </div>
                         </Command.Item>
@@ -255,7 +248,7 @@ function SearchPalette({
                           <Command.Item
                             key={`b-${item.id}`}
                             id={`/menu/${item.id}`}
-                            textValue={`${item.name} ${CAT_LABELS[item.category] ?? item.category}`}
+                            textValue={`${item.name} ${PILLAR_NAMES[getPillar(item.category)]}`}
                           >
                             <span
                               className="inline-flex h-6 w-6 shrink-0 items-center justify-center text-[18px]"
@@ -266,7 +259,7 @@ function SearchPalette({
                             <div className="flex min-w-0 flex-1 flex-col">
                               <span className="truncate text-[13px] font-normal">{item.name}</span>
                               <span className="text-[12px] uppercase tracking-[0.2em] text-black/60">
-                                {CAT_LABELS[item.category] ?? item.category} · {item.price}€
+                                {PILLAR_NAMES[getPillar(item.category)]} · {item.price}€
                               </span>
                             </div>
                           </Command.Item>
@@ -299,7 +292,7 @@ function SearchPalette({
                             <div className="flex min-w-0 flex-1 flex-col">
                               <span className="truncate text-[13px] font-normal">{p.name}</span>
                               <span className="text-[10px] uppercase tracking-[0.2em] text-black/60">
-                                {CAT_LABELS[p.category] ?? p.category}
+                                {PILLAR_NAMES[getPillar(p.category)]}
                                 {p.price != null
                                   ? ` · ${p.price.toFixed(2).replace('.', ',')}€`
                                   : ''}

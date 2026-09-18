@@ -7,7 +7,7 @@ import { ShoppingBag } from 'lucide-react';
 import { SectionTitle } from '../components/ui/SectionTitle';
 import { ItemListJsonLd } from '../components/seo/ProductJsonLd';
 import { ProductCard } from '../components/ui/ProductCard';
-import { categoryNames, badgeLabels, type MenuItem } from '../data/menuData';
+import { badgeLabels, getPillar, PILLAR_NAMES, type MenuItem, type Pillar } from '../data/menuData';
 import { getAvailableSizes } from '../lib/cartLine';
 import { useMenuCatalog } from '../hooks/useMenuCatalog';
 import { useStaggerReveal } from '../lib/motionReveal';
@@ -24,7 +24,7 @@ function itemMatchesQuery(item: MenuItem, query: string): boolean {
   const q = normalizeStr(query.trim());
   if (!q) return true;
   const blob = normalizeStr(
-    [item.name, item.description ?? '', categoryNames[item.category]].join(' ')
+    [item.name, item.description ?? '', PILLAR_NAMES[getPillar(item.category)]].join(' ')
   );
   return blob.includes(q);
 }
@@ -36,12 +36,11 @@ function formatMacros(item: MenuItem): string | undefined {
   return parts.length ? parts.join(' · ') : undefined;
 }
 
-/** Ordre d'affichage des sections « Tout » (grille unique, même densité pour toutes les gammes). */
-const CATEGORY_GROUPS = [
-  { label: 'Wellness', key: 'wellness' as const },
-  { label: 'Énergie Drink', key: 'energie' as const },
-  { label: 'Shakes Protéinés', key: 'shakes' as const },
-  { label: 'Coffee', key: 'coffee' as const },
+/** Ordre d'affichage des sections « Tout » — 3 piliers (nav MEGA THÉ / PROTEIN SHAKE / COFFEE). */
+const PILLAR_GROUPS: { label: string; key: Pillar }[] = [
+  { label: PILLAR_NAMES.mega_the, key: 'mega_the' },
+  { label: PILLAR_NAMES.protein_shake, key: 'protein_shake' },
+  { label: PILLAR_NAMES.coffee, key: 'coffee' },
 ];
 const PRODUCT_GRID_CLASS =
   'grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 lg:gap-x-4 lg:gap-y-8';
@@ -75,7 +74,7 @@ const Menu = () => {
   const isSearchMode = searchQuery.length > 0;
 
   const filterKey = searchParams.get('gamme');
-  const activeCategory = !filterKey ? null : filterKey as MenuItem['category'];
+  const activePillar = !filterKey ? null : filterKey as Pillar;
 
   const clearSearch = () => {
     const next = new URLSearchParams(searchParams);
@@ -86,18 +85,18 @@ const Menu = () => {
   /** En recherche, respecter ?gamme= : une seule section si filtre actif (sinon toutes les gammes). */
   const searchSections = useMemo(() => {
     if (!isSearchMode) return [];
-    const groups = activeCategory
-      ? CATEGORY_GROUPS.filter((g) => g.key === activeCategory)
-      : CATEGORY_GROUPS;
+    const groups = activePillar
+      ? PILLAR_GROUPS.filter((g) => g.key === activePillar)
+      : PILLAR_GROUPS;
     return groups
       .map(({ label, key }) => {
         const items = catalogItems
-          .filter((i) => i.category === key)
+          .filter((i) => getPillar(i.category) === key)
           .filter((i) => itemMatchesQuery(i, searchQuery));
         return { label, key, items };
       })
       .filter((s) => s.items.length > 0);
-  }, [isSearchMode, searchQuery, catalogItems, activeCategory]);
+  }, [isSearchMode, searchQuery, catalogItems, activePillar]);
 
   const searchTotalCount = useMemo(
     () => searchSections.reduce((n, s) => n + s.items.length, 0),
@@ -157,7 +156,7 @@ const Menu = () => {
     return (
       <motion.div key={menuItem.id} variants={staggerItem} className={CARD_ITEM_CLASS}>
         <ProductCard
-          tag={categoryNames[menuItem.category]}
+          tag={PILLAR_NAMES[getPillar(menuItem.category)]}
           name={menuItem.name}
           macros={formatMacros(menuItem)}
           price={`${effectivePrice}€`}
@@ -181,7 +180,7 @@ const Menu = () => {
     animate: 'visible' as const,
   };
 
-  const singleItems = activeCategory ? catalogItems.filter((i) => i.category === activeCategory) : [];
+  const singleItems = activePillar ? catalogItems.filter((i) => getPillar(i.category) === activePillar) : [];
 
   return (
     <div className="min-h-screen bg-white">
@@ -260,17 +259,13 @@ const Menu = () => {
                 <Segment.Separator />
                 Tout
               </Segment.Item>
-              <Segment.Item id="wellness">
+              <Segment.Item id="mega_the">
                 <Segment.Separator />
-                Wellness
+                Mega Thé
               </Segment.Item>
-              <Segment.Item id="energie">
+              <Segment.Item id="protein_shake">
                 <Segment.Separator />
-                Énergie
-              </Segment.Item>
-              <Segment.Item id="shakes">
-                <Segment.Separator />
-                Shakes
+                Protein Shake
               </Segment.Item>
               <Segment.Item id="coffee">
                 <Segment.Separator />
@@ -321,9 +316,9 @@ const Menu = () => {
             </EmptyState>
           )
         ) : !filterKey ? (
-          /* Mode « Tout » : groupé par gamme avec titres de section */
-          CATEGORY_GROUPS.map(({ label, key }) => {
-            const items = catalogItems.filter((i) => i.category === key);
+          /* Mode « Tout » : groupé par pilier avec titres de section */
+          PILLAR_GROUPS.map(({ label, key }) => {
+            const items = catalogItems.filter((i) => getPillar(i.category) === key);
             if (items.length === 0) return null;
             return (
               <section key={key} className="pt-10 first:pt-0 md:pt-14 md:first:pt-0">
