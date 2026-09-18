@@ -6,6 +6,13 @@
 > 17/09 et il lui manquait six exigences. Tout ce qui change est justifié par un arbitrage daté,
 > pas par un goût.
 >
+> **PÉRIMÈTRE — les trois demandes du brainstorm de Ken sont TOUTES dedans** : ① upload d'image
+> par glisser-déposer, ② types de campagne **avec leurs gabarits de départ**, ③ CRUD abonnés
+> (date d'inscription, désabonner/réabonner, badge « membre du site »). Ce que cette révision
+> change, ce n'est pas **ce qui est livré** mais **comment** : aucun de ces gestes ne doit
+> écrire un consentement en silence (§1.2, §6). Si un jour un item du brainstorm semble disparaître
+> d'un document, c'est un bug de rédaction, pas une décision — on le dit.
+>
 > **Le brief `docs/BRIEF-NEWSLETTER-2026-09-17.md` (même branche) reste la source** : règles de
 > travail, pièges, **copie client validée**, design, et **critères de recette**. Ce document-ci en
 > est la déclinaison technique — en cas de désaccord entre les deux, **le brief gagne**.
@@ -184,9 +191,16 @@ confirmez ci-dessous. »), le bouton **« Me désinscrire »** *(pas « Confirme
 
 - **Upload d'image** : drag & drop vers `newsletter-images`, aperçu, retrait. Réutilise le
   composant d'upload existant (pas de nouveau composant générique) + conversion HEIC (§1.6).
-- **Sélecteur de type** (4 valeurs). ⚠️ **Les gabarits de sujet/corps de la rev 1 sont de la copie
-  NEUVE adressée à ses clientes** : ils ne se glissent pas. Champs laissés **vides avec un repère**
-  (« votre sujet »). Si on veut des gabarits, **ils se valident avant** (Ken / Catherine).
+- **Sélecteur de type** (4 valeurs : Promo/Nouveau produit · Challenge 21j · Événement · Info
+  générale) **avec pré-remplissage** : changer de type **avant** d'avoir tapé quoi que ce soit
+  remplit sujet + corps avec un **brouillon** de départ, modifiable ; si du texte est déjà saisi,
+  le changement de type ne l'écrase pas (confirmation).
+  ⚠️ **Ces 4 brouillons sont de la copie neuve destinée à ses clientes** : ils partent marqués
+  **« brouillon — à personnaliser »**, l'admin peut tout réécrire, et **Ken les valide** (ou les
+  fait valider par Catherine) — c'est une validation à faire, **pas une raison de retirer la
+  fonction**. Extraits de départ : Promo *« Nouveau à la carte »* · Challenge *« Le prochain
+  Challenge 21 jours ouvre bientôt »* · Événement *« On vous attend au bar ! »* · Info : sujet
+  libre, corps vide (pas de gabarit forcé).
 - **L'écran de la seconde avant l'envoi** (absent de la rev 1) — le seul geste **irréversible** de
   son site : ce qui part, à **qui** (« 12 personnes — celles qui ont dit oui »), **l'aperçu
   téléphone**, et la phrase qui dit la vérité : *« Tu ne pourras plus le modifier après l'envoi. »*
@@ -198,7 +212,7 @@ confirmez ci-dessous. »), le bouton **« Me désinscrire »** *(pas « Confirme
 - **Historique** : lit `newsletter_sends` agrégé par campagne (partis / échoués / inconnus), plus
   les 20 dernières campagnes — au lieu du `useState` perdu au refresh.
 
-## 6. Écran abonnés — **trois états, calculés, jamais un toggle**
+## 6. Écran abonnés — **trois états en mots**, et des gestes qui écrivent des dates
 
 | État affiché | Calcul |
 |---|---|
@@ -213,12 +227,27 @@ confirmez ci-dessous. »), le bouton **« Me désinscrire »** *(pas « Confirme
   « 34 personnes ont dit non ou n'ont jamais été demandées : elles ne recevront rien. »
 - Lisible **en noir et blanc** : la couleur renforce, elle ne porte jamais l'information.
 - **Export CSV** : `email, consented_at, source` **+ l'état en mots** (la date, pas un booléen nu).
+- **Désabonner / réabonner quelqu'un depuis l'admin** (demande de Ken) : la fonction existe et
+  elle est **nécessaire** — quelqu'un appelle le bar pour demander à sortir de la liste. Elle
+  passe par **une fonction dédiée** `fn_admin_set_subscription(subscriber_id, action)`
+  **SECURITY DEFINER**, réservée à `is_admin()`, qui **écrit une date** (`unsubscribed_at = now()`
+  ou un `consented_at` neuf) — **jamais un simple basculement de booléen**. C'est ce qui rend le
+  geste auditable, et c'est **exactement** ce que la règle « aucun UPDATE sur les abonnés »
+  protège : la règle vise le **flip silencieux**, pas l'action de l'admin. Confirmation avant
+  l'action (dialogue existant), et l'état affiché suit les **trois mots** du §6.
+- **Badge « membre du site »** (demande de Ken) : affiché quand l'e-mail de l'abonné existe dans
+  `profiles.email` — **une seule requête** au chargement de la liste (`select email from profiles
+  where email = any(emails)`), jointure côté client, **pas de colonne dénormalisée**.
+- **Date d'inscription** (demande de Ken) : `created_at` est déjà en base — il est **affiché**
+  (`dd/mm/yyyy`), à côté de la provenance et de la date de consentement.
 - La **suppression définitive** (RGPD, droit à l'oubli) reste inchangée et **distincte** :
   désabonner ne supprime pas la ligne, effacer efface vraiment.
 
-⚠️ La rev 1 écrivait « **Statut** avec **toggle Actif/Désabonné** » : c'est **un autre vocabulaire**
-(les trois mots sont ceux de la cliente) **et l'écriture interdite** (aucun UPDATE sur les abonnés).
-Les deux ne cohabitent pas — ça se remplace, ça ne s'ajoute pas.
+⚠️ Ce qui est interdit n'est pas **le geste de l'admin** — c'est **le basculement muet d'un
+booléen**. La rev 1 affichait « Statut : toggle Actif/Désabonné » : un mot qui n'est pas celui de
+la cliente **et** un flip sans trace. Ici : l'**affichage** porte les trois mots (calculés sur les
+colonnes) et l'**action** passe par `fn_admin_set_subscription` (§6, plus haut), qui écrit une
+date. On garde la fonction **et** la garde.
 
 ---
 
