@@ -6,6 +6,10 @@ import { ConfirmDialog } from '../../components/dashboard/ConfirmDialog';
 import { DashPageHeader } from '../../components/dashboard/primitives';
 import { DASH_MAIN_PAD } from '../../components/dashboard/layoutClasses';
 import { AdminErrorAlert } from '../../components/dashboard/AdminErrorAlert';
+import { ProductImageDropzone } from '../../components/admin/ProductImageDropzone';
+import { uploadPublicImage } from '../../lib/storageUpload';
+import { toJpegSiHeic } from '../../lib/heicToJpeg';
+import { NEWSLETTER_TYPES, NEWSLETTER_TYPE_LABELS, NEWSLETTER_TYPE_DRAFTS, type NewsletterType } from '../../lib/newsletterTypes';
 
 type AnnouncementType = SiteAnnouncement['type'];
 
@@ -75,17 +79,38 @@ const AdminCommunications = () => {
     { kind: 'announcement'; id: string } | { kind: 'subscriber'; id: string } | { kind: 'contact'; id: string } | null
   >(null);
   const [commConfirmLoading, setCommConfirmLoading] = useState(false);
+  const [nlType, setNlType] = useState<NewsletterType>('info');
   const [nlSubject, setNlSubject] = useState('');
   const [nlBody, setNlBody] = useState('');
   const [nlImage, setNlImage] = useState('');
+  const [nlUploading, setNlUploading] = useState(false);
+  const [nlUploadError, setNlUploadError] = useState<string | null>(null);
   const [nlStatus, setNlStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [nlLastSent, setNlLastSent] = useState<{ subject: string; sent: number; total: number; at: string } | null>(null);
   const [nlCampaignId, setNlCampaignId] = useState<string | null>(null);
   const [nlConfirmOpen, setNlConfirmOpen] = useState(false);
+  const [nlHistory, setNlHistory] = useState<
+    { id: string; type: string; subject: string; created_at: string; sent: number; failed: number; unknown: number; total: number }[]
+  >([]);
   // newsletter_sendable — la vue, jamais la table brute (arbitrage #4 du brief) :
   // c'est elle qui décide qui reçoit vraiment, donc c'est elle qui alimente le
   // compteur d'envoi ET l'export CSV.
-  const [sendable, setSendable] = useState<{ email: string; created_at: string }[]>([]);
+  const [sendable, setSendable] = useState<{ email: string; consented_at: string }[]>([]);
+  // Badge « membre du site » : emails présents dans profiles, une seule requête.
+  const [memberEmails, setMemberEmails] = useState<Set<string>>(new Set());
+  const [subscriberFilter, setSubscriberFilter] = useState<'all' | 'never_asked'>('all');
+  const [subscriptionActionId, setSubscriptionActionId] = useState<string | null>(null);
+
+  const nlSubscriberStatus = (s: NewsletterSubscriber): 'inscrit' | 'desinscrit' | 'jamais_demande' => {
+    if (s.unsubscribed_at) return 'desinscrit';
+    if (!s.consented_at) return 'jamais_demande';
+    return 'inscrit';
+  };
+  const NL_STATUS_LABELS: Record<'inscrit' | 'desinscrit' | 'jamais_demande', string> = {
+    inscrit: 'Inscrit·e',
+    desinscrit: 'Désinscrit·e',
+    jamais_demande: 'Jamais demandé',
+  };
 
   const closeCommConfirm = useCallback(() => setCommConfirm(null), []);
 
@@ -100,7 +125,7 @@ const AdminCommunications = () => {
     try {
       const payload = isResume
         ? { campaignId: nlCampaignId }
-        : { subject: nlSubject.trim(), body: nlBody.trim(), image_url: nlImage.trim() || undefined };
+        : { type: nlType, subject: nlSubject.trim(), body: nlBody.trim(), image_url: nlImage.trim() || undefined };
       const res = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-newsletter`,
         {
@@ -121,6 +146,7 @@ const AdminCommunications = () => {
         setNlImage('');
         setNlCampaignId(null);
       }
+      loadHistory();
     } catch {
       setNlStatus('error');
     }
@@ -139,22 +165,54 @@ const AdminCommunications = () => {
 
   const loadSubscribers = useCallback(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase as any)
+    const db = supabase as any;
+    const { data, error } = await db
       .from('newsletter_subscribers')
       .select('*')
       .order('created_at', { ascending: false });
     if (error) { setLoadError('Impossible de charger les abonnés. Vérifiez votre connexion.'); return; }
-    setSubscribers((data ?? []) as NewsletterSubscriber[]);
+    const rows = (data ?? []) as NewsletterSubscriber[];
+    setSubscribers(rows);
+
+    // Badge « membre du site » : une seule requête, jointure côté client.
+    const emails = rows.map((s) => s.email);
+    if (emails.length) {
+      const { data: profileRows } = await db.from('profiles').select('email').in('email', emails);
+      setMemberEmails(new Set((profileRows ?? []).map((p: { email: string | null }) => p.email).filter(Boolean) as string[]));
+    } else {
+      setMemberEmails(new Set());
+    }
   }, []);
 
   const loadSendable = useCallback(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any)
       .from('newsletter_sendable')
-      .select('email, created_at')
-      .order('created_at', { ascending: false });
+      .select('email, consented_at')
+      .order('consented_at', { ascending: false });
     if (error) { setLoadError('Impossible de charger la liste d\'envoi. Vérifiez votre connexion.'); return; }
-    setSendable((data ?? []) as { email: string; created_at: string }[]);
+    setSendable((data ?? []) as { email: string; consented_at: string }[]);
+  }, []);
+
+  const loadHistory = useCallback(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const db = supabase as any;
+    const { data: campaigns, error: campErr } = await db
+      .from('newsletter_campaigns')
+      .select('id, type, subject, created_at')
+      .order('created_at', { ascending: false })
+      .limit(20);
+    if (campErr || !campaigns?.length) { setNlHistory([]); return; }
+    const ids = campaigns.map((c: { id: string }) => c.id);
+    const { data: sends } = await db.from('newsletter_sends').select('campaign_id, status').in('campaign_id', ids);
+    const rows = campaigns.map((c: { id: string; type: string; subject: string; created_at: string }) => {
+      const forCampaign = (sends ?? []).filter((s: { campaign_id: string }) => s.campaign_id === c.id);
+      const sent = forCampaign.filter((s: { status: string }) => s.status === 'delivered').length;
+      const failed = forCampaign.filter((s: { status: string }) => s.status === 'failed').length;
+      const unknown = forCampaign.filter((s: { status: string }) => s.status === 'unknown').length;
+      return { id: c.id, type: c.type, subject: c.subject, created_at: c.created_at, sent, failed, unknown, total: forCampaign.length };
+    });
+    setNlHistory(rows);
   }, []);
 
   const loadContactRequests = useCallback(async () => {
@@ -170,9 +228,9 @@ const AdminCommunications = () => {
   const loadAll = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
-    await Promise.all([loadAnnouncements(), loadSubscribers(), loadSendable(), loadContactRequests()]);
+    await Promise.all([loadAnnouncements(), loadSubscribers(), loadSendable(), loadHistory(), loadContactRequests()]);
     setLoading(false);
-  }, [loadAnnouncements, loadSubscribers, loadSendable, loadContactRequests]);
+  }, [loadAnnouncements, loadSubscribers, loadSendable, loadHistory, loadContactRequests]);
 
   const toggleContactRead = async (r: ContactRequest) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -284,6 +342,26 @@ const AdminCommunications = () => {
     }
   }, [commConfirm, loadAnnouncements, loadSubscribers, loadSendable, loadContactRequests]);
 
+  // Geste admin auditable : passe par fn_admin_set_subscription (SECURITY DEFINER),
+  // écrit une date — jamais un UPDATE direct sur newsletter_subscribers (interdit,
+  // cf. migration). Confirmation avant l'action.
+  const toggleSubscription = useCallback(async (subscriberId: string, action: 'unsubscribe' | 'resubscribe') => {
+    setSubscriptionActionId(subscriberId);
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any).rpc('fn_admin_set_subscription', {
+        p_subscriber_id: subscriberId,
+        p_action: action,
+      });
+      if (error) throw new Error(error.message);
+      await Promise.all([loadSubscribers(), loadSendable()]);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSubscriptionActionId(null);
+    }
+  }, [loadSubscribers, loadSendable]);
+
   const handleToggleActive = async (a: SiteAnnouncement) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (supabase as any).from('site_announcements').update({ active: !a.active }).eq('id', a.id);
@@ -291,8 +369,11 @@ const AdminCommunications = () => {
   };
 
   const exportCsv = () => {
-    const header = 'email,date_inscription\n';
-    const rows = sendable.map((s) => `${s.email},${s.created_at}`).join('\n');
+    // §6 : email, consented_at, source + l'état en mots — pas un booléen nu.
+    const header = 'email,consented_at,source,statut\n';
+    const rows = subscribers
+      .map((s) => `${s.email},${s.consented_at ?? ''},${s.source},${NL_STATUS_LABELS[nlSubscriberStatus(s)]}`)
+      .join('\n');
     const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -585,6 +666,35 @@ const AdminCommunications = () => {
 
             <div className="space-y-4">
               <div>
+                <p className="mb-1.5 text-[9px] font-normal uppercase tracking-[0.18em] text-black/60">Type</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {NEWSLETTER_TYPES.map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      disabled={nlStatus === 'sending'}
+                      onClick={() => {
+                        setNlType(t);
+                        // Pré-remplissage seulement si rien n'a encore été tapé — ne
+                        // jamais écraser un texte déjà saisi par l'admin.
+                        if (!nlSubject.trim() && !nlBody.trim()) {
+                          setNlSubject(NEWSLETTER_TYPE_DRAFTS[t].subject);
+                          setNlBody(NEWSLETTER_TYPE_DRAFTS[t].body);
+                        }
+                      }}
+                      className={`h-9 rounded-full border px-4 text-[10px] font-normal uppercase tracking-[0.1em] transition-colors disabled:opacity-40 ${
+                        nlType === t ? 'border-sapin bg-sapin text-white' : 'border-noir/12 text-black/60 hover:border-noir/25 hover:text-black'
+                      }`}
+                    >
+                      {NEWSLETTER_TYPE_LABELS[t]}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-1.5 text-[10px] font-light text-black/60">
+                  Brouillon — à personnaliser avant l&apos;envoi.
+                </p>
+              </div>
+              <div>
                 <label htmlFor="nl-subject" className="mb-1 block text-[9px] font-normal uppercase tracking-[0.18em] text-black/40">
                   Sujet
                 </label>
@@ -600,20 +710,36 @@ const AdminCommunications = () => {
                 />
               </div>
               <div>
-                <label htmlFor="nl-image" className="mb-1 block text-[9px] font-normal uppercase tracking-[0.18em] text-black/40">
-                  Image (URL, optionnel)
-                </label>
-                <input
-                  id="nl-image"
-                  type="url"
-                  value={nlImage}
-                  onChange={(e) => setNlImage(e.target.value)}
-                  placeholder="https://…"
+                <p className="mb-1 text-[9px] font-normal uppercase tracking-[0.18em] text-black/60">
+                  Image (optionnel)
+                </p>
+                <ProductImageDropzone
+                  imageUrl={nlImage}
+                  uploading={nlUploading}
                   disabled={nlStatus === 'sending'}
-                  className="w-full rounded-[2px] border border-noir/[0.12] bg-surface-muted px-4 py-2.5 text-[13px] text-black placeholder:text-black/30 outline-none focus:border-noir/30"
+                  onFile={async (file) => {
+                    setNlUploading(true);
+                    setNlUploadError(null);
+                    try {
+                      const converted = await toJpegSiHeic(file);
+                      const url = await uploadPublicImage('newsletter-images', converted, 'campaigns');
+                      setNlImage(url);
+                    } catch (err) {
+                      setNlUploadError(err instanceof Error ? err.message : 'Upload impossible');
+                    } finally {
+                      setNlUploading(false);
+                    }
+                  }}
                 />
+                {nlUploadError && <p className="mt-1.5 text-[11px] text-red-600">{nlUploadError}</p>}
                 {nlImage && (
-                  <img src={nlImage} alt="Aperçu" className="mt-2 max-h-32 rounded-[2px] object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setNlImage('')}
+                    className="mt-1.5 text-[10px] font-light text-black/60 underline underline-offset-2 hover:text-black"
+                  >
+                    Retirer l&apos;image
+                  </button>
                 )}
               </div>
               <div>
@@ -645,12 +771,14 @@ Nous sommes ravis de vous annoncer…"
                     ? `Envoi à ${sendable.length} contact${sendable.length !== 1 ? 's' : ''}…`
                     : isPartial
                       ? `Reprendre (${nlLastSent!.total - nlLastSent!.sent} restants)`
-                      : `Envoyer à ${sendable.length} contact${sendable.length !== 1 ? 's' : ''}`;
+                      : sendable.length === 0
+                        ? "Personne n'a dit oui — rien à envoyer"
+                        : `Envoyer à ${sendable.length} contact${sendable.length !== 1 ? 's' : ''}`;
                   return (
                     <button
                       type="button"
                       onClick={() => (isPartial ? sendNewsletter() : setNlConfirmOpen(true))}
-                      disabled={(!isPartial && (!nlSubject.trim() || !nlBody.trim())) || nlStatus === 'sending' || sendable.length === 0}
+                      disabled={(!isPartial && (!nlSubject.trim() || !nlBody.trim())) || nlStatus === 'sending' || nlUploading || sendable.length === 0}
                       className="inline-flex h-11 min-h-[44px] items-center gap-2 rounded-[2px] bg-sapin px-6 text-[10px] font-medium uppercase tracking-[0.1em] text-white hover:bg-sapin/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
                       {nlStatus === 'sending' ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />} {label}
@@ -670,6 +798,22 @@ Nous sommes ravis de vous annoncer…"
                   <p className="text-[12px] font-medium text-red-600">Erreur lors de l&apos;envoi. Réessayez.</p>
                 )}
               </div>
+
+              {(nlSubject.trim() || nlBody.trim()) && (
+                <div className="pt-2">
+                  <p className="mb-2 text-[9px] font-normal uppercase tracking-[0.18em] text-black/60">Aperçu téléphone</p>
+                  <div className="mx-auto w-[300px] overflow-hidden rounded-[10px] border border-noir/[0.12] bg-white shadow-sm">
+                    <div className="bg-sapin px-5 py-4 text-center">
+                      <p className="text-[10px] font-normal uppercase tracking-[0.08em] text-white/70">PessÓra</p>
+                    </div>
+                    {nlImage && <img src={nlImage} alt="" className="block w-full" />}
+                    <div className="px-4 py-4">
+                      <p className="mb-2 font-serif text-[15px] font-normal text-black">{nlSubject || 'Sujet…'}</p>
+                      <p className="whitespace-pre-line text-[12px] leading-relaxed text-black/70">{nlBody || 'Message…'}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -679,11 +823,11 @@ Nous sommes ravis de vous annoncer…"
             </div>
           )}
 
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-4">
             <p className="text-[12px] text-black/60">
-              {sendable.length} contact{sendable.length !== 1 ? 's' : ''} recevront cette newsletter — export CSV pour Mailchimp / Brevo / envoi manuel.
+              {sendable.length} contact{sendable.length !== 1 ? 's' : ''} recevront cette newsletter — celles qui ont dit oui.
             </p>
-            {sendable.length > 0 && (
+            {subscribers.length > 0 && (
               <button
                 type="button"
                 onClick={exportCsv}
@@ -693,6 +837,71 @@ Nous sommes ravis de vous annoncer…"
               </button>
             )}
           </div>
+          {(() => {
+            const excluded = subscribers.filter((s) => nlSubscriberStatus(s) !== 'inscrit').length;
+            return (
+              <p className="mb-6 text-[11px] font-light text-black/60">
+                {excluded} personne{excluded !== 1 ? 's' : ''} {excluded !== 1 ? 'ont' : 'a'} dit non ou n&apos;{excluded !== 1 ? 'ont' : 'a'} jamais été demandée{excluded !== 1 ? 's' : ''} : elle{excluded !== 1 ? 's' : ''} ne recev{excluded !== 1 ? 'ront' : 'ra'} rien.
+              </p>
+            );
+          })()}
+
+          {nlHistory.length > 0 && (
+            <div className="mb-8 overflow-hidden rounded-[2px] border border-noir/[0.06] bg-white">
+              <div className="border-b border-noir/[0.06] bg-noir/[0.02] px-4 py-2.5">
+                <p className="text-[9px] font-normal uppercase tracking-[0.18em] text-black/60">Historique des envois</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-[12px]">
+                  <thead>
+                    <tr className="border-b border-noir/[0.06] text-[9px] font-normal uppercase tracking-[0.18em] text-black/60">
+                      <th className="px-4 py-2.5">Type</th>
+                      <th className="px-4 py-2.5">Sujet</th>
+                      <th className="px-4 py-2.5">Date</th>
+                      <th className="px-4 py-2.5">Résultat</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {nlHistory.map((h) => (
+                      <tr key={h.id} className="border-b border-noir/[0.04] last:border-0">
+                        <td className="px-4 py-2.5 text-black/60">{NEWSLETTER_TYPE_LABELS[h.type as NewsletterType] ?? h.type}</td>
+                        <td className="max-w-[220px] truncate px-4 py-2.5 font-normal text-black">{h.subject}</td>
+                        <td className="px-4 py-2.5 text-black/60">
+                          {new Date(h.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                        </td>
+                        <td className="px-4 py-2.5 text-black/60">
+                          {h.sent}/{h.total} partis
+                          {h.failed + h.unknown > 0 && <span className="text-black/40"> — {h.failed} échoué{h.failed !== 1 ? 's' : ''}, {h.unknown} inconnu{h.unknown !== 1 ? 's' : ''}</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          <div className="mb-4 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setSubscriberFilter('all')}
+              className={`h-9 rounded-full border px-4 text-[10px] font-normal uppercase tracking-[0.1em] transition-colors ${
+                subscriberFilter === 'all' ? 'border-sapin bg-sapin text-white' : 'border-noir/12 text-black/60 hover:border-noir/25'
+              }`}
+            >
+              Tous
+            </button>
+            <button
+              type="button"
+              onClick={() => setSubscriberFilter('never_asked')}
+              className={`h-9 rounded-full border px-4 text-[10px] font-normal uppercase tracking-[0.1em] transition-colors ${
+                subscriberFilter === 'never_asked' ? 'border-sapin bg-sapin text-white' : 'border-noir/12 text-black/60 hover:border-noir/25'
+              }`}
+            >
+              Jamais demandé
+            </button>
+          </div>
+
           {subscribers.length === 0 ? (
             <p className="text-[12px] text-black/40">Aucune inscription pour l’instant — le formulaire est dans le pied de page du site.</p>
           ) : (
@@ -702,30 +911,73 @@ Nous sommes ravis de vous annoncer…"
                 <thead>
                   <tr className="border-b border-noir/[0.06] bg-noir/[0.02] text-[9px] font-normal uppercase tracking-[0.18em] text-black/35">
                     <th className="px-4 py-3">Email</th>
+                    <th className="px-4 py-3">Statut</th>
+                    <th className="px-4 py-3">Provenance</th>
                     <th className="px-4 py-3">Inscription</th>
                     <th className="px-4 py-3 text-right"> </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {subscribers.map((s) => (
-                    <tr key={s.id} className="border-b border-noir/[0.04]">
-                      <td className="px-4 py-3 font-normal text-black">{s.email}</td>
-                      <td className="px-4 py-3 text-black/45">
-                        {new Date(s.created_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <button
-                          type="button"
-                          onClick={() => setCommConfirm({ kind: 'subscriber', id: s.id })}
-                          disabled={deleting === s.id}
-                          className="inline-flex h-11 w-11 items-center justify-center text-black/35 hover:text-red-600 disabled:opacity-40"
-                          aria-label="Supprimer"
-                        >
-                          {deleting === s.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {subscribers
+                    .filter((s) => subscriberFilter === 'all' || nlSubscriberStatus(s) === 'jamais_demande')
+                    .map((s) => {
+                      const status = nlSubscriberStatus(s);
+                      const isMember = memberEmails.has(s.email);
+                      return (
+                        <tr key={s.id} className="border-b border-noir/[0.04]">
+                          <td className="px-4 py-3 font-normal text-black">
+                            {s.email}
+                            {isMember && (
+                              <span className="ml-2 rounded-full border border-sapin/25 bg-sapin-subtle px-2 py-0.5 text-[9px] font-normal uppercase tracking-[0.08em] text-sapin">
+                                Membre du site
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-black/70">{NL_STATUS_LABELS[status]}</td>
+                          <td className="px-4 py-3 text-black/60">
+                            {s.source}
+                            {s.consented_at && (
+                              <span className="text-black/40"> · {new Date(s.consented_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-black/60">
+                            {new Date(s.created_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              {status === 'desinscrit' ? (
+                                <button
+                                  type="button"
+                                  onClick={() => toggleSubscription(s.id, 'resubscribe')}
+                                  disabled={subscriptionActionId === s.id}
+                                  className="h-9 rounded-[2px] border border-noir/12 px-3 text-[10px] font-normal uppercase tracking-[0.08em] text-black/60 hover:border-noir/25 hover:text-black disabled:opacity-40"
+                                >
+                                  {subscriptionActionId === s.id ? '…' : 'Réabonner'}
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => toggleSubscription(s.id, 'unsubscribe')}
+                                  disabled={subscriptionActionId === s.id}
+                                  className="h-9 rounded-[2px] border border-noir/12 px-3 text-[10px] font-normal uppercase tracking-[0.08em] text-black/60 hover:border-noir/25 hover:text-black disabled:opacity-40"
+                                >
+                                  {subscriptionActionId === s.id ? '…' : 'Désabonner'}
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                onClick={() => setCommConfirm({ kind: 'subscriber', id: s.id })}
+                                disabled={deleting === s.id}
+                                className="inline-flex h-9 w-9 items-center justify-center text-black/35 hover:text-red-600 disabled:opacity-40"
+                                aria-label="Supprimer"
+                              >
+                                {deleting === s.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                 </tbody>
               </table>
               </div>
@@ -821,7 +1073,7 @@ Nous sommes ravis de vous annoncer…"
       <ConfirmDialog
         open={nlConfirmOpen}
         title="Envoyer la newsletter ?"
-        description={`La newsletter "${nlSubject.trim()}" sera envoyée à ${sendable.length} contact${sendable.length !== 1 ? 's' : ''}. Cette action est irréversible.`}
+        description={`La newsletter "${nlSubject.trim()}" sera envoyée à ${sendable.length} personne${sendable.length !== 1 ? 's' : ''} — celles qui ont dit oui. Tu ne pourras plus le modifier après l'envoi.`}
         confirmLabel="Envoyer"
         loadingLabel="Envoi…"
         loading={nlStatus === 'sending'}

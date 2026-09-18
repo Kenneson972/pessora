@@ -1,7 +1,7 @@
 // supabase/functions/send-newsletter/index.ts
 //
 // Lit newsletter_sendable (jamais la table brute — arbitrage #4 du brief) : une
-// exclusion (test-%, désinscrit, consent=false) posée uniquement dans la table
+// exclusion (test-%, désinscrit, jamais consenti) posée uniquement dans la table
 // serait purement décorative si cette fonction continuait de lire à côté.
 //
 // Une ligne par destinataire dans newsletter_sends (jamais un compteur agrégé) :
@@ -11,7 +11,10 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { z } from 'npm:zod@3';
 import { getCorsHeaders } from '../_shared/cors.ts';
 
+const NEWSLETTER_TYPES = ['promo', 'challenge', 'evenement', 'info'] as const;
+
 const NewSchema = z.object({
+  type: z.enum(NEWSLETTER_TYPES),
   subject: z.string().min(1, 'Sujet requis').max(200),
   body: z.string().min(1, 'Contenu requis').max(50000),
   image_url: z.string().url().optional().or(z.literal('')),
@@ -45,7 +48,7 @@ function renderHtml(opts: { subject: string; body: string; imageUrl?: string | n
     : '';
   // "Se désinscrire" : #3a3a3a (~10:1 sur blanc) — jamais le #888 utilisé pour le
   // reste du pied de mail, cf. brief §4.3 (le lien de sortie ne peut pas être le
-  // texte le plus pâle du mail).
+  // texte le plus pâle du mail). Copie du pied validée mot pour mot (brief §3).
   return `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background-color:#f9f7f4;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f9f7f4;padding:32px 16px;"><tr><td align="center"><table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:2px;overflow:hidden;"><tr><td style="background-color:#1E3529;padding:32px 40px 28px;text-align:center;"><img src="${opts.logoUrl}" alt="PessÓra" style="max-width:100px;height:auto;margin-bottom:10px;display:block;margin-left:auto;margin-right:auto;" /><p style="margin:0;color:rgba(255,255,255,0.55);font-size:12px;font-weight:400;letter-spacing:0.08em;text-transform:uppercase;">Bar Protéiné & Bien-Être</p></td></tr>${imageBlock}<tr><td style="padding:36px 32px;"><h2 style="margin:0 0 16px;color:#1E3529;font-family:Georgia,serif;font-size:20px;font-weight:400;">${opts.subject}</h2><p style="margin:0;color:#3a3a3a;font-size:15px;line-height:1.7;">${safeBody}</p></td></tr><tr><td style="background-color:#f5f3f0;padding:20px 32px;text-align:center;border-top:1px solid rgba(0,0,0,0.04);"><p style="margin:0 0 4px;color:#1E3529;font-family:Georgia,serif;font-size:13px;font-weight:600;">PessÓra</p><p style="margin:0;color:#888;font-size:11px;">C.C. La Véranda – Cluny, 97200 Fort-de-France</p><p style="margin:8px 0 0;color:#3a3a3a;font-size:13px;line-height:1.6;">Vous recevez cet e-mail car vous vous êtes inscrit·e à la newsletter de PessÓra.</p><p style="margin:6px 0 0;font-size:13px;"><a href="${opts.unsubscribeUrl}" style="color:#3a3a3a;text-decoration:underline;">Se désinscrire</a></p></td></tr></table></td></tr></table></body></html>`;
 }
 
@@ -90,7 +93,7 @@ serve(async (req) => {
     let imageUrl: string | null;
 
     if ('campaignId' in parsed.data) {
-      // Reprise : le sujet/corps/image viennent de la campagne existante, jamais
+      // Reprise : sujet/corps/image/type viennent de la campagne existante, jamais
       // redemandés au client (source unique de vérité).
       campaignId = parsed.data.campaignId;
       const { data: campaign, error: campaignErr } = await supabase
@@ -114,7 +117,7 @@ serve(async (req) => {
 
       const { data: campaign, error: campaignErr } = await supabase
         .from('newsletter_campaigns')
-        .insert({ subject, body: campaignBody, image_url: imageUrl })
+        .insert({ type: parsed.data.type, subject, body: campaignBody, image_url: imageUrl })
         .select('id')
         .single();
       if (campaignErr || !campaign) {
@@ -127,10 +130,11 @@ serve(async (req) => {
       campaignId = campaign.id;
 
       // La vue est LE plan de travail figé au lancement — pas une re-sélection à la
-      // volée pendant la boucle d'envoi.
+      // volée pendant la boucle d'envoi. email est FIGÉ ici, tel qu'envoyé : si
+      // l'abonné est effacé plus tard (RGPD), l'historique d'envoi survit.
       const { data: sendable, error: sendableErr } = await supabase
         .from('newsletter_sendable')
-        .select('id');
+        .select('id, email');
       if (sendableErr) {
         console.error('[send-newsletter] read newsletter_sendable failed:', sendableErr.message);
         return new Response(JSON.stringify({ error: 'Erreur base de données' }), {
@@ -140,7 +144,11 @@ serve(async (req) => {
       }
 
       if (sendable?.length) {
-        const rows = sendable.map((s: { id: string }) => ({ campaign_id: campaignId, subscriber_id: s.id }));
+        const rows = sendable.map((s: { id: string; email: string }) => ({
+          campaign_id: campaignId,
+          subscriber_id: s.id,
+          email: s.email,
+        }));
         // onConflict : la contrainte unique(campaign_id, subscriber_id) empêche tout
         // doublon même en cas de double appel concurrent sur une campagne neuve.
         const { error: insertSendsErr } = await supabase
@@ -156,13 +164,16 @@ serve(async (req) => {
       }
     }
 
-    // À traiter : pending/failed/unknown — jamais les lignes déjà `sent` (reprise
-    // idempotente, cf. contrainte unique ci-dessus).
+    // À traiter : pending/failed — jamais delivered (déjà confirmé) ni unknown (on ne
+    // sait pas, un retry pourrait doublonner un envoi qui a peut-être réussi).
+    // Jointure INNER sur subscriber_id : un abonné effacé (subscriber_id -> null) n'a
+    // plus de jeton de désinscription à offrir, sa ligne reste orpheline sans être
+    // relancée — cas marginal, pas de perte de trace (email reste sur la ligne).
     const { data: toSend, error: toSendErr } = await supabase
       .from('newsletter_sends')
-      .select('id, subscriber_id, newsletter_subscribers!inner(email, token)')
+      .select('id, email, newsletter_subscribers!inner(unsubscribe_token)')
       .eq('campaign_id', campaignId)
-      .in('status', ['pending', 'failed', 'unknown']);
+      .in('status', ['pending', 'failed']);
 
     if (toSendErr) {
       console.error('[send-newsletter] read newsletter_sends failed:', toSendErr.message);
@@ -175,17 +186,16 @@ serve(async (req) => {
     const logoUrl = `${supabaseUrl}/storage/v1/object/public/asset/O.PNG`;
     const siteUrl = 'https://www.pessora.fr';
 
-    type Recipient = { sendId: string; subscriberId: string; email: string; token: string };
+    type Recipient = { sendId: string; email: string; token: string };
     const recipients: Recipient[] = (toSend ?? []).map((row: any) => ({
       sendId: row.id,
-      subscriberId: row.subscriber_id,
-      email: row.newsletter_subscribers.email,
-      token: row.newsletter_subscribers.token,
+      email: row.email,
+      token: row.newsletter_subscribers.unsubscribe_token,
     }));
 
     for (let i = 0; i < recipients.length; i += BATCH_SIZE) {
       const chunk = recipients.slice(i, i + BATCH_SIZE);
-      const idempotencyKey = await idempotencyKeyFor(campaignId, chunk.map((r) => r.subscriberId));
+      const idempotencyKey = await idempotencyKeyFor(campaignId, chunk.map((r) => r.sendId));
 
       const payload = chunk.map((r) => {
         const unsubscribeUrl = `${siteUrl}/newsletter/desinscription?token=${r.token}`;
@@ -202,7 +212,10 @@ serve(async (req) => {
         };
       });
 
-      let outcome: 'sent' | 'failed' | 'unknown';
+      // "delivered" ici = Resend a accepté l'appel (id de message reçu), pas une
+      // preuve de livraison boîte mail — ça reste une question ouverte (spec §9)
+      // tant qu'aucun webhook signé n'alimente cette colonne depuis Resend.
+      let outcome: 'delivered' | 'failed' | 'unknown';
       let resendIds: (string | null)[] = chunk.map(() => null);
       let errorMessage: string | null = null;
 
@@ -221,22 +234,23 @@ serve(async (req) => {
           const json = await res.json().catch(() => null);
           const data = json?.data;
           if (Array.isArray(data) && data.length === chunk.length) {
-            outcome = 'sent';
+            outcome = 'delivered';
             resendIds = data.map((d: { id?: string }) => d?.id ?? null);
           } else {
             // Réponse 2xx mais forme inattendue : on ne peut pas confirmer — jamais
-            // classé "sent" sans un id de message lisible.
+            // classé "delivered" sans un id de message lisible.
             outcome = 'unknown';
           }
         } else {
           // Erreur HTTP lisible (4xx/5xx avec corps) : rejet explicite du lot entier,
-          // rien n'est parti — c'est un vrai `failed`, pas un `unknown`.
+          // rien n'est parti — c'est un vrai `failed`, rejouable en reprise.
           const errText = await res.text().catch(() => '');
           outcome = 'failed';
           errorMessage = `Resend ${res.status}: ${errText.slice(0, 500)}`;
         }
       } catch (e) {
-        // Timeout, coupure réseau, réponse illisible : jamais un échec confirmé.
+        // Timeout, coupure réseau, réponse illisible : jamais un échec confirmé —
+        // jamais relancé automatiquement (cf. commentaire sur la sélection ci-dessus).
         outcome = 'unknown';
         errorMessage = e instanceof Error ? e.message : String(e);
       }
@@ -249,7 +263,6 @@ serve(async (req) => {
               status: outcome,
               resend_id: resendIds[idx],
               error: outcome === 'failed' || outcome === 'unknown' ? errorMessage : null,
-              updated_at: new Date().toISOString(),
             })
             .eq('id', r.sendId)
         )
@@ -273,10 +286,14 @@ serve(async (req) => {
 
     const tally = { total: counts?.length ?? 0, sent: 0, failed: 0, unknown: 0, pending: 0 };
     for (const row of counts ?? []) {
-      const key = row.status as 'sent' | 'failed' | 'unknown' | 'pending';
+      // "sent" côté réponse = delivered au sens de cette table (cf. commentaire plus
+      // haut) — vocabulaire stable côté API pour ne pas répercuter la nuance interne.
+      const key = row.status === 'delivered' ? 'sent' : (row.status as 'failed' | 'unknown' | 'pending' | 'bounced');
       if (key in tally) tally[key as 'sent' | 'failed' | 'unknown' | 'pending']++;
     }
 
+    // Jamais success:true qui mentirait sur un échec partiel — le front décide de
+    // l'affichage à partir des compteurs, pas d'un booléen.
     return new Response(
       JSON.stringify({ campaignId, total: tally.total, sent: tally.sent, failed: tally.failed, unknown: tally.unknown }),
       { headers: { ...cors, 'Content-Type': 'application/json' } }

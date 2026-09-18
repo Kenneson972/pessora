@@ -40,7 +40,7 @@ export function NewsletterSignup({
   source,
 }: NewsletterSignupProps) {
   const honeypotRef = useRef<HTMLInputElement>(null);
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'duplicate' | 'error'>('idle');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'resubscribed' | 'error'>('idle');
   const {
     register,
     handleSubmit,
@@ -64,7 +64,19 @@ export function NewsletterSignup({
     });
     if (error) {
       if (error.code === '23505') {
-        setStatus('duplicate');
+        // email est unique : un second INSERT après désabonnement échoue ici. La copie
+        // du site promet "pour revenir, il suffit de vous réinscrire depuis le site" —
+        // fn_resubscribe (SECURITY DEFINER) est le seul chemin qui tienne cette promesse
+        // sans jamais faire un UPDATE direct sur newsletter_subscribers.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: resubError } = await (supabase as any).rpc('fn_resubscribe', {
+          p_email: data.email.trim().toLowerCase(),
+        });
+        if (resubError) {
+          setStatus('error');
+          return;
+        }
+        setStatus('resubscribed');
         reset();
         return;
       }
@@ -238,8 +250,8 @@ export function NewsletterSignup({
       {status === 'success' && (
         <p className={cn('mt-2 text-[11px] font-light tracking-wide', isLight ? 'text-noir/80' : 'text-ivory/90')}>Merci — vous êtes inscrit·e.</p>
       )}
-      {status === 'duplicate' && (
-        <p className={cn('mt-2 text-[11px] font-light', isLight ? 'text-black/45' : 'text-white/50')}>Cette adresse est déjà inscrite.</p>
+      {status === 'resubscribed' && (
+        <p className={cn('mt-2 text-[11px] font-light tracking-wide', isLight ? 'text-noir/80' : 'text-ivory/90')}>Vous êtes de nouveau inscrit·e.</p>
       )}
       {status === 'error' && (
         <p className={cn('mt-2 text-[11px] font-light', isLight ? 'text-red-600' : 'text-red-300/90')}>Impossible de finaliser. Réessayez plus tard.</p>

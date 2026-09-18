@@ -3,9 +3,10 @@
 // Publique, verify_jwt = false (comme send-contact-email). Le GET n'a JAMAIS
 // d'effet — les scanners d'email (Gmail/Outlook) pré-chargent les liens des
 // e-mails, un GET qui désabonnerait quelqu'un viderait la liste toute seule
-// sans qu'un humain ait cliqué. Seul le POST retire vraiment.
+// sans qu'un humain ait cliqué. Seul le POST retire vraiment, en appelant
+// fn_unsubscribe (SECURITY DEFINER, seul écrivain de unsubscribed_at).
 //
-// Anti-énumération : token inconnu et token déjà utilisé renvoient EXACTEMENT
+// Anti-énumération : jeton inconnu et jeton déjà utilisé renvoient EXACTEMENT
 // la même réponse — jamais de PII, jamais de fuite sur l'existence d'une adresse.
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -59,45 +60,22 @@ serve(async (req) => {
       });
     }
 
-    const { data: subscriber, error: lookupErr } = await supabase
-      .from('newsletter_subscribers')
-      .select('id')
-      .eq('token', token)
-      .maybeSingle();
-
-    if (lookupErr) {
-      console.error('[newsletter-unsubscribe] lookup failed:', lookupErr.message);
+    // fn_unsubscribe est idempotente et SECURITY DEFINER : jeton inconnu -> found=false,
+    // déjà désabonné -> already=true. Les deux cas se traduisent par la même réponse
+    // côté client (anti-énumération) — jamais de 404/500 pour un simple jeton usé.
+    const { data, error } = await supabase.rpc('fn_unsubscribe', { p_token: token });
+    if (error) {
+      console.error('[newsletter-unsubscribe] fn_unsubscribe failed:', error.message);
       return new Response(JSON.stringify({ error: 'Erreur serveur' }), {
         status: 500,
         headers: { ...cors, 'Content-Type': 'application/json' },
       });
     }
 
-    if (!subscriber) {
-      // Jeton inconnu — même réponse qu'un jeton déjà utilisé (anti-énumération).
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row?.found || row?.already) {
       return new Response(JSON.stringify({ outcome: 'already_or_invalid' }), {
         status: 200,
-        headers: { ...cors, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Idempotent : la contrainte unique(subscriber_id) absorbe un rejeu du POST
-    // sans jamais renvoyer 500 — la 2ᵉ fois retombe simplement sur already_or_invalid.
-    const { error: insertErr } = await supabase
-      .from('newsletter_unsubscribes')
-      .insert({ subscriber_id: subscriber.id });
-
-    if (insertErr) {
-      // 23505 = violation de contrainte unique = déjà désabonné, pas une panne.
-      if (insertErr.code === '23505') {
-        return new Response(JSON.stringify({ outcome: 'already_or_invalid' }), {
-          status: 200,
-          headers: { ...cors, 'Content-Type': 'application/json' },
-        });
-      }
-      console.error('[newsletter-unsubscribe] insert failed:', insertErr.message);
-      return new Response(JSON.stringify({ error: 'Erreur serveur' }), {
-        status: 500,
         headers: { ...cors, 'Content-Type': 'application/json' },
       });
     }

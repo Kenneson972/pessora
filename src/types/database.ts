@@ -304,8 +304,11 @@ export interface Database {
           email: string
           consent: boolean
           source: string
-          /** Jeton de désinscription — voir newsletter_unsubscribes (append-only, jamais d'UPDATE ici). */
-          token: string
+          /** Preuve de consentement DATÉE — source de vérité du « oui » (consent seul, non). */
+          consented_at: string | null
+          /** Écrit uniquement par fn_unsubscribe / fn_resubscribe / fn_admin_set_subscription — jamais un UPDATE direct. */
+          unsubscribed_at: string | null
+          unsubscribe_token: string
           created_at: string
         }
         Insert: {
@@ -319,6 +322,8 @@ export interface Database {
       newsletter_campaigns: {
         Row: {
           id: string
+          /** promo | challenge | evenement | info — union TS (src/lib/newsletterTypes.ts), pas de CHECK fermé. */
+          type: string
           subject: string
           body: string
           image_url: string | null
@@ -326,6 +331,7 @@ export interface Database {
           created_at: string
         }
         Insert: {
+          type: string
           subject: string
           body: string
           image_url?: string | null
@@ -338,29 +344,18 @@ export interface Database {
         Row: {
           id: string
           campaign_id: string
-          subscriber_id: string
-          status: 'pending' | 'sent' | 'failed' | 'unknown'
+          subscriber_id: string | null
+          email: string
+          status: 'pending' | 'delivered' | 'bounced' | 'failed' | 'unknown'
           resend_id: string | null
           error: string | null
-          created_at: string
-          updated_at: string
+          sent_at: string
         }
         Insert: {
           campaign_id: string
-          subscriber_id: string
-          status?: 'pending' | 'sent' | 'failed' | 'unknown'
-        }
-        Update: Record<string, never>
-        Relationships: []
-      }
-      newsletter_unsubscribes: {
-        Row: {
-          id: string
-          subscriber_id: string
-          unsubscribed_at: string
-        }
-        Insert: {
-          subscriber_id: string
+          subscriber_id?: string | null
+          email: string
+          status?: 'pending' | 'delivered' | 'bounced' | 'failed' | 'unknown'
         }
         Update: Record<string, never>
         Relationships: []
