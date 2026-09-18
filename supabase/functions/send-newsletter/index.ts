@@ -198,7 +198,15 @@ serve(async (req) => {
       const idempotencyKey = await idempotencyKeyFor(campaignId, chunk.map((r) => r.sendId));
 
       const payload = chunk.map((r) => {
+        // Deux cibles distinctes pour le même jeton — jamais la même URL :
+        // - lien visible (corps HTML) -> page SPA, un humain clique, lit une
+        //   confirmation, PUIS la page fait le POST (voir NewsletterUnsubscribe.tsx).
+        // - List-Unsubscribe(-Post) -> endpoint de la fonction, en direct. RFC 8058
+        //   (one-click) fait faire un POST par le client mail SANS charger de page ;
+        //   si cet en-tête pointe sur la route SPA (statique, Vercel), ce POST
+        //   reçoit 405 et rien n'est désabonné — mesuré en prod (brief lyra 18/09).
         const unsubscribeUrl = `${siteUrl}/newsletter/desinscription?token=${r.token}`;
+        const oneClickUrl = `${supabaseUrl}/functions/v1/newsletter-unsubscribe?token=${r.token}`;
         return {
           from: 'PessÓra <noreply@pessora.fr>',
           to: r.email,
@@ -206,7 +214,7 @@ serve(async (req) => {
           text: campaignBody,
           html: renderHtml({ subject, body: campaignBody, imageUrl, logoUrl, unsubscribeUrl }),
           headers: {
-            'List-Unsubscribe': `<${unsubscribeUrl}>`,
+            'List-Unsubscribe': `<${oneClickUrl}>`,
             'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
           },
         };
