@@ -79,32 +79,48 @@ const AdminCommunications = () => {
   const [nlBody, setNlBody] = useState('');
   const [nlImage, setNlImage] = useState('');
   const [nlStatus, setNlStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
-  const [nlLastSent, setNlLastSent] = useState<{ subject: string; count: number; at: string } | null>(null);
+  const [nlLastSent, setNlLastSent] = useState<{ subject: string; sent: number; total: number; at: string } | null>(null);
+  const [nlCampaignId, setNlCampaignId] = useState<string | null>(null);
   const [nlConfirmOpen, setNlConfirmOpen] = useState(false);
+  // newsletter_sendable — la vue, jamais la table brute (arbitrage #4 du brief) :
+  // c'est elle qui décide qui reçoit vraiment, donc c'est elle qui alimente le
+  // compteur d'envoi ET l'export CSV.
+  const [sendable, setSendable] = useState<{ email: string; created_at: string }[]>([]);
 
   const closeCommConfirm = useCallback(() => setCommConfirm(null), []);
 
   const sendNewsletter = async () => {
-    if (!nlSubject.trim() || !nlBody.trim()) return;
+    // Reprise : réutilise le campaignId reçu au premier appel, jamais un nouveau
+    // sujet/corps — la campagne existante est relue côté serveur (cf. spec §2).
+    const isResume = !!nlCampaignId && nlStatus !== 'idle';
+    if (!isResume && (!nlSubject.trim() || !nlBody.trim())) return;
     setNlStatus('sending');
     const { data: { session } } = await supabase.auth.getSession();
     const token = session?.access_token;
     try {
+      const payload = isResume
+        ? { campaignId: nlCampaignId }
+        : { subject: nlSubject.trim(), body: nlBody.trim(), image_url: nlImage.trim() || undefined };
       const res = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-newsletter`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-          body: JSON.stringify({ subject: nlSubject.trim(), body: nlBody.trim(), image_url: nlImage.trim() || undefined }),
+          body: JSON.stringify(payload),
         },
       );
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? 'Erreur');
+      const { campaignId, total, sent } = json as { campaignId: string; total: number; sent: number; failed: number; unknown: number };
+      setNlCampaignId(campaignId);
       setNlStatus('sent');
-      setNlLastSent({ subject: nlSubject.trim(), count: json.count ?? subscribers.length, at: new Date().toISOString() });
-      setNlSubject('');
-      setNlBody('');
-      setNlImage('');
+      setNlLastSent({ subject: nlSubject.trim() || nlLastSent?.subject || '', sent, total, at: new Date().toISOString() });
+      if (sent >= total) {
+        setNlSubject('');
+        setNlBody('');
+        setNlImage('');
+        setNlCampaignId(null);
+      }
     } catch {
       setNlStatus('error');
     }
@@ -131,6 +147,16 @@ const AdminCommunications = () => {
     setSubscribers((data ?? []) as NewsletterSubscriber[]);
   }, []);
 
+  const loadSendable = useCallback(async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase as any)
+      .from('newsletter_sendable')
+      .select('email, created_at')
+      .order('created_at', { ascending: false });
+    if (error) { setLoadError('Impossible de charger la liste d\'envoi. Vérifiez votre connexion.'); return; }
+    setSendable((data ?? []) as { email: string; created_at: string }[]);
+  }, []);
+
   const loadContactRequests = useCallback(async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any)
@@ -144,9 +170,9 @@ const AdminCommunications = () => {
   const loadAll = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
-    await Promise.all([loadAnnouncements(), loadSubscribers(), loadContactRequests()]);
+    await Promise.all([loadAnnouncements(), loadSubscribers(), loadSendable(), loadContactRequests()]);
     setLoading(false);
-  }, [loadAnnouncements, loadSubscribers, loadContactRequests]);
+  }, [loadAnnouncements, loadSubscribers, loadSendable, loadContactRequests]);
 
   const toggleContactRead = async (r: ContactRequest) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -243,7 +269,7 @@ const AdminCommunications = () => {
       } else if (kind === 'subscriber') {
         const { error } = await db.from('newsletter_subscribers').delete().eq('id', id);
         if (error) throw new Error(error.message);
-        await loadSubscribers();
+        await Promise.all([loadSubscribers(), loadSendable()]);
       } else {
         const { error } = await db.from('contact_requests').delete().eq('id', id);
         if (error) throw new Error(error.message);
@@ -256,7 +282,7 @@ const AdminCommunications = () => {
       setDeleting(null);
       setCommConfirmLoading(false);
     }
-  }, [commConfirm, loadAnnouncements, loadSubscribers, loadContactRequests]);
+  }, [commConfirm, loadAnnouncements, loadSubscribers, loadSendable, loadContactRequests]);
 
   const handleToggleActive = async (a: SiteAnnouncement) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -266,7 +292,7 @@ const AdminCommunications = () => {
 
   const exportCsv = () => {
     const header = 'email,date_inscription\n';
-    const rows = subscribers.map((s) => `${s.email},${s.created_at}`).join('\n');
+    const rows = sendable.map((s) => `${s.email},${s.created_at}`).join('\n');
     const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -609,21 +635,36 @@ Nous sommes ravis de vous annoncer…"
               </div>
 
               <div className="flex flex-wrap items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => setNlConfirmOpen(true)}
-                  disabled={!nlSubject.trim() || !nlBody.trim() || nlStatus === 'sending' || subscribers.length === 0}
-                  className="inline-flex h-11 min-h-[44px] items-center gap-2 rounded-[2px] bg-sapin px-6 text-[10px] font-medium uppercase tracking-[0.1em] text-white hover:bg-sapin/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  {nlStatus === 'sending' ? (
-                    <><Loader2 size={14} className="animate-spin" /> Envoi à {subscribers.length} contact{subscribers.length !== 1 ? 's' : ''}…</>
-                  ) : (
-                    <><Send size={14} /> Envoyer à {subscribers.length} contact{subscribers.length !== 1 ? 's' : ''}</>
-                  )}
-                </button>
+                {(() => {
+                  // 3 états stricts (spec §5) : Envoyer / Envoi en cours (désactivé
+                  // dès le clic, avant tout appel réseau) / Envoyé ou Reprendre selon
+                  // que sent === total. Le compteur vient de la vue newsletter_sendable,
+                  // jamais de subscribers.length (qui inclut aussi les tests/désabonnés).
+                  const isPartial = nlLastSent && nlLastSent.sent < nlLastSent.total && nlStatus === 'sent';
+                  const label = nlStatus === 'sending'
+                    ? `Envoi à ${sendable.length} contact${sendable.length !== 1 ? 's' : ''}…`
+                    : isPartial
+                      ? `Reprendre (${nlLastSent!.total - nlLastSent!.sent} restants)`
+                      : `Envoyer à ${sendable.length} contact${sendable.length !== 1 ? 's' : ''}`;
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => (isPartial ? sendNewsletter() : setNlConfirmOpen(true))}
+                      disabled={(!isPartial && (!nlSubject.trim() || !nlBody.trim())) || nlStatus === 'sending' || sendable.length === 0}
+                      className="inline-flex h-11 min-h-[44px] items-center gap-2 rounded-[2px] bg-sapin px-6 text-[10px] font-medium uppercase tracking-[0.1em] text-white hover:bg-sapin/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {nlStatus === 'sending' ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />} {label}
+                    </button>
+                  );
+                })()}
 
-                {nlStatus === 'sent' && (
-                  <p className="text-[12px] font-medium text-sapin">Envoyé avec succès ✓</p>
+                {nlStatus === 'sent' && nlLastSent && nlLastSent.sent >= nlLastSent.total && (
+                  <p className="text-[12px] font-medium text-sapin">Envoyé à {nlLastSent.sent} destinataire{nlLastSent.sent !== 1 ? 's' : ''} ✓</p>
+                )}
+                {nlStatus === 'sent' && nlLastSent && nlLastSent.sent < nlLastSent.total && (
+                  <p className="text-[12px] font-medium text-black/70">
+                    Envoyé à {nlLastSent.sent}/{nlLastSent.total} — {nlLastSent.total - nlLastSent.sent} pas encore confirmé{nlLastSent.total - nlLastSent.sent !== 1 ? 's' : ''}.
+                  </p>
                 )}
                 {nlStatus === 'error' && (
                   <p className="text-[12px] font-medium text-red-600">Erreur lors de l&apos;envoi. Réessayez.</p>
@@ -634,15 +675,15 @@ Nous sommes ravis de vous annoncer…"
 
           {nlLastSent && (
             <div className="mb-6 rounded-[2px] border border-sapin/[0.15] bg-sapin-subtle px-5 py-3 text-[12px] text-black/60">
-              Dernier envoi : <span className="font-medium text-black">{nlLastSent.subject}</span> — {nlLastSent.count} destinataire{nlLastSent.count !== 1 ? 's' : ''} le {new Date(nlLastSent.at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
+              Dernier envoi : <span className="font-medium text-black">{nlLastSent.subject}</span> — {nlLastSent.sent}/{nlLastSent.total} destinataire{nlLastSent.total !== 1 ? 's' : ''} le {new Date(nlLastSent.at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
             </div>
           )}
 
           <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-            <p className="text-[12px] text-black/45">
-              {subscribers.length} contact{subscribers.length !== 1 ? 's' : ''} — export CSV pour Mailchimp / Brevo / envoi manuel.
+            <p className="text-[12px] text-black/60">
+              {sendable.length} contact{sendable.length !== 1 ? 's' : ''} recevront cette newsletter — export CSV pour Mailchimp / Brevo / envoi manuel.
             </p>
-            {subscribers.length > 0 && (
+            {sendable.length > 0 && (
               <button
                 type="button"
                 onClick={exportCsv}
@@ -780,7 +821,7 @@ Nous sommes ravis de vous annoncer…"
       <ConfirmDialog
         open={nlConfirmOpen}
         title="Envoyer la newsletter ?"
-        description={`La newsletter "${nlSubject.trim()}" sera envoyée à ${subscribers.length} contact${subscribers.length !== 1 ? 's' : ''}. Cette action est irréversible.`}
+        description={`La newsletter "${nlSubject.trim()}" sera envoyée à ${sendable.length} contact${sendable.length !== 1 ? 's' : ''}. Cette action est irréversible.`}
         confirmLabel="Envoyer"
         loadingLabel="Envoi…"
         loading={nlStatus === 'sending'}

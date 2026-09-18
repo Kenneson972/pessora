@@ -304,12 +304,63 @@ export interface Database {
           email: string
           consent: boolean
           source: string
+          /** Jeton de désinscription — voir newsletter_unsubscribes (append-only, jamais d'UPDATE ici). */
+          token: string
           created_at: string
         }
         Insert: {
           email: string
           consent?: boolean
           source?: string
+        }
+        Update: Record<string, never>
+        Relationships: []
+      }
+      newsletter_campaigns: {
+        Row: {
+          id: string
+          subject: string
+          body: string
+          image_url: string | null
+          event_id: string | null
+          created_at: string
+        }
+        Insert: {
+          subject: string
+          body: string
+          image_url?: string | null
+          event_id?: string | null
+        }
+        Update: Record<string, never>
+        Relationships: []
+      }
+      newsletter_sends: {
+        Row: {
+          id: string
+          campaign_id: string
+          subscriber_id: string
+          status: 'pending' | 'sent' | 'failed' | 'unknown'
+          resend_id: string | null
+          error: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          campaign_id: string
+          subscriber_id: string
+          status?: 'pending' | 'sent' | 'failed' | 'unknown'
+        }
+        Update: Record<string, never>
+        Relationships: []
+      }
+      newsletter_unsubscribes: {
+        Row: {
+          id: string
+          subscriber_id: string
+          unsubscribed_at: string
+        }
+        Insert: {
+          subscriber_id: string
         }
         Update: Record<string, never>
         Relationships: []

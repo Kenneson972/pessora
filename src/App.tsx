@@ -44,6 +44,7 @@ const ContactPartenariat = lazy(() => import('./pages/ContactPartenariat'));
 const MentionsLegales = lazy(() => import('./pages/MentionsLegales'));
 const CGV = lazy(() => import('./pages/CGV'));
 const PolitiqueConfidentialite = lazy(() => import('./pages/PolitiqueConfidentialite'));
+const NewsletterUnsubscribe = lazy(() => import('./pages/NewsletterUnsubscribe'));
 const Login = lazy(() => import('./pages/auth/Login'));
 const Register = lazy(() => import('./pages/auth/Register'));
 const ReinitialisationMotDePasse = lazy(() => import('./pages/auth/ReinitialisationMotDePasse'));
@@ -180,6 +181,7 @@ function App() {
             <Route path="/contact-partenariat" element={<ContactPartenariat />} />
             <Route path="/mentions-legales" element={<MentionsLegales />} />
             <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
+            <Route path="/newsletter/desinscription" element={<NewsletterUnsubscribe />} />
             <Route path="/cgv" element={<CGV />} />
             <Route path="/mockup-luxe" element={<LuxeMockup />} />
             <Route path="/mockup-croquis-gerant" element={<ManagerSketchMockup />} />
