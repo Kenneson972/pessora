@@ -22,16 +22,37 @@ export const NEWSLETTER_TYPE_LABELS: Record<NewsletterType, string> = {
  */
 export const NEWSLETTER_TYPE_DRAFTS: Record<NewsletterType, { subject: string; body: string }> = {
   promo: {
-    subject: 'Nouveau à la carte',
-    body: '',
+    subject: 'Nouveau à la carte 🍹',
+    body: `Bonjour,
+
+On a une nouveauté à vous présenter au bar ! [Décrivez ici le produit : nom, ce qui le rend spécial, prix.]
+
+On vous attend au comptoir pour le découvrir.
+
+À très vite,
+L'équipe PessÓra`,
   },
   challenge: {
     subject: 'Le prochain Challenge 21 jours ouvre bientôt',
-    body: '',
+    body: `Bonjour,
+
+Le prochain Challenge 21 jours démarre bientôt ! [Précisez ici la date de début et les places disponibles.]
+
+Inscrivez-vous dès maintenant sur notre page Événements pour réserver votre place.
+
+À bientôt au bar,
+L'équipe PessÓra`,
   },
   evenement: {
     subject: 'On vous attend au bar !',
-    body: '',
+    body: `Bonjour,
+
+On organise un événement au bar et on serait ravis de vous y voir ! [Précisez ici la date, l'heure et le lieu.]
+
+Toutes les infos sur notre page Événements.
+
+À bientôt,
+L'équipe PessÓra`,
   },
   info: {
     subject: '',
