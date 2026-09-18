@@ -553,10 +553,43 @@ Le seul discriminant qui compte : **`newsletter_sendable` présent ET `newslette
 redéploiement : **`campaigns = 0`, `sends = 0`**, 1 abonné, 0 désinscrit, 0 ligne `test-`, vue d'envoi
 à 1. **Aucune campagne n'est partie** pendant les heures où l'expéditeur était non filtré.
 
-**Reste, comme porte AVANT la première campagne de Catherine** (pas un geste du soir) : envoyer une
-campagne à **un seul destinataire** — notre ligne QA, `source` basculé sur un littéral réel le temps
-du test —, vérifier la réception **dans la boîte**, puis supprimer la ligne. C'est la seule preuve
-réelle de l'expéditeur ; tant qu'elle n'est pas faite, la première campagne de Catherine **est** le test.
+### 12.1 LA PORTE, COMPLÈTE (précisée le 18/09 au soir — lire AVANT de lancer un test)
+
+**Ce que le test apporte et que rien d'autre ne peut apporter** : la garde lit le **repo**, le corps
+déployé dit **ce qui va partir** ; seul **le mail reçu** dit ce que la boîte affiche — placeholders
+substitués, encre, lien de sortie.
+
+🔴 **LE COMPOSEUR N'A PAS DE MODE « UN SEUL DESTINATAIRE ».** Mesuré au code : `NewSchema` =
+`{type, subject, body, image_url}` (aucun champ d'audience), et la fonction lit
+`.from('newsletter_sendable').select('id, email')` **sans aucun filtre**. Une « campagne de test »
+**écrit donc à TOUTE la vue d'envoi** — pas à une adresse choisie. La ruse de ③ (créer une ligne
+`test-` pour entrer dans la vue) est le **mauvais outil** ici : elle enverrait aussi à l'abonné déjà
+présent.
+
+**① QUAND — avant l'import de la liste de Catherine.** Aujourd'hui la vue contient **une** ligne, et
+c'est **une adresse à nous** (`kenne972@hotmail.fr`, `source=footer`, consentante — lu en base par
+@alcyone). Un test maintenant écrit à **une seule boîte** : celle de Ken, qui juge le rendu de ses
+yeux. **Après l'import, le même test partirait chez les vrais abonnés de Catherine.**
+
+**② LES GESTES, DANS CET ORDRE** (le test détruit sa propre preuve — leçon de ③) :
+1. **Envoyer** la campagne (depuis son admin, ou par la fonction) ;
+2. **CAPTURER AVANT DE NETTOYER** : le **HTML reçu** (encre du pied, **zéro `{{ }}`**), l'en-tête
+   `List-Unsubscribe`, et le **statut d'envoi** lu dans `newsletter_sends` ;
+3. **Nettoyer le reliquat** : `DELETE FROM newsletter_campaigns WHERE id = <test>` — `newsletter_sends`
+   est en **`on delete cascade`**, donc un seul statement suffit (pas d'écran pour le faire → service
+   role, **@alcyone**) ;
+4. **Invariant final** : **0 campagne** dans l'historique de Catherine, **et** la vue d'envoi toujours
+   à son compte d'avant.
+
+⚠️ **NE PAS cliquer « se désinscrire » dans le mail de test.** Le `GET` de la page est inerte
+(`no_op`) et les scanners ne désabonnent personne — mais un **humain** qui clique retire **vraiment**
+la ligne. Sur l'adresse de Ken c'est rattrapable ; sur une adresse cliente, ce serait une sortie
+définitive sur simple curiosité.
+
+⚠️ **Un reliquat de campagne de test n'est pas inoffensif** : son écran l'affiche comme une **vraie
+campagne**, **aucun bouton ne la supprime**, et le chemin de **reprise** (`isResume`) relit
+`newsletter_sendable` pour **toute la liste** — donc un reliquat est **à un clic d'écrire à tout le
+monde avec le sujet du test.**
 
 ---
 
