@@ -101,14 +101,18 @@ const AdminCommunications = () => {
   const [subscriberFilter, setSubscriberFilter] = useState<'all' | 'never_asked'>('all');
   const [subscriptionActionId, setSubscriptionActionId] = useState<string | null>(null);
 
-  const nlSubscriberStatus = (s: NewsletterSubscriber): 'inscrit' | 'desinscrit' | 'jamais_demande' => {
-    if (s.unsubscribed_at) return 'desinscrit';
+  // Deux retraits distincts, jamais fusionnés (brief §6, 17/09) : la provenance
+  // (elle-même vs l'admin) est une attribution, pas un jugement.
+  type NlStatus = 'inscrit' | 'desinscrit_self' | 'desinscrit_admin' | 'jamais_demande';
+  const nlSubscriberStatus = (s: NewsletterSubscriber): NlStatus => {
+    if (s.unsubscribed_at) return s.unsubscribed_by === 'admin' ? 'desinscrit_admin' : 'desinscrit_self';
     if (!s.consented_at) return 'jamais_demande';
     return 'inscrit';
   };
-  const NL_STATUS_LABELS: Record<'inscrit' | 'desinscrit' | 'jamais_demande', string> = {
+  const NL_STATUS_LABELS: Record<NlStatus, string> = {
     inscrit: 'Inscrit·e',
-    desinscrit: 'Désinscrit·e',
+    desinscrit_self: 'Désinscrit·e, elle-même',
+    desinscrit_admin: 'Retiré·e au bar',
     jamais_demande: 'Jamais demandé',
   };
 
@@ -945,7 +949,7 @@ Nous sommes ravis de vous annoncer…"
                           </td>
                           <td className="px-4 py-3 text-right">
                             <div className="flex items-center justify-end gap-1">
-                              {status === 'desinscrit' ? (
+                              {status === 'desinscrit_self' || status === 'desinscrit_admin' ? (
                                 <button
                                   type="button"
                                   onClick={() => toggleSubscription(s.id, 'resubscribe')}

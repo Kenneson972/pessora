@@ -308,6 +308,8 @@ export interface Database {
           consented_at: string | null
           /** Écrit uniquement par fn_unsubscribe / fn_resubscribe / fn_admin_set_subscription — jamais un UPDATE direct. */
           unsubscribed_at: string | null
+          /** 'self' (la personne, via son lien) ou 'admin' (geste de l'admin) — deux retraits distincts, jamais fusionnés. */
+          unsubscribed_by: 'self' | 'admin' | null
           unsubscribe_token: string
           created_at: string
         }

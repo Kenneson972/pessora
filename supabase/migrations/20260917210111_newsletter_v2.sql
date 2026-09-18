@@ -9,6 +9,10 @@
 alter table public.newsletter_subscribers
   add column if not exists consented_at timestamptz,
   add column if not exists unsubscribed_at timestamptz,
+  -- Provenance du retrait — deux cas distincts, jamais fusionnés (brief §6, 17/09) :
+  -- 'self' (la personne a cliqué son lien) vs 'admin' (geste de l'admin, ex. appel au
+  -- bar). Un mot qui n'est pas un jugement, juste une attribution auditable.
+  add column if not exists unsubscribed_by text check (unsubscribed_by in ('self', 'admin')),
   add column if not exists unsubscribe_token uuid not null default gen_random_uuid();
 
 -- Reprise de l'existant : consent = true sans date devient consented_at = created_at.
@@ -21,6 +25,11 @@ update public.newsletter_subscribers
 -- ci-dessous : c'est ce qui rend chaque désabonnement/réinscription auditable (une date,
 -- jamais un flip muet de booléen).
 revoke update, truncate, references, trigger on public.newsletter_subscribers from anon, authenticated;
+-- DELETE : retiré à anon UNIQUEMENT. Le laisser à `authenticated` est nécessaire — le
+-- bouton de suppression RGPD de l'admin s'appuie sur ce rôle (RLS : "Admin delete
+-- newsletter subscriber", is_admin()) ; le retirer aussi à authenticated casserait ce
+-- bouton.
+revoke delete on public.newsletter_subscribers from anon;
 
 -- ─── 1.2.2 Désinscription — seul écrivain de unsubscribed_at ──────────────────────
 -- Idempotente : rejouer avec le même jeton ne réécrit pas la date une 2e fois.
@@ -47,7 +56,8 @@ begin
 
   if not v_already then
     update public.newsletter_subscribers
-       set unsubscribed_at = now()
+       set unsubscribed_at = now(),
+           unsubscribed_by = 'self'
      where id = v_id;
   end if;
 
@@ -58,25 +68,47 @@ $$;
 revoke all on function public.fn_unsubscribe(uuid) from public;
 grant execute on function public.fn_unsubscribe(uuid) to anon, authenticated;
 
--- ─── 1.2.3 Réinscription — la copie du site promet "réinscrivez-vous", il faut un chemin ──
--- email est UNIQUE : un second INSERT après désabonnement échoue en 23505. Le formulaire
--- public appelle cette fonction en repli sur ce conflit précis (voir NewsletterSignup.tsx).
-create or replace function public.fn_resubscribe(p_email text)
-returns void
+-- ─── 1.2.3 Réinscription — RÈGLE DURE (17/09) : aucun consentement ne s'écrit sans la
+-- personne. Une fonction fn_resubscribe(email) — même trouvée le 17/09 grantée à
+-- anon/authenticated — laisserait une simple ADRESSE signer un « oui » daté, y compris
+-- sur une ligne "jamais demandé". La seule écriture légitime part d'un JETON reçu par
+-- e-mail (la personne a cliqué depuis sa propre boîte) : voir edge functions
+-- newsletter-request-resubscribe (envoie le lien) et newsletter-resubscribe (l'applique).
+-- AUCUN grant anon/authenticated ici — seul le service role (edge function) l'appelle.
+create or replace function public.fn_resubscribe(p_token uuid)
+returns table(found boolean, already boolean)
 language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  v_id uuid;
+  v_already boolean;
 begin
-  update public.newsletter_subscribers
-     set consented_at = now(),
-         unsubscribed_at = null
-   where email = p_email;
+  select id, (unsubscribed_at is null) into v_id, v_already
+    from public.newsletter_subscribers
+   where unsubscribe_token = p_token;
+
+  if v_id is null then
+    return query select false, false;
+    return;
+  end if;
+
+  if not v_already then
+    update public.newsletter_subscribers
+       set consented_at = now(),
+           unsubscribed_at = null,
+           unsubscribed_by = null
+     where id = v_id;
+  end if;
+
+  return query select true, v_already;
 end;
 $$;
 
-revoke all on function public.fn_resubscribe(text) from public;
-grant execute on function public.fn_resubscribe(text) to anon, authenticated;
+revoke all on function public.fn_resubscribe(uuid) from public;
+-- Ni anon ni authenticated : appelée uniquement par l'edge function newsletter-resubscribe
+-- (service role, bypass les grants).
 
 -- ─── Geste admin — écrit une date, jamais un simple basculement de booléen ─────────
 -- La règle "aucun UPDATE sur les abonnés" vise le flip silencieux, pas l'action de
@@ -93,9 +125,13 @@ begin
     raise exception 'not authorized';
   end if;
   if p_action = 'unsubscribe' then
-    update public.newsletter_subscribers set unsubscribed_at = now() where id = p_subscriber_id;
+    update public.newsletter_subscribers
+       set unsubscribed_at = now(), unsubscribed_by = 'admin'
+     where id = p_subscriber_id;
   elsif p_action = 'resubscribe' then
-    update public.newsletter_subscribers set consented_at = now(), unsubscribed_at = null where id = p_subscriber_id;
+    update public.newsletter_subscribers
+       set consented_at = now(), unsubscribed_at = null, unsubscribed_by = null
+     where id = p_subscriber_id;
   else
     raise exception 'invalid action: %', p_action;
   end if;

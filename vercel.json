@@ -187,6 +187,15 @@
           "value": "noindex, nofollow"
         }
       ]
+    },
+    {
+      "source": "/newsletter/reinscription",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
     }
   ]
 }
