@@ -114,7 +114,11 @@ suivi des ouvertures (**on n'en veut pas** : pas de pixel de suivi).
 5. **Aucune policy UPDATE sur `newsletter_subscribers`.** Un consentement ne se bascule pas :
    on écrit une ligne datée. **Case non cochée = 0 ligne écrite** (vérifié en delta).
 6. **Rien ne part vers quelqu'un qui n'a pas dit oui** : un inscrit qui a dit non, ou très
-   exactement « jamais demandé », ne reçoit rien.
+   exactement « jamais demandé », ne reçoit rien. **Et aucune écriture de consentement ne se fait
+   sans la personne** : pas de fonction qui prend une adresse et pose `consented_at = now()` —
+   l'accord s'écrit depuis un **lien reçu par e-mail**, ou il ne s'écrit pas. (Trouvé le 17/09 :
+   `fn_resubscribe(email)` ouvert à `anon` et `authenticated` signait un « oui » daté avec une
+   simple adresse — l'invariant n°1 atteint par un autre chemin.)
 7. **Grants explicites.** La table hérite du `GRANT ALL` par défaut aux rôles publics ; écris
    le `GRANT SELECT` et le `REVOKE` des écritures pour `anon`. Le motif nous a déjà valu un
    DELETE oublié (`bilan_bookings`).

@@ -73,9 +73,14 @@ update public.newsletter_subscribers
    « déjà »), **sans PII dans la réponse**, **jamais 500**.
 3. **Réinscription** — ⚠️ **cas à traiter, la copie le promet** (« pour revenir, il suffit de vous
    réinscrire depuis le site ») : `email` est unique, donc un simple INSERT échoue en `23505`.
-   Il faut un chemin **délibéré** : `fn_resubscribe(p_email)` SECURITY DEFINER qui, sur une ligne
-   désabonnée, pose `consented_at = now()` **et** `unsubscribed_at = null` — une **écriture datée
-   et traçable**, jamais un toggle d'admin. À défaut, la phrase de la page ment.
+   🔴 **Le chemin est un JETON ENVOYÉ PAR E-MAIL, jamais une fonction qui prend une adresse.**
+   Une fonction `fn_resubscribe(email)` — même `SECURITY DEFINER`, même réservée à `is_admin()` —
+   écrit `consented_at = now()` : une **adresse suffirait donc à signer un « oui » daté**, y compris
+   sur une ligne importée « jamais demandé ». **Règle dure : la seule écriture d'un consentement
+   est faite par la personne elle-même, depuis un lien reçu sur sa boîte.** Le formulaire demande
+   la réinscription → un e-mail part → le clic écrit (`consented_at = now()`,
+   `unsubscribed_at = null`). Le message d'écran dit l'**attente** (« regardez vos e-mails : votre
+   inscription sera active après confirmation »), jamais le résultat.
 
 ### 1.3 Campagnes et envois
 
