@@ -9,10 +9,15 @@ import { DRINK_BENEFIT_PRESETS, DRINK_INGREDIENT_PRESETS } from '../../data/drin
 
 export const CATEGORIES = ['wellness', 'energie', 'shakes', 'coffee'] as const;
 
+// Libellés alignés sur la nav publique 3 piliers (Mega Thé / Protein Shake / Coffee,
+// décision RDV Catherine 10/09/2026 — voir src/data/menuData.ts, getPillar()).
+// Les valeurs DB (CATEGORIES) ne changent pas : wellness/energie restent deux lignes
+// distinctes ici (mapping provisoire vers le même pilier public, pas encore tranché —
+// carte complète de Catherine en attente), désambiguïsées entre parenthèses.
 export const CAT_LABEL: Record<string, string> = {
-  wellness: 'Wellness',
-  energie: 'Énergie',
-  shakes: 'Shakes',
+  wellness: 'Mega Thé (wellness)',
+  energie: 'Mega Thé (énergie)',
+  shakes: 'Protein Shake',
   coffee: 'Coffee',
 };
 
