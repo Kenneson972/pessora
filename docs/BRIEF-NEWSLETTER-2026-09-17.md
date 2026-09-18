@@ -367,6 +367,11 @@ paiements **en production** (clé live). Son redéploiement se fait **seul**, av
 Ken**, une fois vérifié que le code de la branche est bien celui qui tourne aujourd'hui. **Personne ne
 le déploie « au passage »**, et **ni Claude ni Élise ne le font sans ce GO nommé.**
 
+**L'ORDRE COMPTE — les deux moitiés du même maillon.** La migration (`newsletter_v2.sql`) est appliquée
+par **@alcyone**, après relecture et **go nommé de Ken** (§0.4) ; les fonctions sont déployées par
+**Ken**. **Ne déploie pas les fonctions avant que la migration soit en base** : elles parlent à des
+tables qui n'existent pas encore. L'ordre : **migration → fonctions → recette live**.
+
 **Recette du déploiement** (@vela, après coup) : `bash /opt/data/clients/pessora/fonctions-live.sh` —
 les 3 fonctions passent de **404** à une réponse métier, et le pied du mail de commande se mesure
 **dans le HTML reçu**, pas dans le fichier.
