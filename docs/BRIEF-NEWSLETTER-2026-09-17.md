@@ -560,4 +560,30 @@ réelle de l'expéditeur ; tant qu'elle n'est pas faite, la première campagne d
 
 ---
 
+## 13. LE DERNIER RÉGLAGE DASHBOARD — FAIT LE 18/09 AU SOIR
+
+**Les 6 champs d'auth sont patchés et vérifiés** (par @alcyone, PATCH partiel par API — jamais un
+remplacement global).
+
+| lecture | avant | après |
+|---|---|---|
+| `#888888` dans les 5 gabarits | 10 | **0** |
+| `#6b6b6b` dans les 5 gabarits | 5 | **15** (3 par gabarit) |
+| `mailer_subjects_confirmation` | `Confirm Your Signup` | **`Confirmez votre inscription — PessÓra`** |
+
+**Trois lectures indépendantes** (@alcyone l'exécutant, @vela avec son instrument calibré, Élise sur
+les compteurs, les 5 titres et la non-régression) : **mêmes chiffres**. Non-régression confirmée —
+`site_url`, `mailer_autoconfirm`, la connexion Google et les 4 autres sujets sont **intacts** : c'était
+bien une mise à jour partielle.
+
+⚠️ **Ce que la comparaison ne peut PAS voir, et qui reste live** : un **placeholder non substitué** dans
+un gabarit du Dashboard (contrôlable seulement sur un **mail reçu**) et l'**expéditeur**, qui n'est pas
+un champ mais de la **délivrabilité** (en-têtes bruts → une Gmail à nous, pas yopmail).
+
+**Reste dans la file, sans urgence** : l'expéditeur/délivrabilité de l'auth · la **première campagne
+de Catherine** (porte §12 : tant qu'elle n'est pas passée, sa première campagne **est** le test) ·
+`fn_pessobot_rate_check` (hors lot).
+
+---
+
 *Élise — 17/09/2026, d'après les arbitrages de la salle PESSORA 2.*
