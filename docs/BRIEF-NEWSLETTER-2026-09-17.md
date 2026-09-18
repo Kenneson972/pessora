@@ -494,4 +494,34 @@ de le redéfaire. C'est exactement ce que la garde existe pour empêcher.
 
 ---
 
+## 11. ④ LE REDÉPLOIEMENT — FAIT LE 18/09, SUR GO NOMMÉ DE KEN
+
+**Commande lancée** : `npx supabase functions deploy stripe-webhook --no-verify-jwt --project-ref
+tulhiipucrnyejheuitv` → **exit 0**, « Deployed Functions ». Lancée **depuis un worktree de `main`**
+(3c9d938) — jamais depuis un checkout de branche ancienne.
+
+**Les trois preuves, mesurées après coup :**
+
+| Preuve | Mesure | Verdict |
+|---|---|---|
+| La fonction parle-t-elle encore elle-même ? | `POST` sans en-tête → **`401 {"error":"Invalid signature"}`** (jamais `UNAUTHORIZED_NO_AUTH_HEADER`) | ✅ le drapeau a pris |
+| L'inventaire de la plateforme | `stripe-webhook` **v15 → v16**, `verify_jwt=False`, `ACTIVE` | ✅ |
+| **Les sources DÉPLOYÉES** (`supabase functions download`) | `sendOrderConfirmation.ts` : **`#6b6b6b`** sur les **3** lignes (étiquette, « Des questions ? », la signature) ; **`#999` : 0** · **`#888` : 0** · **`opacity:0.5` : 0** | ✅ le mail de commande part lisible |
+
+**Non-régression, vérifiée au diff** : le lot n'a apporté à `stripe-webhook` + `_shared` que
+**3 lignes** dans `sendOrderConfirmation.ts` (les encres). **Aucun autre changement** dans le chemin
+des paiements.
+
+⚠️ **Leçon d'instrument, à garder** : **compter une chaîne dans le binaire eszip n'est pas fiable** —
+les sources y sont compressées, donc une chaîne courte sort en **faux positif** et le comptage ne
+veut rien dire. La méthode qui tranche : **télécharger les sources déployées**
+(`npx supabase functions download <slug> --project-ref … --use-api`) **et compter dans les fichiers
+extraits**. C'est celle utilisée ici.
+
+**Limite nommée** : aucun **événement Stripe signé** n'a été envoyé (cela toucherait un vrai
+paiement). La preuve porte donc sur **« la fonction répond et son code déployé est celui attendu »**,
+pas sur « un paiement de test s'est confirmé ».
+
+---
+
 *Élise — 17/09/2026, d'après les arbitrages de la salle PESSORA 2.*
