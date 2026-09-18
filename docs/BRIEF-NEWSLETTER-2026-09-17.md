@@ -296,7 +296,12 @@ rebase — **ne relance pas de `git rebase`.**
 **commentaire** de `send-newsletter` (lignes 49-51 : *« jamais le #888 utilisé pour le reste du pied
 de mail »*) — c'est-à-dire la phrase qui explique **pourquoi** la règle existe. Un remplacement global
 efface l'explication et laisse le suivant refaire l'erreur. **Les tests de la garde, les commentaires
-et le reste du fichier ne bougent pas.**
+et le reste du fichier ne bougent pas.** Mesuré : un `s/#888/#6b6b6b/g` sur les 5 templates ne corrige
+**rien** (leurs valeurs sont `#888888`) et écrit **10 couleurs invalides `#6b6b6b888`** ; dans
+`send-newsletter` il touche le commentaire **et laisse le défaut en place**. Ordre sûr, vérifiable au
+diff : **`color:#888888` d'abord**, puis **`color:#888` non suivi d'un chiffre hexa**, puis
+**`color:#999`**. Le diff doit rendre **14 insertions / 14 suppressions sur 8 fichiers** et
+**zéro `#6b6b6b888`**.
 
 *(Une seule valeur `#6b6b6b` passe AA sur les **trois** fonds du parc : **4,81:1** sur `#f5f3f0`,
 **4,89:1** sur `#F7F5F1`, **5,33:1** sur blanc — rien à décider, aucun cas particulier.)*
@@ -327,6 +332,47 @@ lyra — **pas à `0899a9c`** (ce SHA ne contient ni l'un ni les autres). @alcyo
 atterries sur la branche de doc feraient comparer des branches décalées à la recette.
 
 **F. Rien d'autre ne bouge** : aucun prix, aucun abonnement Stripe, aucun produit du catalogue.
+
+---
+
+## 9. LE DÉPLOIEMENT — LE MAILLON ENTRE LA GATE ET LA CLIENTE (ajouté 18/09)
+
+> Relevé par @vela, revérifié par Élise le 18/09 à 14h05 sur le projet `tulhiipucrnyejheuitv`.
+
+**Ce repo n'a aucune CI** (pas de `.github/`) : merger sur `main` fait redéployer **le site** par
+Vercel — **pas les edge functions Supabase**, qui se déploient **à la main**. Une gate verte ne veut
+donc **pas** dire « la cliente reçoit ». **État live mesuré à l'instant :**
+
+| Fonction | État live |
+|---|---|
+| `newsletter-request-resubscribe` | **404 NOT_FOUND — pas déployée** |
+| `newsletter-resubscribe` | **404 NOT_FOUND — pas déployée** |
+| `newsletter-unsubscribe` | **404 NOT_FOUND — pas déployée** |
+| `send-newsletter` | déployée (401 sans en-tête) |
+| `stripe-webhook` | déployée (401 « Invalid signature ») |
+
+**Conséquence sur les 3 corrections de couleurs** : celle de `sendOrderConfirmation` **ne partira pas**
+avec le merge — cette fonction voyage **dans** `stripe-webhook` (c'est lui qui l'importe). Corriger le
+repo sans redéployer `stripe-webhook` laisse le mail de commande en `#888`/`#999` chez les clientes.
+
+**Après la recette verte et le merge, quatre fonctions à déployer — nommément, par Ken (PAT) :**
+
+```
+npx supabase functions deploy newsletter-request-resubscribe newsletter-resubscribe \
+  newsletter-unsubscribe --project-ref tulhiipucrnyejheuitv
+```
+
+⚠️ **`stripe-webhook` est à part, et ne se déploie pas dans la même fenêtre** : c'est le chemin des
+paiements **en production** (clé live). Son redéploiement se fait **seul**, avec un **GO explicite de
+Ken**, une fois vérifié que le code de la branche est bien celui qui tourne aujourd'hui. **Personne ne
+le déploie « au passage »**, et **ni Claude ni Élise ne le font sans ce GO nommé.**
+
+**Recette du déploiement** (@vela, après coup) : `bash /opt/data/clients/pessora/fonctions-live.sh` —
+les 3 fonctions passent de **404** à une réponse métier, et le pied du mail de commande se mesure
+**dans le HTML reçu**, pas dans le fichier.
+
+**Portée honnête :** ce § dit **qui** et **quand**, sur un état **mesuré**. Il ne dit pas que le
+déploiement est fait — il ne le sera qu'après le GO.
 
 ---
 
