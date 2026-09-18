@@ -48,6 +48,21 @@ const ENCRES_DECLAREES = [
 
 const SEUIL_AA = 4.5;
 
+/**
+ * Les fonds du gabarit, déclarés **et** vérifiés présents.
+ *
+ * 🔴 Pourquoi cette deuxième table, ajoutée après la recette de @vela (17/09) : la règle ①
+ * couvrait les encres, pas les fonds. Si quelqu'un changeait le fond d'un bloc sans faire
+ * suivre la table des couples, la garde aurait **recomputé un couple périmé** et rendu un
+ * vert qui ne décrit plus le mail. C'est le même défaut que la règle ① corrige pour les
+ * encres : une valeur déclarée qui n'existe plus.
+ *
+ * Elle est vérifiée dans les **deux sens** : aucun fond employé sans être déclaré, aucun fond
+ * déclaré qui ne soit plus employé. On ne déduit PAS la structure du HTML (fragile) : on
+ * vérifie que la déclaration et la réalité ne se sont pas désynchronisées.
+ */
+const FONDS_DECLARES = ['#1E3529', '#ffffff', '#f5f3f0', '#f9f7f4'];
+
 // --- contraste WCAG -----------------------------------------------------------
 const canal = (c: number) => {
   const v = c / 255;
@@ -97,6 +112,18 @@ function encresDuGabarit(): { couleur: string; ligne: number }[] {
   return trouvees;
 }
 
+/** Toutes les déclarations `background-color:` avec leur ligne. */
+function fondsDuGabarit(): { couleur: string; ligne: number }[] {
+  const trouvees: { couleur: string; ligne: number }[] = [];
+  source.split('\n').forEach((texte, index) => {
+    const motif = /background-color:\s*(#[0-9A-Fa-f]{3,6})/g;
+    for (const m of texte.matchAll(motif)) {
+      trouvees.push({ couleur: m[1], ligne: index + 1 });
+    }
+  });
+  return trouvees;
+}
+
 describe('gabarit de mail newsletter — contraste et palette', () => {
   it('toute couleur de texte du gabarit est déclarée (aucune encre surprise)', () => {
     const declarees = new Set(ENCRES_DECLAREES.map((e) => e.couleur.toLowerCase()));
@@ -108,6 +135,27 @@ describe('gabarit de mail newsletter — contraste et palette', () => {
       `Le gabarit de mail utilise une couleur de texte absente de la table de cette garde.\n` +
         `Soit on l'ajoute avec son fond (et le contraste est recomputé), soit on ne l'emploie pas :\n` +
         `${intrus.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  it('les fonds déclarés existent dans le gabarit, et aucun fond n’est posé sans être déclaré', () => {
+    const declarees = new Set(FONDS_DECLARES.map((f) => f.toLowerCase()));
+    const employes = fondsDuGabarit();
+
+    const nonDeclares = employes
+      .filter(({ couleur }) => !declarees.has(couleur.toLowerCase()))
+      .map(({ couleur, ligne }) => `${relatif}:${ligne} — fond non déclaré : ${couleur}`);
+
+    const employesSet = new Set(employes.map(({ couleur }) => couleur.toLowerCase()));
+    const introuvables = FONDS_DECLARES.filter((f) => !employesSet.has(f.toLowerCase())).map(
+      (f) => `fond déclaré dans la garde mais absent du gabarit : ${f} — la table a dérivé`,
+    );
+
+    expect(
+      [...nonDeclares, ...introuvables],
+      `Désynchronisation entre la table des fonds et le gabarit : les couples encre × fond ` +
+        `ci-dessus seraient recomptés sur un fond qui n'existe plus (vert qui ne décrit plus le mail).\n` +
+        `${[...nonDeclares, ...introuvables].join('\n')}`,
     ).toEqual([]);
   });
 
