@@ -1,4 +1,5 @@
 import { BOOSTER_PRICE_EUR } from '../../supabase/functions/_shared/pricing.ts';
+import { PILLARS, PILLAR_NAMES, getPillar, resoudreGammePilier, type Pillar } from './pillars';
 
 export { BOOSTER_PRICE_EUR };
 
@@ -280,33 +281,12 @@ export const categoryNames = {
 };
 
 /**
- * Nav publique 3 piliers (décision RDV Catherine 10/09/2026) : MEGA THÉ / PROTEIN SHAKE / COFFEE.
- * « Énergie » n'existe plus comme catégorie visible.
+ * Les 3 piliers publics vivent maintenant dans `./pillars` — **une seule table**, partagée
+ * par la page « La carte », la barre secondaire du menu et la résolution des liens entrants.
+ * Ré-exportés ici pour ne pas casser les imports existants (`getPillar`, `PILLAR_NAMES`…).
  */
-export type Pillar = 'mega_the' | 'protein_shake' | 'coffee';
-
-export const PILLAR_NAMES: Record<Pillar, string> = {
-  mega_the: 'Mega Thé',
-  protein_shake: 'Protein Shake',
-  coffee: 'Coffee',
-};
-
-/**
- * Mapping catégorie DB -> pilier public. shakes/coffee confirmés par Catherine.
- * energie + wellness -> mega_the : mapping provisoire (recettes à base de thé/infusion),
- * à confirmer avec la carte complète. Filet obligatoire (brief 10/09) : toute catégorie
- * DB absente de ce mapping retombe aussi sur mega_the — jamais masquée.
- */
-const CATEGORY_TO_PILLAR: Record<string, Pillar> = {
-  wellness: 'mega_the',
-  energie: 'mega_the',
-  shakes: 'protein_shake',
-  coffee: 'coffee',
-};
-
-export function getPillar(category: string): Pillar {
-  return CATEGORY_TO_PILLAR[category] ?? 'mega_the';
-}
+export { PILLARS, PILLAR_NAMES, getPillar, resoudreGammePilier };
+export type { Pillar };
 
 export const categoryDescriptions = {
   wellness: 'Bien-être & Douceur — P 8€ · M 10€ · G 12€',

@@ -27,20 +27,20 @@ export interface HomeDrinkShowcaseEntry {
 export const homeDrinkShowcase: Record<HomeShowcaseGamme, HomeDrinkShowcaseEntry> = {
   wellness: {
     label: 'Wellness',
-    href: '/menu?gamme=wellness',
+    href: '/menu?gamme=mega_the',
     placeholderClass: 'bg-gradient-to-br from-[oklch(96%_0.03_145)] to-[oklch(92%_0.04_150)]',
     images: { large: null, stackedTop: null, stackedBottom: null },
   },
   energie: {
     label: 'Énergie',
-    href: '/menu?gamme=energie',
+    href: '/menu?gamme=mega_the',
     placeholderClass: 'bg-gradient-to-br from-[oklch(96%_0.02_55)] to-[oklch(90%_0.05_55)]',
     images: { large: null, stackedTop: null, stackedBottom: null },
   },
   shakes: {
     label: 'Shakes',
     largeImageCaption: 'Pink Dragon',
-    href: '/menu?gamme=shakes',
+    href: '/menu?gamme=protein_shake',
     placeholderClass: 'bg-gradient-to-b from-surface-muted to-[oklch(88%_0.02_55)]',
     images: {
       large: '/home-showcase-pink-dragon.webp',

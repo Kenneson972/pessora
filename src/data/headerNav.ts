@@ -6,6 +6,7 @@ import {
   Package,
   UtensilsCrossed,
 } from 'lucide-react';
+import { PILLARS, PILLAR_NAMES } from './pillars';
 
 /** Navigation principale — alignée sur les routes réelles du site */
 export const PRIMARY_NAV: {
@@ -31,12 +32,19 @@ export function isPrimaryNavActive(pathname: string, itemPath: string, matchExac
 /** Barre secondaire type Nespresso : filtres par contexte */
 export type SubNavItem = { label: string; href: string };
 
+/**
+ * Barre du menu — **générée depuis la table des piliers**, aucun libellé recopié.
+ *
+ * Avant : 4 entrées écrites à la main (`Wellness`, `Énergie`, `Shakes`, `Coffee`) qui
+ * envoyaient `?gamme=wellness|energie|shakes|coffee` — des mots que la page ne comprend
+ * plus depuis le passage aux 3 piliers, donc **3 des 4 entrées menaient à une page vide**
+ * (« Aucun produit »). Ici les deux moitiés du problème disparaissent ensemble : le libellé
+ * ET le lien viennent de `PILLAR_NAMES` / `PILLARS`, la même table que lit la page.
+ * Une quatrième entrée ne pourra donc plus être inventée sans toucher la table.
+ */
 export const SUBNAV_MENU: SubNavItem[] = [
   { label: 'Tous', href: '/menu' },
-  { label: 'Wellness', href: '/menu?gamme=wellness' },
-  { label: 'Énergie', href: '/menu?gamme=energie' },
-  { label: 'Shakes', href: '/menu?gamme=shakes' },
-  { label: 'Coffee', href: '/menu?gamme=coffee' },
+  ...PILLARS.map((pilier) => ({ label: PILLAR_NAMES[pilier], href: `/menu?gamme=${pilier}` })),
 ];
 
 export const SUBNAV_EVENEMENTS: SubNavItem[] = [

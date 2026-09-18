@@ -226,7 +226,7 @@ export default function AdminSplitGammes() {
                     { key: 'label',   label: 'Label onglet', placeholder: 'Wellness' },
                     { key: 'eyebrow', label: 'Eyebrow',      placeholder: 'Wellness · PessÓra' },
                     { key: 'title',   label: 'Titre',        placeholder: 'Un concentré de bien-être au naturel' },
-                    { key: 'link_to', label: 'Lien CTA',     placeholder: '/menu?gamme=wellness' },
+                    { key: 'link_to', label: 'Lien CTA',     placeholder: '/menu?gamme=mega_the' },
                   ] as const).map(({ key, label, placeholder }) => (
                     <label key={key} className="flex flex-col gap-1">
                       <span className="text-[10px] uppercase tracking-[0.14em] text-black/50">{label}</span>

@@ -16,7 +16,7 @@ export const splitGammesData: SplitGammeConfig[] = [
     title: 'Un concentré de bien-être au naturel',
     mainImage: null,
     sideImages: [null, null],
-    linkTo: '/menu?gamme=wellness',
+    linkTo: '/menu?gamme=mega_the',
   },
   {
     key: 'energie',
@@ -25,7 +25,7 @@ export const splitGammesData: SplitGammeConfig[] = [
     title: 'Ton boost pour la journée',
     mainImage: null,
     sideImages: [null, null],
-    linkTo: '/menu?gamme=energie',
+    linkTo: '/menu?gamme=mega_the',
   },
   {
     key: 'shakes',
@@ -34,7 +34,7 @@ export const splitGammesData: SplitGammeConfig[] = [
     title: 'Protéines & gourmandise',
     mainImage: null,
     sideImages: [null, null],
-    linkTo: '/menu?gamme=shakes',
+    linkTo: '/menu?gamme=protein_shake',
   },
   {
     key: 'coffee',
