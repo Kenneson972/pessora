@@ -46,10 +46,27 @@ export const SKIN_PROTOCOL_STEPS: SkinProtocolStep[] = [
   // contient vraiment, avec le mot qu'emploie déjà son catalogue (la sous-catégorie
   // s'appelle `serum`) : « Les sérums ». Les quatre autres gestes restent — « nettoie »,
   // « tonifie », « contour des yeux », « hydratation / protection » sont ses mots.
-  { geste: 'Les sérums', keyword: ['sérum', 'serum'] },
-  { geste: 'Le contour des yeux', keyword: ['contour yeux', 'contour des yeux'] },
+  //
+  // `tension` : « Crème Tension Ultime » n'était dans aucune étape, alors que sa fiche est
+  // de sous-catégorie `serum` (mesuré en base le 17/09). Elle appartient donc ici.
+  { geste: 'Les sérums', keyword: ['sérum', 'serum', 'tension'] },
+  // `yeux` : « Crème Hydrant Yeux » manquait aussi — sa sous-catégorie est `contour` et sa
+  // fiche dit « Hydratation intense contour yeux ». L'appariement se fait sur le NOM, et
+  // son nom ne porte pas le mot « contour » : d'où le mot-clé `yeux`.
+  { geste: 'Le contour des yeux', keyword: ['contour yeux', 'contour des yeux', 'yeux'] },
   { geste: 'Hydrater & protéger', keyword: ['fps'] },
 ];
+
+/**
+ * ⚠️ Pourquoi on n'apparie PAS sur `subcategory` alors que la colonne existe et qu'elle a
+ * servi à trouver les deux produits ci-dessus : elle mélange ce qui est tranché et ce qui
+ * ne l'est pas. `nettoyage` couvre « Gommage », « Exfoliant » et « Masque d'Argile » —
+ * trois produits qu'Élise a explicitement laissés en **question** pour Catherine (une
+ * sixième étape ?) — et `serum` couvre aussi « Crème de Nuit », qui est dans la même
+ * question. Une règle par sous-catégorie les rangerait d'office : on écrirait son
+ * protocole à sa place. La garde `skinProtocol.test.ts` verrouille les deux côtés :
+ * les 9 produits rangés ET les 6 qui ne doivent être attrapés par AUCUNE étape.
+ */
 
 /**
  * Assets PACKSHOT — canevas large où le produit n'occupe qu'une bande étroite et

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, join, relative } from 'node:path';
-import { SKIN_PRODUCT_NOTICES } from '../data/skinProtocol';
+import { SKIN_PRODUCT_NOTICES, SKIN_PROTOCOL_STEPS } from '../data/skinProtocol';
 
 /**
  * Garde de SOURÇAGE — citations du protocole Gamme Skin.
@@ -149,5 +149,99 @@ describe('Protocole Gamme Skin — citations', () => {
       fautes,
       `Sourçage des citations rompu (le bloc doit citer la fiche publiée et rien d'autre) :\n${fautes.join('\n')}`,
     ).toEqual([]);
+  });
+});
+
+/**
+ * Garde de RANGEMENT — quels produits tombent dans quelle étape du protocole.
+ *
+ * Deux défauts réels l'ont motivée, mesurés en base le 17/09 sur les 15 fiches Skin actives :
+ * 1. `Crème Hydrant Yeux` et `Crème Tension Ultime` n'étaient dans **aucune** étape, alors
+ *    que leurs fiches disent « Hydratation intense contour yeux » (sous-catégorie
+ *    `contour`) et sont de sous-catégorie `serum`. Réparé par les mots-clés `yeux` et
+ *    `tension` — pas par une règle sur `subcategory`, qui rangerait d'office des produits
+ *    que la cliente n'a pas encore tranchés (voir le commentaire dans `skinProtocol.ts`).
+ * 2. Six produits **doivent rester non rangés** : c'est la question posée à Catherine
+ *    (« six produits ne sont dans aucune étape — dites-moi où ils s'appliquent, ou s'ils ne
+ *    s'appliquent nulle part »). Une sixième étape (« exfolier & masquer ») est une de ses
+ *    options, pas une décision d'équipe.
+ *
+ * Statique volontairement (les noms du catalogue au 17/09) : ce test ne prouve pas que la
+ * base porte encore ces noms — ça, c'est la recette live. Ce qu'il prouve, c'est qu'aucune
+ * évolution du fichier ne rangera un produit en attente de décision.
+ */
+const CATALOGUE_SKIN_17_09 = [
+  'Crème Contour Yeux',
+  'Crème de Nuit',
+  'Crème Hydrant Éclat',
+  'Crème Hydrant Yeux',
+  'Crème Hydratante FPS 30',
+  'Crème Tension Ultime',
+  'Exfoliant',
+  'Gel Contour Yeux',
+  'Gel Nettoyant Resurface',
+  'Gommage',
+  'Lotion Nourrissante',
+  'Lotion Tonique Revitalisant',
+  "Masque d'Argile",
+  'Sérum Niacinamide 10%',
+  'Sérum Rides',
+];
+
+/** Répartition attendue, geste par geste (mesurée en base le 17/09). */
+const RANGEMENT_ATTENDU: Record<string, string[]> = {
+  Nettoyer: ['Gel Nettoyant Resurface'],
+  Tonifier: ['Lotion Tonique Revitalisant'],
+  'Les sérums': ['Crème Tension Ultime', 'Sérum Niacinamide 10%', 'Sérum Rides'],
+  'Le contour des yeux': ['Crème Contour Yeux', 'Crème Hydrant Yeux', 'Gel Contour Yeux'],
+  'Hydrater & protéger': ['Crème Hydratante FPS 30'],
+};
+
+/** Les six en attente de la réponse de Catherine — aucun rangement automatique. */
+const EN_ATTENTE_DE_CATHERINE = [
+  'Crème de Nuit',
+  'Crème Hydrant Éclat',
+  'Lotion Nourrissante',
+  'Exfoliant',
+  'Gommage',
+  "Masque d'Argile",
+];
+
+const produitsRanges = (keywords: string[]) =>
+  CATALOGUE_SKIN_17_09.filter((nom) =>
+    keywords.some((mot) => nom.toLowerCase().includes(mot.toLowerCase())),
+  ).sort();
+
+describe('Protocole Gamme Skin — rangement des produits', () => {
+  it('chaque étape range exactement les produits attendus', () => {
+    const obtenu: Record<string, string[]> = {};
+    for (const etape of SKIN_PROTOCOL_STEPS) {
+      obtenu[etape.geste] = produitsRanges(etape.keyword);
+    }
+    expect(obtenu).toEqual(RANGEMENT_ATTENDU);
+  });
+
+  it('les six produits en attente de Catherine ne sont rangés par AUCUNE étape', () => {
+    const attrapes: string[] = [];
+    for (const nom of EN_ATTENTE_DE_CATHERINE) {
+      const etapes = SKIN_PROTOCOL_STEPS.filter((e) =>
+        e.keyword.some((mot) => nom.toLowerCase().includes(mot.toLowerCase())),
+      ).map((e) => e.geste);
+      if (etapes.length > 0) attrapes.push(`${nom} → ${etapes.join(', ')}`);
+    }
+    expect(
+      attrapes,
+      `Rangement non décidé : ces produits attendent la réponse de Catherine et ne doivent ` +
+        `tomber dans aucune étape (une sixième étape est SON option) :\n${attrapes.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  it('le catalogue de référence est celui de la cliente : 15 fiches, 9 rangées + 6 en attente', () => {
+    const rangees = new Set(
+      SKIN_PROTOCOL_STEPS.flatMap((e) => produitsRanges(e.keyword)),
+    );
+    expect(CATALOGUE_SKIN_17_09).toHaveLength(15);
+    expect(rangees.size).toBe(9);
+    expect(CATALOGUE_SKIN_17_09.length - rangees.size).toBe(EN_ATTENTE_DE_CATHERINE.length);
   });
 });
