@@ -524,4 +524,40 @@ pas sur « un paiement de test s'est confirmé ».
 
 ---
 
+## 12. ⑤ L'EXPÉDITEUR — FAIT LE 18/09 (et pourquoi il n'était pas dans la liste)
+
+**Le trou, mesuré** : `send-newsletter` déployée était le build du **09/09**, d'avant tout ce lot.
+Elle lisait `.from('newsletter_subscribers').select('email')` — **la table brute, sans aucun filtre** :
+elle aurait écrit à **toutes** les lignes, consentantes ou non, désinscrites ou non. **Ce n'était pas
+un défaut de lisibilité, c'était une violation de consentement.** Et le composeur v2, lui, était déjà
+en ligne dans l'admin : **un composeur neuf branché sur un expéditeur vieux de neuf jours.**
+
+**Redéployée depuis `main` — `v12 → v13`, `verify_jwt = True` INCHANGÉ** (c'est correct : c'est un
+endpoint d'admin, le composeur passe le jeton ; le drapeau l'ouvrirait à tout le monde — **le
+drapeau de ⑤ est l'inverse de celui de ④**).
+
+**Le discriminant, sur les sources DÉPLOYÉES** (`functions download`, jamais le binaire) :
+
+| marqueur | v12 (avant) | v13 (après) |
+|---|---|---|
+| `from('newsletter_sendable')` | 0 | **1** ✅ |
+| `from('newsletter_subscribers')` | 1 | **0** ✅ |
+| `#6b6b6b` · `List-Unsubscribe` · `oneClickUrl` | 0 · 0 · 0 | **1 · 4 · 2** ✅ |
+
+⚠️ **Deux pièges de lecture, mesurés tous les deux :** ① **ne jamais compter dans l'eszip** (chaînes
+compressées → faux positifs) ; ② **`#888` n'est PAS un discriminant** — le commentaire « jamais le
+`#888` » (l. 49) survit dans le bundle, donc `#888` peut valoir **2 côté déployé** sans aucun défaut.
+Le seul discriminant qui compte : **`newsletter_sendable` présent ET `newsletter_subscribers` absent**.
+
+**Et la question qui n'avait pas été posée — la fenêtre n'a rien coûté.** Vérifié en base après le
+redéploiement : **`campaigns = 0`, `sends = 0`**, 1 abonné, 0 désinscrit, 0 ligne `test-`, vue d'envoi
+à 1. **Aucune campagne n'est partie** pendant les heures où l'expéditeur était non filtré.
+
+**Reste, comme porte AVANT la première campagne de Catherine** (pas un geste du soir) : envoyer une
+campagne à **un seul destinataire** — notre ligne QA, `source` basculé sur un littéral réel le temps
+du test —, vérifier la réception **dans la boîte**, puis supprimer la ligne. C'est la seule preuve
+réelle de l'expéditeur ; tant qu'elle n'est pas faite, la première campagne de Catherine **est** le test.
+
+---
+
 *Élise — 17/09/2026, d'après les arbitrages de la salle PESSORA 2.*
