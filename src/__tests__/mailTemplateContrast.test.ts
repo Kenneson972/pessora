@@ -422,6 +422,27 @@ describe('mails — une surface à la fois', () => {
           ).toContain('/functions/v1/newsletter-unsubscribe');
           expect(entete, 'l’en-tête doit viser la porte machine, pas la page humaine').toContain('oneClickUrl');
         });
+
+        it('⑦ les destinataires viennent de la vue d’envoi, jamais de la table brute', () => {
+          // Défaut mesuré en production le 18/09 : la fonction déployée (v12, 09/09) lisait
+          // `.from('newsletter_subscribers').select('email')` SANS aucun filtre — le mail partait
+          // vers toutes les lignes, consentantes ou pas, désinscrites ou pas. La v2 lit la vue
+          // (`newsletter_sendable`), qui porte le consentement et la sortie.
+          const vue = /\.from\('newsletter_sendable'\)/.test(source);
+          const brute = /\.from\('newsletter_subscribers'\)/.test(source);
+
+          expect(
+            vue,
+            'l’expéditeur ne lit plus la vue d’envoi : il ne sait plus qui a le droit de recevoir ' +
+              '(ni consentement, ni désinscription). C’est la ligne à ne jamais retirer.',
+          ).toBe(true);
+          expect(
+            brute,
+            'l’expéditeur lit la TABLE BRUTE : c’est exactement l’état déployé du 09/09 mesuré en production ' +
+              'le 18/09 (`.from(\'newsletter_subscribers\').select(\'email\')`, zéro filtre) — le mail serait ' +
+              'écrit à des gens qui ont demandé à sortir. Les destinataires se lisent dans `newsletter_sendable`.',
+          ).toBe(false);
+        });
       } else {
         it('④ aucune ancre sans texte', () => {
           const ancres = [...source.matchAll(/<a\s[^>]*>([\s\S]*?)<\/a>/gi)];
