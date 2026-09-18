@@ -4,7 +4,11 @@ import { getSEOForPath } from '../../data/seoConfig';
 
 const OG_DEFAULTS = {
   title: 'PessÓra — Bar Protéiné & Bien-Être en Martinique',
-  description: 'Shakes protéinés, wellness, énergie et coffee bar à Fort-de-France. Le 1er bar protéiné & bien-être de Martinique.',
+  // Repli servi à toute page sans entrée dédiée : il ne s'affiche pas sur la page, il
+  // s'affiche dans l'APERÇU d'un lien partagé (WhatsApp, Instagram) — donc en premier.
+  // Aligné sur les piliers publics (décision Catherine 10/09), comme `seoConfig.ts`.
+  description:
+    'Mega Thé, Protein Shake et Coffee bar à Fort-de-France. Le 1er bar protéiné & bien-être de Martinique.',
   image: '/logo-pessora.webp',
   // Dimensions réelles de logo-pessora.webp (carré) — jamais 1200x630 en dur,
   // ça produit un letterbox sur tout lien partagé (bug préexistant, 12/09).

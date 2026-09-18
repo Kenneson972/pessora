@@ -273,12 +273,15 @@ export const milkOptions: MilkOption[] = [
   { id: 'riz', name: 'Riz', icon: '🌾' }
 ];
 
-export const categoryNames = {
-  wellness: 'Wellness',
-  energie: 'Énergie Drink',
-  shakes: 'Shakes Protéinés',
-  coffee: 'Coffee'
-};
+/**
+ * (Retiré le 17/09) `categoryNames` — { wellness: 'Wellness', energie: 'Énergie Drink',
+ * shakes: 'Shakes Protéinés', coffee: 'Coffee' }.
+ *
+ * Aucun consommateur : c'était un **cinquième vocabulaire mort**, avec les mots que
+ * Catherine a retirés de sa carte (« Énergie » n'existe plus comme famille visible, les
+ * boissons se rangent sous Mega Thé). Les mots du visiteur vivent désormais à un seul
+ * endroit — `PILLAR_NAMES` dans `./pillars` — et la résolution des liens entrants aussi.
+ */
 
 /**
  * Les 3 piliers publics vivent maintenant dans `./pillars` — **une seule table**, partagée
