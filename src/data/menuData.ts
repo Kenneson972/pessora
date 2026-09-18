@@ -279,6 +279,35 @@ export const categoryNames = {
   coffee: 'Coffee'
 };
 
+/**
+ * Nav publique 3 piliers (décision RDV Catherine 10/09/2026) : MEGA THÉ / PROTEIN SHAKE / COFFEE.
+ * « Énergie » n'existe plus comme catégorie visible.
+ */
+export type Pillar = 'mega_the' | 'protein_shake' | 'coffee';
+
+export const PILLAR_NAMES: Record<Pillar, string> = {
+  mega_the: 'Mega Thé',
+  protein_shake: 'Protein Shake',
+  coffee: 'Coffee',
+};
+
+/**
+ * Mapping catégorie DB -> pilier public. shakes/coffee confirmés par Catherine.
+ * energie + wellness -> mega_the : mapping provisoire (recettes à base de thé/infusion),
+ * à confirmer avec la carte complète. Filet obligatoire (brief 10/09) : toute catégorie
+ * DB absente de ce mapping retombe aussi sur mega_the — jamais masquée.
+ */
+const CATEGORY_TO_PILLAR: Record<string, Pillar> = {
+  wellness: 'mega_the',
+  energie: 'mega_the',
+  shakes: 'protein_shake',
+  coffee: 'coffee',
+};
+
+export function getPillar(category: string): Pillar {
+  return CATEGORY_TO_PILLAR[category] ?? 'mega_the';
+}
+
 export const categoryDescriptions = {
   wellness: 'Bien-être & Douceur — P 8€ · M 10€ · G 12€',
   energie: 'Pré-Workout — P 8€ · M 10€ · G 12€',

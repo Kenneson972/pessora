@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { PageShell } from '../components/layout/PageShell';
 import { useState } from 'react';
-import { boosters, milkOptions, categoryNames, BOOSTER_PRICE_EUR, type MenuItem } from '../data/menuData';
+import { boosters, milkOptions, getPillar, PILLAR_NAMES, BOOSTER_PRICE_EUR, type MenuItem } from '../data/menuData';
 import { useCart } from '../store/cartStore';
 import { buildDrinkCartOptions, getAvailableSizes } from '../lib/cartLine';
 import { useMenuCatalog } from '../hooks/useMenuCatalog';
@@ -187,8 +187,8 @@ const DrinkDetail = () => {
           <nav aria-label="Fil d'Ariane" className={`flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-[10px] uppercase tracking-[0.08em] text-black/40 sm:justify-start sm:text-left ${DRINK_LAYOUT}`}>
             <Link to="/menu" className="hover:text-black transition-colors duration-200">Menu</Link>
             <span aria-hidden="true" className="text-sapin/35">/</span>
-            <Link to={`/menu?gamme=${drink.category}`} className="hover:text-black transition-colors duration-200">
-              {categoryNames[drink.category]}
+            <Link to={`/menu?gamme=${getPillar(drink.category)}`} className="hover:text-black transition-colors duration-200">
+              {PILLAR_NAMES[getPillar(drink.category)]}
             </Link>
             <span aria-hidden="true" className="text-sapin/35">/</span>
             <span className="text-black/70" aria-current="page">{drink.name}</span>
@@ -221,7 +221,7 @@ const DrinkDetail = () => {
               <div className="absolute top-6 left-6">
                 <span className="inline-flex items-center gap-2 bg-white/95 px-4 py-2 rounded-[2px] text-[10px] font-normal uppercase tracking-[0.08em] text-black/70">
                   <CategoryHeroIcon size={14} strokeWidth={1.35} className="text-black/40" aria-hidden />
-                  {categoryNames[drink.category]}
+                  {PILLAR_NAMES[getPillar(drink.category)]}
                 </span>
               </div>
               <div className="absolute bottom-6 left-6 right-6 flex gap-2">
