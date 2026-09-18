@@ -316,6 +316,25 @@ ces corrections, **dans ce même lot**, comme preuve. Deux commits écrivant la 
 (la table des fonds) = exactement le cas du **+3/−3 qui s'annule** au merge et masque une
 régression : on ne le crée pas.
 
+**C bis. LE CÂBLAGE DE LA SORTIE — 2 lignes, dans la même passe que les couleurs.** Aujourd'hui
+`send-newsletter` pose **la même URL** dans le lien visible **et** dans l'en-tête `List-Unsubscribe`,
+et déclare `List-Unsubscribe-Post: One-Click`. Or un clic Gmail/Apple fait un **POST** sur cette URL :
+mesuré en live, **405, 0 octet** — Vercel sert une page statique, aucun code ne se déclenche, et le
+fournisseur enregistre un « one-click » **en échec**.
+
+**Le patch :** `unsubscribeUrl` (`siteUrl`) **reste** le lien visible ; on ajoute à côté
+`const oneClickUrl = \`${supabaseUrl}/functions/v1/newsletter-unsubscribe?token=${r.token}\`` et
+**seule** la ligne `'List-Unsubscribe'` pointe dessus. `List-Unsubscribe-Post: One-Click` reste — il
+devient **vrai**. ⚠️ **`supabaseUrl` existe déjà** dans le fichier (utilisé pour le logo, l. 186) :
+**aucune nouvelle valeur codée en dur** — c'est le piège qui a déjà mordu ce projet
+(`send-contact-email`, adresse en dur).
+
+**Deux portes, deux cibles, chacune déclarée :** l'**en-tête** (machine) → la fonction ; le **lien
+visible** (humain) → la page du site. ⚠️ **Ne réouvre PAS le GET sur la fonction pour « simplifier »** :
+son non-POST sort **avant toute écriture** (`no_op`) **exprès** — c'est l'anti-scanner (Outlook
+SafeLinks et les proxys d'images font des GET sur tous les liens d'un mail : un GET désabonnant
+**vide la liste**). Cette protection est une décision, pas un oubli.
+
 **D. Hors de ton périmètre (geste manuel, aucun code) :** le collage des 5 templates d'auth dans
 le **Dashboard Supabase** (Authentication → Email Templates) — **le fichier du repo n'est pas ce
 qui part**. Recette associée : déclencher un **vrai magic-link** vers une boîte QA et mesurer
@@ -359,7 +378,7 @@ repo sans redéployer `stripe-webhook` laisse le mail de commande en `#888`/`#99
 
 ```
 npx supabase functions deploy newsletter-request-resubscribe newsletter-resubscribe \
-  newsletter-unsubscribe --project-ref tulhiipucrnyejheuitv
+  newsletter-unsubscribe --no-verify-jwt --project-ref tulhiipucrnyejheuitv
 ```
 
 ⚠️ **`stripe-webhook` est à part, et ne se déploie pas dans la même fenêtre** : c'est le chemin des
@@ -375,6 +394,45 @@ tables qui n'existent pas encore. L'ordre : **migration → fonctions → recett
 **Recette du déploiement** (@vela, après coup) : `bash /opt/data/clients/pessora/fonctions-live.sh` —
 les 3 fonctions passent de **404** à une réponse métier, et le pied du mail de commande se mesure
 **dans le HTML reçu**, pas dans le fichier.
+
+### 9.1 Les réglages qui ne vivent QUE dans le Dashboard (aucune recette au repo ne les voit)
+
+**a) `verify_jwt` des 3 fonctions.** `supabase/config.toml` porte **0** bloc `[functions.*]` et **0**
+`no-verify-jwt` : le réglage vit dans le Dashboard, pas dans le repo. Conséquence mesurée :
+`POST /functions/v1/send-newsletter` **sans en-tête → 401** (défaut de la plateforme).
+→ **`--no-verify-jwt` est obligatoire pour les 3**, sinon le POST en un-clic de Gmail/Apple prend un
+**401**, le code n'est jamais atteint, et **la sortie annoncée reste morte — en silence**. La recette
+depuis le site ne le verrait pas : la page, elle, envoie la clé anon. *(Deux chemins, deux verdicts :
+visiteur → la clé anon passe ; fournisseur → aucun en-tête, refusé.)*
+
+**b) `check_rate_limit` est exécutable par n'importe qui.** Elle est appelable **avec la clé anon**
+(mesuré), elle est **étatique donc écrivante**, et `p_key` est un **paramètre du client** : un visiteur
+peut faire grossir `rate_limits` et pré-remplir le bucket d'un autre appelant pour lui faire prendre
+**429** — donc bloquer une désinscription. Les 3 fonctions newsletter en sont **les premières
+consommatrices publiques**. ⚠️ **Le correctif ne peut pas être un `REVOKE … FROM anon, authenticated`** :
+la fonction porte le grant **PUBLIC** (`=X`, accordé par défaut par Postgres — la migration
+`20260601210000` qui la crée ne pose aucun GRANT/REVOKE), et tout rôle est membre de PUBLIC : un revoke
+nominal laisserait la porte ouverte. Le bon geste :
+`REVOKE EXECUTE ON FUNCTION public.check_rate_limit(text, integer, integer) FROM PUBLIC, anon, authenticated;`
+→ **@alcyone le porte, versionné en fichier de migration** (pas un apply ad-hoc : sinon on recrée le
+drift « le repo ne reflète pas la base »), **dans le même GO** que la migration v2.
+
+### 9.2 La chaîne réelle — 4 maillons, pas 1
+
+| # | Maillon | Qui | État mesuré le 18/09 |
+|---|---|---|---|
+| ① | **Migration** `newsletter_v2.sql` en base | @alcyone, **GO nommé de Ken** | **PAS appliquée** (5 colonnes d'origine, 0 fonction, 0 table v2) — sûre et idempotente, le prod actuel n'utilise ni le DELETE anon ni l'UPDATE que la migration révoque |
+| ② | **Merge du site** | @alcyone (fast-forward) | en attente du vert |
+| ③ | **Déploiement des fonctions** (avec `--no-verify-jwt`) | Ken (PAT) ; `stripe-webhook` **à part**, GO explicite | 3 fonctions en **404** |
+| ④ | **Recette live** | @vela | à faire après ③ |
+
+**La recette live, en signatures exactes** (@vela) — c'est la seule qui prouve que la cliente peut sortir :
+
+| test | attendu |
+|---|---|
+| `POST` sans en-tête, **jeton bidon** | `200 {"outcome":"already_or_invalid"}` — **jamais 401** (il manquerait `--no-verify-jwt`), jamais 404/405 |
+| `POST` sans en-tête, **jeton réel** (boîte QA) | `200 {"outcome":"unsubscribed"}` **et** `unsubscribed_at` non nul |
+| `GET` | `200 {"outcome":"no_op"}` **et** `unsubscribed_at` **inchangé** — le seul 200 qui est un succès **et** une absence d'effet |
 
 **Portée honnête :** ce § dit **qui** et **quand**, sur un état **mesuré**. Il ne dit pas que le
 déploiement est fait — il ne le sera qu'après le GO.
