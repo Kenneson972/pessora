@@ -284,8 +284,22 @@ rebase — **ne relance pas de `git rebase`.**
 | # | Fichier | Défaut mesuré | Correction |
 |---|---|---|---|
 | ① | `supabase/functions/newsletter-request-resubscribe/index.ts` | pied `#888` 11 px sur `#f5f3f0` = **3,20:1** (sous AA) | `#6b6b6b` → **4,81:1** |
-| ② | `supabase/functions/_shared/sendOrderConfirmation.ts` | « Des questions ?… » `#888` 12 px / blanc = **3,54:1** ; « © PessÓra · Fort-de-France, Martinique » `#999` 11 px = **2,85:1** | `#6b6b6b` → **5,33:1** |
+| ② | `supabase/functions/_shared/sendOrderConfirmation.ts` (l. 106 et 111) | « Des questions ?… » `#888` 12 px / blanc = **3,54:1** ; « © PessÓra · Fort-de-France, Martinique » `#999` 11 px — **hors de la carte**, sur le fond extérieur `#F7F5F1` = **2,62:1** | `#6b6b6b` → **5,33:1** (le « Des questions ? ») et **4,89:1** (la signature) |
 | ③ | `email-templates/01-confirmation.html` … `05-change-email.html` — **à la racine du repo**, PAS sous `supabase/functions/` (×2 lignes `#888888` : l'adresse et « Message automatique ») | **3,20:1** | `#6b6b6b` |
+
+**B bis. Le geste exact — mesuré, pas approximé :** **14 occurrences, 8 fichiers, rien d'autre**
+(14 insertions / 14 suppressions) : **10** dans les 5 templates (`color:#888888`, ×2 chacun), **1** dans
+`send-newsletter`, **1** dans `newsletter-request-resubscribe`, **2** dans `sendOrderConfirmation`
+(`color:#888` **et** `color:#999`).
+
+⚠️ **Le remplacement porte sur `color:` — JAMAIS sur `#888` tout court.** Sinon on réécrit aussi le
+**commentaire** de `send-newsletter` (lignes 49-51 : *« jamais le #888 utilisé pour le reste du pied
+de mail »*) — c'est-à-dire la phrase qui explique **pourquoi** la règle existe. Un remplacement global
+efface l'explication et laisse le suivant refaire l'erreur. **Les tests de la garde, les commentaires
+et le reste du fichier ne bougent pas.**
+
+*(Une seule valeur `#6b6b6b` passe AA sur les **trois** fonds du parc : **4,81:1** sur `#f5f3f0`,
+**4,89:1** sur `#F7F5F1`, **5,33:1** sur blanc — rien à décider, aucun cas particulier.)*
 
 ⚠️ **① est un fichier AJOUTÉ par ce lot** — sans la correction, le lot publie le défaut qu'on
 répare juste à côté. **② est déjà en production aujourd'hui** (c'est le mail que reçoit une
