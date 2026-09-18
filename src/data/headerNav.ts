@@ -42,12 +42,14 @@ export type SubNavItem = { label: string; href: string };
  * contrôle réel, et la résolution des liens entrants vit dans `src/data/pillars.ts`.
  */
 
-export const SUBNAV_EVENEMENTS: SubNavItem[] = [
-  { label: 'Tous', href: '/evenements' },
-  { label: 'Pop-up', href: '/evenements?type=popup' },
-  { label: 'Atelier', href: '/evenements?type=atelier' },
-  { label: 'Partenariats', href: '/evenements?type=partenariat' },
-];
+/**
+ * (Retiré le 17/09) `SUBNAV_EVENEMENTS` — « Tous / Pop-up / Atelier / Partenariats ».
+ * Même constat que `SUBNAV_MENU` : **aucun consommateur**, et `getSubNavForPath` ne rend
+ * une sous-barre que pour `/nos-produits/…`. Ses mots avaient l'air cliquables sans
+ * l'être — c'était un quatrième vocabulaire mort. Si une sous-barre d'événements est
+ * voulue un jour, elle se câble depuis les types réels (`/evenements?type=…`), pas depuis
+ * une liste que personne ne lit.
+ */
 
 export const SUBNAV_PRODUITS: SubNavItem[] = [
   { label: 'Vue d’ensemble', href: '/nos-produits' },

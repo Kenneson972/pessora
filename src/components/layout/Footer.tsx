@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { cn } from '@heroui/react';
 import { BrandLogo } from '../common/BrandLogo';
+import { PILLAR_NAMES } from '../../data/pillars';
 import { Instagram, MessageCircle } from 'lucide-react';
 import { NewsletterSignup } from './NewsletterSignup';
 import { useCookieConsent } from '../../contexts/CookieConsentContext';
@@ -11,9 +12,18 @@ const FOOTER_GUTTER_X = 'px-4 md:px-10 lg:px-[72px]';
 
 const BORDER_SOFT = 'border-[color:var(--color-footer-border-soft)]';
 
+/**
+ * Colonne « La carte » du pied de page — libellés et liens **alignés sur les piliers publics**
+ * (décision Catherine 10/09 : MEGA THÉ / PROTEIN SHAKE / COFFEE).
+ *
+ * Avant : « Shakes » et « Boissons énergie » — les vieux mots, affichés sur **toutes** les
+ * pages du site, et qui ne menaient même pas au filtre correspondant (les trois entrées
+ * pointaient la carte nue). Ici chaque entrée mène à son pilier, et le mot affiché est celui
+ * que le visiteur retrouve sur la page.
+ */
 const MENU_LINKS = [
-  { label: 'Shakes', to: '/menu' },
-  { label: 'Boissons énergie', to: '/menu' },
+  { label: PILLAR_NAMES.mega_the, to: '/menu?gamme=mega_the' },
+  { label: PILLAR_NAMES.protein_shake, to: '/menu?gamme=protein_shake' },
   { label: 'Carte complète', to: '/menu' },
 ];
 const ESPACE_LINKS = [

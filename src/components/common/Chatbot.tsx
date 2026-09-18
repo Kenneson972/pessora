@@ -23,9 +23,15 @@ interface Message {
   timestamp?: Date;
 }
 
+/**
+ * Suggestions du bot — mêmes mots que la carte (piliers publics, décision Catherine 10/09).
+ * Avant : « Wellness (Douceur) / Énergie Drink (Focus) / Shakes protéinés (Sport) » — les
+ * vieux libellés, lus par le visiteur qui ouvre le bot. Les parenthèses sont ses mots à
+ * elle (« Bien-être & Douceur », « Post-Workout ») : on ne change que le nom de la famille.
+ */
 const QUICK_SUGGESTIONS = {
   default: ['Voir le menu', 'Horaires d\'ouverture', 'Différence entre les boissons', 'Challenge 21 jours'],
-  menu: ['Wellness (Douceur)', 'Énergie Drink (Focus)', 'Shakes protéinés (Sport)', 'Prix des boissons'],
+  menu: ['Mega Thé (Douceur)', 'Protein Shake (Sport)', 'Coffee', 'Prix des boissons'],
   health: ['Combien de protéines ?', 'Végétalien ?', 'Calories ?', 'Ingrédients'],
 };
 

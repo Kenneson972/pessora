@@ -19,9 +19,9 @@ export const seoConfig: Record<string, PageSEOEntry> = {
   '/': {
     title: 'PessÓra - Le 1er Bar Protéiné & Bien-Être de Martinique',
     description:
-      'Shakes protéinés, wellness, énergie et coffee bar à Fort-de-France. Le 1er bar protéiné & bien-être de Martinique.',
+      'Mega Thé, Protein Shake et Coffee bar à Fort-de-France. Le 1er bar protéiné & bien-être de Martinique.',
     ogTitle: 'PessÓra — Bar Protéiné & Bien-Être en Martinique',
-    ogDescription: 'Shakes protéinés, wellness, énergie et coffee bar à Fort-de-France. Découvrez le 1er bar protéiné & bien-être de Martinique.',
+    ogDescription: 'Mega Thé, Protein Shake et Coffee bar à Fort-de-France. Découvrez le 1er bar protéiné & bien-être de Martinique.',
     ogImage: '/og-default-1200x630.png',
     ogImageWidth: 1200,
     ogImageHeight: 630,
@@ -35,10 +35,10 @@ export const seoConfig: Record<string, PageSEOEntry> = {
     ogType: 'website',
   },
   '/menu': {
-    title: 'Menu | PessÓra - Boissons Wellness, Énergie & Shakes',
-    description: 'Consultez notre menu : gamme Wellness, Énergie Drink, Shakes protéinés et Coffee. Prix et ingrédients.',
+    title: 'Menu | PessÓra - Mega Thé, Protein Shake & Coffee',
+    description: 'Consultez notre menu : gamme Mega Thé, Protein Shake et Coffee. Prix et ingrédients.',
     ogTitle: 'La Carte — PessÓra',
-    ogDescription: 'Découvrez nos boissons protéinées, wellness, énergie et coffee. Prix, ingrédients et bienfaits.',
+    ogDescription: 'Découvrez nos boissons Mega Thé, Protein Shake et Coffee. Prix, ingrédients et bienfaits.',
     ogImage: '/menu-header.webp',
     ogImageWidth: 1024,
     ogImageHeight: 434,
