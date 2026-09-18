@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { BrandLogo } from '../../components/common/BrandLogo';
 import { AdminDashboardBottomNav } from '../../components/dashboard/DashboardBottomNav';
 import { AdminToastProvider } from '../../components/admin/AdminToast';
+import { PUBLIC_ORIGIN } from '../../lib/adminOrigin';
 
 const NAV: {
   label: string;
@@ -64,9 +65,9 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         aria-label="Navigation admin"
       >
         <div className="flex flex-col items-center lg:w-full lg:items-stretch lg:px-4">
-          <Link to="/" className="flex justify-center lg:justify-start" aria-label="Accueil">
+          <a href={PUBLIC_ORIGIN} className="flex justify-center lg:justify-start" aria-label="Retour au site PessÓra — accueil">
             <BrandLogo height={24} />
-          </Link>
+          </a>
           <p className="mt-3 hidden lg:block text-[9px] font-medium uppercase tracking-[0.2em] text-black/35">
             Administration
           </p>
@@ -134,14 +135,14 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between border-b border-noir/[0.06] bg-white/95 px-4 backdrop-blur-md md:hidden">
-          <Link
-            to="/"
+          <a
+            href={PUBLIC_ORIGIN}
             className="inline-flex min-h-[44px] min-w-0 items-center gap-2 text-noir transition-opacity hover:opacity-75"
             aria-label="Retour au site PessÓra — accueil"
           >
             <ArrowLeft size={18} strokeWidth={1.5} className="shrink-0 text-black/55" aria-hidden />
             <BrandLogo height={22} />
-          </Link>
+          </a>
           <span className="max-w-[45%] truncate text-[9px] font-medium uppercase tracking-[0.18em] text-black/35">
             Administration
           </span>
