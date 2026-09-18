@@ -7,7 +7,7 @@ import { ShoppingBag } from 'lucide-react';
 import { SectionTitle } from '../components/ui/SectionTitle';
 import { ItemListJsonLd } from '../components/seo/ProductJsonLd';
 import { ProductCard } from '../components/ui/ProductCard';
-import { badgeLabels, getPillar, PILLAR_NAMES, type MenuItem, type Pillar } from '../data/menuData';
+import { badgeLabels, getPillar, PILLAR_NAMES, resoudreGammePilier, type MenuItem, type Pillar } from '../data/menuData';
 import { getAvailableSizes } from '../lib/cartLine';
 import { useMenuCatalog } from '../hooks/useMenuCatalog';
 import { useStaggerReveal } from '../lib/motionReveal';
@@ -73,8 +73,15 @@ const Menu = () => {
   const searchQuery = (searchParams.get('q') ?? '').trim();
   const isSearchMode = searchQuery.length > 0;
 
-  const filterKey = searchParams.get('gamme');
-  const activePillar = !filterKey ? null : filterKey as Pillar;
+  /**
+   * Le mot d'un lien entrant (`?gamme=`) passe par la **table des piliers** : un mot ancien
+   * (`wellness`, `energie` → Mega Thé · `shakes` → Protein Shake) se range sur son pilier,
+   * un mot vraiment inconnu retombe sur `null` = « Tous ». Avant, la valeur était castée
+   * (`filterKey as Pillar`) sans aucune résolution : `?gamme=wellness` ne correspondait à
+   * rien et affichait « Aucun produit » — 3 des 4 entrées de la barre du menu y menaient.
+   * Un lien partagé ne doit jamais fabriquer une page vide.
+   */
+  const activePillar = resoudreGammePilier(searchParams.get('gamme'));
 
   const clearSearch = () => {
     const next = new URLSearchParams(searchParams);
@@ -241,7 +248,7 @@ const Menu = () => {
           <div className="mx-auto flex max-w-7xl justify-center py-4 md:py-5">
             <Segment
               size="sm"
-              selectedKey={filterKey ?? 'all'}
+              selectedKey={activePillar ?? 'all'}
               onSelectionChange={(key) => {
                 if (!key || key === 'all') {
                   const next = new URLSearchParams(searchParams);
@@ -315,7 +322,7 @@ const Menu = () => {
               </EmptyState.Content>
             </EmptyState>
           )
-        ) : !filterKey ? (
+        ) : !activePillar ? (
           /* Mode « Tout » : groupé par pilier avec titres de section */
           PILLAR_GROUPS.map(({ label, key }) => {
             const items = catalogItems.filter((i) => getPillar(i.category) === key);

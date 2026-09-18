@@ -329,7 +329,7 @@ export default function AdminCarousel() {
                     <input
                       value={form.link_to}
                       onChange={(e) => setForm((f) => ({ ...f, link_to: e.target.value }))}
-                      placeholder="/menu?gamme=wellness"
+                      placeholder="/menu?gamme=mega_the"
                       className="rounded-[6px] border border-noir/[0.15] px-3 py-2 text-[13px] outline-none focus:border-noir/40"
                     />
                   </label>
