@@ -79,7 +79,7 @@ function buildEmailHtml(orders: OrderRow[], siteUrl: string): string {
           </tr>
           <tr>
             <td style="padding:32px 32px 8px;text-align:center;">
-              <p style="margin:0 0 4px;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#1E3529;opacity:0.5;">Paiement confirmé</p>
+              <p style="margin:0 0 4px;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#6b6b6b;">Paiement confirmé</p>
               <h1 style="margin:0 0 12px;font-size:24px;color:#1E3529;font-weight:600;">Merci ${escapeHtml(clientName)} !</h1>
               <p style="margin:0 0 4px;font-size:13px;color:#555;">Commande n° ${escapeHtml(orderNumbers)}</p>
               <p style="margin:0;font-size:13px;color:#555;">${escapeHtml(pickupLines)}</p>

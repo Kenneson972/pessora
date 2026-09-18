@@ -151,10 +151,9 @@ const SURFACES: Surface[] = [
       { couleur: '#1E3529', fond: '#ffffff', ou: 'lignes d’articles et total' },
       { couleur: '#1E3529', fond: '#ffffff', ou: 'montant total' },
       {
-        couleur: '#1E3529',
+        couleur: '#6b6b6b',
         fond: '#ffffff',
-        ou: 'étiquette « Paiement confirmé » (11 px, opacité 50 %)',
-        opacite: 0.5,
+        ou: 'étiquette « Paiement confirmé » (11 px) — une opacité n’est pas une encre',
       },
       { couleur: '#555', fond: '#ffffff', ou: 'numéro de commande et instructions de retrait' },
       { couleur: '#ffffff', fond: '#1E3529', ou: 'bouton « Suivre ma commande »' },
@@ -374,6 +373,25 @@ describe('mails — une surface à la fois', () => {
             echecs.join('\n') +
             '\nRemède : employer une encre DÉCLARÉE plutôt qu’une opacité, ou remonter l’opacité jusqu’à 4,5:1.',
         ).toEqual([]);
+      });
+
+      it('⑥ toute opacité de texte est déclarée, et aucune ne dort dans la table', () => {
+        const trouvees = [...source.matchAll(/opacity:\s*([\d.]+)/g)].map((m) => Number(m[1]));
+        const declarees = surface.encres.filter((e) => e.opacite !== undefined).map((e) => e.opacite as number);
+        const vu = [...trouvees].sort().join(', ') || 'aucune';
+        const attendu = [...declarees].sort().join(', ') || 'aucune';
+        expect(
+          vu,
+          'Les opacités trouvées ne correspondent pas aux opacités déclarées.\n' +
+            'Une opacité NON déclarée est comptée comme opaque par la règle ③ : une encre à 50 % peut être ' +
+            'à 2,91:1 et passer pour 13:1. Une opacité déclarée puis retirée du code laisse la table mentir.\n' +
+            'trouvées dans ' +
+            surface.fichier +
+            ' : ' +
+            vu +
+            '\ndéclarées dans la table : ' +
+            attendu,
+        ).toBe(attendu);
       });
 
       if (surface.sortieExigee) {
