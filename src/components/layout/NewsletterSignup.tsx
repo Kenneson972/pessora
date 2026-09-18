@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import type { NewsletterSource } from '../../lib/newsletterSources';
 import { Link } from 'react-router-dom';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,8 +27,8 @@ export type NewsletterSignupProps = {
   minimal?: boolean;
   /** 'dark' (défaut, fond sombre type footer) ou 'light' (carte claire type ChallengeClosedState). */
   theme?: 'dark' | 'light';
-  /** Valeur libre pour tracer l'origine de l'inscription (colonne `source`). */
-  source?: string;
+  /** Origine de l'inscription (colonne `source`) — REQUISE : un défaut silencieux rend une ligne indistinguable d'un vrai abonné du footer. Union fermée : une faute de frappe ne compile pas. */
+  source: NewsletterSource;
 };
 
 export function NewsletterSignup({
@@ -36,7 +37,7 @@ export function NewsletterSignup({
   compact = false,
   minimal = false,
   theme = 'dark',
-  source = 'footer',
+  source,
 }: NewsletterSignupProps) {
   const honeypotRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'duplicate' | 'error'>('idle');

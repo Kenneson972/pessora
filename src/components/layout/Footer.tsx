@@ -177,7 +177,7 @@ const FooterContactNav = ({
 };
 
 function FooterSignupBlock() {
-  return <NewsletterSignup align="left" compact minimal className="mt-0 w-full max-w-sm" />;
+  return <NewsletterSignup source="footer" align="left" compact minimal className="mt-0 w-full max-w-sm" />;
 }
 
 /** Colonne gauche : navigation + newsletter, calée sur le bord utile. */
@@ -241,7 +241,7 @@ const Footer = () => {
 
           {/* Newsletter pleine largeur */}
           <section aria-label="Newsletter" className="border-t border-[color:var(--color-footer-border-soft)] pt-8">
-            <NewsletterSignup align="left" compact minimal className="mt-0 w-full" />
+            <NewsletterSignup source="footer" align="left" compact minimal className="mt-0 w-full" />
           </section>
         </div>
 

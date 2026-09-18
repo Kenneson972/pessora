@@ -1,7 +1,11 @@
 import { NewsletterSignup } from '../layout/NewsletterSignup';
 import type { ChallengeAvailabilityCase } from '../../hooks/useChallengeAvailability';
+import type { NewsletterSource } from '../../lib/newsletterSources';
 
-const COPY: Record<Exclude<ChallengeAvailabilityCase, 'bookable'>, { title: string; body: string; source: string }> = {
+const COPY: Record<
+  Exclude<ChallengeAvailabilityCase, 'bookable'>,
+  { title: string; body: string; source: NewsletterSource }
+> = {
   'outside-window': {
     title: 'Les inscriptions au bilan ouvrent bientôt',
     body: "Les créneaux de bilan s'ouvrent deux semaines avant le début du challenge. Laisse ton e-mail : tu seras prévenu·e du prochain challenge, avant tout le monde.",
