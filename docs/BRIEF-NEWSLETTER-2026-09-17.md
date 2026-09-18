@@ -12,7 +12,14 @@
 ## 0. RÈGLES DE TRAVAIL (non négociables)
 
 ```
-- Pars de origin/main. Travaille dans un WORKTREE À PART :
+- **AVANT TOUT, récupère une base à jour.** S'il reste des modifications non committées,
+  `git rebase` refuse de démarrer (`cannot rebase: You have unstaged changes`) :
+      git add -A && git commit -m "wip"
+      git fetch origin
+      git rebase origin/docs/brief-newsletter-2026-09-17   # = main + ce fichier
+  (`git merge origin/docs/brief-newsletter-2026-09-17` marche aussi — un conflit se lit mieux
+  dans un merge que dans un rebase.)
+- Travaille dans un WORKTREE À PART :
     git worktree add -b <ta-branche> /opt/data/repos/pessora-<ta-branche> origin/main
   Le clone /opt/data/repos/pessora est posé sur lot/porte-admin — n'y travaille pas.
 - PAS de `npm install` : symlink de node_modules
@@ -58,6 +65,19 @@
    `List-Unsubscribe-Post: List-Unsubscribe=One-Click`.
 
 5. **Deux pages publiques** : GET (confirmation, sans effet) et POST (désinscription enregistrée).
+
+**Déjà livré — à RÉUTILISER, pas à réécrire :**
+
+- **`src/lib/newsletterSources.ts`** — l'union **fermée** des 6 origines réelles, **le seul lieu
+  d'édition du vocabulaire** (une faute de frappe ne compile pas), et côté lecture la
+  correspondance littéral → mots de l'admin (jamais un slug affiché à Catherine).
+- **`NewsletterSignup` porte déjà `source` comme prop REQUISE** (le défaut JS `'footer'` est
+  retiré, ses deux points d'appel du footer sont nommés) — c'est le piège §2.2, **déjà fermé**.
+- Ces deux pièces viennent de la branche `lot/lyra-source-required` @ `088ab84`, **recettée**
+  (@vela, `tsc` vert, épreuve par mutation) et **mergée le 17/09**. Si le fichier n'est pas dans
+  ton arbre : `git show origin/lot/lyra-source-required:src/lib/newsletterSources.ts`.
+- ⚠️ **N'écris pas une septième liste d'origines.** Cette liste est une **garde de frappe**, elle
+  ne remplace pas le tri côté envoi, qui reste le prédicat en base (`lower(source) LIKE 'test-%'`).
 
 **Hors périmètre de cette passe** (ne pas les ouvrir sans un mot de Ken) : import du CSV de
 Catherine · colonne `email` sur `event_registrations` · CRUD des campagnes côté admin ·
