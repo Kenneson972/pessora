@@ -48,7 +48,17 @@ La **pose des polices sur le site** est un **lot à part** (graisse 300 à mesur
 contraste), il peut arriver après les visuels — **la voix, elle, est figée maintenant**, sinon les visuels
 sont à refaire.
 
-## 5. Qui
+## 5. Ce qu'on attend encore de Catherine — les fichiers de marque
+
+Une seule question, deux manques réglés : **sa charte graphique, ou le dossier de son graphiste.**
+
+- **le logo vectoriel** (SVG / AI / EPS). Ce qu'on a aujourd'hui : un unique raster **1024 × 1024** servi sous trois noms (`logo-pessora.webp`, `logo-o.webp`, `logo.webp` — même fichier). Il tient le web à 36 px et un post Instagram ; il ne tient pas un agrandissement ni une impression.
+- **le nom des polices de la charte.** Le projet déclare `Berthold Baskerville Book` (éditorial) et `Akkurat Pro` (interface) depuis le **premier commit du dépôt** — ces noms viennent avec le site de Catherine, ce ne sont pas les nôtres. Le mot-symbole est très probablement composé dans la première, mais **aucun fichier de police n'existe chez nous** : la charte seule le confirmera.
+  → **Conséquence pratique, valable dans tous les cas** : le mot-symbole est **un asset**, jamais du texte tapé (son « Ó » est le fruit dessiné de l'emblème — aucune police ne le produira). Les visuels l'utilisent tel quel, et les textes restent dans la voix libre figée (§2).
+
+Ces deux points **ne bloquent pas la production** : l'emblème tracé (contrôle de fidélité 98,21 % de recouvrement) sert pour les agrandissements, et le fichier d'origine reste demandé **pour un vrai tirage**.
+
+## 6. Qui
 
 | Qui | Quoi |
 |---|---|
@@ -58,4 +68,5 @@ sont à refaire.
 | @nova | ce brief, la cohérence cliente, et l'envoi (via Ken — aucun canal client direct) |
 
 **Hors de ce brief** (à ne pas élargir en silence) : la levée du `noindex`, la bascule Stripe live, la
-désactivation du banc d'essai. Aucun des trois n'est couvert par le go du 19/09.
+désactivation du banc d'essai, et la police de nos propres documents (le devis est composé en Playfair Display +
+Lato — décision séparée, après celle de Catherine). Aucun de ces points n'est couvert par le go du 19/09.
