@@ -3,6 +3,10 @@
 Branche `lot/lyra-apercu-carte-a6`, posée sur `90106a5` (le lot `lot/nova-carte-a6` n'est **pas** touché).
 Auteur : direction artistique (@lyra). Rien ici n'est envoyé à la cliente sans le mot de Ken.
 
+> **STATUT au 19/09 : carte ABANDONNÉE** (décision de Ken — campagne Instagram, pas de carton). Rien n'est parti
+> chez Catherine, aucun tirage lancé. Ce dossier est conservé comme **mesure** : si un support imprimé revient
+> un jour (autocollant de comptoir, flyer), il repart de ces chiffres et des deux gardes, pas de zéro.
+
 ## Les deux fichiers qui peuvent être joints au message
 
 | Fichier | Ce que c'est |
@@ -56,32 +60,45 @@ Le PNG de ce dossier a été régénéré **à l'identique** par @vela dans un e
 si quelqu'un doute du fichier, il relance le script et retombe dessus. Les empreintes épinglées pour l'envoi
 vivent dans le message de @nova — **un seul lieu pour un même chiffre**.
 
-## Si le QR doit porter un marqueur de suivi (mesuré le 19/09)
+## Carte ABANDONNÉE le 19/09 (décision de Ken) — mesures conservées
 
-Question posée par @nova : sans marqueur, un scan au comptoir et un clic Instagram arrivent identiques, et le
-carton se pose sans qu'on puisse dire s'il a servi. Ce que la carte accepte, mesuré :
+Ken a tranché : campagne Instagram, pas de carton ; « les gens vivent sur Instagram ». Rien n'est parti chez
+Catherine, aucun tirage lancé. Cette section reste **comme mesure**, pas comme travail en attente.
 
-| Contenu du QR | signes | version | modules | module à 44 mm |
+### Correction d'une erreur de ma table (@vela, 19/09)
+
+Ma colonne « module » divisait les 44 mm par les modules **du symbole** (37, 41, 45) en **oubliant les 8 modules
+de bord** — qui sont pourtant dessinés *dans* les 44 mm (le générateur est appelé avec `border=4`, et c'est
+l'image entière qui est ramenée à 44 mm). Mesure de @vela sur l'aperçu déposé : pas réel de **0,9794 mm** par
+module. Chiffres justes :
+
+| Contenu du QR | signes | modules du symbole | **+ bord 8 = total** | module à 44 mm |
 |---|---|---|---|---|
-| adresse actuelle | 52 | 5 | 37 | **1,19 mm** |
-| `?src=carton` | 63 | 6 | 41 | **1,07 mm** |
-| `?utm_source=carton&utm_medium=qr` | 84 | 7 | 45 | **0,98 mm** |
+| adresse actuelle | 52 | 37 | 45 | **0,978 mm** |
+| `?src=carton` | 63 | 41 | 49 | **0,898 mm** |
+| `?utm_source=carton&utm_medium=qr` | 84 | 45 | 53 | **0,830 mm** |
 
-En correction **Q** et à 44 mm, le module reste à **≥ 1,00 mm jusqu'à 74 signes** : un marqueur **court**
-(`?src=…`) passe sans rien changer d'autre. Un triplet utm tombe sous le plancher de 1,00 mm (il faudrait
-descendre en correction M, plus fragile sur du papier mat et pour un carton qui vit des mois).
+Conséquence honnête : **le carton, tel qu'il était rendu, était déjà sous le plancher de 1,00 mm que je m'étais
+fixé** — ce n'est pas le marqueur qui le faisait passer dessous, c'était vrai avant. La bascule du plancher
+n'était donc pas à 74 signes mais bien plus tôt (46 signes).
 
-**L'adresse imprimée sous le QR, elle, ne peut pas porter ce marqueur** : mesurée **60,4 mm** d'encre
-aujourd'hui (sur l'aperçu déposé), elle passe à **75,7 mm** avec `?src=carton` — la carte bord à bord, sans
-marge. Elle garde donc l'adresse courte : c'est le repli pour quelqu'un qui tape l'adresse, pas la source du
-suivi. Le marqueur vit **dans le QR, jamais dans le texte**.
+**La règle devient utilisable sous une forme simple** (@vela) : *le côté du QR en millimètres doit au moins
+égaler son nombre **total** de modules* — 45 mm pour l'adresse actuelle, 49 mm avec `?src=carton`, 53 mm avec le
+triplet utm, contre 44 mm. La place existe : l'adresse imprimée est posée 3 mm sous le bas du QR, elle descend
+d'autant, et il reste la hauteur jusqu'au bas de carte.
 
-Même famille de défaut que la phrase, traitée pareil : **la ligne d'adresse était sans aucune garde de
-largeur**. Elle en a une maintenant (les deux moteurs), avec refus bruyant mesuré : 76,0 mm d'encre pour 71 mm
-de zone. Un marqueur collé à l'adresse arrête donc le script au lieu de sortir de la carte en silence.
+Ce qui reste vrai pour tout support imprimé futur (autocollant de comptoir, flyer) : ces deux chiffres sont à
+revérifier avec cette règle, et la recette reste le **scan du PDF imprimé sur deux téléphones** — un plancher de
+1,00 mm est une règle d'impression, pas un scan mesuré.
 
-Changer le contenu du QR **re-rend les deux aperçus et change leurs empreintes épinglées** : à trancher
-**avant** le rendu final, pour n'épingler qu'une fois.
+### L'adresse imprimée sous le QR
+
+Mesurée **60,4 mm** d'encre sur l'aperçu déposé ; avec `?src=carton` elle passe à **75,7 mm** — la carte bord à
+bord (zone utile 75 mm) : elle ne peut donc **pas** porter le marqueur de suivi. C'est le repli pour quelqu'un
+qui tape l'adresse, pas la source du suivi.
+
+Même famille de défaut que la phrase, traitée pareil : **la ligne d'adresse n'avait aucune garde de largeur**.
+Elle en a une (les deux moteurs), avec refus bruyant mesuré : 76,0 mm d'encre pour 71 mm de zone.
 
 ## Preuve rouge / vert (rejouée, pas déclarée)
 
