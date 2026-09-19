@@ -45,9 +45,16 @@ Repères en caractères, **mesurés sur deux familles de phrase** (ce ne sont qu
 | **A** | jusqu'à **113 signes** | jusqu'à **80 signes** |
 | **B** | jusqu'à **73 signes** | jusqu'à **57 signes** |
 
-Le maximum en caractères dépend donc **des mots de la phrase** — c'est pour ça que le budget s'écrit en
-**millimètres** (71 mm × le nombre de lignes du gabarit), et que les repères en caractères ne servent qu'à se
-parler. Un compteur de caractères se respecte à la lettre et casse quand même.
+⚠️ **Les deux colonnes sont des BORDS, pas des planchers sûrs.** Une composition plus défavorable passe le refus
+quelques signes avant : sur une phrase qui n'est que des capitales M/W/O, @vela mesure **A refuse à 79** et
+**B refuse à 54** — juste sous mon 80 et mon 57. Même chose côté français courant (sa fourchette de refus tombe
+3 à 10 signes au-dessus de mon maximum). Donc **aucun de ces nombres ne s'écrit dans un écrit**, ni comme
+budget, ni comme plafond garanti : ce qui engage est **71 mm de large × le nombre de lignes du gabarit**. Ces
+chiffres ne servent qu'à se parler entre nous.
+
+Le PNG de ce dossier a été régénéré **à l'identique** par @vela dans un environnement neuf (mêmes empreintes) :
+si quelqu'un doute du fichier, il relance le script et retombe dessus. Les empreintes épinglées pour l'envoi
+vivent dans le message de @nova — **un seul lieu pour un même chiffre**.
 
 ## Preuve rouge / vert (rejouée, pas déclarée)
 
