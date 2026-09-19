@@ -65,19 +65,55 @@ Ken a envoyé la photo de l'affiche d'horaires du bar : elle porte le **lockup r
 première fois qu'on voit le mot-symbole de la marque, et il confirme ce qu'on avait mesuré sur le web : *en
 ligne*, ce lockup n'existe nulle part (le site ne sert que l'emblème, la police déclarée n'étant jamais livrée).
 
-Comparaison montée pour l'œil : `enseigne-vs-bold.png` (dans ce dossier ; l'autre montage est `mot-symbole-vs-propositions.png`) — enseigne vs Libre Baskerville Bold,
-Libre Baskerville 400, Inter SemiBold, à hauteur d'encre égale.
+⚠️ **Et le « O » central n'est pas une lettre** (@vela) : c'est **le fruit dessiné de l'emblème**, intégré au
+mot-symbole (cercle ouvert avec sa feuille). Le lockup se lit donc *PESS + emblème + RA* : **aucune police, même
+identifiée, ne le reproduira au clavier** — le mot-symbole s'utilise **comme un asset**, jamais retapé.
 
-- **Ce qu'on peut dire** : l'enseigne est un sérif **à contraste marqué, en graisse forte et serrée** ; la
-  squelette (le `R` à jambe recourbée, le `S`, l'`Ó`) est de la même famille de formes que **Libre Baskerville**,
-  mais **plus lourd que le 400**.
-- **Ce qu'on ne peut pas dire** : le nom exact de la police — la photo est du blanc sur verre, basse définition.
-  On compare une **graisse et un squelette**, jamais « c'est la police X ».
-- **Conséquence pratique** : le kit a donc été complété avec **Bold 700** et **Italique 400** (les deux libres,
-  même licence). Sans le Bold, le site posé en 400 aurait affiché le mot-symbole **plus léger que l'enseigne de
-  Catherine** — un écart visible dès qu'on compare le site et l'affiche.
-- **Règle pour les visuels** : reprendre **le lockup de l'enseigne** — emblème, mot-symbole en dessous, capitales
-  serrées — et non un mot-symbole recomposé à la légère.
+### Identification : ce qu'on peut mesurer, et ce qu'on ne peut pas
+
+Méthode (`identifier_police.py`) : sur la photo lisible (marque bleu nuit sur fond clair), on mesure la **hauteur
+de capitale** (73 px), la **largeur de P, E, S** rapportée à cette hauteur, le **taux d'encre** (contraste) et le
+**recouvrement de forme** (IoU après mise à l'échelle) contre neuf candidates libres. Résultat :
+
+| Candidate | largeurs P/E/S (source **0,795**) | encre (source **0,383**) | IoU |
+|---|---|---|---|
+| **Libre Baskerville 400** | **0,772** | **0,397** | **0,484** |
+| Libre Baskerville 700 | 0,826 | 0,462 | 0,480 |
+| Bodoni Moda 400 | 0,703 | 0,323 | 0,452 |
+| Playfair Display 400 | 0,680 | 0,366 | 0,426 |
+| Prata 400 | 0,740 | 0,351 | 0,414 |
+| Gilda Display 400 | 0,708 | 0,316 | 0,370 |
+| Cormorant 400 | 0,680 | 0,305 | 0,360 |
+| Marcellus 400 | 0,548 | 0,413 | 0,336 |
+| Italiana 400 | 0,635 | 0,258 | 0,319 |
+
+**Conclusion, dans les limites de ce qu'une photo permet** : sur neuf candidates libres, **Libre Baskerville 400
+est la plus proche**, sur la forme **et** sur la quantité d'encre — ce qui **valide la voix déjà figée** (on ne
+nomme aucune police de fonderie : une photo ne le permet pas, et on compare des formes, pas des noms). Le mot-symbole
+tel qu'il est composé est aussi **un peu plus étroit et serré** que Libre Baskerville → sur les titres, **un
+interlettrage légèrement négatif** rapproche du matériel de la cliente.
+
+⚠️ **Correction de mon propre relevé du 19/09** : sur la **première photo** (blanc sur verre, floue), j'avais
+conclu que l'enseigne était **en graisse forte** et ajouté le Bold au kit pour cette raison. La photo propre
+tranche l'inverse : l'encre de la marque (**0,383**) est celle du **400** (0,397), pas du **700** (0,462). Le Bold
+reste utile au kit (grands titres), mais **la marque n'est pas en gras** — une mesure sur une photo floue avait
+produit une conclusion fausse ; c'est la photo nette qui la corrige.
+
+Montages pour l'œil, dans ce dossier : `enseigne-vs-bold.png`, `mot-symbole-vs-propositions.png`,
+`identification-marque.png` (la photo face aux trois meilleures candidates).
+
+### Ce qu'il nous manque toujours
+
+Le **fichier vectoriel du logo** (SVG / AI / EPS, celui du graphiste) : le seul logo numérique dont on dispose
+est un **raster 1024 × 1024** (`public/logo-pessora.webp`) — suffisant pour le web à 36 px, **insuffisant pour de
+l'impression ou un visuel Instagram agrandi**. Tant qu'on ne l'a pas, le mot-symbole se reprend **depuis ce
+raster**, jamais recomposé.
+
+### Règle pour les visuels
+
+Reprendre **le lockup de l'enseigne** — emblème, mot-symbole en dessous, capitales serrées — et **jamais un
+mot-symbole recomposé** à la légère. Le kit contient **Bold 700 et Italique 400** (libres, même licence) pour les
+grands titres et les citations.
 
 ## Les emoji dans nos rendus (mesuré, 19/09) — piège de production
 
