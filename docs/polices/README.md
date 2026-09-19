@@ -55,8 +55,9 @@ pose, pas à ce dossier.
 | `public/fonts/woff2/Inter-SemiBold-600.subset.woff2` | Inter — 600 | 22 992 o | `7dc35c8bb78644e32ae35447284f165076d64ea20db9c3291802671e04583e7c` |
 | `public/fonts/woff2/Inter-Light-300.subset.woff2` | Inter — 300 (sursis, voir ci-dessus) | 22 596 o | `a99fedfd9e5dbccd5a8093bda0d57051c43741b3bfae98b1f7020bfb4a6e91c3` |
 
-Et pour chacun, la version **complète** (`…​.woff2`, sans `.subset`) est au dépôt comme source sans perte — ses
-empreintes sont dans l'historique du commit, elles ne servent à rien au serveur.
+Et pour chacun, la version **complète** est au dépôt comme source sans perte, **dans `docs/polices/source/`** — pas
+dans `public/` : tout ce qui vit dans `public/` est **servi par le déploiement**, et 435 Ko de fichiers que le site
+ne charge jamais seraient du poids mort dans le build comme dans le dépôt.
 
 Fichiers de licence joints dans ce dossier (`INTER-LICENCE-OFL.txt`, `LIBRE-BASKERVILLE-LICENCE-OFL.txt`) —
 **SIL Open Font License**, redistribution autorisée, rien à payer, rien à déclarer à Catherine.
