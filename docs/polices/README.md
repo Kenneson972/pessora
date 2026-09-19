@@ -250,9 +250,28 @@ l'état actuel : ni 300 ni 400 ne rend le corps plus lourd qu'aujourd'hui — le
 léger » et « plus léger ». La hauteur de page ne bouge pas (6 537 → 6 485 px, −0,8 %) et il n'y a **0 erreur
 console** des deux côtés.
 
-**Recommandation** (à l'arbitrage de Ken) : **Inter 400 pour le corps et l'interface 12-14 px**, **300 réservé aux
+**Décision appliquée** (@elise, 19/09) : **Inter 400 pour le corps et l'interface 12-14 px**, **300 réservé aux
 grands corps** — à petite taille sur un téléphone, 1,6× de trait en moins se paie en lisibilité, alors qu'en grand
-corps la finesse se lit comme de l'élégance. Si la pose retient 400, **le fichier Light sort du lot** (−22 Ko).
+corps la finesse se lit comme de l'élégance.
+
+Comment, dans le code : `body` passe de 300 à 400, et **293 chaînes de classes** en `font-light` passent en
+`font-normal` — **uniquement** là où la classe porte une taille ≤ 15 px (`text-xs`, `text-sm`, `text-[Npx]` avec
+N ≤ 15), **uniquement** dans un attribut `className="…"` ou une constante `… = '…'`. Le 300 reste sur les **58**
+chaînes sans petite taille déclarée et sur l'utilitaire `text-editorial-hero-lead` — **donc le fichier Light reste
+au lot** (−22 Ko n'est PAS gagné, contrairement à ce qui était écrit avant).
+
+⚠️ **Leçon de méthode, à garder** : le premier essai a été fait par une expression régulière **non ancrée** — elle a
+traversé des frontières d'attributs et **cassé le build Vercel** (`Evenements.tsx`, `Home.tsx`, `LuxeMockup.tsx`,
+erreurs de syntaxe TypeScript). Commit annulé, puis refait avec ancrage. Et surtout : **il existe une gate locale
+que l'équipe croyait impossible sans `node_modules`** —
+
+```bash
+npx --yes -p typescript@5.6 tsc --noEmit -p tsconfig.json
+```
+
+Elle sort **857 lignes d'erreurs** (dont 605 « cannot find module », normales sans `node_modules`) — mais **zéro
+erreur de syntaxe**, et c'est ce qu'on compare : **la sortie après le changement est identique, ligne pour ligne, à
+celle d'avant**. C'est la porte qui aurait attrapé la casse avant Vercel.
 
 ⚠️ **Une sonde à ne pas citer comme preuve** : `document.fonts.check('… "Libre Baskerville"')` répond **vrai même
 sur la prod**, où aucune de ces familles n'est livrée. Ce qui prouve la pose, c'est le **woff2 réellement
