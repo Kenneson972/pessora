@@ -144,9 +144,27 @@ describe('horaires — gardes anti-divergence', () => {
       'src/components/common/Chatbot.tsx',
       'src/pages/Contact.tsx',
       'src/components/cart/PickupTimePicker.tsx',
+      'src/pages/CGV.tsx',
+      'src/data/infoData.ts',
     ]) {
       const source = readFileSync(fichier, 'utf8');
       expect(source, `heures en dur dans ${fichier}`).not.toMatch(/9h30|10h30|18h\b/);
     }
+  });
+
+  it('la CGV et les données ne portent AUCUNE heure écrite (elles dérivent)', () => {
+    // Une CGV qui donne d'autres heures que le site est fausse sans que rien ne
+    // le signale : ces deux fichiers ne doivent contenir aucune heure littérale.
+    for (const fichier of ['src/pages/CGV.tsx', 'src/data/infoData.ts']) {
+      const source = readFileSync(fichier, 'utf8');
+      expect(source, `heure littérale dans ${fichier}`).not.toMatch(/\d{1,2}h\d{2}/);
+    }
+  });
+
+  it('le balisage Google est le seul endroit qui recopie les heures — et il est vérifié ci-dessus', () => {
+    // `index.html` est servi statiquement : il ne peut pas lire la base. C'est
+    // pour ça que le test du §balisage existe : la copie est surveillée.
+    const html = readFileSync('index.html', 'utf8');
+    expect(html).toMatch(/openingHoursSpecification/);
   });
 });

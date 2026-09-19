@@ -1,7 +1,15 @@
 import { useEffect } from 'react';
+import { useBarSettings } from '../hooks/useBarSettings';
+import { displayLines, resolveOpeningHours } from '../data/openingHours';
 
 const CGV = () => {
   useEffect(() => { document.title = 'CGV — PessÓra'; }, []);
+  // Horaires : DÉRIVÉS de la source unique (base si remplie, sinon le modèle).
+  // Jamais recopiés dans le texte contractuel — une CGV qui donne d'autres
+  // heures que le site est fausse, et rien ne le signalerait.
+  const { settings: barSettings } = useBarSettings();
+  const { hours: openingHours } = resolveOpeningHours(barSettings?.opening_hours);
+  const hoursLines = displayLines(openingHours);
   return (
     <div className="min-h-screen pt-[7.25rem]">
       {/* Hero */}
@@ -62,9 +70,11 @@ const CGV = () => {
                 Les clients peuvent commander directement au bar aux horaires d'ouverture :
               </p>
               <ul className="list-disc pl-6 text-gray-700 space-y-2">
-                <li>Lundi - Vendredi : 9h30 - 18h</li>
-                <li>Samedi : 10h30 - 14h</li>
-                <li>Dimanche : Fermé</li>
+                {hoursLines.map((line) => (
+                  <li key={line.label}>
+                    {line.label} : {line.value}
+                  </li>
+                ))}
               </ul>
 
               <h3 className="text-xl font-bold mb-3 text-primary mt-6">4.2 Événements</h3>
