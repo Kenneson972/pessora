@@ -24,6 +24,7 @@ const DEFAULT_SETTINGS: BarSettings = {
     maps_url: '',
   },
   hours: [],
+  opening_hours: null,
   contact: {
     email: '',
     phone: '',

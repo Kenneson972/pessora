@@ -1,7 +1,9 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { barInfo } from '../data/infoData';
+import { useBarSettings } from '../hooks/useBarSettings';
+import { displayLines, resolveOpeningHours } from '../data/openingHours';
 import { Mail, MapPin, Instagram, ArrowRight, CheckCircle2, Truck, Building2 } from 'lucide-react';
 import { useFadeUpWhenVisible, useStaggerReveal } from '../lib/motionReveal';
 import { Button, Card, Input, Label, TextArea, TextField, cn } from '@heroui/react';
@@ -19,13 +21,12 @@ const Contact = () => {
   const [privacyError, setPrivacyError] = useState(false);
   const [requestType, setRequestType] = useState<RequestType>('info');
   const [sending, setSending] = useState(false);
-  const [barHours, setBarHours] = useState(barInfo.hours);
-
-  useEffect(() => {
-    (supabase as any).from('bar_settings').select('hours').single().then(({ data }: any) => {
-      if (data?.hours?.length) setBarHours(data.hours as any);
-    }).catch(() => {});
-  }, []);
+  // Horaires d'ouverture : SOURCE UNIQUE — la base si elle est remplie
+  // (`bar_settings.opening_hours`), sinon le modèle `openingHours.ts`.
+  // Les lignes sont dérivées : plus aucune heure recopiée dans cette page.
+  const { settings: barSettings } = useBarSettings();
+  const { hours: openingHours } = resolveOpeningHours(barSettings?.opening_hours);
+  const hoursLines = displayLines(openingHours);
   const [sent, setSent] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -199,28 +200,19 @@ const Contact = () => {
                 <h4 className="mb-6 font-display text-xl font-normal italic text-white/95" style={{ fontFamily: 'var(--font-display)' }}>
                   Horaires d’ouverture
                 </h4>
-{Array.isArray(barHours) ? barHours.map((h: any) => (
-                  <div key={h.label} className="flex justify-between border-b border-white/10 pb-2">
-                    <span>{h.label}</span>
-                    <span className={h.value === 'Fermé' ? 'font-normal text-white/45' : 'font-normal text-white'}>{h.value}</span>
-                  </div>
-                )) : (
-                  <div className="flex justify-between border-b border-white/10 pb-2">
-                    <span>{barHours.weekdays.days}</span>
-                    <span className="font-normal text-white">{barHours.weekdays.hours}</span>
-                  </div>
-                )}{Array.isArray(barHours) ? '' : (
-                  <>
-                  <div className="flex justify-between border-b border-white/10 pb-2">
-                    <span>{barHours.saturday.days}</span>
-                    <span className="font-normal text-white">{barHours.saturday.hours}</span>
-                  </div>
-                  <div className="flex justify-between text-white/45">
-                    <span>{barHours.sunday.days}</span>
-                    <span className="font-normal">{barHours.sunday.hours}</span>
-                  </div>
-                  </>
-                )}
+{hoursLines.map((line) => (
+  <div
+    key={line.label}
+    className={
+      line.value === 'Fermé'
+        ? 'flex justify-between text-white/45'
+        : 'flex justify-between border-b border-white/10 pb-2'
+    }
+  >
+    <span>{line.label}</span>
+    <span className={line.value === 'Fermé' ? 'font-normal' : 'font-normal text-white'}>{line.value}</span>
+  </div>
+))}
               </Card>
               </motion.div>
             </motion.div>

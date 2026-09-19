@@ -472,6 +472,7 @@ export interface Database {
           id: number
           address: BarAddress
           hours: BarHours
+          opening_hours: BarOpeningHours | null
           contact: BarContact
           subscription_info: BarSubscriptionInfo
           updated_at: string
@@ -480,12 +481,14 @@ export interface Database {
           id?: number
           address?: BarAddress
           hours?: BarHours
+          opening_hours?: BarOpeningHours | null
           contact?: BarContact
           subscription_info?: BarSubscriptionInfo
         }
         Update: Partial<{
           address: BarAddress
           hours: BarHours
+          opening_hours: BarOpeningHours | null
           contact: BarContact
           subscription_info: BarSubscriptionInfo
         }>
@@ -523,6 +526,17 @@ export interface BarAddress {
 }
 
 export type BarHours = Array<{ label: string; value: string }>
+
+/**
+ * Horaires STRUCTURÉS — la source unique (le modèle est dans `src/data/openingHours.ts`).
+ * Une plage par jour, indexée comme `Date.getDay()` (0 = dimanche), `null` = fermé,
+ * heures en 'HH:MM'. `BarHours` (libellé/valeur) n'est qu'un affichage : il ne permet
+ * pas de calculer un créneau de retrait, ne jamais s'en servir comme source.
+ */
+export type BarOpeningHours = Record<
+  '0' | '1' | '2' | '3' | '4' | '5' | '6',
+  { open: string; close: string } | null
+>
 
 export interface BarContact {
   email: string

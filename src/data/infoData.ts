@@ -13,20 +13,9 @@ export const barInfo = {
     mapsUrl: 'https://maps.app.goo.gl/VAz5h1cpjWFBq8R59'
   },
 
-  hours: {
-    weekdays: {
-      days: 'Lundi - Vendredi',
-      hours: '9h30 - 18h'
-    },
-    saturday: {
-      days: 'Samedi',
-      hours: '10h30 - 14h'
-    },
-    sunday: {
-      days: 'Dimanche',
-      hours: 'Fermé'
-    }
-  },
+  // ⚠️ Les horaires d'ouverture ne vivent PAS ici.
+  // Source unique : `src/data/openingHours.ts` (qui lit `bar_settings.opening_hours`).
+  // Une copie en dur à cet endroit a déjà divergé du panneau du bar — ne pas la recréer.
 
   contact: {
     phone: '+596 696 XX XX XX', // À remplacer

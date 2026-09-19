@@ -12,6 +12,8 @@ import { useCheckout } from '../../hooks/useCheckout';
 import { PickupTimePicker } from './PickupTimePicker';
 import { useBarStatus } from '../../providers/BarStatusProvider';
 import { useAuth } from '../../contexts/AuthContext';
+import { useBarSettings } from '../../hooks/useBarSettings';
+import { resolveOpeningHours } from '../../data/openingHours';
 
 const focusRing =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sapin/30 focus-visible:ring-offset-2';
@@ -32,6 +34,10 @@ export function CartDrawer() {
 
   const { checkout, isLoading: isCheckingOut, error: checkoutError } = useCheckout(pickupTime, guestName, guestPhone);
   const barStatus = useBarStatus();
+  // Horaires d'ouverture : la base fait foi (`bar_settings.opening_hours`),
+  // le modèle `openingHours.ts` sert de repli — source unique, jamais recopiée.
+  const { settings: barSettings } = useBarSettings();
+  const { hours: openingHours } = resolveOpeningHours(barSettings?.opening_hours);
   const { isOraPlus } = useIsOraPlus();
 
   const total = items.reduce(
@@ -168,7 +174,7 @@ export function CartDrawer() {
               <>
               {hasBarItems && (
                 <PickupTimePicker
-                  businessHours={barInfo.hours}
+                  hours={openingHours}
                   value={pickupTime}
                   onChange={setPickupTime}
                 />

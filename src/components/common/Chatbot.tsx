@@ -8,6 +8,7 @@ import './Chatbot.css';
 
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabaseClient';
+import { chatbotHoursText } from '../../data/openingHours';
 
 const WEBHOOK_URL = import.meta.env.VITE_PESSOBOT_WEBHOOK_URL?.trim() || '';
 const WEBHOOK_SIGNATURE = import.meta.env.VITE_PESSOBOT_SIGNATURE ?? '';
@@ -36,8 +37,9 @@ const QUICK_SUGGESTIONS = {
 };
 
 const KNOWLEDGE_BASE: Record<string, string> = {
-  horaire:
-    'Nous sommes ouverts :\n\nLundi - Vendredi : 9h30 - 18h\nSamedi : 10h30 - 14h\nDimanche : fermé',
+  // Horaires : construits depuis la source unique (`openingHours.ts`, qui lit
+  // `bar_settings.opening_hours`). Jamais recopiés — une copie divergerait.
+  horaire: chatbotHoursText(),
   adresse: 'Nous sommes situés au :\n\nC.C. La Véranda – Cluny\n97200 Fort-de-France, Martinique',
   menu:
     'Notre menu est divisé en 3 gammes principales :\n\nWELLNESS — santé / beauté\nÉNERGIE — pré-workout\nSHAKES — récupération & gourmandise',
