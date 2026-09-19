@@ -102,6 +102,39 @@ produit une conclusion fausse ; c'est la photo nette qui la corrige.
 Montages pour l'œil, dans ce dossier : `enseigne-vs-bold.png`, `mot-symbole-vs-propositions.png`,
 `identification-marque.png` (la photo face aux trois meilleures candidates).
 
+### Balayage large (109 familles libres) — et le plafond de la méthode
+
+Ken a demandé « es-tu sûr que tu ne peux pas trouver la police ? ». Réponse par la mesure, pas par l'opinion :
+balayage des **109 familles libres les plus populaires de Google Fonts** (70 sérif + 40 display), mêmes métriques
+(`sweep_candidats.py`, résultats bruts dans `sweep-resultats.txt`).
+
+| Rang automatique | larg/cap (photo **0,795**) | encre (photo **0,383**) | IoU |
+|---|---|---|---|
+| Metamorphous | 0,799 | 0,394 | 0,518 |
+| Maitree | 0,767 | 0,371 | 0,532 |
+| Brygada 1918 | 0,781 | 0,369 | 0,504 |
+| Montaga | 0,763 | 0,345 | 0,544 |
+| **Libre Baskerville** | **0,772** | **0,397** | 0,484 |
+| … Gluten | 0,804 | 0,515 | 0,567 |
+
+⚠️ **Et le classement automatique se trompe** : sur les cinq premières, **quatre sont réfutées à l'œil**
+(`sweep-haut-du-classement.png`) — Metamorphous est un sérif décoratif, Maitree et Montaga des sérifs contemporains
+à faible contraste, Gluten un display arrondi et gras. Aucune n'a la squelette de la photo. **C'est le plafond de
+la méthode** : sur une photo à 650 × 220 px, légèrement floue, une mesure de largeur et d'encre **gonfle les
+caractères épais et ronds**, et l'IoU ne rattrape pas. Aucun service d'identification en ligne ne ferait mieux
+sans le fichier d'origine.
+
+**Ce qui reste solide, après les deux balayages** :
+1. la marque est un **sérif transitionnel de la classe Baskerville** (meilleur candidat crédible : Libre Baskerville 400) ;
+2. le dépôt porte déjà le nom de la charte — `Berthold Baskerville Book` (éditorial) et `Akkurat Pro` (interface),
+   cités comme *la charte* dans `docs/BRIEF-NEWSLETTER-2026-09-17.md` (@nova) : c'est **l'identification la plus
+   probable**, et Berthold est une fonderie **commerciale** ;
+3. donc **rien à acheter** : le mot-symbole s'utilise **comme un asset** (le « O » est dessiné), les textes du site
+   restent en Libre Baskerville — sa parente libre.
+
+**La seule chose qui trancherait définitivement** : le **dossier du graphiste / la charte graphique** — il porte à
+la fois le **logo vectoriel** et **le nom des polices**. Une question à Catherine règle les deux manques.
+
 ### Ce qu'il nous manque toujours
 
 Le **fichier vectoriel du logo** (SVG / AI / EPS, celui du graphiste) : le seul logo numérique dont on dispose
