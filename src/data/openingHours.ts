@@ -10,6 +10,16 @@
 // Modèle : une plage par jour, indexée comme `Date.getDay()` (0 = dimanche).
 // `null` = fermé. Format des heures : 'HH:MM' en 24 h.
 //
+// ⚠️ LIMITE CONNUE, à ne pas découvrir en production : **une seule plage par
+// jour** — donc pas de coupure méridienne. C'est juste aujourd'hui (l'enseigne
+// du bar n'a aucune coupure : lun 16:00-19:00, mar-ven 10:00-19:00, sam 09:00-14:00).
+// La base, elle, portait AVANT le 19/09/2026 un jeu à sept lignes **avec
+// coupures** (ex. « Lundi 6h-8h / 14h-21h ») : ce modèle-là ne peut pas le
+// représenter, et le convertir en une plage unique **effacerait la coupure en
+// silence** (le panier proposerait un retrait pendant la fermeture).
+// Si un jour PessÓra ferme entre midi et deux, il faut étendre ce modèle
+// (tableau de plages par jour) — pas écraser la coupure.
+//
 // La base fait foi quand elle est remplie : `bar_settings.opening_hours`
 // (même forme, 7 clés). Sinon on retombe sur les valeurs de ce module — qui
 // sont les mêmes : un repli qui change de valeur serait une panne silencieuse.
