@@ -56,6 +56,20 @@ maintenant ; sur iPhone/Android (qui ont bien un Light) le rendu bouge peu. Reco
 **Inter 400 pour le texte courant 12-14 px**, **300 réservé aux grands corps**, et la mesure avant/après sur le
 déployé tranche. C'est la mesure que @elise a demandée pour ce lot.
 
+## Les emoji dans nos rendus (mesuré, 19/09) — piège de production
+
+Les deux familles livrées (comme les autres polices de texte) **n'ont aucun glyphe emoji** — c'est normal, et sans
+effet sur le site : les emoji qu'on voit dans les textes publics sont fournis par la police emoji de l'appareil
+du visiteur. Mais dans **nos** rendus, la règle dépend du pipeline, et elle est mesurée :
+
+| Pipeline | Rendu d'un emoji tapé en texte | Conséquence |
+|---|---|---|
+| **HTML → PNG** (chromium headless) | **en couleur**, correct — test : 5 emoji posés dans une phrase, **2 410 pixels colorés** relevés dans l'image | on peut taper les emoji |
+| **PIL / Pillow** (composition directe) | **case vide** (`.notdef`) — test : 5 emoji *différents* donnent **exactement la même encre** (497 px chacun en Inter, 456 en Libre Baskerville), c'est la signature du glyphe manquant | **jamais d'emoji tapé** : les poser en image |
+
+Le repère qui ne trompe pas, pour toute police : si cinq emoji différents produisent la **même** quantité d'encre,
+ce n'est pas un rendu, c'est un carré vide.
+
 ## Ce que ce lot doit encore faire
 
 1. Remplacer les 4 `@font-face` `local()` par des `url('/fonts/…')` (self-host, `font-display: swap`).
