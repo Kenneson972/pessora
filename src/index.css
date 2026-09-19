@@ -5,39 +5,66 @@
 @import "@heroui-pro/react/css";
 
 /*
- * Typographie premium locale :
- * - Akkurat Pro (Regular/Bold) pour l'interface
- * - Berthold Baskerville Book (Regular/Italic) pour l'éditorial
+ * Typographie — la voix de la marque, LIVRÉE (décision de Ken, 19/09/2026).
+ *
+ * AVANT : deux familles commerciales ('Akkurat Pro', 'Berthold Baskerville Book') déclarées
+ * en `local(...)` seulement — donc AUCUN fichier livré : chaque visiteur voyait la police de
+ * son appareil, et la marque n'avait pas de voix typographique (mesuré au navigateur, cf.
+ * docs/polices/README.md).
+ *
+ * MAINTENANT : Libre Baskerville (éditorial) + Inter (interface), self-host, sous-ensembles
+ * woff2 (134 Ko pour les six fichiers, Latin-1 + Latin Ext-A + ponctuation typographique —
+ * contrôle de sortie : tous les caractères réellement affichés par le site sont couverts).
+ * Inter était déjà la 3ᵉ famille de `--font-sans` : on livre au site ce qu'il demandait déjà.
+ *
+ * Les familles d'origine ne sont plus nommées nulle part (vérifié : elles n'apparaissaient que
+ * dans ce fichier) : c'est voulu — une seule voix, la même pour tous les visiteurs.
  */
 @font-face {
-  font-family: 'Akkurat Pro';
-  src: local('Akkurat Pro Regular'), local('Akkurat Pro');
+  font-family: 'Libre Baskerville';
+  src: url('/fonts/woff2/LibreBaskerville-Regular-400.subset.woff2') format('woff2');
   font-style: normal;
   font-weight: 400;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Akkurat Pro';
-  src: local('Akkurat Pro Bold');
+  font-family: 'Libre Baskerville';
+  src: url('/fonts/woff2/LibreBaskerville-Bold-700.subset.woff2') format('woff2');
   font-style: normal;
   font-weight: 700;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Berthold Baskerville Book';
-  src: local('Berthold Baskerville Book Regular');
+  font-family: 'Libre Baskerville';
+  src: url('/fonts/woff2/LibreBaskerville-Italic-400.subset.woff2') format('woff2');
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/woff2/Inter-Light-300.subset.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/woff2/Inter-Regular-400.subset.woff2') format('woff2');
   font-style: normal;
   font-weight: 400;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Berthold Baskerville Book';
-  src: local('Berthold Baskerville Book Italic');
-  font-style: italic;
-  font-weight: 400;
+  font-family: 'Inter';
+  src: url('/fonts/woff2/Inter-SemiBold-600.subset.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 600;
   font-display: swap;
 }
 
@@ -80,10 +107,10 @@
   /* Badge / accent éditorial — vert sapin profond, WCAG AA 4.5:1 on white */
   --color-editorial-badge: oklch(19% 0.028 155);
 
-  /* Typography — Akkurat Pro + Berthold Baskerville */
-  --font-display: 'Berthold Baskerville Book', Georgia, serif;
-  --font-sans:    'Akkurat Pro', 'Akkurat', 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-serif:   'Berthold Baskerville Book', Georgia, serif;
+  /* Typography — Libre Baskerville (éditorial, livrée) + Inter (interface, livrée) */
+  --font-display: 'Libre Baskerville', Georgia, serif;
+  --font-sans:    'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-serif:   'Libre Baskerville', Georgia, serif;
 
   /* Radius — minimal, univers luxe */
   --radius-card:    2px;
