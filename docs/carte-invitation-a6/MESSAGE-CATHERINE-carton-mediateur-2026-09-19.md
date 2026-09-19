@@ -7,7 +7,8 @@ C'est le **premier écrit** vers Catherine depuis le RDV du 10/09 (mesuré : auc
 
 **Deux variantes, deux destins** — et c'est le point important de ce fichier :
 
-- **VARIANTE 2 — médiateur + période : ne dépend d'AUCUN arbitrage.** Prête à transmettre telle quelle.
+- **VARIANTE 2 — médiateur + période + dossier de graphiste : ne dépend d'AUCUN arbitrage.** Prête à transmettre telle quelle.
+  (la variante 2 est passée de deux à trois demandes le 19/09, sur décision d'Élise — la limite est atteinte, on n'ajoute rien de plus)
 - **VARIANTE 1 — avec le carton : attend A ou B de @user.** La ligne ① (la phrase) n'existe que pour la carte.
 
 Dans les deux cas l'envoi reste **le geste de Ken** : nous n'avons pas de canal client direct.
@@ -20,7 +21,7 @@ C'est une décision, pas une hésitation : **on n'insiste pas** (la carte était
 Ce que ça change, et ce que ça ne change pas :
 
 - **VARIANTE 1 retirée** (elle n'existait que pour le carton). L'arbitrage A/B, les aperçus et le marqueur QR **tombent avec elle** — @lyra a rangé les mesures sur `lot/lyra-apercu-carte-a6` en cas de retour d'un support imprimé.
-- **VARIANTE 2 reste vivante et inchangée** : médiateur (préalable légal) + période de la vague. Elle ne dépend d'aucun arbitrage, elle attendait déjà son propre go d'envoi.
+- **VARIANTE 2 reste vivante** : médiateur (préalable légal) + période de la vague + dossier de graphiste — **trois demandes, la limite**. Elle ne dépend d'aucun arbitrage, elle attendait déjà son propre go d'envoi.
 - **Rien à annoncer à Catherine sur l'abandon** : rien n'est parti, aucun tirage, elle n'en a jamais entendu parler. **On ne lui explique pas** — il n'y a ni retard ni excuse, c'est exactement ce que garantit la discipline « rien n'est parti ».
 - **③ change de valeur sans changer de texte** : la période de sa vague ne sert plus à dater l'impression, elle sert à **dater la campagne** et à caler le site (créneaux à J-14). La demande reste mot pour mot.
 
@@ -31,9 +32,13 @@ Ce que ça change, et ce que ça ne change pas :
 | ① | **Sa phrase** pour le carton | le texte du carton A6 (aujourd'hui un emplacement) | **tombe avec le carton** |
 | ② | **Son médiateur de la consommation** (L612-1) | l'ouverture au public — obligation légale, 0 occurrence sur le site | **part quand même** |
 | ③ | **La période de sa prochaine vague** | la date d'impression *et* le recul J-14 des créneaux | **part quand même** |
+| ④ | **Son dossier de graphiste** (logo vectoriel + nom exact des polices) | les visuels agrandis, et toute impression | **part quand même** |
 
 Ce qui **ne** part **pas** dans ce message : le solde (250 €) et l'abonnement (49 €/mois) — annonce à froid,
 séparée (`kb-client-relances`). Aucun montant, aucun décompte, aucun chiffre non revérifié.
+
+Avec le carton abandonné, le message qui part porte **exactement trois demandes : ② ③ ④** — c'est la limite,
+et ① n'en fait plus partie.
 
 ## Décisions du 19/09/2026 (Élise) — intégrées dans le corps ci-dessous
 
@@ -43,6 +48,9 @@ séparée (`kb-client-relances`). Aucun montant, aucun décompte, aucun chiffre 
   et ça ne rogne jamais ses mots. **Ça ne remplace pas la garde de largeur** — la garde reste et doit refuser
   à voix haute ; la différence est qu'elle ne devrait plus jamais avoir à refuser **ce qu'on a demandé**.
 - **Le budget part en millimètres, après l'arbitrage A/B** — jamais en compte de caractères.
+- **Le dossier de graphiste entre dans le message** (Élise, 19/09) : il ne bloque rien et évite un second
+  aller-retour — c'est la 3ᵉ demande. ⚠️ « Berthold Baskerville » (1961) et « Berthold Baskerville **Book** » (1980)
+  sont deux polices différentes : si on demande un nom, on demande **le nom exact** de la charte.
 - **② et ③ ne dépendent PAS de l'arbitrage sur le carton** (Élise, 19/09) : le médiateur est un **préalable légal**
   qui doit être nommé dans ses mentions avant la mise en ligne, et c'est **Catherine** qui doit le fournir — c'est donc
   un **délai extérieur**, pas une décision esthétique à attendre. Il part maintenant, et le carton se décide à part.
@@ -85,6 +93,12 @@ La garde du script **refuse à voix haute** (implémentée par @lyra, auditée p
 > Dis-moi **la période que tu vises** pour ton prochain Challenge 21 jours : les créneaux de bilan s'ouvrent
 > deux semaines avant, donc c'est ce qui nous dit quand tout doit être prêt de notre côté.
 
+**Bloc ④ — les fichiers de marque.** *Part dans tous les cas.*
+> **Ton dossier de graphiste.**
+> Si tu as ta **charte graphique** (ou le dossier que ton graphiste t'a remis), envoie-le moi : il contient le
+> **logo en vectoriel** — on n'a qu'une image, elle suffit pour le site mais pas pour un grand visuel ni pour une
+> impression — et le **nom exact des polices**. Rien d'urgent : ça ne bloque rien de notre côté.
+
 ---
 
 # VARIANTE 1 — avec le carton *(RETIRÉE le 19/09/2026 — carte abandonnée)*
@@ -108,18 +122,20 @@ Je te joins un aperçu du carton pour que tu voies la place de la phrase — dis
 
 # VARIANTE 2 — SANS le carton (prête à transmettre, ne dépend d'aucun arbitrage)
 
-*C'est celle-ci qui porte le préalable légal et la période : elle ne bouge pas quand la carte bouge.*
+*C'est celle-ci qui porte le préalable légal, la période et les fichiers de marque : elle ne bouge pas quand la carte bouge.*
 
 **Bonjour Catherine,**
 
-Deux petites choses dont j'ai besoin pour la suite de ton site — elles ne dépendent de rien d'autre,
+Trois petites choses dont j'ai besoin pour la suite de ton site — elles ne dépendent de rien d'autre,
 donc autant les lancer tout de suite. 👋
 
 **①** → *Bloc ② ci-dessus.*
 
 **②** → *Bloc ③ ci-dessus.*
 
-Dès que j'ai ces deux points, on avance de notre côté.
+**③** → *Bloc ④ ci-dessus.*
+
+Dès que j'ai ces points, on avance de notre côté.
 
 ---
 
