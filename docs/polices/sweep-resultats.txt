@@ -1,0 +1,109 @@
+Metamorphous	0.799	0.394	0.518	+0.497
+Maitree	0.767	0.371	0.532	+0.465
+Brygada 1918	0.781	0.369	0.504	+0.463
+Montaga	0.763	0.345	0.544	+0.443
+Libre Baskerville	0.772	0.397	0.484	+0.424
+Gluten	0.804	0.515	0.567	+0.416
+DM Serif Display	0.763	0.453	0.544	+0.409
+Sanchez	0.785	0.447	0.491	+0.408
+Newsreader	0.772	0.381	0.453	+0.406
+Yeseva One	0.808	0.488	0.537	+0.405
+Merriweather	0.753	0.435	0.529	+0.394
+Fraunces	0.772	0.422	0.476	+0.391
+Shippori Mincho B1	0.795	0.325	0.448	+0.390
+Playfair	0.799	0.403	0.412	+0.383
+Pridi	0.785	0.477	0.495	+0.383
+Alice	0.808	0.424	0.449	+0.380
+Roboto Serif	0.767	0.425	0.477	+0.380
+Spectral	0.744	0.405	0.501	+0.378
+IBM Plex Serif	0.735	0.396	0.506	+0.374
+Source Serif 4	0.776	0.430	0.447	+0.363
+Zilla Slab	0.749	0.417	0.485	+0.360
+Roboto Slab	0.744	0.451	0.524	+0.356
+BIZ UDPMincho	0.822	0.349	0.440	+0.351
+Podkova	0.813	0.447	0.451	+0.351
+Tiro Devanagari Hindi	0.749	0.421	0.469	+0.339
+Castoro	0.749	0.421	0.469	+0.339
+Lora	0.717	0.382	0.495	+0.338
+Domine	0.753	0.431	0.467	+0.337
+Rakkas	0.808	0.550	0.528	+0.334
+Gelasio	0.744	0.429	0.480	+0.333
+Charis SIL	0.744	0.439	0.488	+0.331
+Alike Angular	0.726	0.406	0.488	+0.328
+Arvo	0.740	0.464	0.514	+0.323
+Abril Fatface	0.781	0.533	0.499	+0.321
+Crimson Text	0.708	0.390	0.500	+0.320
+Libertinus Serif	0.735	0.372	0.449	+0.319
+Suranna	0.740	0.364	0.446	+0.317
+Zen Antique	0.826	0.406	0.403	+0.316
+Zen Antique Soft	0.826	0.407	0.403	+0.315
+Song Myung	0.776	0.486	0.454	+0.314
+Kiwi Maru	0.712	0.395	0.489	+0.312
+Rokkitt	0.831	0.450	0.448	+0.308
+Abyssinica SIL	0.731	0.445	0.489	+0.300
+Bitter	0.708	0.413	0.501	+0.297
+Aleo	0.717	0.451	0.514	+0.290
+Zen Old Mincho	0.831	0.342	0.395	+0.282
+Halant	0.708	0.356	0.477	+0.276
+Prata	0.740	0.351	0.414	+0.273
+IM Fell English	0.772	0.398	0.333	+0.272
+Vollkorn SC	0.708	0.438	0.489	+0.260
+Anybody	0.726	0.486	0.498	+0.258
+Love Ya Like A Sister	0.731	0.409	0.386	+0.232
+Noto Serif TC	0.712	0.351	0.422	+0.226
+Noto Serif SC	0.712	0.351	0.422	+0.226
+Noto Serif JP	0.712	0.351	0.422	+0.226
+Antic Slab	0.671	0.379	0.476	+0.225
+Noto Serif	0.708	0.418	0.430	+0.221
+PT Serif	0.694	0.430	0.463	+0.215
+Hedvig Letters Serif	0.703	0.389	0.402	+0.214
+IM Fell French Canon	0.735	0.370	0.341	+0.210
+Bodoni Moda	0.703	0.323	0.452	+0.210
+Tektur	0.726	0.470	0.427	+0.203
+Comfortaa	0.689	0.368	0.422	+0.198
+MedievalSharp	0.680	0.389	0.427	+0.192
+Playfair Display	0.680	0.366	0.426	+0.181
+EB Garamond	0.708	0.365	0.360	+0.169
+Alegreya SC	0.680	0.419	0.430	+0.166
+Asul	0.644	0.443	0.528	+0.166
+Turret Road	0.749	0.312	0.327	+0.164
+Bree Serif	0.726	0.587	0.496	+0.155
+Pixelify Sans	0.712	0.504	0.437	+0.152
+Gabarito	0.671	0.516	0.523	+0.144
+Noto Serif Display	0.708	0.328	0.361	+0.132
+Cormorant Upright	0.721	0.293	0.363	+0.127
+Lobster	0.717	0.469	0.358	+0.117
+Bagel Fat One	0.813	0.706	0.466	+0.106
+Knewave	0.753	0.546	0.350	+0.104
+Lobster Two	0.680	0.400	0.340	+0.094
+Slabo 27px	0.648	0.442	0.419	+0.067
+Cormorant Unicase	0.689	0.305	0.354	+0.067
+Cormorant Garamond	0.680	0.305	0.360	+0.054
+Cormorant	0.680	0.305	0.360	+0.054
+Changa One	0.799	0.796	0.469	+0.046
+Seaweed Script	0.735	0.334	0.202	+0.034
+Coiny	0.854	0.723	0.482	+0.023
+Bungee	0.781	0.807	0.474	+0.023
+Aladin	0.644	0.514	0.439	+0.007
+Nanum Myeongjo	0.667	0.306	0.323	-0.010
+Barriecito	0.630	0.574	0.488	-0.032
+Josefin Slab	0.639	0.285	0.296	-0.113
+Rammetto One	0.849	0.829	0.430	-0.126
+Cinzel	0.612	0.301	0.313	-0.135
+Caprasimo	0.904	0.704	0.380	-0.159
+Lacquer	0.635	0.500	0.274	-0.163
+Marcellus	0.548	0.413	0.336	-0.188
+Lilita One	0.644	0.766	0.496	-0.189
+Alfa Slab One	0.895	0.780	0.398	-0.200
+Instrument Serif	0.543	0.377	0.266	-0.243
+Cherry Cream Soda	1.073	0.493	0.417	-0.250
+Black Ops One	0.959	0.714	0.401	-0.258
+Fontdiner Swanky	0.991	0.472	0.199	-0.283
+Goldman	1.110	0.541	0.383	-0.406
+Boldonse	0.511	0.699	0.413	-0.470
+Chango	1.087	0.777	0.327	-0.651
+Gravitas One	1.110	0.658	0.250	-0.655
+Pompiere	0.411	0.317	0.148	-0.685
+Sarina	1.169	0.541	0.189	-0.718
+Libre Barcode 128	0.443	0.766	0.228	-0.858
+Faster One	1.575	0.533	0.052	-1.660
