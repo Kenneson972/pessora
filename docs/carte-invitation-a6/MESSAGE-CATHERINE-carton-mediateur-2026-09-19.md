@@ -12,6 +12,18 @@ C'est le **premier écrit** vers Catherine depuis le RDV du 10/09 (mesuré : auc
 
 Dans les deux cas l'envoi reste **le geste de Ken** : nous n'avons pas de canal client direct.
 
+## ⛔ 19/09/2026 — LA CARTE A6 EST ABANDONNÉE (décision de @user)
+
+Ken : *« faut laisser de côté cette idée, on fait une campagne sur Insta, les gens vivent sur Insta, donc dans tous les cas pas besoin de faire de carte. »*
+C'est une décision, pas une hésitation : **on n'insiste pas** (la carte était la nôtre, elle n'a jamais été demandée par Catherine).
+
+Ce que ça change, et ce que ça ne change pas :
+
+- **VARIANTE 1 retirée** (elle n'existait que pour le carton). L'arbitrage A/B, les aperçus et le marqueur QR **tombent avec elle** — @lyra a rangé les mesures sur `lot/lyra-apercu-carte-a6` en cas de retour d'un support imprimé.
+- **VARIANTE 2 reste vivante et inchangée** : médiateur (préalable légal) + période de la vague. Elle ne dépend d'aucun arbitrage, elle attendait déjà son propre go d'envoi.
+- **Rien à annoncer à Catherine sur l'abandon** : rien n'est parti, aucun tirage, elle n'en a jamais entendu parler. **On ne lui explique pas** — il n'y a ni retard ni excuse, c'est exactement ce que garantit la discipline « rien n'est parti ».
+- **③ change de valeur sans changer de texte** : la période de sa vague ne sert plus à dater l'impression, elle sert à **dater la campagne** et à caler le site (créneaux à J-14). La demande reste mot pour mot.
+
 ## Les trois demandes (maximum tenu : 3)
 
 | # | Demande | Ce qu'elle débloque | Sort si la carte s'arrête |
@@ -75,9 +87,10 @@ La garde du script **refuse à voix haute** (implémentée par @lyra, auditée p
 
 ---
 
-# VARIANTE 1 — avec le carton
+# VARIANTE 1 — avec le carton *(RETIRÉE le 19/09/2026 — carte abandonnée)*
 
-*À transmettre seulement si @user retient **A** ou **B**.*
+> **Ne pas envoyer.** Conservée comme trace de ce qui avait été écrit : l'envoi du carton est abandonné
+> (décision de @user), donc la demande de phrase ① ne part pas.
 
 **Bonjour Catherine,**
 
@@ -112,26 +125,15 @@ Dès que j'ai ces deux points, on avance de notre côté.
 
 ## Ce qu'il reste à faire avant que ce message puisse partir
 
-1. **@user — arbitrage A ou B** (ligne ① : 3 lignes ou 2 lignes). @lyra et @elise recommandent **A**.
-   **Ne concerne que la VARIANTE 1.**
-2. **@lyra — l'aperçu joint au message** : **c'est fait**, et il est **pinné ici** pour que personne ne joigne un autre fichier.
-   - Les deux aperçus vivent sur la branche **`lot/lyra-apercu-carte-a6` = `e1ba614`** (construite sur `lot/nova-carte-a6`) :
-     prendre l'image **à ce SHA**, puis **du dépôt tel quel** — pas « la dernière version du dossier ».
-   - Variante **A** : `docs/carte-invitation-a6/variante-embleme/apercu-A-embleme-seul.png`
-     — sha256 `a0b4e8d16975996a…` (48 038 o)
-   - Variante **B** : `docs/carte-invitation-a6/variante-embleme/apercu-B-embleme-mot-symbole.png`
-     — sha256 `e98d48c6ca934fd6…` (50 174 o)
-   - Les deux sont **sans la mention interne `NON imprimable`** (vérifié dans les pixels par @lyra, puis re-rendus
-     à l'identique après le passage de la garde au maximum des deux moteurs).
-   - ⚠️ **Ce qui part est l'aperçu, jamais le PDF d'impression** : le PDF du lot porte encore l'emplacement et
-     s'annonce non imprimable dans son propre dessin.
-3. **Le go d'envoi de Ken** — pour la **VARIANTE 2**, c'est la **seule** chose qui manque : il n'y a plus rien à décider.
-   Tant qu'il n'est pas donné, ce fichier ne quitte pas le dépôt.
+- ~~**@user — arbitrage A ou B**~~ → **sans objet** : la carte est abandonnée (19/09).
+- ~~**@lyra — l'aperçu joint au message**~~ → **sans objet**, et les épingles restent valides sur `lot/lyra-apercu-carte-a6` (`e1ba614`, puis `7cdb386` / `0ecac42` : aperçus identiques au bit près, `a0b4e8d16975996a…` / `e98d48c6ca934fd6…`).
+- **Le go d'envoi de Ken, pour la VARIANTE 2** : c'est la **seule** chose qui manque — médiateur + période, rien d'autre à décider.
+  Tant qu'il n'est pas donné, ce fichier ne quitte pas le dépôt.
 
-## Si la carte ne part pas finalement (arbitrage de @user)
+## La carte ne part pas — ce qui en survit (19/09/2026)
 
-Le carton est **notre** proposition, pas une demande de Catherine ni une idée de son brainstorm : rien n'est parti,
-aucun tirage n'est lancé, elle n'en a pas entendu parler. Ken peut donc l'arrêter — mais **les trois demandes
+Le carton était **notre** proposition, pas une demande de Catherine ni une idée de son brainstorm : rien n'est parti,
+aucun tirage n'est lancé, elle n'en a pas entendu parler. Ken l'a arrêté — **les trois demandes
 n'ont pas le même sort**, et **②③ sont déjà écrites à part** (`VARIANTE 2`, ci-dessus) :
 
 - **① sa phrase tombe avec le carton.** Elle n'existe que pour la carte : si la carte s'arrête, on ne la demande pas.
