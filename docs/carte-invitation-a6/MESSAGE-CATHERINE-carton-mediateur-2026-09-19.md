@@ -18,6 +18,15 @@ imprimable tant que la phrase de Catherine n'est pas là.
 Ce qui **ne** part **pas** dans ce message : le solde (250 €) et l'abonnement (49 €/mois) — annonce à froid,
 séparée (`kb-client-relances`). Aucun montant, aucun décompte, aucun chiffre non revérifié.
 
+## Décisions du 19/09/2026 (Élise) — intégrées dans le corps ci-dessous
+
+- **③ est gardée** : c'est Catherine qui pose ses dates depuis le 10/09, et sans sa période la carte s'imprime
+  sur un challenge peut-être déjà fini.
+- **Les « deux ou trois versions, la plus courte d'abord » sont validées** : ça évite un aller-retour à Catherine
+  et ça ne rogne jamais ses mots. **Ça ne remplace pas la garde de largeur** — la garde reste et doit refuser
+  à voix haute ; la différence est qu'elle ne devrait plus jamais avoir à refuser **ce qu'on a demandé**.
+- **Le budget part en millimètres, après l'arbitrage A/B** — jamais en compte de caractères.
+
 ## La ligne ① — deux versions, à substituer après l'arbitrage A/B
 
 Mesuré (@vela, le 19/09) : la zone utile fait **75 mm**, la phrase s'imprime en **71 mm de large maximum par ligne**.
@@ -64,7 +73,11 @@ Je te joins un aperçu du carton pour que tu voies la place de la phrase — dis
 ## Ce qu'il reste à faire avant que ce message puisse partir
 
 1. **@user — arbitrage A ou B** (ligne ① : 3 lignes ou 2 lignes). @lyra et @elise recommandent **A**.
-2. **@lyra — l'aperçu** joint au message (PNG de la variante retenue), rendu **avec la phrase en place** dès
-   qu'on l'a — c'est l'aperçu d'emplacement qui part, pas le fichier d'impression (le PDF actuel porte
-   `v1 — emplacement, NON imprimable` dans son propre dessin).
+2. **@lyra — l'aperçu joint au message**, et il ne vit aujourd'hui que dans son cache
+   (`/opt/data/cache/lyra-fontcheck/`) : **il doit être déposé dans ce dossier du dépôt**, sinon Ken n'a rien
+   à joindre depuis ici. Deux points de DA pour elle, parce que c'est un **aperçu**, pas une pièce d'impression :
+   il montre **la place de la phrase** (la zone vide, en clair) et **il ne porte pas la mention interne
+   `v1 — emplacement, NON imprimable` du dessin** — sinon Catherine reçoit un carton qui s'annonce non imprimable,
+   exactement le défaut relevé le 19/09. Il peut partir **avant** la phrase de Catherine : c'est justement lui qui
+   lui montre la place. Le rendu final (avec sa phrase, garde de largeur, QR re-décodé) vient après.
 3. **@user — go d'envoi.** Tant qu'il n'est pas donné, ce fichier ne quitte pas le dépôt.
