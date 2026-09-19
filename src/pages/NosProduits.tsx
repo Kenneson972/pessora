@@ -47,7 +47,7 @@ function ProductPreview({ product }: { product: GammeProduct }) {
       <h3 className="text-[13px] font-medium text-black group-hover:text-black/60 transition-colors truncate">
         {product.name}
       </h3>
-      <p className="text-[12px] font-light text-black/40 mt-0.5">
+      <p className="text-[12px] font-normal text-black/40 mt-0.5">
         {product.price.toFixed(2).replace('.', ',')}€
       </p>
     </Link>
@@ -105,10 +105,10 @@ function RangeSection({
                 Le sous-titre passe en blanc PUR (il est dans la zone la plus dense du
                 scrim) ; le compteur recoit un fond propre, parce qu'un badge lisible
                 n'a pas besoin que la photo soit sombre. */}
-            <span className="absolute bottom-6 left-6 rounded-[1px] border border-white/25 px-3 py-1 text-[10px] font-light uppercase tracking-[0.24em] text-white">
+            <span className="absolute bottom-6 left-6 rounded-[1px] border border-white/25 px-3 py-1 text-[10px] font-normal uppercase tracking-[0.24em] text-white">
               {range.subtitle}
             </span>
-            <span className="absolute right-5 top-5 rounded-[1px] bg-noir/60 px-2 py-1 text-[10px] font-light uppercase tracking-[0.22em] text-white backdrop-blur-[2px]">
+            <span className="absolute right-5 top-5 rounded-[1px] bg-noir/60 px-2 py-1 text-[10px] font-normal uppercase tracking-[0.22em] text-white backdrop-blur-[2px]">
               {range.products.length} produits
             </span>
           </div>
@@ -127,10 +127,10 @@ function RangeSection({
             >
               {range.title}
             </h2>
-            <p className="mb-3 max-w-[40ch] font-display text-[15px] font-light italic leading-snug text-black/60">
+            <p className="mb-3 max-w-[40ch] font-display text-[15px] font-normal italic leading-snug text-black/60">
               « {range.subtitle} »
             </p>
-            <p className="mb-6 max-w-[42ch] text-[13px] font-light leading-relaxed text-black/50">
+            <p className="mb-6 max-w-[42ch] text-[13px] font-normal leading-relaxed text-black/50">
               {range.description}
             </p>
 
@@ -227,7 +227,7 @@ const NosProduits = () => {
               Conseils personnalisés<br />
               <span className="italic text-black/65">sur place</span>
             </h3>
-            <p className="mx-auto mb-8 max-w-sm text-[13px] font-light leading-relaxed text-black/50">
+            <p className="mx-auto mb-8 max-w-sm text-[13px] font-normal leading-relaxed text-black/50">
               Disponibilité des produits et recommandations adaptées à vos besoins. La carte complète des boissons est sur le menu.
             </p>
             <Button

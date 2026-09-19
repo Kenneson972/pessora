@@ -92,7 +92,7 @@ export function CartDrawer() {
             <Sheet.Body className="min-h-0 flex-1 overflow-y-auto px-4 py-3 md:px-5">
               {items.length === 0 ? (
                 <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center">
-                  <p className="text-[11px] font-light leading-relaxed text-black/45">
+                  <p className="text-[11px] font-normal leading-relaxed text-black/45">
                     Votre sélection est vide. Explorez la carte et ajoutez vos boissons.
                   </p>
                   <Link

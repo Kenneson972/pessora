@@ -73,7 +73,7 @@ function Emplacement({
           ) : (
             <ImagePlus size={18} strokeWidth={1.5} />
           )}
-          <span className="text-[11px] font-light">{uploading ? 'Envoi…' : 'Ajouter'}</span>
+          <span className="text-[11px] font-normal">{uploading ? 'Envoi…' : 'Ajouter'}</span>
         </button>
       )}
       <input
@@ -156,11 +156,11 @@ export function BeforeAfterPairsField({
 
               <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                 {complete ? (
-                  <span className="text-[11px] font-light text-sapin">
+                  <span className="text-[11px] font-normal text-sapin">
                     Paire complète : elle s'affichera sur le site.
                   </span>
                 ) : (
-                  <span className="text-[11px] font-light text-black/60">
+                  <span className="text-[11px] font-normal text-black/60">
                     {paire.avant || paire.apres
                       ? 'Paire incomplète : il manque une des deux photos — rien ne sera publié pour cette paire.'
                       : 'Aucune photo : cette paire ne s’affichera pas.'}
@@ -169,7 +169,7 @@ export function BeforeAfterPairsField({
                 <button
                   type="button"
                   onClick={() => onChange(value.filter((_, i) => i !== index))}
-                  className="text-[11px] font-light text-red-600 underline-offset-2 hover:underline"
+                  className="text-[11px] font-normal text-red-600 underline-offset-2 hover:underline"
                 >
                   Retirer cette paire
                 </button>
@@ -183,7 +183,7 @@ export function BeforeAfterPairsField({
         <button
           type="button"
           onClick={() => onChange([...value, { avant: '', apres: '', legende: null }])}
-          className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-noir/15 px-3 py-1.5 text-[10px] font-light uppercase tracking-[0.14em] text-black/60 transition-colors hover:border-noir/30 hover:text-noir"
+          className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-noir/15 px-3 py-1.5 text-[10px] font-normal uppercase tracking-[0.14em] text-black/60 transition-colors hover:border-noir/30 hover:text-noir"
         >
           <ImagePlus size={12} strokeWidth={1.5} />
           Ajouter une paire ({value.length}/{PAIRES_MAX})

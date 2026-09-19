@@ -195,7 +195,7 @@ const RangeDetail = () => {
                               {product.name}
                             </h3>
                             {product.description && (
-                              <p className="mx-auto max-w-xs text-[12px] font-light leading-relaxed text-black/45">
+                              <p className="mx-auto max-w-xs text-[12px] font-normal leading-relaxed text-black/45">
                                 {product.description}
                               </p>
                             )}

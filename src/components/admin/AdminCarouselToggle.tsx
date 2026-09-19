@@ -46,7 +46,7 @@ export function AdminCarouselToggle({
             <span className="block text-[13px] font-normal text-black/85">
               Ajouter cette boisson au carrousel d'accueil
             </span>
-            <span className="mt-0.5 block text-[11px] font-light leading-relaxed text-black/42">
+            <span className="mt-0.5 block text-[11px] font-normal leading-relaxed text-black/42">
               Rien à taper : laissez « Position » vide pour placer automatiquement en dernier (nouveau produit) ou
               conserver la position actuelle à l'édition.
             </span>
@@ -67,7 +67,7 @@ export function AdminCarouselToggle({
             onChange={(e) => onPositionChange(e.target.value)}
             placeholder="Automatique si vide"
           />
-          <p className="mt-1.5 text-[10px] font-light leading-relaxed text-black/38">
+          <p className="mt-1.5 text-[10px] font-normal leading-relaxed text-black/38">
             Optionnel : 1 = première slide. Vide = ordre auto ou inchangé selon le cas.
           </p>
         </div>

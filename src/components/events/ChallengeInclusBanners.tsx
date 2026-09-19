@@ -109,7 +109,7 @@ function InclusRow({ item, index }: { item: InclusItem; index: number }) {
         >
           {item.label}
         </h3>
-        <p className="max-w-[40ch] text-[14px] font-light leading-relaxed text-white/80">{item.description}</p>
+        <p className="max-w-[40ch] text-[14px] font-normal leading-relaxed text-white/80">{item.description}</p>
       </motion.div>
     </motion.li>
   );

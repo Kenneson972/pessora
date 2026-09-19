@@ -452,7 +452,7 @@ const AdminOverview = () => {
                     return (
                       <div key={sub.userId} className="flex items-center justify-between py-3">
                         <div className="min-w-0">
-                          <span className="text-[13px] font-light text-noir truncate">{name}</span>
+                          <span className="text-[13px] font-normal text-noir truncate">{name}</span>
                           {sub.email && (
                             <span className="ml-2 text-[11px] text-black/40">{sub.email}</span>
                           )}

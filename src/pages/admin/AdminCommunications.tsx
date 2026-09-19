@@ -593,7 +593,7 @@ const AdminCommunications = () => {
                 <button
                   type="button"
                   onClick={closeForm}
-                  className="h-11 rounded-[2px] border border-noir/15 px-6 text-[10px] font-light uppercase tracking-[0.12em] text-black/50"
+                  className="h-11 rounded-[2px] border border-noir/15 px-6 text-[10px] font-normal uppercase tracking-[0.12em] text-black/50"
                 >
                   Annuler
                 </button>
@@ -694,7 +694,7 @@ const AdminCommunications = () => {
                     </button>
                   ))}
                 </div>
-                <p className="mt-1.5 text-[10px] font-light text-black/60">
+                <p className="mt-1.5 text-[10px] font-normal text-black/60">
                   Brouillon — à personnaliser avant l&apos;envoi.
                 </p>
               </div>
@@ -740,7 +740,7 @@ const AdminCommunications = () => {
                   <button
                     type="button"
                     onClick={() => setNlImage('')}
-                    className="mt-1.5 text-[10px] font-light text-black/60 underline underline-offset-2 hover:text-black"
+                    className="mt-1.5 text-[10px] font-normal text-black/60 underline underline-offset-2 hover:text-black"
                   >
                     Retirer l&apos;image
                   </button>
@@ -844,7 +844,7 @@ Nous sommes ravis de vous annoncer…"
           {(() => {
             const excluded = subscribers.filter((s) => nlSubscriberStatus(s) !== 'inscrit').length;
             return (
-              <p className="mb-6 text-[11px] font-light text-black/60">
+              <p className="mb-6 text-[11px] font-normal text-black/60">
                 {excluded} personne{excluded !== 1 ? 's' : ''} {excluded !== 1 ? 'ont' : 'a'} dit non ou n&apos;{excluded !== 1 ? 'ont' : 'a'} jamais été demandée{excluded !== 1 ? 's' : ''} : elle{excluded !== 1 ? 's' : ''} ne recev{excluded !== 1 ? 'ront' : 'ra'} rien.
               </p>
             );

@@ -35,7 +35,7 @@ const Concept = () => {
               <span className="italic text-black/65">ralentir</span> pour mieux{' '}
               <span className="italic text-black/65">repartir</span>.
             </p>
-            <p className="text-[14px] font-light italic leading-relaxed text-black/65">
+            <p className="text-[14px] font-normal italic leading-relaxed text-black/65">
               « En Martinique, nous avons tout ce qu’il faut pour briller. Nous avons simplement créé le lieu
               pour nourrir cette lumière intérieure. »
             </p>
@@ -79,7 +79,7 @@ const Concept = () => {
                   >
                     {value.title}
                   </h2>
-                  <p className="text-[14px] font-light leading-relaxed text-black/55">
+                  <p className="text-[14px] font-normal leading-relaxed text-black/55">
                     {value.description}. Nous croyons que chaque gorgée doit être une étape vers une meilleure
                     version de soi-même, sans jamais sacrifier le plaisir gustatif.
                   </p>

@@ -360,7 +360,7 @@ const AdminBilans = () => {
                   <EmptyState.Title className="text-[13px] font-normal text-black">
                     Aucune demande
                   </EmptyState.Title>
-                  <EmptyState.Description className="text-[11px] font-light text-black/40">
+                  <EmptyState.Description className="text-[11px] font-normal text-black/40">
                     Les demandes de bilan apparaîtront ici dès qu’un membre aura réservé un créneau.
                   </EmptyState.Description>
                 </EmptyState.Header>

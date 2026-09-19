@@ -76,7 +76,7 @@ function ImageField({
                 type="button"
                 onClick={() => inputRef.current?.click()}
                 disabled={uploading}
-                className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-3 py-1.5 text-[10px] font-light uppercase tracking-[0.14em] text-white backdrop-blur-[2px] transition-colors hover:bg-white/20 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-3 py-1.5 text-[10px] font-normal uppercase tracking-[0.14em] text-white backdrop-blur-[2px] transition-colors hover:bg-white/20 disabled:opacity-50"
               >
                 {uploading ? <Loader2 size={12} className="animate-spin" /> : <ImagePlus size={12} strokeWidth={1.5} />}
                 Remplacer
@@ -84,7 +84,7 @@ function ImageField({
               <button
                 type="button"
                 onClick={() => onChange('')}
-                className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-3 py-1.5 text-[10px] font-light uppercase tracking-[0.14em] text-white backdrop-blur-[2px] transition-colors hover:bg-red-500/70"
+                className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-3 py-1.5 text-[10px] font-normal uppercase tracking-[0.14em] text-white backdrop-blur-[2px] transition-colors hover:bg-red-500/70"
               >
                 <Trash2 size={12} strokeWidth={1.5} />
                 Retirer
@@ -99,7 +99,7 @@ function ImageField({
             className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-black/45 transition-colors hover:bg-noir/[0.02] hover:text-black/70"
           >
             {uploading ? <Loader2 size={20} strokeWidth={1.5} className="animate-spin" /> : <ImagePlus size={20} strokeWidth={1.5} />}
-            <span className="text-[11px] font-light">{uploading ? 'Envoi…' : 'Ajouter une image'}</span>
+            <span className="text-[11px] font-normal">{uploading ? 'Envoi…' : 'Ajouter une image'}</span>
             <span className="text-[10px] uppercase tracking-[0.22em] text-black/30">JPEG · PNG · WebP · 5 Mo max</span>
           </button>
         )}
@@ -340,13 +340,13 @@ const AdminChallenge21j = () => {
                 lit. Elle est DÉPLACÉE ici, là où Catherine téléverse.
                 Le bloc reste masqué tant que la galerie est vide : une galerie
                 vide ne publie rien, et une légende manquante ne bloque pas. */}
-            <p className="mt-4 text-[11px] font-light text-black/60">
+            <p className="mt-4 text-[11px] font-normal text-black/60">
               Ces photos sont publiées sur la page du challenge, visible par tout le monde.
               Demande l'accord des personnes avant de les envoyer, et n'affiche jamais de
               résultat chiffré (poids, centimètres, durée).
             </p>
             {galleryCleanupInfo && (
-              <p className="mt-2 text-[11px] font-light leading-snug text-black/60">
+              <p className="mt-2 text-[11px] font-normal leading-snug text-black/60">
                 {galleryCleanupInfo}
               </p>
             )}

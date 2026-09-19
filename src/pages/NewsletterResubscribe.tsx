@@ -44,7 +44,7 @@ const NewsletterResubscribe = () => {
               >
                 Confirmer votre réinscription
               </h1>
-              <p className="mb-8 text-[14px] font-light leading-relaxed text-black/70">
+              <p className="mb-8 text-[14px] font-normal leading-relaxed text-black/70">
                 Vous allez de nouveau recevoir la newsletter de PessÓra. Rien n&rsquo;a encore été
                 modifié — confirmez ci-dessous.
               </p>
@@ -67,7 +67,7 @@ const NewsletterResubscribe = () => {
           )}
 
           {screen === 'sending' && (
-            <p className="text-[14px] font-light text-black/70">Un instant…</p>
+            <p className="text-[14px] font-normal text-black/70">Un instant…</p>
           )}
 
           {screen === 'resubscribed' && (
@@ -78,7 +78,7 @@ const NewsletterResubscribe = () => {
               >
                 Vous êtes de nouveau inscrit·e
               </h1>
-              <p className="mb-8 text-[14px] font-light leading-relaxed text-black/70">
+              <p className="mb-8 text-[14px] font-normal leading-relaxed text-black/70">
                 Vous recevrez de nouveau la newsletter de PessÓra.
               </p>
               <Link
@@ -98,7 +98,7 @@ const NewsletterResubscribe = () => {
               >
                 Ce lien n&rsquo;est plus valide
               </h1>
-              <p className="mb-8 text-[14px] font-light leading-relaxed text-black/70">
+              <p className="mb-8 text-[14px] font-normal leading-relaxed text-black/70">
                 Il a peut-être déjà été utilisé. Vous pouvez vous réinscrire depuis le site.
               </p>
               <Link

@@ -94,7 +94,7 @@ const Home = () => {
           </motion.p>
           <motion.p
             variants={HERO_ITEM}
-            className="mb-8 max-w-md text-[8px] font-light uppercase leading-relaxed tracking-[0.22em] text-white/50 [text-wrap:balance] sm:text-[9px] sm:tracking-[0.28em]"
+            className="mb-8 max-w-md text-[8px] font-normal uppercase leading-relaxed tracking-[0.22em] text-white/50 [text-wrap:balance] sm:text-[9px] sm:tracking-[0.28em]"
           >
             Performance{' '}
             <span className="text-white/55" aria-hidden>|</span>{' '}
@@ -253,7 +253,7 @@ const Home = () => {
             </h2>
             <Link
               to="/evenements"
-              className="inline-flex min-h-[44px] items-center border-b border-noir/30 pb-px text-[10px] font-light uppercase tracking-[0.26em] text-black/65 transition-colors duration-200 hover:border-noir hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-noir/20 rounded-[1px]"
+              className="inline-flex min-h-[44px] items-center border-b border-noir/30 pb-px text-[10px] font-normal uppercase tracking-[0.26em] text-black/65 transition-colors duration-200 hover:border-noir hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-noir/20 rounded-[1px]"
             >
               Événements
             </Link>

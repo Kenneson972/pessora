@@ -146,7 +146,10 @@
     overflow-x: hidden;
     max-width: 100%;
     font-family: var(--font-sans);
-    font-weight: 300;
+    /* Corps en 400 (decision du 19/09) : la pose en Inter rend le texte 1,6x plus leger
+       qu'aujourd'hui, donc on ne descend pas le corps en Light ; le 300 reste sur les
+       grands corps (utilitaire text-editorial-hero-lead ci-dessous). */
+    font-weight: 400;
     line-height: 1.65;
     letter-spacing: 0.01em;
     -webkit-font-smoothing: antialiased;

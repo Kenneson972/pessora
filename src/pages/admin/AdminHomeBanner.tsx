@@ -97,7 +97,7 @@ const AdminHomeBanner = () => {
         {imageUrl && (
           <img src={imageUrl} alt="Aperçu bannière" className="w-full aspect-[4/3] object-cover rounded-[2px] mb-4 border border-noir/[0.06]" />
         )}
-        <label className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-noir/15 px-4 text-[10px] font-light uppercase tracking-[0.14em] text-black/55 hover:border-noir/30 hover:text-noir transition-colors cursor-pointer">
+        <label className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-noir/15 px-4 text-[10px] font-normal uppercase tracking-[0.14em] text-black/55 hover:border-noir/30 hover:text-noir transition-colors cursor-pointer">
           {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
           {uploading ? 'Envoi…' : imageUrl ? 'Changer l\'image' : 'Ajouter une image'}
           <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />

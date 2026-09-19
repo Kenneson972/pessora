@@ -62,7 +62,7 @@ export function GalleryField({
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
-          className="inline-flex items-center gap-1.5 rounded-full border border-noir/15 px-3 py-1.5 text-[10px] font-light uppercase tracking-[0.14em] text-black/60 transition-colors hover:border-noir/30 hover:text-noir disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-full border border-noir/15 px-3 py-1.5 text-[10px] font-normal uppercase tracking-[0.14em] text-black/60 transition-colors hover:border-noir/30 hover:text-noir disabled:opacity-50"
         >
           {uploading ? <Loader2 size={12} className="animate-spin" /> : <ImagePlus size={12} strokeWidth={1.5} />}
           {uploading ? 'Envoi…' : 'Ajouter'}
@@ -90,7 +90,7 @@ export function GalleryField({
           className="flex aspect-[16/6] w-full flex-col items-center justify-center gap-2 rounded-[2px] border border-dashed border-noir/15 bg-white text-black/60 transition-colors hover:border-noir/30 hover:text-noir"
         >
           <ImagePlus size={20} strokeWidth={1.5} />
-          <span className="text-[11px] font-light">Aucune photo</span>
+          <span className="text-[11px] font-normal">Aucune photo</span>
         </button>
       ) : (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">

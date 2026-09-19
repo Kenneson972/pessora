@@ -168,7 +168,7 @@ function GammeEditorForm({
         <button
           type="button"
           onClick={onCancel}
-          className="h-11 rounded-[2px] border border-noir/15 px-6 text-[10px] font-light uppercase tracking-[0.12em] text-black/50 transition-colors hover:border-noir/30 hover:text-black"
+          className="h-11 rounded-[2px] border border-noir/15 px-6 text-[10px] font-normal uppercase tracking-[0.12em] text-black/50 transition-colors hover:border-noir/30 hover:text-black"
         >
           Annuler
         </button>
@@ -190,7 +190,7 @@ function GammeVisual({ p }: { p: GammeProduct }) {
     );
   }
   return (
-    <div className="flex h-full w-full items-center justify-center bg-noir/[0.04] text-[10px] font-light uppercase tracking-[0.2em] text-black/25">
+    <div className="flex h-full w-full items-center justify-center bg-noir/[0.04] text-[10px] font-normal uppercase tracking-[0.2em] text-black/25">
       Sans visuel
     </div>
   );
@@ -258,7 +258,7 @@ function GammeCard({
               {p.name}
             </p>
             {p.description && (
-              <p className="line-clamp-2 text-[11px] font-light text-black/45">
+              <p className="line-clamp-2 text-[11px] font-normal text-black/45">
                 {p.description}
               </p>
             )}
@@ -567,7 +567,7 @@ const AdminGammes = () => {
               <EmptyState.Title className="font-display text-[16px] font-normal text-black/75">
                 Aucun produit
               </EmptyState.Title>
-              <EmptyState.Description className="text-[12px] font-light text-black/45">
+              <EmptyState.Description className="text-[12px] font-normal text-black/45">
                 Aucun produit dans cette catégorie. Ajoutez-en un nouveau.
               </EmptyState.Description>
             </EmptyState.Header>

@@ -15,7 +15,7 @@ export type ConfirmDialogProps = {
 };
 
 const cancelBtnClass =
-  'h-10 px-4 rounded-[2px] border border-noir/15 text-[10px] font-light uppercase tracking-[0.12em] text-black/55 transition-colors hover:text-noir hover:border-noir/25 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-noir/25 focus-visible:ring-offset-2';
+  'h-10 px-4 rounded-[2px] border border-noir/15 text-[10px] font-normal uppercase tracking-[0.12em] text-black/55 transition-colors hover:text-noir hover:border-noir/25 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-noir/25 focus-visible:ring-offset-2';
 
 const confirmBtnClass =
   'h-10 px-4 rounded-[2px] bg-noir text-white text-[10px] font-normal uppercase tracking-[0.12em] transition-colors hover:bg-anthracite disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-noir/40 focus-visible:ring-offset-2';

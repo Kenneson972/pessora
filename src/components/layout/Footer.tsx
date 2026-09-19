@@ -83,7 +83,7 @@ function FooterLogoCenter({ context }: { context: 'mobile' | 'desktop' }) {
         ) : (
           <BrandLogo variant="onDark" height={96} className="max-w-[min(100%,260px)]" />
         )}
-        <p className="max-w-[18rem] text-[10px] font-light uppercase leading-snug tracking-[0.14em] text-white/60 sm:normal-case sm:text-[11px] sm:tracking-[0.08em] lg:max-w-[14rem] lg:normal-case lg:text-[12px] lg:leading-relaxed lg:tracking-[0.05em]">
+        <p className="max-w-[18rem] text-[10px] font-normal uppercase leading-snug tracking-[0.14em] text-white/60 sm:normal-case sm:text-[11px] sm:tracking-[0.08em] lg:max-w-[14rem] lg:normal-case lg:text-[12px] lg:leading-relaxed lg:tracking-[0.05em]">
           Bar&nbsp;protéiné · Fort-de-France, Martinique
         </p>
       </div>
@@ -273,7 +273,7 @@ const Footer = () => {
 
       <div className={cn('border-t', BORDER_SOFT, 'bg-sapin py-3.5', FOOTER_GUTTER_X)}>
         <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <span className="text-center text-[9px] font-light tracking-[0.12em] text-white/50 sm:text-left sm:text-[10px]">
+          <span className="text-center text-[9px] font-normal tracking-[0.12em] text-white/50 sm:text-left sm:text-[10px]">
             © {new Date().getFullYear()} Pessóra · Fort-de-France
           </span>
           <div className="flex flex-wrap justify-center gap-x-5 gap-y-0.5 sm:justify-end">

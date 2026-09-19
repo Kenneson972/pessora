@@ -65,7 +65,7 @@ const History = () => {
               <EmptyState.Title className="text-[13px] font-normal text-black">
                 Aucune commande
               </EmptyState.Title>
-              <EmptyState.Description className="text-[11px] font-light text-black/40">
+              <EmptyState.Description className="text-[11px] font-normal text-black/40">
                 Votre historique de commandes apparaîtra ici.
               </EmptyState.Description>
             </EmptyState.Header>
@@ -100,7 +100,7 @@ const History = () => {
 
                   <div className="flex-1 space-y-1 min-w-0">
                     <h4 className="text-[13px] font-normal text-black">{itemNames || '—'}</h4>
-                    <div className="flex flex-wrap gap-4 text-[10px] font-light text-black/40">
+                    <div className="flex flex-wrap gap-4 text-[10px] font-normal text-black/40">
                       <span className="flex items-center gap-1">
                         <Calendar size={11} strokeWidth={1.3} /> {date}
                       </span>
@@ -160,7 +160,7 @@ const History = () => {
           </p>
           <div className="border-t border-noir/[0.06] pt-5 flex flex-col gap-3">
             <div className="flex justify-between items-center">
-              <span className="text-[11px] font-light text-black/45">Commandes</span>
+              <span className="text-[11px] font-normal text-black/45">Commandes</span>
               <span className="text-[13px] font-normal text-noir">{orders.length}</span>
             </div>
           </div>

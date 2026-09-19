@@ -45,7 +45,7 @@ const NewsletterUnsubscribe = () => {
               >
                 Se désinscrire de la newsletter
               </h1>
-              <p className="mb-8 text-[14px] font-light leading-relaxed text-black/70">
+              <p className="mb-8 text-[14px] font-normal leading-relaxed text-black/70">
                 Votre adresse sera retirée de notre liste d&rsquo;envoi. Rien n&rsquo;a encore été
                 modifié — confirmez ci-dessous.
               </p>
@@ -64,7 +64,7 @@ const NewsletterUnsubscribe = () => {
                   Non merci, je reste inscrit·e
                 </Link>
               </div>
-              <p className="mt-8 text-[12px] font-light leading-relaxed text-black/60">
+              <p className="mt-8 text-[12px] font-normal leading-relaxed text-black/60">
                 Si vous n&rsquo;êtes pas à l&rsquo;origine de cette demande, fermez cette page :
                 votre inscription reste active.
               </p>
@@ -72,7 +72,7 @@ const NewsletterUnsubscribe = () => {
           )}
 
           {screen === 'sending' && (
-            <p className="text-[14px] font-light text-black/70">Un instant…</p>
+            <p className="text-[14px] font-normal text-black/70">Un instant…</p>
           )}
 
           {screen === 'unsubscribed' && (
@@ -83,7 +83,7 @@ const NewsletterUnsubscribe = () => {
               >
                 Votre désinscription est enregistrée
               </h1>
-              <p className="mb-8 text-[14px] font-light leading-relaxed text-black/70">
+              <p className="mb-8 text-[14px] font-normal leading-relaxed text-black/70">
                 Vous ne recevrez plus d&rsquo;e-mails de la part de PessÓra. Pour revenir, il
                 suffit de vous réinscrire depuis le site.
               </p>
@@ -104,7 +104,7 @@ const NewsletterUnsubscribe = () => {
               >
                 Ce lien n&rsquo;est plus valide
               </h1>
-              <p className="mb-8 text-[14px] font-light leading-relaxed text-black/70">
+              <p className="mb-8 text-[14px] font-normal leading-relaxed text-black/70">
                 Il a déjà été utilisé, ou l&rsquo;adresse n&rsquo;est plus inscrite. Dans tous les
                 cas, vous ne recevrez plus d&rsquo;e-mails de notre part.
               </p>

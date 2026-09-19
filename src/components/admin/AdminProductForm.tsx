@@ -167,7 +167,7 @@ export function payloadFromForm(form: FormState) {
 
 const sectionTitleClass =
   'mb-1 font-display text-[14px] font-normal tracking-[0.02em] text-black';
-const sectionHintClass = 'mb-4 text-[11px] font-light leading-relaxed text-black/45';
+const sectionHintClass = 'mb-4 text-[11px] font-normal leading-relaxed text-black/45';
 const labelClass = 'mb-1.5 block text-[10px] font-normal uppercase tracking-[0.14em] text-black/45';
 const inputClass =
   'w-full min-h-11 rounded-[2px] border border-noir/[0.08] bg-surface-muted px-3 py-2 text-base sm:text-[13px] text-black placeholder:text-black/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-noir/20';
@@ -225,14 +225,14 @@ function TagChipPicker({
       <p id={`${id}-label`} className={labelClass}>
         {label}
       </p>
-      <p className="mb-2 text-[10px] font-light text-black/38">{hint}</p>
+      <p className="mb-2 text-[10px] font-normal text-black/38">{hint}</p>
 
       <div
         className="min-h-[44px] rounded-[2px] border border-noir/[0.08] bg-white px-3 py-2"
         aria-labelledby={`${id}-label`}
       >
         {values.length === 0 ? (
-          <p className="py-1 text-[11px] font-light italic text-black/35">Aucune étiquette — ajoutez depuis les suggestions ou en dessous.</p>
+          <p className="py-1 text-[11px] font-normal italic text-black/35">Aucune étiquette — ajoutez depuis les suggestions ou en dessous.</p>
         ) : (
           <ul className="flex flex-wrap gap-2">
             {values.map((tag) => (
@@ -259,7 +259,7 @@ function TagChipPicker({
         <p className="mb-1.5 text-[10px] font-normal uppercase tracking-[0.12em] text-black/38">Suggestions (menus)</p>
         <div className="max-h-[140px] overflow-y-auto rounded-[2px] border border-noir/[0.06] bg-noir/[0.02] px-2 py-2">
           {presetChoices.length === 0 ? (
-            <p className="py-2 text-center text-[10px] font-light text-black/35">Toutes les suggestions sont déjà ajoutées.</p>
+            <p className="py-2 text-center text-[10px] font-normal text-black/35">Toutes les suggestions sont déjà ajoutées.</p>
           ) : (
             <div className="flex flex-wrap gap-1.5">
               {presetChoices.map((p) => (
@@ -429,7 +429,7 @@ export function AdminProductForm({ form, onChange, busy, isEdit }: AdminProductF
               onChange={(e) => onChange({ price: e.target.value })}
               placeholder="ex. 8,50"
             />
-            <p className="mt-1 text-[10px] font-light text-black/38">
+            <p className="mt-1 text-[10px] font-normal text-black/38">
               Prix principal. Ci-dessous : autres tailles si vous les utilisez sur la carte.
             </p>
           </div>
@@ -546,7 +546,7 @@ export function AdminProductForm({ form, onChange, busy, isEdit }: AdminProductF
                 <span className="text-[10px] text-black/50">Grand disponible à la vente</span>
               </label>
             </div>
-            <p className="mt-1.5 text-[10px] font-light text-black/38">
+            <p className="mt-1.5 text-[10px] font-normal text-black/38">
               Décocher retire la taille du site immédiatement sans supprimer son prix (utile en rupture ponctuelle).
             </p>
           </div>

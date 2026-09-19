@@ -279,7 +279,7 @@ export function ChallengeRegistrationCard({ event }: ChallengeRegistrationCardPr
                     onChange={(e) => field.onChange(e.target.checked)}
                     className="mt-1 h-4 w-4 shrink-0 rounded-[2px] border border-noir/15 accent-sapin"
                   />
-                  <span className="text-[11px] font-light leading-relaxed text-black/55">
+                  <span className="text-[11px] font-normal leading-relaxed text-black/55">
                     J’accepte que mes données (nom, prénom, téléphone) soient utilisées pour gérer mon inscription
                     et me contacter concernant cet événement, conformément à la{' '}
                     <Link

@@ -131,15 +131,15 @@ const MesEvenements = () => {
           <div className="min-w-0 flex-1">
             <div className="mb-0.5 flex items-center gap-2">
               <p className="truncate text-[13px] font-normal text-black">{ev.title}</p>
-              <span className="shrink-0 text-[8px] font-light uppercase tracking-[0.18em] text-black/30">
+              <span className="shrink-0 text-[8px] font-normal uppercase tracking-[0.18em] text-black/30">
                 {TYPE_LABELS[ev.type]}
               </span>
             </div>
-            <p className="text-[10px] font-light text-black/40">
+            <p className="text-[10px] font-normal text-black/40">
               {[ev.heure?.slice(0, 5), ev.location ?? ev.meeting_point].filter(Boolean).join(' · ')}
             </p>
             {Number(reg.nb_personnes) > 1 && (
-              <p className="mt-0.5 text-[9px] font-light text-black/30">{reg.nb_personnes} personnes</p>
+              <p className="mt-0.5 text-[9px] font-normal text-black/30">{reg.nb_personnes} personnes</p>
             )}
           </div>
           <span
@@ -212,7 +212,7 @@ const MesEvenements = () => {
             <EmptyState.Title className="text-[13px] font-normal text-black">
               Aucune inscription
             </EmptyState.Title>
-            <EmptyState.Description className="text-[11px] font-light text-black/40">
+            <EmptyState.Description className="text-[11px] font-normal text-black/40">
               Tu n&apos;es inscrit(e) à aucun événement pour l&apos;instant.
             </EmptyState.Description>
           </EmptyState.Header>

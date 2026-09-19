@@ -125,7 +125,7 @@ export function ComplementRevenusModal({ registrationId, telephone, onClose }: C
                   onChange={() => setSelected(o.value)}
                   className="mt-0.5 accent-white"
                 />
-                <span className="text-[13px] font-light leading-snug text-white sm:text-[14px]">{o.label}</span>
+                <span className="text-[13px] font-normal leading-snug text-white sm:text-[14px]">{o.label}</span>
               </label>
             ))}
           </div>

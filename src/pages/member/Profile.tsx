@@ -183,7 +183,7 @@ const Profile = () => {
                 className="bg-transparent"
               >
                 <CellSwitch.Trigger className="rounded-[2px] bg-white hover:bg-noir/[0.03] shadow-none px-4 py-3 transition-colors border border-noir/[0.06]">
-                  <CellSwitch.Label className="text-[12px] font-light text-black/60">
+                  <CellSwitch.Label className="text-[12px] font-normal text-black/60">
                     {label}
                   </CellSwitch.Label>
                   <CellSwitch.Control />
@@ -267,7 +267,7 @@ const Profile = () => {
             </div>
             <div>
               <h4 className="text-[13px] font-normal text-black mb-1">Sécurité</h4>
-              <p className="text-[11px] font-light text-black/40">Nouveau mot de passe (min. 8 caractères).</p>
+              <p className="text-[11px] font-normal text-black/40">Nouveau mot de passe (min. 8 caractères).</p>
             </div>
           </div>
           <form onSubmit={handlePasswordSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -338,7 +338,7 @@ const Profile = () => {
           <h4 className="text-[13px] font-normal text-black mb-1 group-hover:text-red-600 transition-colors duration-200">
             Déconnexion
           </h4>
-          <p className="text-[11px] font-light text-black/40">Se déconnecter</p>
+          <p className="text-[11px] font-normal text-black/40">Se déconnecter</p>
         </button>
       </div>
       </div>

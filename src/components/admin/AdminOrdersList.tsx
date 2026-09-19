@@ -36,7 +36,7 @@ export function AdminOrdersList({ orders, loading, onStatusUpdate, onDeleteOrder
   if (orders.length === 0) {
     return (
       <div className="py-16 text-center">
-        <p className="text-[13px] font-light text-black/35">Aucune commande trouvée</p>
+        <p className="text-[13px] font-normal text-black/35">Aucune commande trouvée</p>
       </div>
     );
   }

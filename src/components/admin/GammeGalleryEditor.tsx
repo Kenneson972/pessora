@@ -130,7 +130,7 @@ export function GammeGalleryEditor({ gamme }: { gamme: GammeKey }) {
       <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-black/60">
         Avant / après — gamme {LABELS[gamme]}
       </p>
-      <p className="mb-4 mt-2 text-[11px] font-light leading-relaxed text-black/60">
+      <p className="mb-4 mt-2 text-[11px] font-normal leading-relaxed text-black/60">
         Deux photos de la <strong className="font-normal">même personne</strong>, prises sous la même
         lumière, le même angle et à la même distance. Demande l'accord écrit avant de les envoyer, et
         écris une légende qui décrit le <strong className="font-normal">protocole suivi</strong> —
@@ -139,7 +139,7 @@ export function GammeGalleryEditor({ gamme }: { gamme: GammeKey }) {
       </p>
 
       {loading ? (
-        <p className="text-[11px] font-light text-black/60">Chargement…</p>
+        <p className="text-[11px] font-normal text-black/60">Chargement…</p>
       ) : (
         <BeforeAfterPairsField value={pairs} gamme={gamme} onChange={(p) => { setPairs(p); setSaved(false); }} />
       )}
@@ -159,15 +159,15 @@ export function GammeGalleryEditor({ gamme }: { gamme: GammeKey }) {
         >
           {saving ? 'Enregistrement…' : 'Enregistrer'}
         </button>
-        {saved && <span className="text-[11px] font-light text-sapin">Enregistré.</span>}
-        {info && <span className="text-[11px] font-light text-black/60">{info}</span>}
+        {saved && <span className="text-[11px] font-normal text-sapin">Enregistré.</span>}
+        {info && <span className="text-[11px] font-normal text-black/60">{info}</span>}
         {!loading && completes === 0 && !saved && (
-          <span className="text-[11px] font-light text-black/60">
+          <span className="text-[11px] font-normal text-black/60">
             Aucune paire complète : rien n'apparaît encore sur le site.
           </span>
         )}
         {incompletes > 0 && (
-          <span className="text-[11px] font-light text-black/60">
+          <span className="text-[11px] font-normal text-black/60">
             {incompletes} paire{incompletes > 1 ? 's' : ''} incomplète{incompletes > 1 ? 's' : ''} :
             elle{incompletes > 1 ? 's' : ''} ne ser{incompletes > 1 ? 'ont' : 'a'} pas enregistrée
             {incompletes > 1 ? 's' : ''}.

@@ -212,7 +212,7 @@ const Register = () => {
                 />
               )}
             />
-            <span className="text-[11px] font-light leading-relaxed text-black/55">
+            <span className="text-[11px] font-normal leading-relaxed text-black/55">
               J’accepte la{' '}
               <Link to="/politique-confidentialite" className="text-editorial-link-underline text-black/70">
                 politique de confidentialité

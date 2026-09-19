@@ -44,7 +44,7 @@ export function CookieConsentBanner() {
               <p id="cookie-consent-title" className="text-[10px] font-normal uppercase tracking-[0.18em] text-black/60">
                 Cookies & données
               </p>
-              <p className="mt-1.5 text-[12px] font-light leading-relaxed text-black/60">
+              <p className="mt-1.5 text-[12px] font-normal leading-relaxed text-black/60">
                 Nous utilisons des cookies et le stockage local pour le panier et, avec votre accord, des mesures
                 d’audience. Consultez notre{' '}
                 <Link to="/politique-confidentialite" className="text-editorial-link-underline">
@@ -99,7 +99,7 @@ export function CookieConsentBanner() {
             <h2 id="cookie-custom-title" className="pr-10 font-display text-lg font-normal text-black">
               Paramètres des cookies
             </h2>
-            <p className="mt-2 text-[11px] font-light leading-relaxed text-black/60">
+            <p className="mt-2 text-[11px] font-normal leading-relaxed text-black/60">
               Détail dans la{' '}
               <Link to="/politique-confidentialite" className="text-editorial-link-underline" onClick={() => setShowCustomize(false)}>
                 politique de confidentialité
@@ -110,7 +110,7 @@ export function CookieConsentBanner() {
               <li className="flex gap-3 border-b border-noir/[0.06] pb-4">
                 <span className="min-w-0 flex-1">
                   <span className="block text-[11px] font-normal text-black">Strictement nécessaires</span>
-                  <span className="mt-0.5 block text-[10px] font-light text-black/60">
+                  <span className="mt-0.5 block text-[10px] font-normal text-black/60">
                     Sécurisation de la session, panier si vous l’activez ci-dessous.
                   </span>
                 </span>
@@ -126,7 +126,7 @@ export function CookieConsentBanner() {
                 />
                 <label htmlFor="cookie-fn" className="min-w-0 cursor-pointer">
                   <span className="block text-[11px] font-normal text-black">Préférences & panier</span>
-                  <span className="mt-0.5 block text-[10px] font-light text-black/60">
+                  <span className="mt-0.5 block text-[10px] font-normal text-black/60">
                     Mémoriser votre panier sur cet appareil.
                   </span>
                 </label>
@@ -141,7 +141,7 @@ export function CookieConsentBanner() {
                 />
                 <label htmlFor="cookie-an" className="min-w-0 cursor-pointer">
                   <span className="block text-[11px] font-normal text-black">Statistiques</span>
-                  <span className="mt-0.5 block text-[10px] font-light text-black/60">
+                  <span className="mt-0.5 block text-[10px] font-normal text-black/60">
                     Audience anonymisée — non utilisée tant qu’aucun outil n’est branché.
                   </span>
                 </label>

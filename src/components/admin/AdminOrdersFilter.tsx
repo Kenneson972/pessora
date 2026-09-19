@@ -74,7 +74,7 @@ export function AdminOrdersFilter({
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Rechercher…"
-          className="w-full rounded-[2px] border border-noir/[0.08] bg-surface-muted py-2 pl-9 pr-3 text-[11px] font-light text-black placeholder:text-black/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-noir/20"
+          className="w-full rounded-[2px] border border-noir/[0.08] bg-surface-muted py-2 pl-9 pr-3 text-[11px] font-normal text-black placeholder:text-black/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-noir/20"
         />
       </div>
     </div>

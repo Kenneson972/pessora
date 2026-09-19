@@ -109,7 +109,7 @@ const Subscription = () => {
             <h3 className="font-display font-normal text-noir leading-none mb-2" style={{ fontSize: 'clamp(36px, 3vw, 48px)' }}>
               Óra+
             </h3>
-            <p className="text-[12px] font-light italic text-black/45 mb-8">
+            <p className="text-[12px] font-normal italic text-black/45 mb-8">
               Plus qu&apos;une boisson, un style de vie !
             </p>
 
@@ -117,7 +117,7 @@ const Subscription = () => {
               <span className="font-display font-normal text-noir" style={{ fontSize: 'clamp(40px, 4vw, 52px)' }}>
                 {priceLabel}
               </span>
-              <span className="text-[11px] font-light text-black/30 uppercase tracking-[0.1em]">/mois</span>
+              <span className="text-[11px] font-normal text-black/30 uppercase tracking-[0.1em]">/mois</span>
             </div>
 
             <div className="border border-black/[0.06] rounded-[2px] px-5 py-4 mb-8">
@@ -153,7 +153,7 @@ const Subscription = () => {
               {features.map((feature, i) => (
                 <div key={i} className="flex items-start gap-4 py-4">
                   <Check size={13} strokeWidth={1.5} className="text-sapin/60 shrink-0 mt-0.5" />
-                  <span className="text-[13px] font-light text-black/70 leading-relaxed">{feature}</span>
+                  <span className="text-[13px] font-normal text-black/70 leading-relaxed">{feature}</span>
                 </div>
               ))}
             </div>
@@ -161,7 +161,7 @@ const Subscription = () => {
         </div>
         ) : (
         <div className="bg-white rounded-[2px] border border-noir/[0.06] p-8 md:p-10">
-          <p className="text-[13px] font-light text-black/60 leading-relaxed">
+          <p className="text-[13px] font-normal text-black/60 leading-relaxed">
             Vous êtes sur le plan <span className="font-medium text-black/80">Gratuit</span>. Aucun abonnement actif pour le moment.
           </p>
         </div>

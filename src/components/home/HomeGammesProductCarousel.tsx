@@ -44,7 +44,7 @@ function ProductCard({ product, index, rangeId }: { product: GammeProduct; index
         </div>
         <div className="p-3">
           <p className="text-[10px] font-medium tracking-[0.05em] text-black mb-1 line-clamp-1">{product.name}</p>
-          <p className="text-[11px] font-light text-black">{displayPrice}</p>
+          <p className="text-[11px] font-normal text-black">{displayPrice}</p>
         </div>
       </Link>
     </motion.div>

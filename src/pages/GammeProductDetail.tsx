@@ -219,7 +219,7 @@ const GammeProductDetail = () => {
               </h1>
 
               {product.description && (
-                <p className="mx-auto mb-4 max-w-xl text-center text-[13px] font-light leading-relaxed text-black/50 sm:mx-0 sm:text-left">
+                <p className="mx-auto mb-4 max-w-xl text-center text-[13px] font-normal leading-relaxed text-black/50 sm:mx-0 sm:text-left">
                   {product.description}
                 </p>
               )}
@@ -320,7 +320,7 @@ const GammeProductDetail = () => {
 
               <div className="flex items-start justify-center gap-3 border-t border-noir/[0.06] pt-5 sm:justify-start">
                 <Check size={13} className="mt-0.5 shrink-0 text-black/45" strokeWidth={1.5} />
-                <p className="max-w-md text-center text-[11px] font-light leading-relaxed text-black/45 sm:max-w-none sm:text-left">
+                <p className="max-w-md text-center text-[11px] font-normal leading-relaxed text-black/45 sm:max-w-none sm:text-left">
                   Paiement sécurisé en ligne. Retrait en boutique.
                 </p>
               </div>
@@ -427,10 +427,10 @@ const GammeProductDetail = () => {
           >
             Envie d'en savoir plus ?
           </h2>
-          <p className="mb-2 text-[13px] font-light text-white/50">Retrouvez-nous au :</p>
+          <p className="mb-2 text-[13px] font-normal text-white/50">Retrouvez-nous au :</p>
           <div className="mb-10 flex items-center justify-center gap-2 text-white/80">
             <MapPin size={16} strokeWidth={1.3} className="text-white/50" />
-            <span className="text-[13px] font-light">{barInfo.address?.fullAddress ?? barInfo.address}</span>
+            <span className="text-[13px] font-normal">{barInfo.address?.fullAddress ?? barInfo.address}</span>
           </div>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <Link

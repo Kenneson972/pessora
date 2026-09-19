@@ -64,7 +64,7 @@ export default function ManagerSketchMockup() {
             <h1 className="mt-2 font-display text-[clamp(1.25rem,3vw,1.75rem)] font-light tracking-wide text-white">
               Interprétation du croquis gérant
             </h1>
-            <p className="mt-2 max-w-xl text-[12px] font-light leading-relaxed text-white/65">
+            <p className="mt-2 max-w-xl text-[12px] font-normal leading-relaxed text-white/65">
               Disposition des modules (vitrine · espace client · abo · fiche · club · calendrier) sans modifier la direction
               artistique : mêmes surfaces, filets et hiérarchie typo que le site.
             </p>
@@ -105,19 +105,19 @@ export default function ManagerSketchMockup() {
             label="Bloc public"
             header={
               <>
-                <span className="text-[10px] font-light tracking-wide text-black/50">pessora.fr</span>
+                <span className="text-[10px] font-normal tracking-wide text-black/50">pessora.fr</span>
                 <span className="text-[8px] font-normal uppercase tracking-[0.2em] text-black/35">Logo</span>
               </>
             }
           >
             <p className="text-[9px] font-normal uppercase tracking-[0.22em] text-black/40">Site vitrine</p>
             <h2 className="mt-3 font-display text-xl font-light tracking-tight text-black md:text-2xl">Visuel &amp; offre</h2>
-            <p className="mt-2 text-[12px] font-light leading-relaxed text-black/55">
+            <p className="mt-2 text-[12px] font-normal leading-relaxed text-black/55">
               Hero, storytelling, mise en avant des gammes — comme sur l’accueil actuelle.
             </p>
             <div className="mt-6 rounded-[20px] border border-noir/[0.06] bg-surface-muted p-4">
               <p className="text-[8px] font-normal uppercase tracking-[0.24em] text-black/38">Produits</p>
-              <p className="mt-2 text-[11px] font-light text-black/60">
+              <p className="mt-2 text-[11px] font-normal text-black/60">
                 Cartes boissons / compléments — zone <span className="font-medium text-gold-dim">« fait confiance »</span>{' '}
                 (avis, labels, partenaires).
               </p>
@@ -126,7 +126,7 @@ export default function ManagerSketchMockup() {
               {['Partenaire A', 'Partenaire B', 'Caribea…'].map((name) => (
                 <span
                   key={name}
-                  className="rounded-full border border-noir/[0.08] bg-white px-3 py-1.5 text-[9px] font-light uppercase tracking-[0.12em] text-black/45"
+                  className="rounded-full border border-noir/[0.08] bg-white px-3 py-1.5 text-[9px] font-normal uppercase tracking-[0.12em] text-black/45"
                 >
                   {name}
                 </span>
@@ -142,24 +142,24 @@ export default function ManagerSketchMockup() {
                   <ShoppingBag size={16} strokeWidth={1.35} aria-hidden />
                   <div>
                     <p className="text-[9px] font-normal uppercase tracking-[0.16em] text-black/40">Panier</p>
-                    <p className="text-[11px] font-light tabular-nums text-black/70">4 articles</p>
+                    <p className="text-[11px] font-normal tabular-nums text-black/70">4 articles</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 rounded-full border border-noir/[0.1] px-3 py-1.5">
                   <User size={14} strokeWidth={1.35} className="text-black/40" aria-hidden />
-                  <span className="text-[11px] font-light text-black/75">Nico</span>
+                  <span className="text-[11px] font-normal text-black/75">Nico</span>
                 </div>
               </div>
             }
           >
             <h2 className="font-display text-xl font-light tracking-tight text-black md:text-2xl">Espace client</h2>
-            <p className="mt-2 text-[12px] font-light text-black/50">Hub après connexion — résumé &amp; accès rapides.</p>
+            <p className="mt-2 text-[12px] font-normal text-black/50">Hub après connexion — résumé &amp; accès rapides.</p>
             <ul className="mt-6 space-y-3 border-t border-noir/[0.05] pt-5">
-              <li className="flex items-start gap-3 text-[12px] font-light text-black/65">
+              <li className="flex items-start gap-3 text-[12px] font-normal text-black/65">
                 <Mail size={16} strokeWidth={1.35} className="mt-0.5 shrink-0 text-black/35" aria-hidden />
                 <span>Messages / relances par e-mail (commandes, abonnement, événements).</span>
               </li>
-              <li className="flex items-start gap-3 text-[12px] font-light text-black/65">
+              <li className="flex items-start gap-3 text-[12px] font-normal text-black/65">
                 <Bell size={16} strokeWidth={1.35} className="mt-0.5 shrink-0 text-black/35" aria-hidden />
                 <span>Notifications (rappels club, bilan, promos ciblées).</span>
               </li>
@@ -177,7 +177,7 @@ export default function ManagerSketchMockup() {
               <div className="rounded-2xl border border-noir/[0.06] bg-surface-muted p-4">
                 <p className="text-[8px] font-normal uppercase tracking-[0.2em] text-black/38">Abonnement</p>
                 <p className="mt-2 text-2xl font-light tabular-nums text-gold-dim">8&nbsp;€</p>
-                <p className="mt-1 text-[10px] font-light text-black/40">/ mois — illustration</p>
+                <p className="mt-1 text-[10px] font-normal text-black/40">/ mois — illustration</p>
               </div>
             </div>
           </SketchCard>
@@ -185,11 +185,11 @@ export default function ManagerSketchMockup() {
           {/* ── Rangée 3 : club | calendrier ── */}
           <SketchCard label="Événement">
             <h2 className="font-display text-lg font-light text-black md:text-xl">Inscription Run / Fit Club</h2>
-            <p className="mt-3 text-[12px] font-light leading-relaxed text-black/55">
+            <p className="mt-3 text-[12px] font-normal leading-relaxed text-black/55">
               Bloc dédié inscription à une session récurrente — même ton éditorial que la page Événements.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-4 border-t border-noir/[0.05] pt-6">
-              <label className="flex cursor-pointer items-center gap-2 text-[12px] font-light text-black/65">
+              <label className="flex cursor-pointer items-center gap-2 text-[12px] font-normal text-black/65">
                 <input type="checkbox" className="h-4 w-4 rounded border-noir/20 accent-noir" defaultChecked />
                 Je participe !
               </label>
@@ -209,7 +209,7 @@ export default function ManagerSketchMockup() {
                 <p className="text-[10px] font-normal uppercase tracking-[0.18em] text-black/38">Bilan bien-être</p>
               </div>
             </div>
-            <ul className="mt-6 space-y-3 text-[12px] font-light text-black/60">
+            <ul className="mt-6 space-y-3 text-[12px] font-normal text-black/60">
               <li className="flex gap-2">
                 <span className="text-black/30">—</span>
                 Prise de rendez-vous pour le bilan (créneaux, confirmation, rappel).
@@ -231,11 +231,11 @@ export default function ManagerSketchMockup() {
                 </span>
               ))}
             </div>
-            <p className="mt-4 text-[10px] font-light italic text-black/35">Grille décorative — pas un vrai calendrier fonctionnel.</p>
+            <p className="mt-4 text-[10px] font-normal italic text-black/35">Grille décorative — pas un vrai calendrier fonctionnel.</p>
           </SketchCard>
         </div>
 
-        <footer className="mt-14 border-t border-noir/[0.06] pt-8 text-center text-[10px] font-light text-black/40">
+        <footer className="mt-14 border-t border-noir/[0.06] pt-8 text-center text-[10px] font-normal text-black/40">
           Maquette de lecture pour le gérant — routes réelles :{' '}
           <Link to="/" className="underline underline-offset-2 hover:text-black">
             Accueil

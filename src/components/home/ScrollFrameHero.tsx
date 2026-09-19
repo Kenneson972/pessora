@@ -199,7 +199,7 @@ export default function ScrollFrameHero({
   if (loading) {
     return (
       <div className="absolute inset-0 z-0 flex flex-col items-center justify-center bg-noir text-white">
-        <span className="text-sm font-light text-white/80">Chargement…</span>
+        <span className="text-sm font-normal text-white/80">Chargement…</span>
         <div className="mt-4 h-1 w-48 overflow-hidden rounded-full bg-white/20">
           <div
             className="h-full rounded-full bg-white transition-all duration-200 motion-reduce:transition-none"
@@ -213,7 +213,7 @@ export default function ScrollFrameHero({
   if (!ready) {
     return (
       <div className="absolute inset-0 z-0 flex items-center justify-center bg-noir">
-        <span className="text-sm font-light text-white/50">Vidéo non disponible</span>
+        <span className="text-sm font-normal text-white/50">Vidéo non disponible</span>
       </div>
     );
   }

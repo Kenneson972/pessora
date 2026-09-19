@@ -193,7 +193,7 @@ export function PostRegistrationWizard({
         <p className="text-editorial-section-title text-[10px] uppercase tracking-[0.2em] text-black/45">
           Merci
         </p>
-        <p className="mt-2 text-[13px] font-light leading-relaxed text-black/65">
+        <p className="mt-2 text-[13px] font-normal leading-relaxed text-black/65">
           Tes réponses pour <span className="font-normal text-noir">{eventTitle}</span> sont enregistrées.
         </p>
       </div>
@@ -212,7 +212,7 @@ export function PostRegistrationWizard({
           <Radio.Control className="mt-0.5">
             <Radio.Indicator />
           </Radio.Control>
-          <Radio.Content className="text-left text-[13px] font-light leading-snug text-black/70">
+          <Radio.Content className="text-left text-[13px] font-normal leading-snug text-black/70">
             {o.label}
           </Radio.Content>
         </Radio>
@@ -229,7 +229,7 @@ export function PostRegistrationWizard({
         <Card.Title className="mt-1 font-display font-light text-noir" style={{ fontSize: '20px' }}>
           {stepMeta.title}
         </Card.Title>
-        <Card.Description className="mt-2 text-[12px] font-light leading-relaxed text-black/50">
+        <Card.Description className="mt-2 text-[12px] font-normal leading-relaxed text-black/50">
           {stepMeta.description}
         </Card.Description>
         <p className="mt-3 text-[10px] font-normal uppercase tracking-[0.18em] text-black/35">

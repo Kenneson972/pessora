@@ -93,7 +93,7 @@ export function AdminProductEditorForm({ mode, initial, onSave, onCancel }: Prop
 
         <Tabs.Panel id="carrousel">
           <div className="pt-4">
-            <p className="mb-4 text-[11px] font-light leading-relaxed text-black/45">
+            <p className="mb-4 text-[11px] font-normal leading-relaxed text-black/45">
               Ajouter cette boisson au carrousel de la page d&rsquo;accueil.
             </p>
             <AdminCarouselToggle
@@ -112,7 +112,7 @@ export function AdminProductEditorForm({ mode, initial, onSave, onCancel }: Prop
           <div className="pt-4">
             {mode === 'edit' && productId ? (
               <>
-                <p className="mb-4 text-[11px] font-light leading-relaxed text-black/45">
+                <p className="mb-4 text-[11px] font-normal leading-relaxed text-black/45">
                   Glissez ou ajoutez jusqu&rsquo;à 3 images. L&rsquo;ordre est modifiable par drag &amp; drop.
                 </p>
                 <AdminProductGallery
@@ -149,7 +149,7 @@ export function AdminProductEditorForm({ mode, initial, onSave, onCancel }: Prop
           type="button"
           onClick={onCancel}
           disabled={saving}
-          className="h-11 min-h-11 rounded-[2px] border border-noir/15 px-8 text-[11px] font-light uppercase tracking-[0.12em] text-black/55 transition-colors hover:border-noir/30 hover:text-black disabled:opacity-40"
+          className="h-11 min-h-11 rounded-[2px] border border-noir/15 px-8 text-[11px] font-normal uppercase tracking-[0.12em] text-black/55 transition-colors hover:border-noir/30 hover:text-black disabled:opacity-40"
         >
           Fermer
         </button>

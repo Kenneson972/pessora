@@ -215,7 +215,7 @@ const Menu = () => {
       {isSearchMode && (
         <div className="border-b border-noir/[0.06] bg-surface-muted px-4 md:px-10 lg:px-[72px]">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 py-3.5">
-            <p className="text-[11px] font-light tracking-[0.03em] text-black/55">
+            <p className="text-[11px] font-normal tracking-[0.03em] text-black/55">
               {searchTotalCount > 0 ? (
                 <>
                   <span className="text-black/55">
@@ -234,7 +234,7 @@ const Menu = () => {
               type="button"
               variant="ghost"
               onPress={clearSearch}
-              className="h-11 min-h-[44px] rounded-full border border-noir/12 px-4 text-[10px] font-light uppercase tracking-[0.14em] text-black/50 hover:text-black"
+              className="h-11 min-h-[44px] rounded-full border border-noir/12 px-4 text-[10px] font-normal uppercase tracking-[0.14em] text-black/50 hover:text-black"
             >
               Effacer
             </Button>
@@ -306,7 +306,7 @@ const Menu = () => {
                 <EmptyState.Title className="font-display text-[16px] font-normal text-black/75">
                   Aucun résultat
                 </EmptyState.Title>
-                <EmptyState.Description className="text-[12px] font-light text-black/65">
+                <EmptyState.Description className="text-[12px] font-normal text-black/65">
                   Essayez un autre mot-clé ou effacez la recherche.
                 </EmptyState.Description>
               </EmptyState.Header>
@@ -315,7 +315,7 @@ const Menu = () => {
                   type="button"
                   variant="ghost"
                   onPress={clearSearch}
-                  className="h-10 rounded-full border border-noir/15 px-5 text-[10px] font-light uppercase tracking-[0.14em] text-black/55 transition-colors hover:border-noir/30 hover:text-noir"
+                  className="h-10 rounded-full border border-noir/15 px-5 text-[10px] font-normal uppercase tracking-[0.14em] text-black/55 transition-colors hover:border-noir/30 hover:text-noir"
                 >
                   Effacer la recherche
                 </Button>
@@ -348,7 +348,7 @@ const Menu = () => {
                   <EmptyState.Title className="font-display text-[16px] font-normal text-black/75">
                     Aucun produit
                   </EmptyState.Title>
-                  <EmptyState.Description className="text-[12px] font-light text-black/65">
+                  <EmptyState.Description className="text-[12px] font-normal text-black/65">
                     Cette gamme n'affiche aucun produit pour le moment.
                   </EmptyState.Description>
                 </EmptyState.Header>
@@ -371,7 +371,7 @@ const Menu = () => {
             viewport={{ once: true, amount: 0.4 }}
           >
             <div>
-              <p className="mb-3 text-[8px] font-light uppercase tracking-[0.48em] text-black/40">Communauté</p>
+              <p className="mb-3 text-[8px] font-normal uppercase tracking-[0.48em] text-black/40">Communauté</p>
               <h3
                 className="font-display font-normal leading-[1.0] text-black"
                 style={{

@@ -237,7 +237,7 @@ export default function AdminCarousel() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] uppercase tracking-[0.16em] text-black/40 truncate">{card.eyebrow}</p>
-                <p className="text-[13px] font-light text-black truncate">{card.title}</p>
+                <p className="text-[13px] font-normal text-black truncate">{card.title}</p>
                 {card.link_to && <p className="text-[10px] text-black/35 truncate">{card.link_to}</p>}
               </div>
               <span className={`text-[9px] uppercase tracking-[0.14em] px-2 py-1 rounded-full flex-shrink-0 ${card.active ? 'bg-sapin-subtle text-sapin' : 'bg-noir/[0.05] text-black/40'}`}>

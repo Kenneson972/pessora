@@ -74,7 +74,7 @@ const SkinProtocol = ({ products }: { products: GammeProduct[] }) => {
             >
               Quoi appliquer, dans quel ordre.
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-[13px] font-light leading-relaxed text-black/60">
+            <p className="mx-auto mt-4 max-w-xl text-[13px] font-normal leading-relaxed text-black/60">
               Cinq gestes, du nettoyage à la protection. Les mots entre guillemets sont ceux de la
               fiche produit, recopiés sous le produit dont ils sortent.
             </p>
@@ -111,12 +111,12 @@ const SkinProtocol = ({ products }: { products: GammeProduct[] }) => {
                           <li key={product.id} className="flex items-start gap-4">
                             <Packshot product={product} />
                             <div className="min-w-0 pt-1">
-                              <p className="text-[12px] font-light leading-snug text-black/60">
+                              <p className="text-[12px] font-normal leading-snug text-black/60">
                                 {product.name}
                               </p>
                               {notice && (
                                 <p
-                                  className="mt-1 text-pretty font-display text-[13px] font-light italic leading-snug text-black/60"
+                                  className="mt-1 text-pretty font-display text-[13px] font-normal italic leading-snug text-black/60"
                                   style={{ fontFamily: 'var(--font-display)' }}
                                 >
                                   « {notice.text} »

@@ -217,7 +217,7 @@ export function BilanBookingWidget({ challengeEventId, prefill }: Props) {
       >
         Réserve ton bilan
       </h3>
-      <p className="mb-6 text-[12px] font-light text-black/50">
+      <p className="mb-6 text-[12px] font-normal text-black/50">
         Le bilan est obligatoire pour participer au challenge.
       </p>
 
@@ -252,12 +252,12 @@ export function BilanBookingWidget({ challengeEventId, prefill }: Props) {
             </div>
           ) : null}
           {availableDates.length > 0 && (
-            <p className="-mt-3 mb-6 text-[11px] font-light text-black/40">
+            <p className="-mt-3 mb-6 text-[11px] font-normal text-black/40">
               L’équipe Pessóra te confirme l’heure exacte pour ce jour.
             </p>
           )}
           {availableDates.length === 0 && (
-            <p className="mb-6 text-[12px] font-light text-black/50">
+            <p className="mb-6 text-[12px] font-normal text-black/50">
               Aucun créneau ouvert pour l’instant.{' '}
               <button type="button" onClick={() => setShowHorsDate(true)} className="text-editorial-link-underline text-black/70 hover:text-black">
                 Faire une demande hors créneau
@@ -311,7 +311,7 @@ export function BilanBookingWidget({ challengeEventId, prefill }: Props) {
         <button
           type="button"
           onClick={() => setShowHorsDate(true)}
-          className="mt-3 block text-center text-[10px] font-light text-black/40 hover:text-black/60 underline underline-offset-2"
+          className="mt-3 block text-center text-[10px] font-normal text-black/40 hover:text-black/60 underline underline-offset-2"
         >
           Aucun créneau ne convient ? Faire une demande hors créneau
         </button>

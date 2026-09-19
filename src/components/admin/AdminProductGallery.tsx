@@ -119,7 +119,7 @@ export function AdminProductGallery({ productId, table, images, onReorder, busy 
             type="button"
             onClick={() => fileRef.current?.click()}
             disabled={disabled}
-            className="inline-flex items-center gap-1.5 rounded-full border border-noir/15 px-3 py-1.5 text-[10px] font-light uppercase tracking-[0.14em] text-black/55 transition-colors hover:border-noir/30 hover:text-noir disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-full border border-noir/15 px-3 py-1.5 text-[10px] font-normal uppercase tracking-[0.14em] text-black/55 transition-colors hover:border-noir/30 hover:text-noir disabled:opacity-50"
           >
             {uploading ? <Loader2 size={12} strokeWidth={1.5} className="animate-spin" /> : <ImagePlus size={12} strokeWidth={1.5} />}
             {uploading ? 'Envoi…' : 'Ajouter'}
@@ -137,7 +137,7 @@ export function AdminProductGallery({ productId, table, images, onReorder, busy 
 
       {localOrder.length === 0 ? (
         <div className="flex aspect-[3/1] w-full items-center justify-center rounded-[2px] border border-dashed border-noir/15 bg-white text-black/35">
-          <span className="text-[11px] font-light">Aucune photo supplémentaire</span>
+          <span className="text-[11px] font-normal">Aucune photo supplémentaire</span>
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-2">

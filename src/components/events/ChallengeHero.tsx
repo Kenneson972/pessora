@@ -63,7 +63,7 @@ export function ChallengeHero({ eventDate, heroImageUrl }: ChallengeHeroProps) {
             <em className="italic text-gold-dim">21 jours</em>
           </h1>
           <div aria-hidden="true" className="mt-6 h-px w-12 bg-gold/40" />
-          <p className="mt-6 max-w-[36ch] text-[14px] font-light leading-[1.75] tracking-[0.01em] text-white/70">
+          <p className="mt-6 max-w-[36ch] text-[14px] font-normal leading-[1.75] tracking-[0.01em] text-white/70">
             21 jours pour reprendre la main sur ton énergie, ta forme et tes habitudes.
           </p>
         </div>

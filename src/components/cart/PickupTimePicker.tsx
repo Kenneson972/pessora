@@ -41,7 +41,7 @@ export function PickupTimePicker({ hours = OPENING_HOURS, value, onChange }: Pic
           <Clock size={11} strokeWidth={1.3} className="text-sapin/45" />
           <span className="text-[10px] font-normal uppercase tracking-[0.16em] text-black/45">Créneau de retrait</span>
         </div>
-        <p className="text-[10px] font-light text-black/40">
+        <p className="text-[10px] font-normal text-black/40">
           {todayRange(hours) === null ? "Fermé aujourd'hui." : "Aucun créneau aujourd'hui."}
         </p>
       </div>

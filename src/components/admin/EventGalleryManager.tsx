@@ -138,7 +138,7 @@ export function EventGalleryManager({
                 <button
                   type="button"
                   onClick={() => coverInputRef.current?.click()}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-3 py-1.5 text-[10px] font-light uppercase tracking-[0.14em] text-white backdrop-blur-[2px] transition-colors hover:bg-white/20"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-3 py-1.5 text-[10px] font-normal uppercase tracking-[0.14em] text-white backdrop-blur-[2px] transition-colors hover:bg-white/20"
                 >
                   <ImagePlus size={12} strokeWidth={1.5} />
                   Remplacer
@@ -146,7 +146,7 @@ export function EventGalleryManager({
                 <button
                   type="button"
                   onClick={removeCover}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-3 py-1.5 text-[10px] font-light uppercase tracking-[0.14em] text-white backdrop-blur-[2px] transition-colors hover:bg-red-500/70"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-3 py-1.5 text-[10px] font-normal uppercase tracking-[0.14em] text-white backdrop-blur-[2px] transition-colors hover:bg-red-500/70"
                   aria-label="Retirer la couverture"
                 >
                   <Trash2 size={12} strokeWidth={1.5} />
@@ -165,7 +165,7 @@ export function EventGalleryManager({
               ) : (
                 <ImagePlus size={22} strokeWidth={1.5} />
               )}
-              <span className="text-[11px] font-light tracking-[0.04em]">
+              <span className="text-[11px] font-normal tracking-[0.04em]">
                 {coverUploading ? 'Envoi…' : 'Ajouter une image de couverture'}
               </span>
               <span className="text-[9px] uppercase tracking-[0.22em] text-black/30">JPEG · PNG · WebP · 5 Mo max</span>
@@ -192,7 +192,7 @@ export function EventGalleryManager({
             type="button"
             onClick={() => galleryInputRef.current?.click()}
             disabled={galleryUploading}
-            className="inline-flex items-center gap-1.5 rounded-full border border-noir/15 px-3 py-1.5 text-[10px] font-light uppercase tracking-[0.14em] text-black/55 transition-colors hover:border-noir/30 hover:text-noir disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-full border border-noir/15 px-3 py-1.5 text-[10px] font-normal uppercase tracking-[0.14em] text-black/55 transition-colors hover:border-noir/30 hover:text-noir disabled:opacity-50"
           >
             {galleryUploading ? (
               <Loader2 size={12} strokeWidth={1.5} className="animate-spin" />
@@ -219,7 +219,7 @@ export function EventGalleryManager({
             className="flex aspect-[16/9] w-full flex-col items-center justify-center gap-2 rounded-[2px] border border-dashed border-noir/15 bg-white text-black/40 transition-colors hover:border-noir/30 hover:text-black/60"
           >
             <ImagePlus size={20} strokeWidth={1.5} />
-            <span className="text-[11px] font-light">Aucune photo additionnelle</span>
+            <span className="text-[11px] font-normal">Aucune photo additionnelle</span>
             <span className="text-[9px] uppercase tracking-[0.22em] text-black/30">Cliquer pour ajouter</span>
           </button>
         ) : (
@@ -260,7 +260,7 @@ export function EventGalleryManager({
                   >
                     <ArrowLeft size={12} strokeWidth={1.6} />
                   </button>
-                  <span className="text-[9px] font-light uppercase tracking-[0.18em] text-white/80">
+                  <span className="text-[9px] font-normal uppercase tracking-[0.18em] text-white/80">
                     {idx + 1}
                   </span>
                   <button

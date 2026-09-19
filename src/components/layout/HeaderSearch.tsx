@@ -353,7 +353,7 @@ function EventPaletteItem({ ev }: { ev: SearchEvent }) {
         className="inline-flex h-8 w-8 shrink-0 flex-col items-center justify-center rounded-[2px] bg-noir text-white"
         aria-hidden
       >
-        <span className="text-[13px] font-light leading-none">{day}</span>
+        <span className="text-[13px] font-normal leading-none">{day}</span>
         <span className="mt-0.5 text-[7px] font-normal uppercase tracking-[0.18em] text-white/55">
           {month.replace('.', '')}
         </span>

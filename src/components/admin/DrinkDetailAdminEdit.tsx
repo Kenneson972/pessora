@@ -187,7 +187,7 @@ export function DrinkDetailAdminEdit({ drinkId, drink }: Props) {
                       onChange={(e) => setName(e.target.value)}
                       variant="secondary"
                       disabled={busy}
-                      className="w-full border-0 border-b border-noir/10 bg-transparent py-2 text-[14px] font-light text-black focus-visible:border-noir"
+                      className="w-full border-0 border-b border-noir/10 bg-transparent py-2 text-[14px] font-normal text-black focus-visible:border-noir"
                     />
                   </TextField>
                   <TextField className="space-y-1" name="drink-emoji">
@@ -211,7 +211,7 @@ export function DrinkDetailAdminEdit({ drinkId, drink }: Props) {
                     onChange={(e) => setDescription(e.target.value)}
                     rows={3}
                     disabled={busy}
-                    className="w-full resize-none border-0 border-b border-noir/10 bg-transparent py-2 text-[13px] font-light text-black focus-visible:border-noir"
+                    className="w-full resize-none border-0 border-b border-noir/10 bg-transparent py-2 text-[13px] font-normal text-black focus-visible:border-noir"
                   />
                 </TextField>
 
@@ -226,7 +226,7 @@ export function DrinkDetailAdminEdit({ drinkId, drink }: Props) {
                       onChange={(e) => setPrice(e.target.value)}
                       variant="secondary"
                       disabled={busy}
-                      className="w-full border-0 border-b border-noir/10 bg-transparent py-2 text-[14px] font-light text-black focus-visible:border-noir"
+                      className="w-full border-0 border-b border-noir/10 bg-transparent py-2 text-[14px] font-normal text-black focus-visible:border-noir"
                     />
                   </TextField>
                   <TextField className="space-y-1" name="drink-calories">
@@ -237,7 +237,7 @@ export function DrinkDetailAdminEdit({ drinkId, drink }: Props) {
                       onChange={(e) => setCalories(e.target.value)}
                       variant="secondary"
                       disabled={busy}
-                      className="w-full border-0 border-b border-noir/10 bg-transparent py-2 text-[14px] font-light text-black focus-visible:border-noir"
+                      className="w-full border-0 border-b border-noir/10 bg-transparent py-2 text-[14px] font-normal text-black focus-visible:border-noir"
                     />
                   </TextField>
                   <TextField className="space-y-1" name="drink-protein">
@@ -248,7 +248,7 @@ export function DrinkDetailAdminEdit({ drinkId, drink }: Props) {
                       onChange={(e) => setProtein(e.target.value)}
                       variant="secondary"
                       disabled={busy}
-                      className="w-full border-0 border-b border-noir/10 bg-transparent py-2 text-[14px] font-light text-black focus-visible:border-noir"
+                      className="w-full border-0 border-b border-noir/10 bg-transparent py-2 text-[14px] font-normal text-black focus-visible:border-noir"
                     />
                   </TextField>
                 </div>
@@ -264,7 +264,7 @@ export function DrinkDetailAdminEdit({ drinkId, drink }: Props) {
                     onChange={(e) => setBadges(e.target.value)}
                     variant="secondary"
                     disabled={busy}
-                    className="w-full border-0 border-b border-noir/10 bg-transparent py-2 text-[13px] font-light text-black focus-visible:border-noir"
+                    className="w-full border-0 border-b border-noir/10 bg-transparent py-2 text-[13px] font-normal text-black focus-visible:border-noir"
                   />
                 </TextField>
 

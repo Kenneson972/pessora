@@ -98,12 +98,12 @@ export default function CommandeSucces() {
               <div className="mx-auto mb-10 max-w-sm rounded-[2px] border border-sapin/15 bg-sapin-subtle p-4 text-center">
                 <p className="text-[18px] mb-2">🥗</p>
                 <p className="text-[13px] font-medium text-black">Votre commande gamme est confirmée !</p>
-                <p className="mt-2 text-[12px] font-light leading-relaxed text-black/50">
+                <p className="mt-2 text-[12px] font-normal leading-relaxed text-black/50">
                   L&apos;équipe PessÓra va planifier votre retrait. Vous recevrez la date et l&apos;heure sous 24h.
                 </p>
               </div>
             ) : (
-              <p className="mx-auto mb-10 max-w-sm text-[13px] font-light leading-relaxed text-black/50">
+              <p className="mx-auto mb-10 max-w-sm text-[13px] font-normal leading-relaxed text-black/50">
                 Votre paiement a été validé. Votre commande est en cours de préparation.
               </p>
             )}

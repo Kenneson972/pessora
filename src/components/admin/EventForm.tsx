@@ -101,10 +101,10 @@ export const EventForm = ({ initial, existing, relanceFrom, onSave, onCancel, on
     <motion.div initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={prefersReducedMotion ? undefined : { opacity: 0, y: -4 }} transition={{ duration: 0.2, ease: 'easeOut' }}>
       <div className="sticky top-0 z-20 -mx-4 mb-6 border-b border-noir/[0.06] bg-white/95 px-4 py-3 backdrop-blur-sm sm:-mx-6 sm:px-6 md:-mx-10 md:px-10">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <button type="button" onClick={onCancel} className="inline-flex items-center gap-2 text-[11px] font-light text-black/55 transition-colors hover:text-noir"><ArrowLeft size={14} strokeWidth={1.5} />Retour à la liste</button>
+          <button type="button" onClick={onCancel} className="inline-flex items-center gap-2 text-[11px] font-normal text-black/55 transition-colors hover:text-noir"><ArrowLeft size={14} strokeWidth={1.5} />Retour à la liste</button>
           <div className="flex items-center gap-2">
-            {existing && (<a href={`/evenements/${existing.slug}`} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center gap-1.5 rounded-full border border-noir/15 px-3 text-[10px] font-light uppercase tracking-[0.14em] text-black/55 transition-colors hover:border-noir/30 hover:text-noir"><ExternalLink size={12} strokeWidth={1.5} />Voir la page</a>)}
-            <button type="button" onClick={onCancel} className="inline-flex h-11 items-center rounded-full border border-noir/15 px-5 text-[10px] font-light uppercase tracking-[0.14em] text-black/55 transition-colors hover:border-noir/30 hover:text-noir">Annuler</button>
+            {existing && (<a href={`/evenements/${existing.slug}`} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center gap-1.5 rounded-full border border-noir/15 px-3 text-[10px] font-normal uppercase tracking-[0.14em] text-black/55 transition-colors hover:border-noir/30 hover:text-noir"><ExternalLink size={12} strokeWidth={1.5} />Voir la page</a>)}
+            <button type="button" onClick={onCancel} className="inline-flex h-11 items-center rounded-full border border-noir/15 px-5 text-[10px] font-normal uppercase tracking-[0.14em] text-black/55 transition-colors hover:border-noir/30 hover:text-noir">Annuler</button>
             <button type="button" onClick={handleSave} disabled={saving} className="inline-flex h-11 items-center rounded-full bg-noir px-5 text-[11px] font-medium tracking-[0.04em] text-white transition-colors hover:bg-anthracite disabled:opacity-50">{saving ? 'Sauvegarde…' : existing ? 'Enregistrer' : 'Publier'}</button>
           </div>
         </div>
@@ -112,11 +112,11 @@ export const EventForm = ({ initial, existing, relanceFrom, onSave, onCancel, on
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_minmax(320px,420px)] lg:gap-10">
         <div className="flex flex-col gap-8">
-          {relanceFrom && (<div className="mb-4 flex items-center gap-2 rounded-[2px] border border-gold/20 bg-gold/[0.06] px-4 py-3"><RefreshCw size={12} strokeWidth={1.5} className="shrink-0 text-gold-dim" /><p className="text-[11px] font-light text-black/60">Relancé depuis <span className="font-normal text-black/80">«&nbsp;{relanceFrom}&nbsp;»</span> — choisissez une nouvelle date et ajustez le slug.</p></div>)}
+          {relanceFrom && (<div className="mb-4 flex items-center gap-2 rounded-[2px] border border-gold/20 bg-gold/[0.06] px-4 py-3"><RefreshCw size={12} strokeWidth={1.5} className="shrink-0 text-gold-dim" /><p className="text-[11px] font-normal text-black/60">Relancé depuis <span className="font-normal text-black/80">«&nbsp;{relanceFrom}&nbsp;»</span> — choisissez une nouvelle date et ajustez le slug.</p></div>)}
           <header className="pb-2">
             <DashEyebrow className="mb-2">{existing ? "Modifier l'événement" : relanceFrom ? "Relancer l'événement" : 'Nouvel événement'}</DashEyebrow>
             <h2 className="font-display text-[clamp(1.5rem,4vw,2.2rem)] leading-[1.05] tracking-[-0.02em] text-noir" style={{ fontFamily: 'var(--font-display)' }}>{form.title || (existing ? existing.title : 'Sans titre')}</h2>
-            {form.slug && (<p className="mt-2 text-[11px] font-light text-black/60"><span className="text-black/60">pessora.fr/evenements/</span><span className="text-black/60">{form.slug}</span></p>)}
+            {form.slug && (<p className="mt-2 text-[11px] font-normal text-black/60"><span className="text-black/60">pessora.fr/evenements/</span><span className="text-black/60">{form.slug}</span></p>)}
           </header>
 
           <section className="rounded-[2px] border border-noir/[0.06] bg-white p-5 sm:p-6">
@@ -157,11 +157,11 @@ export const EventForm = ({ initial, existing, relanceFrom, onSave, onCancel, on
 
           <div className="flex flex-col-reverse items-stretch gap-2 border-t border-noir/[0.06] pt-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-wrap items-center gap-2">
-              {existing && onRelance && (<button type="button" onClick={onRelance} className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-noir/15 px-5 text-[11px] font-light uppercase tracking-[0.14em] text-black/55 transition-colors hover:border-noir/30 hover:text-noir"><RefreshCw size={13} strokeWidth={1.5} />Relancer cet événement</button>)}
-              {existing && onDelete ? (<button type="button" onClick={onDelete} className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-red-200 bg-red-50/50 px-5 text-[11px] font-light uppercase tracking-[0.14em] text-red-700 transition-colors hover:bg-red-50 hover:text-red-800"><Trash2 size={13} strokeWidth={1.5} />Supprimer</button>) : (<span />)}
+              {existing && onRelance && (<button type="button" onClick={onRelance} className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-noir/15 px-5 text-[11px] font-normal uppercase tracking-[0.14em] text-black/55 transition-colors hover:border-noir/30 hover:text-noir"><RefreshCw size={13} strokeWidth={1.5} />Relancer cet événement</button>)}
+              {existing && onDelete ? (<button type="button" onClick={onDelete} className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-red-200 bg-red-50/50 px-5 text-[11px] font-normal uppercase tracking-[0.14em] text-red-700 transition-colors hover:bg-red-50 hover:text-red-800"><Trash2 size={13} strokeWidth={1.5} />Supprimer</button>) : (<span />)}
             </div>
             <div className="flex items-center gap-2 sm:justify-end">
-              <button type="button" onClick={onCancel} className="inline-flex h-11 items-center rounded-full border border-noir/15 px-5 text-[10px] font-light uppercase tracking-[0.14em] text-black/55 transition-colors hover:border-noir/30 hover:text-noir">Annuler</button>
+              <button type="button" onClick={onCancel} className="inline-flex h-11 items-center rounded-full border border-noir/15 px-5 text-[10px] font-normal uppercase tracking-[0.14em] text-black/55 transition-colors hover:border-noir/30 hover:text-noir">Annuler</button>
               <button type="button" onClick={handleSave} disabled={saving} className="inline-flex h-11 items-center rounded-full bg-noir px-5 text-[11px] font-medium tracking-[0.04em] text-white transition-colors hover:bg-anthracite disabled:opacity-50">{saving ? 'Sauvegarde…' : existing ? 'Enregistrer' : 'Publier'}</button>
             </div>
           </div>
@@ -194,7 +194,7 @@ export const EventForm = ({ initial, existing, relanceFrom, onSave, onCancel, on
                       type="button"
                       onClick={() => popupImageInputRef.current?.click()}
                       disabled={popupImageUploading}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-noir/15 px-3 py-1.5 text-[10px] font-light uppercase tracking-[0.14em] text-black/55 transition-colors hover:border-noir/30 hover:text-noir disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-noir/15 px-3 py-1.5 text-[10px] font-normal uppercase tracking-[0.14em] text-black/55 transition-colors hover:border-noir/30 hover:text-noir disabled:opacity-50"
                     >
                       {popupImageUploading ? <Loader2 size={12} className="animate-spin" /> : <ImagePlus size={12} strokeWidth={1.5} />}
                       {popupImageUploading ? 'Envoi…' : form.popup_image_url ? 'Changer' : 'Ajouter'}
@@ -219,7 +219,7 @@ export const EventForm = ({ initial, existing, relanceFrom, onSave, onCancel, on
                   {popupImageError && <p className="mt-1.5 text-[10px] text-red-700">{popupImageError}</p>}
                 </div>
                 <div className="rounded-[2px] border border-noir/[0.05] bg-white px-3 py-2.5 text-[10px] leading-relaxed text-black/55"><p><span className="text-black/60">Lien : </span><span className="text-black/70">/evenements/{pathSlug}</span></p>{form.date && (<p className="mt-1"><span className="text-black/60">Expire après : </span><span className="text-black/70">{formatLongDate(form.date)}</span></p>)}</div>
-                <button type="button" onClick={resetPopupFromEvent} className="self-start text-[10px] font-light uppercase tracking-[0.14em] text-black/60 hover:text-noir border-b border-noir/20 pb-px transition-colors">Réinitialiser depuis l'événement</button>
+                <button type="button" onClick={resetPopupFromEvent} className="self-start text-[10px] font-normal uppercase tracking-[0.14em] text-black/60 hover:text-noir border-b border-noir/20 pb-px transition-colors">Réinitialiser depuis l'événement</button>
               </div>
             )}
           </section>

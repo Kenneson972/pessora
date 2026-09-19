@@ -40,7 +40,7 @@ export function HomeGammesProductTiles({ onTabChange }: { onTabChange: (id: stri
           />
           <div className="absolute inset-0 bg-gradient-to-t from-noir/55 via-transparent to-noir/10" />
           <div className="absolute top-4 left-4">
-            <span className="text-[13px] font-light text-white">{rangesData[r.id].title.replace('Gamme ', '')}</span>
+            <span className="text-[13px] font-normal text-white">{rangesData[r.id].title.replace('Gamme ', '')}</span>
           </div>
           <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
             <span className="text-[8.5px] uppercase tracking-[0.18em] text-white/58">{r.sub}</span>

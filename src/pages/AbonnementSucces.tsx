@@ -48,7 +48,7 @@ const AbonnementSucces = () => {
             >
               Óra+
             </h1>
-            <p className="mt-6 text-[14px] font-light leading-relaxed text-black/55">
+            <p className="mt-6 text-[14px] font-normal leading-relaxed text-black/55">
               Votre abonnement est confirmé. Un email vous a été envoyé —
               cliquez sur le lien pour accéder à votre espace membre.
             </p>
@@ -66,7 +66,7 @@ const AbonnementSucces = () => {
             <h1 className="font-display text-[32px] font-normal leading-none text-sapin">
               Merci !
             </h1>
-            <p className="mt-4 text-[13px] font-light leading-relaxed text-black/55">
+            <p className="mt-4 text-[13px] font-normal leading-relaxed text-black/55">
               Paiement reçu. L'activation de votre Óra+ peut prendre quelques minutes.
               Vérifiez votre email.
             </p>

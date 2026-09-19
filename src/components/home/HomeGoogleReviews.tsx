@@ -47,7 +47,7 @@ export function HomeGoogleReviews() {
             <span className="text-[22px] font-light leading-none tracking-[-0.02em] text-black md:text-[26px]">
               {roundedRating}
             </span>
-            <span className="pb-[2px] text-[10px] font-light tracking-[0.12em] text-black/40">
+            <span className="pb-[2px] text-[10px] font-normal tracking-[0.12em] text-black/40">
               {googleReviewsData.reviewCountLabel}
             </span>
           </div>
@@ -71,7 +71,7 @@ export function HomeGoogleReviews() {
               className="snap-start shrink-0 w-[min(80vw,400px)] rounded-[2px] border border-noir/[0.06] bg-surface-card py-5 pl-5 pr-5 shadow-editorial-sm md:w-[min(40vw,440px)] md:py-6 md:pl-6 md:pr-6"
             >
               <Card.Content className="p-0">
-                <p className="mb-4 text-[15px] font-light leading-[1.38] text-black/82 md:text-[17px]">
+                <p className="mb-4 text-[15px] font-normal leading-[1.38] text-black/82 md:text-[17px]">
                   "{review.quote}"
                 </p>
                 <p className="text-[10px] font-normal uppercase tracking-[0.18em] text-black/56">{review.author}</p>
@@ -101,7 +101,7 @@ export function HomeGoogleReviews() {
             href={googleReviewsData.placeReviewsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block border-b border-noir/30 pb-px text-[9px] font-light uppercase tracking-[0.28em] text-black/60 transition-colors duration-200 hover:border-noir hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-noir/20 rounded-[1px]"
+            className="inline-block border-b border-noir/30 pb-px text-[9px] font-normal uppercase tracking-[0.28em] text-black/60 transition-colors duration-200 hover:border-noir hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-noir/20 rounded-[1px]"
           >
             Voir tous les avis Google
           </a>

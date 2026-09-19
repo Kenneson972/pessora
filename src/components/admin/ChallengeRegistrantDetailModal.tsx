@@ -134,7 +134,7 @@ export function ChallengeRegistrantDetailModal({ registrant, onClose, onDelete }
                       <button
                         type="button"
                         onClick={() => setConfirmDelete(true)}
-                        className="inline-flex items-center gap-1.5 text-[11px] font-light text-red-600 transition-colors hover:text-red-700"
+                        className="inline-flex items-center gap-1.5 text-[11px] font-normal text-red-600 transition-colors hover:text-red-700"
                       >
                         <Trash2 size={13} strokeWidth={1.6} />
                         Supprimer l'inscription
@@ -142,7 +142,7 @@ export function ChallengeRegistrantDetailModal({ registrant, onClose, onDelete }
                       <button
                         type="button"
                         onClick={onClose}
-                        className="h-10 px-4 rounded-[2px] border border-noir/15 text-[10px] font-light uppercase tracking-[0.12em] text-black/55 transition-colors hover:text-noir hover:border-noir/25"
+                        className="h-10 px-4 rounded-[2px] border border-noir/15 text-[10px] font-normal uppercase tracking-[0.12em] text-black/55 transition-colors hover:text-noir hover:border-noir/25"
                       >
                         Fermer
                       </button>

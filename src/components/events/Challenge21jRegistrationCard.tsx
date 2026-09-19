@@ -341,7 +341,7 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
             <div className="mb-8 rounded-[2px] border border-noir/[0.06] bg-surface-muted/60 p-5">
               {!editingInfo ? (
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="text-[12px] font-light text-black/55">
+                  <div className="text-[12px] font-normal text-black/55">
                     <p>Âge : {existing.age || '—'}</p>
                     <p>Métier : {existing.profession || '—'}</p>
                     <p>Début souhaité : {TIMING_OPTIONS.find((o) => o.value === existing.timing_demarrage)?.label ?? '—'}</p>
@@ -437,7 +437,7 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
                       <button
                         type="button"
                         onClick={() => setEditingInfo(false)}
-                        className="text-[10px] font-light text-black/45 hover:text-noir"
+                        className="text-[10px] font-normal text-black/45 hover:text-noir"
                       >
                         Annuler
                       </button>
@@ -692,7 +692,7 @@ export function Challenge21jRegistrationCard({ event }: Challenge21jRegistration
                     onChange={(e) => field.onChange(e.target.checked)}
                     className="mt-1 h-4 w-4 shrink-0 rounded-[2px] border border-noir/15 accent-sapin"
                   />
-                  <span className="text-[11px] font-light leading-relaxed text-black/60">
+                  <span className="text-[11px] font-normal leading-relaxed text-black/60">
                     J’accepte que mes données soient utilisées pour gérer mon inscription au Challenge 21 jours
                     et me recontacter à ce sujet, conformément à la{' '}
                     <Link

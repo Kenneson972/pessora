@@ -355,7 +355,7 @@ const AdminMemberDetail = () => {
       <div className={`${DASH_MAIN_PAD} mx-auto w-full max-w-[900px]`}>
         <Link
           to="/admin/membres"
-          className="mb-6 inline-flex items-center gap-2 text-[11px] font-light text-black/45 transition-colors hover:text-black"
+          className="mb-6 inline-flex items-center gap-2 text-[11px] font-normal text-black/45 transition-colors hover:text-black"
         >
           <ArrowLeft size={14} strokeWidth={1.5} /> Membres
         </Link>
@@ -378,7 +378,7 @@ const AdminMemberDetail = () => {
     <div className={`${DASH_MAIN_PAD} mx-auto w-full max-w-[900px]`}>
       <Link
         to="/admin/membres"
-        className="mb-6 inline-flex items-center gap-2 text-[11px] font-light text-black/45 transition-colors hover:text-black"
+        className="mb-6 inline-flex items-center gap-2 text-[11px] font-normal text-black/45 transition-colors hover:text-black"
       >
         <ArrowLeft size={14} strokeWidth={1.5} /> Membres
       </Link>
@@ -480,7 +480,7 @@ const AdminMemberDetail = () => {
               <Mail size={14} className="shrink-0 opacity-45" aria-hidden />
               <span>{profile?.email ?? '—'}</span>
             </div>
-            <p className="mt-1.5 text-[10px] font-light leading-relaxed text-black/35">
+            <p className="mt-1.5 text-[10px] font-normal leading-relaxed text-black/35">
               L'e-mail de connexion ne se modifie pas ici. Changement = procédure manuelle (Auth / support).
             </p>
           </div>
@@ -617,7 +617,7 @@ const AdminMemberDetail = () => {
           </div>
         </div>
         {subscription?.stripe_subscription_id && (
-          <p className="mt-4 text-[10px] font-light text-amber-600 bg-amber-50 border border-amber-100 rounded-[2px] px-3 py-2">
+          <p className="mt-4 text-[10px] font-normal text-amber-600 bg-amber-50 border border-amber-100 rounded-[2px] px-3 py-2">
             ⚠️ Cet abonnement est lié à Stripe. Les modifications manuelles peuvent désynchroniser le statut réel.
           </p>
         )}
@@ -665,7 +665,7 @@ const AdminMemberDetail = () => {
           )}
 
           {stripeError && !stripeLoading && (
-            <p className="text-[11px] font-light text-black/40">{stripeError}</p>
+            <p className="text-[11px] font-normal text-black/40">{stripeError}</p>
           )}
 
           {stripeData && !stripeLoading && (
@@ -703,7 +703,7 @@ const AdminMemberDetail = () => {
                       </p>
                     </>
                   ) : (
-                    <p className="text-[12px] font-light text-black/35">—</p>
+                    <p className="text-[12px] font-normal text-black/35">—</p>
                   )}
                 </div>
               </div>
@@ -748,7 +748,7 @@ const AdminMemberDetail = () => {
                   )
                 )}
               </div>
-              <p className="mt-2 text-right text-[9px] font-light text-black/30">
+              <p className="mt-2 text-right text-[9px] font-normal text-black/30">
                 L'annulation prend effet à la fin de la période en cours
               </p>
             </>
@@ -761,7 +761,7 @@ const AdminMemberDetail = () => {
         {sectionErrors.orders ? (
           <p className="text-[12px] text-amber-800/90">{sectionErrors.orders}</p>
         ) : orders.length === 0 ? (
-          <p className="text-[12px] font-light text-black/40">Aucune commande.</p>
+          <p className="text-[12px] font-normal text-black/40">Aucune commande.</p>
         ) : (
           <ul className="space-y-4">
             {orders.map((o) => (
@@ -792,7 +792,7 @@ const AdminMemberDetail = () => {
         {sectionErrors.bilans ? (
           <p className="text-[12px] text-amber-800/90">{sectionErrors.bilans}</p>
         ) : bilans.length === 0 ? (
-          <p className="text-[12px] font-light text-black/40">Aucune réservation bilan.</p>
+          <p className="text-[12px] font-normal text-black/40">Aucune réservation bilan.</p>
         ) : (
           <ul className="space-y-3">
             {bilans.map((b) => (
@@ -802,7 +802,7 @@ const AdminMemberDetail = () => {
                     {b.date_rdv}{' '}
                     {b.heure_rdv ? `· ${String(b.heure_rdv).slice(0, 5)}` : ''}
                   </p>
-                  {b.notes && <p className="mt-1 max-w-md text-[11px] font-light text-black/45">{b.notes}</p>}
+                  {b.notes && <p className="mt-1 max-w-md text-[11px] font-normal text-black/45">{b.notes}</p>}
                 </div>
                 <span className="rounded-[2px] bg-noir/[0.05] px-2 py-0.5 text-[9px] uppercase tracking-[0.1em] text-black/50">
                   {BILAN_STATUT_LABEL[b.statut] ?? b.statut}
@@ -818,7 +818,7 @@ const AdminMemberDetail = () => {
         {sectionErrors.events ? (
           <p className="text-[12px] text-amber-800/90">{sectionErrors.events}</p>
         ) : eventRegs.length === 0 ? (
-          <p className="text-[12px] font-light text-black/40">Aucune inscription.</p>
+          <p className="text-[12px] font-normal text-black/40">Aucune inscription.</p>
         ) : (
           <ul className="space-y-3">
             {eventRegs.map((r) => (

@@ -93,7 +93,7 @@ const PessobotPage = () => {
                 <br />
                 <em className="italic text-white/60">Assistant nutrition</em>
               </h1>
-              <p className="mb-10 max-w-md text-[12px] font-light leading-[1.7] text-white/[0.42]">
+              <p className="mb-10 max-w-md text-[12px] font-normal leading-[1.7] text-white/[0.42]">
                 Conseils produits et horaires — ouvrez la bulle en bas à droite quand vous voulez.
               </p>
 
@@ -130,7 +130,7 @@ const PessobotPage = () => {
           >
             Votre guide boissons, en un message.
           </h2>
-          <p className="text-[13px] font-light text-black/45 leading-relaxed max-w-2xl mx-auto">
+          <p className="text-[13px] font-normal text-black/45 leading-relaxed max-w-2xl mx-auto">
             PessoBot connaît chaque boisson du bar sur le bout des doigts. Posez-lui une question sur le menu ou les horaires — il répond en quelques secondes.
           </p>
         </PageShell>
@@ -158,7 +158,7 @@ const PessobotPage = () => {
                 >
                   {feature.title}
                 </h3>
-                <p className="text-[12px] font-light leading-relaxed text-black/45">{feature.desc}</p>
+                <p className="text-[12px] font-normal leading-relaxed text-black/45">{feature.desc}</p>
               </motion.div>
             ))}
           </div>

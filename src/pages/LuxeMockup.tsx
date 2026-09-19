@@ -48,13 +48,13 @@ function MockProductCardLux({
       </div>
       <div className="pt-4">
         {isLegacyDark && (
-          <p className="mb-1.5 text-[8px] font-light uppercase tracking-[0.35em] text-gold-dim">{tag}</p>
+          <p className="mb-1.5 text-[8px] font-normal uppercase tracking-[0.35em] text-gold-dim">{tag}</p>
         )}
         <div className="flex min-h-[2.5rem] items-start justify-between gap-2">
           <p className="text-[13px] font-normal leading-tight text-black">{name}</p>
           <span className="flex-shrink-0 text-[13px] font-normal tabular-nums text-black">{price}</span>
         </div>
-        <p className="mt-1 line-clamp-1 text-[9px] font-light tracking-[0.04em] text-black/35">{macros}</p>
+        <p className="mt-1 line-clamp-1 text-[9px] font-normal tracking-[0.04em] text-black/35">{macros}</p>
       </div>
     </div>
   );
@@ -85,7 +85,7 @@ const LuxeMockup = () => {
         <PageShell className="flex flex-col gap-2 py-4 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-[9px] font-normal uppercase tracking-[0.28em] text-white/50">Maquette interne</p>
-            <p className="mt-1 text-[13px] font-light text-white/85">
+            <p className="mt-1 text-[13px] font-normal text-white/85">
               Direction visuelle — références type Nespresso · Le Tanneur (minimalisme, finitions, grilles).
             </p>
           </div>
@@ -110,7 +110,7 @@ const LuxeMockup = () => {
       <div className="border-b border-noir/[0.06] bg-white shadow-[0_4px_32px_rgba(0,0,0,0.04)]">
         <div className="border-b border-noir/[0.05] bg-noir/[0.02]">
           <PageShell className="py-2.5 text-center">
-            <p className="text-[9px] font-light uppercase tracking-[0.32em] text-black/38">
+            <p className="text-[9px] font-normal uppercase tracking-[0.32em] text-black/38">
               Fort-de-France · Martinique
             </p>
           </PageShell>
@@ -138,7 +138,7 @@ const LuxeMockup = () => {
           </div>
 
           <div className="flex items-center justify-center gap-2 md:justify-end md:gap-3">
-            <span className="inline-flex h-10 items-center gap-2 rounded-full border border-noir/[0.12] bg-white px-4 text-[10px] font-light tracking-[0.06em] text-black/55 md:h-11 md:px-5 md:text-[11px]">
+            <span className="inline-flex h-10 items-center gap-2 rounded-full border border-noir/[0.12] bg-white px-4 text-[10px] font-normal tracking-[0.06em] text-black/55 md:h-11 md:px-5 md:text-[11px]">
               <User size={15} strokeWidth={1.25} aria-hidden />
               Mon espace
             </span>
@@ -200,7 +200,7 @@ const LuxeMockup = () => {
           }}
         />
         <div className="relative max-w-3xl">
-          <p className="mb-5 text-[8px] font-light tracking-[0.55em] text-white/35">Bar protéiné · Martinique</p>
+          <p className="mb-5 text-[8px] font-normal tracking-[0.55em] text-white/35">Bar protéiné · Martinique</p>
           <h2
             className="font-display font-normal leading-[0.9] tracking-[-0.03em] text-white"
             style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(42px, 6.5vw, 76px)' }}
@@ -230,7 +230,7 @@ const LuxeMockup = () => {
             ].map((c) => (
               <div key={c.label} className="flex flex-col gap-2">
                 <div className={cn('flex aspect-[4/3] items-end rounded-xl p-3', c.className, c.fg)}>
-                  <span className="text-[10px] font-light opacity-90">{c.label}</span>
+                  <span className="text-[10px] font-normal opacity-90">{c.label}</span>
                 </div>
               </div>
             ))}
@@ -245,7 +245,7 @@ const LuxeMockup = () => {
           <div className="grid gap-12 md:grid-cols-2">
             <div>
               <p className="mb-3 text-[8px] uppercase tracking-[0.45em] text-black/35">Eyebrow</p>
-              <p className="text-[11px] font-light tracking-[0.2em] text-black/55">Shakes protéinés</p>
+              <p className="text-[11px] font-normal tracking-[0.2em] text-black/55">Shakes protéinés</p>
             </div>
             <div>
               <p className="mb-3 text-[8px] uppercase tracking-[0.45em] text-black/35">Display — Montserrat</p>
@@ -255,7 +255,7 @@ const LuxeMockup = () => {
             </div>
             <div className="md:col-span-2">
               <p className="mb-3 text-[8px] uppercase tracking-[0.45em] text-black/35">Corps — Montserrat 300</p>
-              <p className="max-w-xl text-[14px] font-light leading-relaxed text-black/55">
+              <p className="max-w-xl text-[14px] font-normal leading-relaxed text-black/55">
                 Peu de styles, beaucoup d’air : une hiérarchie nette entre le titre éditorial et le texte utile,
                 comme sur une page collection maroquinerie ou une landing machine Nespresso.
               </p>
@@ -295,7 +295,7 @@ const LuxeMockup = () => {
                   price="14€"
                 />
               </div>
-              <p className="mt-4 max-w-xs text-[11px] font-light leading-relaxed text-black/45">
+              <p className="mt-4 max-w-xs text-[11px] font-normal leading-relaxed text-black/45">
                 Fond <strong className="font-normal text-black/70">surface-muted → surface-card</strong>, filet fin, tag lisible sur fond clair — moins de masse noire.
               </p>
             </div>
@@ -329,7 +329,7 @@ const LuxeMockup = () => {
               >
                 <div className="absolute inset-0 bg-gradient-to-t from-noir/[0.06] to-transparent" />
                 <div className="absolute inset-0 flex flex-col justify-between px-7 pb-8 pt-6">
-                  <p className="text-[7px] font-light uppercase tracking-[0.5em] text-black/38">{u.eyebrow}</p>
+                  <p className="text-[7px] font-normal uppercase tracking-[0.5em] text-black/38">{u.eyebrow}</p>
                   <div>
                     <p
                       className="mb-2.5 font-normal uppercase leading-[1.05] tracking-[0.06em] text-black"
@@ -339,7 +339,7 @@ const LuxeMockup = () => {
                       <br />
                       <span className="text-black/50">{u.em}</span>
                     </p>
-                    <span className="text-[8px] font-light uppercase tracking-[0.3em] text-black/50 transition-opacity group-hover:text-black/80">
+                    <span className="text-[8px] font-normal uppercase tracking-[0.3em] text-black/50 transition-opacity group-hover:text-black/80">
                       Découvrir
                     </span>
                   </div>

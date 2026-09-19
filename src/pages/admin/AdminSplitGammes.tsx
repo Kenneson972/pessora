@@ -184,7 +184,7 @@ export default function AdminSplitGammes() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] uppercase tracking-[0.16em] text-black/40 truncate">{g.eyebrow}</p>
-                <p className="text-[13px] font-light text-black truncate">{g.title}</p>
+                <p className="text-[13px] font-normal text-black truncate">{g.title}</p>
               </div>
               <Button isIconOnly size="sm" variant="ghost" onPress={() => openEdit(g)} aria-label="Modifier">
                 <Pencil size={14} />

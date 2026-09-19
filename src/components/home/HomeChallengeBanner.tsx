@@ -68,7 +68,7 @@ export function HomeChallengeBanner() {
 
             <div className="absolute inset-0 flex flex-col justify-between p-6 md:p-9">
               <div className="flex items-start justify-between gap-4">
-                <p className="text-[10px] font-light uppercase tracking-[0.28em] text-white/60">
+                <p className="text-[10px] font-normal uppercase tracking-[0.28em] text-white/60">
                   Challenge 21 jours
                 </p>
                 <ArrowRight size={18} className="shrink-0 text-white/70 transition-transform group-hover:translate-x-1.5" />
@@ -76,7 +76,7 @@ export function HomeChallengeBanner() {
 
               <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                  <p className="text-[11px] font-light uppercase tracking-[0.2em] text-white/60">
+                  <p className="text-[11px] font-normal uppercase tracking-[0.2em] text-white/60">
                     {day} {month} {year}
                   </p>
                   <h2
@@ -87,7 +87,7 @@ export function HomeChallengeBanner() {
                   </h2>
                 </div>
                 <div className="shrink-0 sm:pb-1">
-                  <p className="mb-2 text-[8px] font-light uppercase tracking-[0.24em] text-white/45">
+                  <p className="mb-2 text-[8px] font-normal uppercase tracking-[0.24em] text-white/45">
                     Démarre dans
                   </p>
                   <ChallengeCountdown targetDate={event.date} variant="light" compact />

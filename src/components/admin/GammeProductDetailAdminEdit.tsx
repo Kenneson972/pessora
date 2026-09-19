@@ -190,7 +190,7 @@ export function GammeProductDetailAdminEdit({ slug, product, onSaved }: Props) {
                     onChange={(e) => setName(e.target.value)}
                     variant="secondary"
                     disabled={busy}
-                    className="w-full border-0 border-b border-noir/10 bg-transparent py-2 text-[14px] font-light text-black focus-visible:border-noir"
+                    className="w-full border-0 border-b border-noir/10 bg-transparent py-2 text-[14px] font-normal text-black focus-visible:border-noir"
                   />
                 </TextField>
 
@@ -202,7 +202,7 @@ export function GammeProductDetailAdminEdit({ slug, product, onSaved }: Props) {
                     onChange={(e) => setDescription(e.target.value)}
                     rows={3}
                     disabled={busy}
-                    className="w-full resize-none border-0 border-b border-noir/10 bg-transparent py-2 text-[13px] font-light text-black focus-visible:border-noir"
+                    className="w-full resize-none border-0 border-b border-noir/10 bg-transparent py-2 text-[13px] font-normal text-black focus-visible:border-noir"
                   />
                 </TextField>
 
@@ -217,7 +217,7 @@ export function GammeProductDetailAdminEdit({ slug, product, onSaved }: Props) {
                       onChange={(e) => setPrice(e.target.value)}
                       variant="secondary"
                       disabled={busy}
-                      className="w-full border-0 border-b border-noir/10 bg-transparent py-2 text-[14px] font-light text-black focus-visible:border-noir"
+                      className="w-full border-0 border-b border-noir/10 bg-transparent py-2 text-[14px] font-normal text-black focus-visible:border-noir"
                     />
                   </TextField>
                   <TextField className="space-y-1" name="gamme-price-alt">
@@ -230,7 +230,7 @@ export function GammeProductDetailAdminEdit({ slug, product, onSaved }: Props) {
                       variant="secondary"
                       disabled={busy}
                       placeholder="laisser vide si non applicable"
-                      className="w-full border-0 border-b border-noir/10 bg-transparent py-2 text-[14px] font-light text-black focus-visible:border-noir"
+                      className="w-full border-0 border-b border-noir/10 bg-transparent py-2 text-[14px] font-normal text-black focus-visible:border-noir"
                     />
                   </TextField>
                 </div>

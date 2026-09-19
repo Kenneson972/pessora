@@ -110,7 +110,7 @@ export const ProductCard = ({
       </div>
       {macros && <p className="text-editorial-product-meta">{macros}</p>}
       {description ? (
-        <Card.Description className="line-clamp-2 text-[11px] font-light leading-relaxed text-black/40">
+        <Card.Description className="line-clamp-2 text-[11px] font-normal leading-relaxed text-black/40">
           {description}
         </Card.Description>
       ) : null}

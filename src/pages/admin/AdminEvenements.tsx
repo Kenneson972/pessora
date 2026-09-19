@@ -135,11 +135,11 @@ const EventCard = ({
               <CalendarDays size={28} strokeWidth={1} />
             </div>
           )}
-          <span className="absolute left-2 top-2 rounded-full bg-noir/70 px-2 py-0.5 text-[8px] font-light uppercase tracking-[0.22em] text-white backdrop-blur-[2px]">
+          <span className="absolute left-2 top-2 rounded-full bg-noir/70 px-2 py-0.5 text-[8px] font-normal uppercase tracking-[0.22em] text-white backdrop-blur-[2px]">
             {TYPE_LABELS[ev.type]}
           </span>
           {totalPhotos > 1 && (
-            <span className="absolute bottom-2 right-2 rounded-full bg-white/85 px-2 py-0.5 text-[9px] font-light text-black/70 backdrop-blur-[2px]">
+            <span className="absolute bottom-2 right-2 rounded-full bg-white/85 px-2 py-0.5 text-[9px] font-normal text-black/70 backdrop-blur-[2px]">
               +{totalPhotos - 1} photos
             </span>
           )}
@@ -163,7 +163,7 @@ const EventCard = ({
                 </span>
               )}
             </div>
-            <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-light text-black/50">
+            <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-normal text-black/50">
               <span className="inline-flex items-center gap-1">
                 <CalendarDays size={11} strokeWidth={1.6} />
                 {formatLongDate(ev.date)}
@@ -191,7 +191,7 @@ const EventCard = ({
               {ev.registration_open ? 'Inscriptions ouvertes' : 'Inscriptions fermées'}
             </button>
             {spots !== null && (
-              <span className="text-[10px] font-light text-black/45">
+              <span className="text-[10px] font-normal text-black/45">
                 {spots > 0 ? `${spots} places restantes` : 'Complet'}
               </span>
             )}
@@ -201,7 +201,7 @@ const EventCard = ({
             <button
               type="button"
               onClick={onToggleExpanded}
-              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-noir/15 px-4 text-[10px] font-light uppercase tracking-[0.14em] text-black/55 transition-colors hover:border-noir/30 hover:text-noir"
+              className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-noir/15 px-4 text-[10px] font-normal uppercase tracking-[0.14em] text-black/55 transition-colors hover:border-noir/30 hover:text-noir"
             >
               <Users size={12} strokeWidth={1.5} /> {count} inscrit{count > 1 ? 's' : ''}
               {expanded ? <ChevronUp size={12} strokeWidth={1.5} /> : <ChevronDown size={12} strokeWidth={1.5} />}
@@ -209,14 +209,14 @@ const EventCard = ({
             <button
               type="button"
               onClick={onEdit}
-              className="text-[11px] font-light text-black/55 transition-colors hover:text-noir border-b border-noir/20 pb-px"
+              className="text-[11px] font-normal text-black/55 transition-colors hover:text-noir border-b border-noir/20 pb-px"
             >
               Modifier
             </button>
             <button
               type="button"
               onClick={onRelance}
-              className="inline-flex items-center gap-1 text-[11px] font-light text-black/40 transition-colors hover:text-noir"
+              className="inline-flex items-center gap-1 text-[11px] font-normal text-black/40 transition-colors hover:text-noir"
               title="Relancer cet événement avec une nouvelle date"
             >
               <RefreshCw size={11} strokeWidth={1.5} />
@@ -225,7 +225,7 @@ const EventCard = ({
             <button
               type="button"
               onClick={onDelete}
-              className="ml-auto inline-flex items-center gap-1 text-[11px] font-light text-red-400 transition-colors hover:text-red-600"
+              className="ml-auto inline-flex items-center gap-1 text-[11px] font-normal text-red-400 transition-colors hover:text-red-600"
               aria-label="Supprimer"
             >
               <X size={13} strokeWidth={1.6} />
@@ -710,7 +710,7 @@ const AdminEvenements = () => {
                   ? 'Aucun événement pour le moment'
                   : 'Aucun événement ne correspond'}
               </EmptyState.Title>
-              <EmptyState.Description className="text-[12px] font-light text-black/45">
+              <EmptyState.Description className="text-[12px] font-normal text-black/45">
                 {events.length === 0
                   ? 'Crée ton premier événement pour l’afficher sur la page publique.'
                   : 'Ajuste la recherche ou réinitialise les filtres.'}

@@ -48,7 +48,7 @@ export function BeforeAfterPairsBlock({ pairs }: { pairs: unknown }) {
               <Vignette url={paire.apres} etiquette="Après" />
             </div>
             {paire.legende && (
-              <figcaption className="mt-3 text-[12px] font-light leading-relaxed text-black/60">
+              <figcaption className="mt-3 text-[12px] font-normal leading-relaxed text-black/60">
                 {paire.legende}
               </figcaption>
             )}

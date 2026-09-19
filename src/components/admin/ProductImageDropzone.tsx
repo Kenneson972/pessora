@@ -85,7 +85,7 @@ export function ProductImageDropzone({
           <p className="text-[12px] font-normal text-black">
             {uploading ? "Envoi de l'image…" : 'Glissez une image ici ou cliquez'}
           </p>
-          <p className="mt-1 text-[10px] font-light text-black/38">JPG, PNG, WebP ou GIF · recommandé carré ou portrait</p>
+          <p className="mt-1 text-[10px] font-normal text-black/38">JPG, PNG, WebP ou GIF · recommandé carré ou portrait</p>
         </div>
       </div>
 

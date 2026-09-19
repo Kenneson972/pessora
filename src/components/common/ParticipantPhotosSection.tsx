@@ -27,7 +27,7 @@ export function ParticipantPhotosSection({
         >
           {title}
         </h2>
-        <p className="mb-8 text-[12px] font-light text-black/60">
+        <p className="mb-8 text-[12px] font-normal text-black/60">
           Publiées avec l'accord des personnes photographiées.
         </p>
         {children}

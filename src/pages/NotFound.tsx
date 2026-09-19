@@ -22,7 +22,7 @@ const NotFound = () => {
           >
             Cette page n’existe pas
           </EmptyState.Title>
-          <EmptyState.Description className="mx-auto max-w-md text-[14px] font-light leading-relaxed text-black/45">
+          <EmptyState.Description className="mx-auto max-w-md text-[14px] font-normal leading-relaxed text-black/45">
             L’adresse a peut-être changé, ou le lien est incomplet. Retournez à l’accueil ou écrivez-nous.
           </EmptyState.Description>
         </EmptyState.Header>
@@ -44,12 +44,12 @@ const NotFound = () => {
       </EmptyState>
 
       <div className="mx-auto mt-12 max-w-lg text-center">
-        <p className="text-[10px] font-light uppercase tracking-[0.2em] text-black/30">
+        <p className="text-[10px] font-normal uppercase tracking-[0.2em] text-black/30">
           {barInfo.name} · {barInfo.address.city}
         </p>
         <Link
           to="/"
-          className="mt-6 inline-flex items-center gap-2 text-[11px] font-light text-black/40 transition-colors hover:text-noir"
+          className="mt-6 inline-flex items-center gap-2 text-[11px] font-normal text-black/40 transition-colors hover:text-noir"
         >
           <ArrowLeft size={14} strokeWidth={1.5} aria-hidden />
           Retour au site

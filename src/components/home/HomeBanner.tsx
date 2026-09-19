@@ -32,7 +32,7 @@ export function HomeBanner() {
               {data.title}
             </h3>
             {data.subtitle && (
-              <p className="text-[13px] font-light text-white/60 mb-7 leading-relaxed">
+              <p className="text-[13px] font-normal text-white/60 mb-7 leading-relaxed">
                 {data.subtitle}
               </p>
             )}

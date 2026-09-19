@@ -85,7 +85,7 @@ function FeaturedLayout({ a, onClose, onCta }: { a: SiteAnnouncement; onClose: (
             {a.cta_label}
           </button>
         )}
-        <button type="button" onClick={onClose} className="inline-flex items-center min-h-[44px] text-left text-[11px] font-light tracking-wide text-black/40 hover:text-black/60">
+        <button type="button" onClick={onClose} className="inline-flex items-center min-h-[44px] text-left text-[11px] font-normal tracking-wide text-black/40 hover:text-black/60">
           Pas maintenant
         </button>
       </div>
@@ -130,7 +130,7 @@ function PromoLayout({ a, onClose, onCta }: { a: SiteAnnouncement; onClose: () =
             {a.cta_label}
           </button>
         )}
-        <button type="button" onClick={onClose} className="inline-flex items-center min-h-[44px] text-left text-[11px] font-light tracking-wide text-black/40 hover:text-black/60">
+        <button type="button" onClick={onClose} className="inline-flex items-center min-h-[44px] text-left text-[11px] font-normal tracking-wide text-black/40 hover:text-black/60">
           Pas maintenant
         </button>
       </div>
@@ -164,7 +164,7 @@ function EventLayout({ a, onClose, onCta }: { a: SiteAnnouncement; onClose: () =
         <h2 className="mb-4 font-display text-3xl font-normal leading-tight text-black sm:text-4xl">{a.title}</h2>
         {a.message && <p className="mb-6 max-w-xl text-sm sm:text-base leading-relaxed text-black/60 line-clamp-4">{a.message}</p>}
         {a.expires_at && (
-          <p className="mb-6 text-sm font-light text-black/65">
+          <p className="mb-6 text-sm font-normal text-black/65">
             {new Date(`${a.expires_at}T12:00:00`).toLocaleDateString('fr-FR', {
               weekday: 'long',
               day: 'numeric',
@@ -181,7 +181,7 @@ function EventLayout({ a, onClose, onCta }: { a: SiteAnnouncement; onClose: () =
             {a.cta_label}
           </button>
         )}
-        <button type="button" onClick={onClose} className="inline-flex items-center min-h-[44px] text-left text-[11px] font-light tracking-wide text-black/40 hover:text-black/60">
+        <button type="button" onClick={onClose} className="inline-flex items-center min-h-[44px] text-left text-[11px] font-normal tracking-wide text-black/40 hover:text-black/60">
           Pas maintenant
         </button>
       </div>

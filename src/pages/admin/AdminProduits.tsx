@@ -80,7 +80,7 @@ function ProductVisual({ p }: { p: Product }) {
     );
   }
   return (
-    <div className="flex h-full w-full items-center justify-center bg-noir/[0.04] text-[10px] font-light uppercase tracking-[0.2em] text-black/25">
+    <div className="flex h-full w-full items-center justify-center bg-noir/[0.04] text-[10px] font-normal uppercase tracking-[0.2em] text-black/25">
       Sans visuel
     </div>
   );
@@ -204,7 +204,7 @@ function ProductCard({
                 {savingPrice ? <Loader2 size={16} className="animate-spin inline" /> : priceStr}
               </button>
             )}
-            {macros && <p className="mt-0.5 text-[10px] font-light tracking-wide text-black/38">{macros}</p>}
+            {macros && <p className="mt-0.5 text-[10px] font-normal tracking-wide text-black/38">{macros}</p>}
           </div>
           <div className="flex shrink-0 items-center gap-1">
             <button
@@ -585,7 +585,7 @@ const AdminProduits = () => {
             <EmptyState.Title className="font-display text-[16px] font-normal text-black/75">
               Aucun produit
             </EmptyState.Title>
-            <EmptyState.Description className="text-[12px] font-light text-black/45">
+            <EmptyState.Description className="text-[12px] font-normal text-black/45">
               Ajuste la recherche ou réinitialise les filtres pour voir tous les produits.
             </EmptyState.Description>
           </EmptyState.Header>

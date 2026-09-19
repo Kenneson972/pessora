@@ -81,7 +81,7 @@ export default function CommandeAnnulee() {
               <br />
               n'a pas abouti
             </h1>
-            <p className="mx-auto mb-10 max-w-sm text-[13px] font-light leading-relaxed text-black/50">
+            <p className="mx-auto mb-10 max-w-sm text-[13px] font-normal leading-relaxed text-black/50">
               Aucun montant n'a été débité. Vous pouvez reprendre votre panier à tout moment.
             </p>
             <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">

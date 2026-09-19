@@ -111,7 +111,7 @@ const Contact = () => {
                 >
                   Vous avez un projet de partenariat ?
                 </h3>
-                <p className="mt-2 max-w-md text-[13px] font-light leading-relaxed text-white/70">
+                <p className="mt-2 max-w-md text-[13px] font-normal leading-relaxed text-white/70">
                   Pop-up, sponsoring, corner produit, packs sur devis pour clubs de sport et entreprises — découvrez la page dédiée.
                 </p>
               </div>
@@ -315,7 +315,7 @@ const Contact = () => {
                       }}
                       className="mt-1 h-4 w-4 shrink-0 rounded-[2px] border border-noir/15 accent-sapin"
                     />
-                    <span className="text-[11px] font-light leading-relaxed text-black/55">
+                    <span className="text-[11px] font-normal leading-relaxed text-black/55">
                       J’accepte que mes informations soient utilisées pour répondre à ma demande, conformément à la{' '}
                       <Link
                         to="/politique-confidentialite"

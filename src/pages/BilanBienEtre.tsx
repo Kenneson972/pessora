@@ -509,7 +509,7 @@ const BilanBienEtre = () => {
                             onChange={(e) => field.onChange(e.target.checked)}
                             className="mt-1 h-4 w-4 shrink-0 rounded-[2px] border border-noir/15 accent-gold-dim"
                           />
-                          <span className="text-[11px] font-light leading-relaxed text-black/55">
+                          <span className="text-[11px] font-normal leading-relaxed text-black/55">
                             J’accepte le traitement de mes données pour la prise de rendez-vous et le suivi du bilan,
                             conformément à la{' '}
                             <Link

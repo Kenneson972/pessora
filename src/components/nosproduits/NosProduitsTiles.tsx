@@ -30,7 +30,7 @@ export function NosProduitsTiles() {
                 decoding="async"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-noir/50 via-transparent to-transparent" />
-              <span className="absolute top-4 left-4 text-[13px] font-light text-white">
+              <span className="absolute top-4 left-4 text-[13px] font-normal text-white">
                 {rangesData[r.id].title.replace('Gamme ', '')}
               </span>
               <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">

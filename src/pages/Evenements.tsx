@@ -93,13 +93,13 @@ function EventRow({
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-noir/75 via-noir/25 to-transparent" />
 
         {/* Numéro de série discret, haut-gauche */}
-        <span className="absolute left-5 top-5 text-[10px] font-light uppercase tracking-[0.24em] text-white/65">
+        <span className="absolute left-5 top-5 text-[10px] font-normal uppercase tracking-[0.24em] text-white/65">
           № {String(index + 1).padStart(2, '0')} · {TYPE_LABELS[ev.type]}
         </span>
 
         {/* Badge complet */}
         {isFull && (
-          <span className="absolute right-5 top-5 rounded-[1px] border border-white/30 px-2.5 py-1 text-[9px] font-light uppercase tracking-[0.24em] text-white/90">
+          <span className="absolute right-5 top-5 rounded-[1px] border border-white/30 px-2.5 py-1 text-[9px] font-normal uppercase tracking-[0.24em] text-white/90">
             Complet
           </span>
         )}
@@ -112,7 +112,7 @@ function EventRow({
           >
             {day}
           </span>
-          <span className="pb-2 text-[11px] font-light uppercase tracking-[0.26em] text-white/75">
+          <span className="pb-2 text-[11px] font-normal uppercase tracking-[0.26em] text-white/75">
             {month} {year}
             {ev.heure ? (
               <>
@@ -130,7 +130,7 @@ function EventRow({
           reverse ? 'md:col-start-1 md:row-start-1 md:pr-4' : 'md:col-start-8 md:pl-4'
         }`}
       >
-        <p className="mb-4 text-[11px] font-light uppercase tracking-[0.24em] text-black/65">
+        <p className="mb-4 text-[11px] font-normal uppercase tracking-[0.24em] text-black/65">
           {formatDate(ev.date)}
           {ev.heure ? ` · ${ev.heure.slice(0, 5)}` : ''}
         </p>
@@ -142,11 +142,11 @@ function EventRow({
         </h3>
 
         {ev.location && (
-          <p className="mt-5 text-[14px] font-light leading-relaxed text-black/60">{ev.location}</p>
+          <p className="mt-5 text-[14px] font-normal leading-relaxed text-black/60">{ev.location}</p>
         )}
 
         <div className="mt-8 flex items-center justify-between border-t border-noir/[0.1] pt-5">
-          <p className="text-[11px] font-light uppercase tracking-[0.22em] text-black/55">
+          <p className="text-[11px] font-normal uppercase tracking-[0.22em] text-black/55">
             {spots !== null ? (
               isFull ? (
                 'Complet'
@@ -161,7 +161,7 @@ function EventRow({
               ev.price && ev.price > 0 ? `${ev.price.toLocaleString('fr-FR', {minimumFractionDigits: 2})}€` : 'Payant'
             )}
           </p>
-          <span className="inline-flex items-center gap-2.5 text-[11px] font-light uppercase tracking-[0.22em] text-black transition-transform duration-300 group-hover:translate-x-1.5">
+          <span className="inline-flex items-center gap-2.5 text-[11px] font-normal uppercase tracking-[0.22em] text-black transition-transform duration-300 group-hover:translate-x-1.5">
             S'inscrire
             <ArrowRight size={14} strokeWidth={1.3} />
           </span>
@@ -193,12 +193,12 @@ function EventCardCompact({ ev }: { ev: EventWithCount }) {
           />
         )}
         <div className="absolute inset-0 bg-white/35 mix-blend-lighten" />
-        <span className="absolute right-3 top-3 rounded-[1px] bg-noir/75 px-2 py-1 text-[9px] font-light uppercase tracking-[0.22em] text-white/85">
+        <span className="absolute right-3 top-3 rounded-[1px] bg-noir/75 px-2 py-1 text-[9px] font-normal uppercase tracking-[0.22em] text-white/85">
           Passé
         </span>
       </div>
       <div className="pt-4">
-        <p className="mb-1.5 text-[10px] font-light uppercase tracking-[0.22em] text-black/40">
+        <p className="mb-1.5 text-[10px] font-normal uppercase tracking-[0.22em] text-black/40">
           {day} {month}
           {ev.heure ? ` · ${ev.heure.slice(0, 5)}` : ''}
         </p>
@@ -209,7 +209,7 @@ function EventCardCompact({ ev }: { ev: EventWithCount }) {
           {ev.title}
         </h3>
         {ev.location && (
-          <p className="mt-1.5 text-[11px] font-light text-black/65">{ev.location}</p>
+          <p className="mt-1.5 text-[11px] font-normal text-black/65">{ev.location}</p>
         )}
       </div>
     </Link>
@@ -338,7 +338,7 @@ const Evenements = () => {
 
                     <div className="absolute inset-0 flex flex-col justify-between p-6 md:p-9">
                       <div className="flex items-start justify-between gap-4">
-                        <p className="text-[10px] font-light uppercase tracking-[0.28em] text-white/60">
+                        <p className="text-[10px] font-normal uppercase tracking-[0.28em] text-white/60">
                           Challenge 21 jours
                         </p>
                         <ArrowRight size={18} className="shrink-0 text-white/70 transition-transform group-hover:translate-x-1.5" />
@@ -346,7 +346,7 @@ const Evenements = () => {
 
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                         <div>
-                          <p className="text-[11px] font-light uppercase tracking-[0.2em] text-white/60">
+                          <p className="text-[11px] font-normal uppercase tracking-[0.2em] text-white/60">
                             {day} {month} {year}
                           </p>
                           <h2
@@ -357,7 +357,7 @@ const Evenements = () => {
                           </h2>
                         </div>
                         <div className="shrink-0 sm:pb-1">
-                          <p className="mb-2 text-[8px] font-light uppercase tracking-[0.24em] text-white/45">
+                          <p className="mb-2 text-[8px] font-normal uppercase tracking-[0.24em] text-white/45">
                             Démarre dans
                           </p>
                           <ChallengeCountdown targetDate={ev.date} variant="light" compact />
@@ -401,7 +401,7 @@ const Evenements = () => {
       <section className="px-4 py-12 md:px-10 md:py-14 lg:px-[72px]">
         <div className="mb-8 flex items-end justify-between gap-6">
           <div>
-            <p className="mb-2 text-[10px] font-light uppercase tracking-[0.22em] text-black/55">
+            <p className="mb-2 text-[10px] font-normal uppercase tracking-[0.22em] text-black/55">
               À venir
             </p>
             <h2
@@ -412,7 +412,7 @@ const Evenements = () => {
             </h2>
           </div>
           {!loading && (
-            <p className="hidden text-[11px] font-light text-black/40 md:block">
+            <p className="hidden text-[11px] font-normal text-black/40 md:block">
               {filteredUpcoming.length}{' '}
               {filteredUpcoming.length > 1 ? 'événements' : 'événement'}
             </p>
@@ -420,7 +420,7 @@ const Evenements = () => {
         </div>
 
         {error && (
-          <p className="mb-6 rounded-[2px] border border-red-500/20 bg-red-500/5 px-4 py-3 text-[12px] font-light text-red-600">
+          <p className="mb-6 rounded-[2px] border border-red-500/20 bg-red-500/5 px-4 py-3 text-[12px] font-normal text-red-600">
             {error}
           </p>
         )}
@@ -447,7 +447,7 @@ const Evenements = () => {
             className="rounded-[2px] border border-noir/[0.08] bg-neutral-50 px-6 py-12 md:px-10 md:py-16"
           >
             <EmptyState.Header>
-              <p className="text-[11px] font-light uppercase tracking-[0.22em] text-black/55">
+              <p className="text-[11px] font-normal uppercase tracking-[0.22em] text-black/55">
                 Prochainement
               </p>
               <EmptyState.Title
@@ -458,7 +458,7 @@ const Evenements = () => {
                   ? `Aucun événement « ${TYPE_LABELS[activeType]} » à venir`
                   : 'Aucun événement programmé pour le moment'}
               </EmptyState.Title>
-              <EmptyState.Description className="mx-auto max-w-md text-[13px] font-light leading-relaxed text-black/50">
+              <EmptyState.Description className="mx-auto max-w-md text-[13px] font-normal leading-relaxed text-black/50">
                 Les prochaines éditions seront publiées ici. En attendant, écris-nous pour proposer
                 un partenariat ou être prévenu·e en avant-première.
               </EmptyState.Description>
@@ -466,7 +466,7 @@ const Evenements = () => {
             <EmptyState.Content className="flex-row flex-wrap items-center justify-center gap-3">
               <Link
                 to="/contact"
-                className="inline-flex h-11 items-center rounded-full bg-sapin px-6 text-[11px] font-light uppercase tracking-[0.18em] text-white transition-colors duration-200 hover:bg-sapin/80"
+                className="inline-flex h-11 items-center rounded-full bg-sapin px-6 text-[11px] font-normal uppercase tracking-[0.18em] text-white transition-colors duration-200 hover:bg-sapin/80"
               >
                 Nous contacter
               </Link>
@@ -474,7 +474,7 @@ const Evenements = () => {
                 <button
                   type="button"
                   onClick={() => setTypeFilter(null)}
-                  className="inline-flex h-11 items-center rounded-full border border-noir/20 px-6 text-[11px] font-light uppercase tracking-[0.18em] text-black/65 transition-colors duration-200 hover:border-noir hover:text-black"
+                  className="inline-flex h-11 items-center rounded-full border border-noir/20 px-6 text-[11px] font-normal uppercase tracking-[0.18em] text-black/65 transition-colors duration-200 hover:border-noir hover:text-black"
                 >
                   Voir tous les types
                 </button>
@@ -506,7 +506,7 @@ const Evenements = () => {
         <section className="border-t border-noir/[0.06] bg-neutral-50/60 px-4 py-12 md:px-10 md:py-14 lg:px-[72px]">
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="mb-2 text-[10px] font-light uppercase tracking-[0.22em] text-black/55">
+              <p className="mb-2 text-[10px] font-normal uppercase tracking-[0.22em] text-black/55">
                 Archives
               </p>
               <h2
@@ -519,7 +519,7 @@ const Evenements = () => {
             <button
               type="button"
               onClick={() => setShowPast((s) => !s)}
-              className="inline-flex h-11 items-center rounded-full border border-noir/15 px-4 text-[11px] font-light tracking-[0.08em] text-black/55 transition-colors duration-200 hover:border-noir/35 hover:text-black"
+              className="inline-flex h-11 items-center rounded-full border border-noir/15 px-4 text-[11px] font-normal tracking-[0.08em] text-black/55 transition-colors duration-200 hover:border-noir/35 hover:text-black"
             >
               {showPast ? 'Masquer' : `Voir (${filteredPast.length})`}
             </button>

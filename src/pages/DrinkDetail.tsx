@@ -240,7 +240,7 @@ const DrinkDetail = () => {
 
             <div className="mt-6 border-t border-noir/[0.05] pt-6 text-center lg:text-left">
               <p className="mb-3 text-[9px] font-normal uppercase tracking-[0.2em] text-black/30">Composition</p>
-              <p className="mx-auto max-w-md text-[11px] font-light leading-relaxed text-black/50 lg:mx-0">
+              <p className="mx-auto max-w-md text-[11px] font-normal leading-relaxed text-black/50 lg:mx-0">
                 {drink.ingredients.join(' · ')}
               </p>
             </div>
@@ -280,7 +280,7 @@ const DrinkDetail = () => {
               </p>
             ) : (
               <>
-                <p className="mx-auto mb-4 max-w-xl text-center text-[13px] font-light leading-relaxed text-black/50 sm:mx-0 sm:text-left">
+                <p className="mx-auto mb-4 max-w-xl text-center text-[13px] font-normal leading-relaxed text-black/50 sm:mx-0 sm:text-left">
                   {drink.description}
                 </p>
                 {drink.pitch.trim() && (
@@ -326,7 +326,7 @@ const DrinkDetail = () => {
                 <p className="mb-1 text-center text-[9px] font-normal uppercase tracking-[0.2em] text-black/45 sm:text-left">
                   Taille
                 </p>
-                <p className="mb-3 text-center text-[11px] font-light text-black/35 sm:text-left">
+                <p className="mb-3 text-center text-[11px] font-normal text-black/35 sm:text-left">
                   Choisissez votre format
                 </p>
                 <div className="flex gap-2">
@@ -361,7 +361,7 @@ const DrinkDetail = () => {
                 <p className="mb-1 text-center text-[9px] font-normal uppercase tracking-[0.2em] text-black/45 sm:text-left">
                   Choix du lait végétal
                 </p>
-                <p className="mb-3 text-center text-[11px] font-light text-black/35 sm:text-left">
+                <p className="mb-3 text-center text-[11px] font-normal text-black/35 sm:text-left">
                   Inclus — sélectionnez une base
                 </p>
                 <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-2.5" role="list">
@@ -414,7 +414,7 @@ const DrinkDetail = () => {
               <p className="mb-3 text-center text-[9px] font-normal uppercase tracking-[0.2em] text-black/45 sm:text-left">
                 Boosters
               </p>
-              <p className="mb-3 text-center text-[11px] font-light text-black/35 sm:text-left">
+              <p className="mb-3 text-center text-[11px] font-normal text-black/35 sm:text-left">
                 +{BOOSTER_PRICE_EUR}&nbsp;€ par option sélectionnée
               </p>
               <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-2.5" role="list">
@@ -508,7 +508,7 @@ const DrinkDetail = () => {
 
             <div className="flex items-start justify-center gap-3 border-t border-noir/[0.06] pt-5 sm:justify-start">
               <Check size={13} className="mt-0.5 shrink-0 text-black/45" strokeWidth={1.5} />
-              <p className="max-w-md text-center text-[11px] font-light leading-relaxed text-black/45 sm:max-w-none sm:text-left">
+              <p className="max-w-md text-center text-[11px] font-normal leading-relaxed text-black/45 sm:max-w-none sm:text-left">
                 Préparé à la commande avec des ingrédients frais. 100% végétal, sans compromis sur le goût.
               </p>
             </div>
@@ -564,7 +564,7 @@ const DrinkDetail = () => {
                       <span className="min-w-0 text-[12px] font-normal leading-snug text-black sm:text-[13px]">
                         {ingredient}
                       </span>
-                      <span className="min-w-0 border-l border-noir/[0.08] pl-3 text-[10px] font-light leading-relaxed text-black/45 sm:pl-6 sm:text-[11px] lg:pl-8">
+                      <span className="min-w-0 border-l border-noir/[0.08] pl-3 text-[10px] font-normal leading-relaxed text-black/45 sm:pl-6 sm:text-[11px] lg:pl-8">
                         {getIngredientNote(ingredient)}
                       </span>
                     </div>

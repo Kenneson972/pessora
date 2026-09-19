@@ -82,13 +82,13 @@ function MemberCard({ m }: { m: MemberWithSub }) {
             )}
           </div>
           {m.email && (
-            <p className="mt-1.5 flex min-w-0 items-center gap-1.5 text-[11px] font-light text-black/45">
+            <p className="mt-1.5 flex min-w-0 items-center gap-1.5 text-[11px] font-normal text-black/45">
               <Mail size={12} strokeWidth={1.5} className="shrink-0 opacity-60" aria-hidden />
               <span className="truncate">{m.email}</span>
             </p>
           )}
           {m.phone && (
-            <p className="mt-1 flex items-center gap-1.5 text-[11px] font-light text-black/38">
+            <p className="mt-1 flex items-center gap-1.5 text-[11px] font-normal text-black/38">
               <Phone size={12} strokeWidth={1.5} className="shrink-0 opacity-60" aria-hidden />
               {m.phone}
             </p>
@@ -108,7 +108,7 @@ function MemberCard({ m }: { m: MemberWithSub }) {
             {statusLabel(sub?.status)}
           </span>
         </div>
-        <time className="text-[10px] font-light tabular-nums text-black/35" dateTime={m.created_at}>
+        <time className="text-[10px] font-normal tabular-nums text-black/35" dateTime={m.created_at}>
           {new Date(m.created_at).toLocaleDateString('fr-FR', {
             day: 'numeric',
             month: 'short',
@@ -287,7 +287,7 @@ const AdminMembers = () => {
             <EmptyState.Title className="font-display text-[16px] font-normal text-black/75">
               Aucun membre ne correspond
             </EmptyState.Title>
-            <EmptyState.Description className="text-[12px] font-light text-black/45">
+            <EmptyState.Description className="text-[12px] font-normal text-black/45">
               Ajuste la recherche ou réinitialise les filtres pour voir tous les membres.
             </EmptyState.Description>
           </EmptyState.Header>
@@ -316,7 +316,7 @@ const AdminMembers = () => {
         </ul>
       )}
 
-      <p className="mt-6 text-[10px] font-light text-black/35">
+      <p className="mt-6 text-[10px] font-normal text-black/35">
         {loading ? '…' : `${filtered.length} membre${filtered.length !== 1 ? 's' : ''}`}
       </p>
       </div>

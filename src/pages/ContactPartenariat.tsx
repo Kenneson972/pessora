@@ -111,7 +111,7 @@ const ContactPartenariat = () => {
       <div className="pb-24 pt-10 md:pt-14">
         <PageShell>
           <div className="mx-auto max-w-6xl">
-            <p className="mx-auto mb-12 max-w-2xl text-center text-[14px] font-light leading-relaxed text-black/55">
+            <p className="mx-auto mb-12 max-w-2xl text-center text-[14px] font-normal leading-relaxed text-black/55">
               Marques, salles de sport, médias, organisateurs : présentez votre projet (pop-up, sponsoring,
               animation, corner produit…). Nous vous répondons sous{' '}
               <span className="text-black/75">48 à 72 h ouvrées</span>.
@@ -132,7 +132,7 @@ const ContactPartenariat = () => {
                       Pour qui ?
                     </h4>
                   </div>
-                  <ul className="space-y-3 text-[14px] font-light leading-relaxed text-black/70">
+                  <ul className="space-y-3 text-[14px] font-normal leading-relaxed text-black/70">
                     <li>• Événements sportifs, bien-être, food & lifestyle</li>
                     <li>• Salles, associations, retailers complémentaires</li>
                     <li>• Presse, influence, contenus éditoriaux</li>
@@ -146,7 +146,7 @@ const ContactPartenariat = () => {
                       Packs formules sur devis
                     </h4>
                   </div>
-                  <p className="text-[14px] font-light leading-relaxed text-black/70">
+                  <p className="text-[14px] font-normal leading-relaxed text-black/70">
                     Clubs de sport et entreprises : nous composons des packs formules spéciales sur devis
                     (volumétrie, fréquence, lieu de livraison) — précisez votre besoin dans le formulaire,
                     nous revenons vers vous avec une proposition adaptée.
@@ -160,8 +160,8 @@ const ContactPartenariat = () => {
                       Contact équipe
                     </h4>
                   </div>
-                  <p className="text-[15px] font-light text-black">{barInfo.contact.email}</p>
-                  <p className="mt-4 text-[12px] font-light text-black/45">
+                  <p className="text-[15px] font-normal text-black">{barInfo.contact.email}</p>
+                  <p className="mt-4 text-[12px] font-normal text-black/45">
                     Une question client ou le bar ?{' '}
                     <Link to="/contact" className="text-editorial-link-underline text-black/60 hover:text-black">
                       Page contact générale
@@ -178,7 +178,7 @@ const ContactPartenariat = () => {
                     >
                       Pistes de collaboration
                     </h4>
-                    <p className="text-[13px] font-light leading-relaxed text-white/75">
+                    <p className="text-[13px] font-normal leading-relaxed text-white/75">
                       Pop-up dans votre lieu, activation autour du run club, corner boissons, offre groupes,
                       co-marketing — indiquez votre idée dans le formulaire, même à tiroir.
                     </p>
@@ -197,13 +197,13 @@ const ContactPartenariat = () => {
                       Proposition de partenariat
                     </h3>
                   </div>
-                  <p className="mb-8 text-[12px] font-light text-black/45">
+                  <p className="mb-8 text-[12px] font-normal text-black/45">
                     Plus vous êtes précis (dates, lieu, volumétrie), plus notre réponse sera utile.
                   </p>
 
                   {success && (
                     <p
-                      className="mb-6 rounded-[2px] border border-noir/10 bg-white px-4 py-3 text-[13px] font-light text-black/75"
+                      className="mb-6 rounded-[2px] border border-noir/10 bg-white px-4 py-3 text-[13px] font-normal text-black/75"
                       role="status"
                     >
                       Merci — votre demande a bien été envoyée. Nous vous contacterons à l’adresse indiquée sous
@@ -213,7 +213,7 @@ const ContactPartenariat = () => {
 
                   {sendError && (
                     <p
-                      className="mb-6 rounded-[2px] border border-red-500/20 bg-red-500/5 px-4 py-3 text-[13px] font-light text-red-700"
+                      className="mb-6 rounded-[2px] border border-red-500/20 bg-red-500/5 px-4 py-3 text-[13px] font-normal text-red-700"
                       role="alert"
                     >
                       Une erreur est survenue lors de l’envoi. Réessayez, ou écrivez-nous directement à{' '}
@@ -382,7 +382,7 @@ const ContactPartenariat = () => {
                             />
                           )}
                         />
-                        <span className="text-[11px] font-light leading-relaxed text-black/55">
+                        <span className="text-[11px] font-normal leading-relaxed text-black/55">
                           J’accepte que mes données soient utilisées pour traiter cette demande de partenariat,
                           conformément à la{' '}
                           <Link
