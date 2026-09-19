@@ -21,6 +21,8 @@ livre donc pas une police étrangère au site, on lui livre **celle qu'il demand
 | Fichier servi | Famille / graisse | sha256 | Licence |
 |---|---|---|---|
 | `public/fonts/LibreBaskerville-Regular-400.ttf` | Libre Baskerville — 400 | `f5bc4341f15de5e877d8d95b6b14b33e9a3da1f8fef4ed0700ed407f096cffb6` | OFL |
+| `public/fonts/LibreBaskerville-Bold-700.ttf` | Libre Baskerville — 700 | `8b008ffdae31b314657cb8e28d822da09893035d06bad9b1ab53ea762549cbd1` | OFL |
+| `public/fonts/LibreBaskerville-Italic-400.ttf` | Libre Baskerville — 400 italique | `b2149da8101de6ecbc0d5ea9616a0a0a45fbd01701f012a0ae9b0d0ed733c070` | OFL |
 | `public/fonts/Inter-Light-300.ttf` | Inter — 300 | `d0f4bc7faca468376e3db9b5e57afcdc2192134c9ac82a9511f32767b56853a4` | OFL |
 | `public/fonts/Inter-Regular-400.ttf` | Inter — 400 | `1b08e7fc267a5c7e1d614100f604b83e7e8a0be241f0f288faa2b3ac93a683ba` | OFL |
 | `public/fonts/Inter-SemiBold-600.ttf` | Inter — 600 | `e7a1aaf7eda9f2fad4131725fa556265ec75ca7b2d756260173a040363e8d4f7` | OFL |
@@ -55,6 +57,27 @@ rendu en Regular — donc livrer Inter **Light** *éclaircit* le texte par rappo
 maintenant ; sur iPhone/Android (qui ont bien un Light) le rendu bouge peu. Recommandation pour la pose :
 **Inter 400 pour le texte courant 12-14 px**, **300 réservé aux grands corps**, et la mesure avant/après sur le
 déployé tranche. C'est la mesure que @elise a demandée pour ce lot.
+
+## Le mot-symbole existe — il est sur son enseigne (constat du 19/09)
+
+Ken a envoyé la photo de l'affiche d'horaires du bar : elle porte le **lockup réel de la marque** —
+**l'emblème (feuille + fruit) avec « PESSÓRA » juste en dessous**, sérif, capitales, interlettrage serré. C'est la
+première fois qu'on voit le mot-symbole de la marque, et il confirme ce qu'on avait mesuré sur le web : *en
+ligne*, ce lockup n'existe nulle part (le site ne sert que l'emblème, la police déclarée n'étant jamais livrée).
+
+Comparaison montée pour l'œil : `enseigne-vs-bold.png` (dans ce dossier ; l'autre montage est `mot-symbole-vs-propositions.png`) — enseigne vs Libre Baskerville Bold,
+Libre Baskerville 400, Inter SemiBold, à hauteur d'encre égale.
+
+- **Ce qu'on peut dire** : l'enseigne est un sérif **à contraste marqué, en graisse forte et serrée** ; la
+  squelette (le `R` à jambe recourbée, le `S`, l'`Ó`) est de la même famille de formes que **Libre Baskerville**,
+  mais **plus lourd que le 400**.
+- **Ce qu'on ne peut pas dire** : le nom exact de la police — la photo est du blanc sur verre, basse définition.
+  On compare une **graisse et un squelette**, jamais « c'est la police X ».
+- **Conséquence pratique** : le kit a donc été complété avec **Bold 700** et **Italique 400** (les deux libres,
+  même licence). Sans le Bold, le site posé en 400 aurait affiché le mot-symbole **plus léger que l'enseigne de
+  Catherine** — un écart visible dès qu'on compare le site et l'affiche.
+- **Règle pour les visuels** : reprendre **le lockup de l'enseigne** — emblème, mot-symbole en dessous, capitales
+  serrées — et non un mot-symbole recomposé à la légère.
 
 ## Les emoji dans nos rendus (mesuré, 19/09) — piège de production
 
