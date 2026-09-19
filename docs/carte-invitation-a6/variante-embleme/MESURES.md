@@ -56,6 +56,33 @@ Le PNG de ce dossier a été régénéré **à l'identique** par @vela dans un e
 si quelqu'un doute du fichier, il relance le script et retombe dessus. Les empreintes épinglées pour l'envoi
 vivent dans le message de @nova — **un seul lieu pour un même chiffre**.
 
+## Si le QR doit porter un marqueur de suivi (mesuré le 19/09)
+
+Question posée par @nova : sans marqueur, un scan au comptoir et un clic Instagram arrivent identiques, et le
+carton se pose sans qu'on puisse dire s'il a servi. Ce que la carte accepte, mesuré :
+
+| Contenu du QR | signes | version | modules | module à 44 mm |
+|---|---|---|---|---|
+| adresse actuelle | 52 | 5 | 37 | **1,19 mm** |
+| `?src=carton` | 63 | 6 | 41 | **1,07 mm** |
+| `?utm_source=carton&utm_medium=qr` | 84 | 7 | 45 | **0,98 mm** |
+
+En correction **Q** et à 44 mm, le module reste à **≥ 1,00 mm jusqu'à 74 signes** : un marqueur **court**
+(`?src=…`) passe sans rien changer d'autre. Un triplet utm tombe sous le plancher de 1,00 mm (il faudrait
+descendre en correction M, plus fragile sur du papier mat et pour un carton qui vit des mois).
+
+**L'adresse imprimée sous le QR, elle, ne peut pas porter ce marqueur** : mesurée **60,4 mm** d'encre
+aujourd'hui (sur l'aperçu déposé), elle passe à **75,7 mm** avec `?src=carton` — la carte bord à bord, sans
+marge. Elle garde donc l'adresse courte : c'est le repli pour quelqu'un qui tape l'adresse, pas la source du
+suivi. Le marqueur vit **dans le QR, jamais dans le texte**.
+
+Même famille de défaut que la phrase, traitée pareil : **la ligne d'adresse était sans aucune garde de
+largeur**. Elle en a une maintenant (les deux moteurs), avec refus bruyant mesuré : 76,0 mm d'encre pour 71 mm
+de zone. Un marqueur collé à l'adresse arrête donc le script au lieu de sortir de la carte en silence.
+
+Changer le contenu du QR **re-rend les deux aperçus et change leurs empreintes épinglées** : à trancher
+**avant** le rendu final, pour n'épingler qu'une fois.
+
 ## Preuve rouge / vert (rejouée, pas déclarée)
 
 | Phrase testée | Gabarit A | Gabarit B |

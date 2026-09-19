@@ -36,6 +36,11 @@ LARGEUR_TEXTE_MM = 71.0        # largeur maximale d'une ligne de phrase (mesuré
 INTERLIGNE_MM = 5.2
 PH = 3.6                       # corps de la phrase, mm
 URL = "https://www.pessora.fr/evenements/challenge-21-jours"
+# ce qui est IMPRIMÉ sous le QR : le repli pour un humain qui taperait l'adresse.
+# Il ne porte JAMAIS le marqueur de suivi du QR — mesuré : « www.…challenge-21-jours »
+# = 60,4 mm d'encre, et la même adresse + « ?src=carton » = 75,7 mm, soit la carte
+# bord à bord (zone utile 75 mm). Le marqueur vit dans le QR, pas dans le texte.
+URL_AFFICHEE = "www.pessora.fr/evenements/challenge-21-jours"
 PHASE_INTERNE = "v1 — emplacement, NON imprimable"
 LIGNE_VIDE = "[ phrase de Catherine — à insérer ]"
 
@@ -180,9 +185,29 @@ def verifier(phrase: str, cle: str) -> list[str]:
     return lignes
 
 
+def verifier_url(texte: str) -> None:
+    """La ligne d'adresse imprimée sous le QR n'avait aucune garde de largeur.
+
+    Même famille de défaut que la phrase : une adresse qui grandit sort de la carte
+    en silence. Refus à voix haute, dans les deux moteurs.
+    """
+    pil = f_url.getlength(texte) / DPI * 25.4
+    rl = pdfmetrics.stringWidth(texte, "Sans", 2.5 * mm) / mm
+    large = max(pil, rl)
+    if large > LARGEUR_TEXTE_MM:
+        raise SystemExit(
+            f"REFUS — ligne d'adresse trop large : {large:.1f} mm "
+            f"(PNG {pil:.1f} / PDF {rl:.1f}) pour {LARGEUR_TEXTE_MM:.0f} mm de zone.\n"
+            f"  Adresse : {texte}\n"
+            "  C'est un marqueur de suivi collé à l'adresse qui fait ça, pas la police : "
+            "l'adresse imprimée ne doit pas porter le marqueur du QR."
+        )
+
+
 def rendu(cle: str, phrase: str, avec_mention: bool) -> None:
     L = gabarit(cle)
     lignes = verifier(phrase, cle)
+    verifier_url(URL_AFFICHEE)
     suffixe = "" if avec_mention else "-APERCU"
     EMBLEME_PNG = OUT / "_embleme-fond-blanc.png"
     if not EMBLEME_PNG.exists():
@@ -206,8 +231,8 @@ def rendu(cle: str, phrase: str, avec_mention: bool) -> None:
         d.text((px(W_MM) / 2, px(L["phrase_top"] + i * INTERLIGNE_MM)), ln,
                font=f_phrase, fill=GREY, anchor="ma")
     img.paste(qr_img, (px((W_MM - QR_MM) / 2), px(QR_TOP_MM)))
-    d.text((px(W_MM) / 2, px(QR_TOP_MM + QR_MM + 3.0)),
-           "www.pessora.fr/evenements/challenge-21-jours", font=f_url, fill=GREY, anchor="ma")
+    d.text((px(W_MM) / 2, px(QR_TOP_MM + QR_MM + 3.0)), URL_AFFICHEE,
+           font=f_url, fill=GREY, anchor="ma")
     if avec_mention:
         d.text((px(W_MM) / 2, px(H_MM - 8.0)), PHASE_INTERNE, font=f_phase, fill=GREY, anchor="ma")
     png = OUT / f"carte-A6-{cle}{suffixe}-300dpi.png"
@@ -240,8 +265,7 @@ def rendu(cle: str, phrase: str, avec_mention: bool) -> None:
         c.drawCentredString(W_MM / 2 * mm, H_MM * mm - (L["phrase_top"] + PH * 0.9 + i * INTERLIGNE_MM) * mm, ln)
     c.drawImage(str(qr_p), (W_MM - QR_MM) / 2 * mm, H_MM * mm - (QR_TOP_MM + QR_MM) * mm, QR_MM * mm, QR_MM * mm)
     c.setFont("Sans", 2.5 * mm)
-    c.drawCentredString(W_MM / 2 * mm, H_MM * mm - (QR_TOP_MM + QR_MM + 4.0) * mm,
-                        "www.pessora.fr/evenements/challenge-21-jours")
+    c.drawCentredString(W_MM / 2 * mm, H_MM * mm - (QR_TOP_MM + QR_MM + 4.0) * mm, URL_AFFICHEE)
     if avec_mention:
         c.setFont("Sans", 2.2 * mm)
         c.drawCentredString(W_MM / 2 * mm, 8.0 * mm, PHASE_INTERNE)
@@ -258,6 +282,8 @@ if __name__ == "__main__":
     phrase = LIGNE_VIDE
     if "--phrase" in sys.argv:
         phrase = sys.argv[sys.argv.index("--phrase") + 1]
+    if "--url-affichee" in sys.argv:
+        globals()["URL_AFFICHEE"] = sys.argv[sys.argv.index("--url-affichee") + 1]
     print(f"--- garde --- gabarits : " +
           " | ".join(f"{k} = {gabarit(k)['lignes_max']} lignes max "
                      f"(dernière ligne doit finir avant {QR_TOP_MM - MARGE_SOUS_TEXTE_MM:.0f} mm)" for k in LAYOUTS))
