@@ -98,6 +98,7 @@ function SearchPalette({
     (supabase as any)
       .from('events')
       .select('id,title,slug,date,type,heure')
+      .not('slug', 'ilike', 'test-%')
       .gte('date', today)
       .order('date')
       .limit(6)

@@ -53,6 +53,7 @@ export function useSearch(query: string): SearchResults {
       const [evRes, prRes, catalog] = await Promise.all([
         db.from('events')
           .select('id,title,slug,date,type,heure')
+          .not('slug', 'ilike', 'test-%')
           .ilike('title', `%${q}%`)
           .gte('date', today)
           .order('date')

@@ -24,6 +24,7 @@ const ChallengeLandingPage = () => {
       const { data, error } = await (supabase as any)
         .from('events')
         .select('*, event_registrations!event_registrations_event_id_fkey(count)')
+        .not('slug', 'ilike', 'test-%')
         .eq('type', 'challenge')
         .eq('active', true)
         .gte('date', todayInMartinique())

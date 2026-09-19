@@ -30,6 +30,7 @@ export function HomeChallengeBanner() {
     (supabase as any)
       .from('events')
       .select('*')
+      .not('slug', 'ilike', 'test-%')
       .eq('type', 'challenge')
       .eq('active', true)
       .gte('date', todayStr)

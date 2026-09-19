@@ -230,6 +230,7 @@ const Evenements = () => {
     supabase
       .from('events')
       .select('*, event_registrations!event_registrations_event_id_fkey(count)')
+      .not('slug', 'ilike', 'test-%')
       .eq('active', true)
       .order('date', { ascending: true })
       .then(({ data, error: queryError }) => {

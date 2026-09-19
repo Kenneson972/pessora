@@ -23,7 +23,7 @@ async function main() {
   // silencieusement ramené à [] plus bas si on ne vérifie pas `error` explicitement.
   const [productsRes, eventsRes, gammeProductsRes] = await Promise.all([
     supabase.from('products').select('slug,created_at,image_url').eq('active', true).not('slug', 'is', null) as any,
-    supabase.from('events').select('slug,created_at').eq('active', true).not('slug', 'is', null) as any,
+    supabase.from('events').select('slug,created_at').eq('active', true).not('slug', 'is', null).not('slug', 'ilike', 'test-%') as any,
     supabase.from('gamme_products').select('slug,gamme,created_at,image_url').eq('active', true).not('slug', 'is', null) as any,
   ]);
 
