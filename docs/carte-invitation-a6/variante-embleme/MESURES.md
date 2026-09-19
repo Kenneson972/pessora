@@ -24,15 +24,30 @@ Mesuré sur le site en ligne : le mot-symbole n'y est **pas du texte**, c'est l'
 La marque n'a donc **aucun mot-symbole typographique** à retrouver : l'emblème est le seul élément verrouillé.
 Il est lu **dans le dépôt** (`public/logo-pessora.webp`) — aucun asset externe.
 
+## Deux moteurs de rendu, donc deux jeux de mesures
+
+Le PNG est peint par **PIL**, le PDF par **reportlab** — et leurs métriques divergent (relevé : **0,62 à 0,77 mm**
+par ligne sur les phrases testées). La garde retient donc **la plus large des deux** : une ligne n'est acceptée
+que si elle rentre dans les deux moteurs, et le découpage en lignes est calculé avec cette même mesure, donc il
+est **identique pour les deux sorties**. Sans ça, on remplaçait une divergence écrite par un échec muet —
+précisément sur le PNG, qui sert de contrôle visuel et de secours imprimeur.
+
 ## Capacité mesurée par gabarit (c'est ce qui décide du budget d'écriture)
 
 - Largeur maximale d'une ligne : **71 mm** (zone utile 75 mm).
 - La dernière ligne doit finir **2 mm avant le QR**, soit avant **66 mm**.
 - **Gabarit A : 3 lignes. Gabarit B : 2 lignes** (le mot-symbole décale la phrase 4 mm plus bas).
 
-Le budget ne s'écrit donc **jamais en caractères** : 74 caractères de lettres larges (M, W, O) prennent
-autant de place que 112 caractères de français courant. Ce qui est vrai est une **largeur** (71 mm) croisée
-avec le **nombre de lignes du gabarit retenu**.
+Repères en caractères, **mesurés sur deux familles de phrase** (ce ne sont que des ordres de grandeur) :
+
+| Gabarit | français courant | lettres larges (M, W, O) |
+|---|---|---|
+| **A** | jusqu'à **113 signes** | jusqu'à **80 signes** |
+| **B** | jusqu'à **73 signes** | jusqu'à **57 signes** |
+
+Le maximum en caractères dépend donc **des mots de la phrase** — c'est pour ça que le budget s'écrit en
+**millimètres** (71 mm × le nombre de lignes du gabarit), et que les repères en caractères ne servent qu'à se
+parler. Un compteur de caractères se respecte à la lettre et casse quand même.
 
 ## Preuve rouge / vert (rejouée, pas déclarée)
 
@@ -51,6 +66,9 @@ la ligne de trop — un trou de 44,1 mm au milieu de la phrase, sans aucune erre
 
 La garde et la mise à la ligne doivent vivre **dans le script du lot**, pas ici : ce dossier est une
 proposition, pas une seconde source de vérité. À trancher après l'arbitrage A/B, avec @nova.
+
+Les deux aperçus de ce dossier ont été re-rendus après le changement de moteur de mesure : **fichiers
+identiques au bit près** (empreintes inchangées), donc l'aperçu relu à l'œil reste celui-ci.
 
 ## Régénérer
 

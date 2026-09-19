@@ -104,12 +104,29 @@ f_phase = ImageFont.truetype(SANS, px(2.2))
 f_mot = ImageFont.truetype(SERIF, px(7.0))
 LARGEUR_TEXTE_PX = px(LARGEUR_TEXTE_MM)
 
+# DEUX moteurs de rendu, donc DEUX jeux de métriques : le PNG est peint par PIL,
+# le PDF par reportlab. Enregistrés ici parce que la garde mesure avant tout rendu.
+pdfmetrics.registerFont(TTFont("Sans", SANS))
+pdfmetrics.registerFont(TTFont("Serif", SERIF))
 
-def wrap(texte: str, police, largeur_px: float) -> list[str]:
+
+def largeur_mm(texte: str) -> tuple[float, float]:
+    """Largeur d'une ligne dans les deux moteurs : (PIL pour le PNG, reportlab pour le PDF)."""
+    return (f_phrase.getlength(texte) / DPI * 25.4,
+            pdfmetrics.stringWidth(texte, "Sans", PH * mm) / mm)
+
+
+def wrap(texte: str, limite_mm: float = LARGEUR_TEXTE_MM) -> list[str]:
+    """Mise à la ligne sur la mesure la PLUS LARGE des deux moteurs.
+
+    Le découpage est ainsi le même pour les deux sorties, et une ligne acceptée est
+    acceptée dans les deux — sinon on remplace une divergence écrite par un échec muet
+    sur le fichier qui sert de contrôle visuel et de secours imprimeur (relevé @vela).
+    """
     lignes, cur = [], ""
     for mot in texte.split():
         essai = f"{cur} {mot}".strip()
-        if police.getlength(essai) <= largeur_px or not cur:
+        if max(largeur_mm(essai)) <= limite_mm or not cur:
             cur = essai
         else:
             lignes.append(cur)
@@ -130,11 +147,19 @@ def gabarit(cle: str) -> dict:
 
 
 def verifier(phrase: str, cle: str) -> list[str]:
-    """Garde : refuse à voix haute si la phrase ne rentre pas dans le gabarit."""
+    """Garde : refuse à voix haute si la phrase ne rentre pas dans le gabarit.
+
+    Les deux moteurs sont vérifiés séparément APRÈS la mise à la ligne : une ligne est
+    acceptée seulement si elle est assez étroite pour le PNG **et** pour le PDF.
+    """
     L = gabarit(cle)
-    lignes = wrap(phrase, f_phrase, LARGEUR_TEXTE_PX)
+    lignes = wrap(phrase)
     dernier_bas = L["phrase_top"] + (len(lignes) - 1) * INTERLIGNE_MM + PH * 1.17
-    trop_large = [ln for ln in lignes if f_phrase.getlength(ln) > LARGEUR_TEXTE_PX]
+    trop_large = []
+    for ln in lignes:
+        pil, rl = largeur_mm(ln)
+        if max(pil, rl) > LARGEUR_TEXTE_MM:
+            trop_large.append((ln, pil, rl))
     if len(lignes) > L["lignes_max"] or dernier_bas > QR_TOP_MM - MARGE_SOUS_TEXTE_MM or trop_large:
         msg = [
             f"REFUS — gabarit {cle} : la phrase ne rentre pas.",
@@ -143,10 +168,15 @@ def verifier(phrase: str, cle: str) -> list[str]:
             f"  dernière ligne : {L['phrase_top'] + (len(lignes) - 1) * INTERLIGNE_MM:.1f} mm "
             f"-> {dernier_bas:.1f} mm ; le QR commence à {QR_TOP_MM:.1f} mm "
             f"(il effacerait tout ce qui dépasse).",
-            f"  ligne(s) trop large(s) (> {LARGEUR_TEXTE_MM:.0f} mm) : {len(trop_large)}",
+            f"  ligne(s) trop large(s) (> {LARGEUR_TEXTE_MM:.0f} mm) : {len(trop_large)}"
+            + (f" — PNG {trop_large[0][1]:.1f} mm / PDF {trop_large[0][2]:.1f} mm" if trop_large else ""),
             "  Ce n'est pas une erreur de rendu : c'est le gabarit qui est trop court pour cette phrase.",
         ]
         raise SystemExit("\n".join(msg))
+    ecarts = [abs(a - b) for a, b in (largeur_mm(ln) for ln in lignes)]
+    if ecarts:
+        print(f"  [moteurs] {cle} : écart PIL/reportlab max {max(ecarts):.2f} mm "
+              f"sur {len(lignes)} ligne(s) — garde = la plus large des deux")
     return lignes
 
 
