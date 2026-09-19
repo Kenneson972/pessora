@@ -235,10 +235,34 @@ python -m fontTools.subset X.ttf --flavor=woff2 --layout-features='*' \
 Contrôle de sortie (celui qui a servi) : ouvrir le `cmap` de chaque `*.subset.woff2` et confronter aux caractères
 réellement affichés par le site — **zéro manquant** est la porte, pas « ça a l'air complet ».
 
+## Après la pose — mesure avant/après (@vela, 19/09)
+
+Mesuré sur la **preview** de `lot/lyra-polices-pose` (`cf7659f`), **le même texte, la même taille (15 px), la même
+graisse demandée (300)** :
+
+| | encre par colonne | largeur |
+|---|---|---|
+| prod (aujourd'hui) | **5,13 px** | 166 colonnes encrées |
+| preview (après pose) | **3,20 px** | 179 colonnes (+8 %) |
+
+Donc **le corps est 1,6× plus léger qu'aujourd'hui**, et **Inter 400 ne serait encore que ~1,45× plus léger** que
+l'état actuel : ni 300 ni 400 ne rend le corps plus lourd qu'aujourd'hui — le choix est entre « beaucoup plus
+léger » et « plus léger ». La hauteur de page ne bouge pas (6 537 → 6 485 px, −0,8 %) et il n'y a **0 erreur
+console** des deux côtés.
+
+**Recommandation** (à l'arbitrage de Ken) : **Inter 400 pour le corps et l'interface 12-14 px**, **300 réservé aux
+grands corps** — à petite taille sur un téléphone, 1,6× de trait en moins se paie en lisibilité, alors qu'en grand
+corps la finesse se lit comme de l'élégance. Si la pose retient 400, **le fichier Light sort du lot** (−22 Ko).
+
+⚠️ **Une sonde à ne pas citer comme preuve** : `document.fonts.check('… "Libre Baskerville"')` répond **vrai même
+sur la prod**, où aucune de ces familles n'est livrée. Ce qui prouve la pose, c'est le **woff2 réellement
+téléchargé** et la **famille calculée** — jamais ce booléen.
+
 ## Ce que ce lot doit encore faire
 
-1. Remplacer les 4 `@font-face` `local()` par des `url('/fonts/…')` (self-host, `font-display: swap`).
-2. Trancher la graisse du corps avec la mesure avant/après (ci-dessus).
+1. ~~Remplacer les 4 `@font-face` `local()`~~ **FAIT** sur `lot/lyra-polices-pose` = `cf7659f` (6 `@font-face` en
+   `url('/fonts/woff2/…')`, `font-display: swap`), mesuré sur la preview — reste le **merge**, décision de Ken.
+2. Trancher la graisse du corps avec la mesure avant/après (ci-dessus) — **recommandation : 400**, arbitrage de Ken.
 3. Passe de **contraste** sur les pages réelles (le changement est global : il touche chaque texte du site).
 4. Recette **sur le déployé** — ce repo ne se builde pas en local (`@heroui-pro/react` s'installe en stub vide).
 
