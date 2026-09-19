@@ -73,11 +73,31 @@ Je te joins un aperçu du carton pour que tu voies la place de la phrase — dis
 ## Ce qu'il reste à faire avant que ce message puisse partir
 
 1. **@user — arbitrage A ou B** (ligne ① : 3 lignes ou 2 lignes). @lyra et @elise recommandent **A**.
-2. **@lyra — l'aperçu joint au message**, et il ne vit aujourd'hui que dans son cache
-   (`/opt/data/cache/lyra-fontcheck/`) : **il doit être déposé dans ce dossier du dépôt**, sinon Ken n'a rien
-   à joindre depuis ici. Deux points de DA pour elle, parce que c'est un **aperçu**, pas une pièce d'impression :
-   il montre **la place de la phrase** (la zone vide, en clair) et **il ne porte pas la mention interne
-   `v1 — emplacement, NON imprimable` du dessin** — sinon Catherine reçoit un carton qui s'annonce non imprimable,
-   exactement le défaut relevé le 19/09. Il peut partir **avant** la phrase de Catherine : c'est justement lui qui
-   lui montre la place. Le rendu final (avec sa phrase, garde de largeur, QR re-décodé) vient après.
+2. **@lyra — l'aperçu joint au message** : **c'est fait**, et il est **pinné ici** pour que personne ne joigne un autre fichier.
+   - Les deux aperçus vivent sur la branche **`lot/lyra-apercu-carte-a6` = `e1ba614`** (construite sur `lot/nova-carte-a6`) :
+     prendre l'image **à ce SHA**, pas « la dernière version ».
+   - Variante **A** : `docs/carte-invitation-a6/variante-embleme/apercu-A-embleme-seul.png`
+     — sha256 `a0b4e8d16975996a…` (48 038 o)
+   - Variante **B** : `docs/carte-invitation-a6/variante-embleme/apercu-B-embleme-mot-symbole.png`
+     — sha256 `e98d48c6ca934fd6…` (50 174 o)
+   - Les deux sont **sans la mention interne `NON imprimable`** (vérifié dans les pixels par @lyra, puis re-rendus
+     à l'identique après le passage de la garde au maximum des deux moteurs).
+   - ⚠️ **Ce qui part est l'aperçu, jamais le PDF d'impression** : le PDF du lot porte encore l'emplacement et
+     s'annonce non imprimable dans son propre dessin.
 3. **@user — go d'envoi.** Tant qu'il n'est pas donné, ce fichier ne quitte pas le dépôt.
+
+## Si la carte ne part pas finalement (arbitrage de @user)
+
+Le carton est **notre** proposition, pas une demande de Catherine ni une idée de son brainstorm : rien n'est parti,
+aucun tirage n'est lancé, elle n'en a pas entendu parler. Ken peut donc l'arrêter — mais **les trois demandes
+n'ont pas le même sort** :
+
+- **① sa phrase tombe avec le carton.** Elle n'existe que pour la carte : si la carte s'arrête, on ne la demande pas.
+- **② son médiateur (L612-1) NE TOMBE PAS.** C'est une **obligation légale** pour un site qui vend à des particuliers,
+  **reclassée le 18/09** du seau « à la remise, oral » vers « **préalable à l'ouverture au public** » précisément parce
+  qu'elle ne peut pas attendre. Elle a voyagé avec la carte par commodité, **pas par dépendance**.
+- **③ la période de sa prochaine vague ne tombe pas non plus** : elle sert à l'impression *et* à l'ouverture.
+
+→ **Si la carte s'arrête, ce message se coupe en deux** : ② et ③ rejoignent la demande « carte des boissons »
+(même guichet client, déjà ouverte) au lieu de disparaître. **Un préalable légal ne s'attache jamais au sort
+d'une pièce de communication.**
