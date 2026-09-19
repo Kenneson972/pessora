@@ -48,6 +48,10 @@ et ① n'en fait plus partie.
   et ça ne rogne jamais ses mots. **Ça ne remplace pas la garde de largeur** — la garde reste et doit refuser
   à voix haute ; la différence est qu'elle ne devrait plus jamais avoir à refuser **ce qu'on a demandé**.
 - **Le budget part en millimètres, après l'arbitrage A/B** — jamais en compte de caractères.
+- **② devient une question FERMÉE (19/09, Ken : « la prochaine vague c'est en octobre »)** : on propose les
+  trois lundis (5 / 12 / 19 octobre) au lieu d'une question ouverte — et on ne s'arrête pas pour attendre la date,
+  **c'est le message qui la demande**. Portes calculées depuis le 19/09 : vague au **5 oct** → créneaux ouverts le
+  **21 sept** (après-demain) ; **12 oct** → le 28 sept ; **19 oct** → le 5 oct.
 - **Le dossier de graphiste entre dans le message** (Élise, 19/09) : il ne bloque rien et évite un second
   aller-retour — c'est la 3ᵉ demande. ⚠️ « Berthold Baskerville » (1961) et « Berthold Baskerville **Book** » (1980)
   sont deux polices différentes : si on demande un nom, on demande **le nom exact** de la charte.
@@ -90,8 +94,8 @@ La garde du script **refuse à voix haute** (implémentée par @lyra, auditée p
 
 **Bloc ③ — la période de la vague.** *Part dans tous les cas.*
 > **Ta prochaine vague.**
-> Dis-moi **la période que tu vises** pour ton prochain Challenge 21 jours : les créneaux de bilan s'ouvrent
-> deux semaines avant, donc c'est ce qui nous dit quand tout doit être prêt de notre côté.
+> Tu vises **quelle semaine : le 5, le 12 ou le 19 octobre** ? Les créneaux de bilan s'ouvrent **deux semaines
+> avant**, donc c'est cette date qui nous dit quand tout doit être prêt de notre côté.
 
 **Bloc ④ — les fichiers de marque.** *Part dans tous les cas.*
 > **Ton dossier de graphiste.**
@@ -138,6 +142,14 @@ donc autant les lancer tout de suite. 👋
 Dès que j'ai ces points, on avance de notre côté.
 
 ---
+
+## Le go-live déclenche deux choses commerciales — à préparer À FROID
+
+Aller en ligne avant la vague d'octobre n'est pas un geste technique : ça **déclenche** le **solde dû à la remise
+des clés (250 €)** et l'**abonnement 49 €/mois** qui démarre « à la VRAIE mise en ligne » (fiche cliente — jamais
+déclenché à ce jour). Les deux s'annoncent **à froid et séparément** (`kb-client-relances`) : **jamais** dans le
+message qui réclame un livrable, **jamais** accolés à la campagne. À préparer **avant** le go-live, pour ne pas
+improviser une annonce d'argent le jour où tout le reste bouge.
 
 ## Ce qu'il reste à faire avant que ce message puisse partir
 
