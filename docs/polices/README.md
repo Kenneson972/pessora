@@ -135,6 +135,26 @@ sans le fichier d'origine.
 **La seule chose qui trancherait définitivement** : le **dossier du graphiste / la charte graphique** — il porte à
 la fois le **logo vectoriel** et **le nom des polices**. Une question à Catherine règle les deux manques.
 
+### Provenance de la charte, et ce que j'ai cherché en plus (mesuré)
+
+@vela a daté les deux noms : `Berthold Baskerville Book` et `Akkurat Pro` sont dans le dépôt **depuis le premier
+commit** (`eabf617`, 03/05/2026, « initial commit — PESSORA full project backup »), à **sept endroits** (les quatre
+`@font-face`, le skill design-system, quatre docs). Donc ces noms **viennent avec le site de Catherine** — ils ne
+sortent pas de chez nous, et le constructeur de son site avait les deux fontes (commerciales).
+
+**Et les fichiers n'existent nulle part ici — vérifié, pas supposé :**
+- dans **tout l'historique** du dépôt, les seuls fichiers de police jamais versionnés sont **les miens** (ce lot) :
+  aucun `.woff/.woff2/.ttf/.otf` avant ;
+- sur la machine, aucune trace d'`Akkurat` ni de `Berthold Baskerville` (recherche hors `node_modules`) ;
+- le seul jeu Libre Baskerville antérieur est une capture du 17/09 (`/opt/data/captures/pessora-polices-2026-09-17/`),
+  qui comparait **Libre Baskerville / EB Garamond / Source Serif 4**. Mon balayage des 109 familles recoupe ce
+  comparatif : Libre Baskerville est devant les deux autres (+0,424 contre +0,363 et +0,169) — **pas d'angle mort**.
+
+Conséquence : **on ne peut pas identifier la police par ses fichiers ici**, et l'ask à Catherine reste la seule
+porte. Pour le lot, une finition à prévoir : servir l'**woff2** (les fichiers du 17/09 sont déjà en woff2, ~2× plus
+légers que les TTF déposés), avec `font-display: swap` — jamais `block`, qui laisse le texte invisible pendant le
+chargement.
+
 ### Ce qu'il nous manque toujours
 
 Le **fichier vectoriel du logo** (SVG / AI / EPS, celui du graphiste) : le seul logo numérique dont on dispose
