@@ -13,6 +13,17 @@
 ALTER TABLE public.bar_settings
   ADD COLUMN IF NOT EXISTS opening_hours jsonb;
 
+-- ⚠️ TRACE — ancienne valeur de `hours` écrasée ci-dessous (relevée en base le
+-- 19/09/2026, avant mise à jour). Conservée pour répondre à « qu'est-ce que son
+-- bot répondait hier ? » : le site (en dur, infoData) et le PessoBot (base)
+-- divergeaient déjà, et aucun ne suivait l'enseigne.
+--   • Lundi 6h-8h / 14h-21h
+--   • Mardi 10h30-19h30
+--   • Mercredi 11h-21h
+--   • Jeudi 10h30-19h30
+--   • Vendredi 10h30-19h30
+--   • Samedi 9h-15h
+--   • Dimanche Fermé
 UPDATE public.bar_settings
 SET
   opening_hours = jsonb_build_object(
