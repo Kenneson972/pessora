@@ -16,22 +16,53 @@ La marque n'a pas de voix typographique — elle en aura une, identique pour tou
 Deuxième raison, plus discrète : **`Inter` est déjà en 3ᵉ position de `--font-sans`** dans ce même fichier. On ne
 livre donc pas une police étrangère au site, on lui livre **celle qu'il demande déjà**.
 
-## Les fichiers (self-host, licence libre, zéro achat)
+## Format livré : woff2, sous-ensemblé (décidé, mesuré le 19/09)
 
-| Fichier servi | Famille / graisse | sha256 | Licence |
+Le dépôt ne porte plus les **TTF sources** (1 270 Ko) : le site charge des **woff2 sous-ensemblés**, et le **woff2
+complet** reste au dépôt comme source sans perte (le woff2 est une compression, pas une conversion). Les TTF se
+retrouvent en une commande (voir « Régénérer »).
+
+| Fichiers (6) | Poids total | Facteur |
+|---|---|---|
+| TTF sources (plus committés) | 1 270 Ko | — |
+| **woff2 complet** (source sans perte, committé) | **435 Ko** | ×2,9 |
+| **woff2 sous-ensemblé** (ce que le site charge) | **134 Ko** | **×9,5** |
+
+Le sous-ensemble couvre **Latin-1 + Latin Extended-A + ponctuation typographique**, soit **400 signes** (Inter) et
+**339** (Libre Baskerville). Vérifié sur les **caractères réellement affichés par le site** (relevé de la salle sur
+9 pages publiques) : **zéro manquant** — français, anglais, espagnol, `€`, `·`, `«»`, `–—’…`, `Œœ`, `Ó`.
+
+⚠️ **Ce qu'un sous-ensemble implique** : un caractère absent **retombe sur la police de l'appareil** (jamais un
+carré vide — c'est le comportement voulu du navigateur). Si un nom de produit arrive un jour en grec ou en
+cyrillique, **on re-sous-ensemble** : la source complète est au dépôt, donc c'est une commande, pas une perte.
+
+⚠️ **Le poids d'un fichier se dit en Ko, pas en « plus léger »** : sur un lien 8 Mbit/s, 1 270 Ko = **1,03 s**,
+435 Ko = **0,35 s**, 134 Ko = **0,08 s**. Le public de la campagne arrive **d'Instagram, sur un téléphone** — c'est
+là que ça se paie.
+
+⚠️ **Un seul fichier reste en sursis** : `Inter-Light-300` (~22 Ko). La mesure de graisse recommande **400 pour le
+corps 12-14 px** ; si la pose le confirme, **on retire le Light avant le merge** — la décision appartient à la
+pose, pas à ce dossier.
+
+## Les fichiers livrés (woff2)
+
+| Fichier servi | Famille / graisse | Poids | sha256 |
 |---|---|---|---|
-| `public/fonts/LibreBaskerville-Regular-400.ttf` | Libre Baskerville — 400 | `f5bc4341f15de5e877d8d95b6b14b33e9a3da1f8fef4ed0700ed407f096cffb6` | OFL |
-| `public/fonts/LibreBaskerville-Bold-700.ttf` | Libre Baskerville — 700 | `8b008ffdae31b314657cb8e28d822da09893035d06bad9b1ab53ea762549cbd1` | OFL |
-| `public/fonts/LibreBaskerville-Italic-400.ttf` | Libre Baskerville — 400 italique | `b2149da8101de6ecbc0d5ea9616a0a0a45fbd01701f012a0ae9b0d0ed733c070` | OFL |
-| `public/fonts/Inter-Light-300.ttf` | Inter — 300 | `d0f4bc7faca468376e3db9b5e57afcdc2192134c9ac82a9511f32767b56853a4` | OFL |
-| `public/fonts/Inter-Regular-400.ttf` | Inter — 400 | `1b08e7fc267a5c7e1d614100f604b83e7e8a0be241f0f288faa2b3ac93a683ba` | OFL |
-| `public/fonts/Inter-SemiBold-600.ttf` | Inter — 600 | `e7a1aaf7eda9f2fad4131725fa556265ec75ca7b2d756260173a040363e8d4f7` | OFL |
+| `public/fonts/woff2/LibreBaskerville-Regular-400.subset.woff2` | Libre Baskerville — 400 | 22 204 o | `82d6378db5c99a1d6632ae0b744c05e5746cb235b915d80a7737b0861503c10e` |
+| `public/fonts/woff2/LibreBaskerville-Bold-700.subset.woff2` | Libre Baskerville — 700 | 22 936 o | `30f8adeb9778177af730302212406111bce2629c441cd9c73f9ad15104ebe8c1` |
+| `public/fonts/woff2/LibreBaskerville-Italic-400.subset.woff2` | Libre Baskerville — 400 italique | 24 060 o | `9c1661be9ade2fa540629b0eba809d4a2261d415ea5b0240fb5a75be5bbc189b` |
+| `public/fonts/woff2/Inter-Regular-400.subset.woff2` | Inter — 400 | 22 412 o | `2adba4612d87809701b19299a86f64ec924bad49d9d6ba703edcce85d79b2680` |
+| `public/fonts/woff2/Inter-SemiBold-600.subset.woff2` | Inter — 600 | 22 992 o | `7dc35c8bb78644e32ae35447284f165076d64ea20db9c3291802671e04583e7c` |
+| `public/fonts/woff2/Inter-Light-300.subset.woff2` | Inter — 300 (sursis, voir ci-dessus) | 22 596 o | `a99fedfd9e5dbccd5a8093bda0d57051c43741b3bfae98b1f7020bfb4a6e91c3` |
+
+Et pour chacun, la version **complète** (`…​.woff2`, sans `.subset`) est au dépôt comme source sans perte — ses
+empreintes sont dans l'historique du commit, elles ne servent à rien au serveur.
 
 Fichiers de licence joints dans ce dossier (`INTER-LICENCE-OFL.txt`, `LIBRE-BASKERVILLE-LICENCE-OFL.txt`) —
 **SIL Open Font License**, redistribution autorisée, rien à payer, rien à déclarer à Catherine.
 
-Provenance : Google Fonts (API `css2`, instances statiques TTF), téléchargées le 19/09/2026. Les empreintes
-ci-dessus sont celles des fichiers **réellement posés**, pas celles annoncées par la source.
+Provenance : Google Fonts (API `css2`, instances statiques), téléchargées le 19/09/2026. Les empreintes ci-dessus
+sont celles des fichiers **réellement posés**.
 
 ## Rôles typographiques réellement demandés par le site (relevés en ligne)
 
@@ -181,6 +212,27 @@ du visiteur. Mais dans **nos** rendus, la règle dépend du pipeline, et elle es
 
 Le repère qui ne trompe pas, pour toute police : si cinq emoji différents produisent la **même** quantité d'encre,
 ce n'est pas un rendu, c'est un carré vide.
+
+## Régénérer les fichiers (une commande, sans dépendre de personne)
+
+```bash
+uv venv /tmp/typo --python 3.13 && uv pip install --python /tmp/typo/bin/python fonttools brotli
+
+# 1. les sources (API css2, instances statiques) — l'UA ancien force le TTF
+curl -A "Mozilla/5.0 (Windows NT 6.1; WOW64)" \
+  "https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap"
+
+# 2. woff2 complet = source sans perte, committé
+python -m fontTools.ttLib.woff2 compress -o X.woff2 X.ttf
+
+# 3. woff2 sous-ensemblé = ce que le site charge
+python -m fontTools.subset X.ttf --flavor=woff2 --layout-features='*' \
+  --unicodes="U+0000-00FF,U+0100-017F,U+2000-206F,U+20AC,U+2122,U+0152,U+0153,U+0178,U+0192,U+02C6,U+02DC,U+2018-201D,U+2026,U+2039,U+203A,U+00D3" \
+  --output-file=X.subset.woff2
+```
+
+Contrôle de sortie (celui qui a servi) : ouvrir le `cmap` de chaque `*.subset.woff2` et confronter aux caractères
+réellement affichés par le site — **zéro manquant** est la porte, pas « ça a l'air complet ».
 
 ## Ce que ce lot doit encore faire
 
